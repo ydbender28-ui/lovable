@@ -63,6 +63,7 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
 function IframePreview({ files, projectName, mode }: { files: ProjectFiles; projectName: string; mode: PreviewMode }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/preview`, {
@@ -77,27 +78,38 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
 
   useEffect(() => {
     if (!previewHtml || !iframeRef.current) return;
+    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     const blob = new Blob([previewHtml], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    iframeRef.current.src = url;
-    return () => URL.revokeObjectURL(url);
+    blobUrlRef.current = URL.createObjectURL(blob);
+    iframeRef.current.src = blobUrlRef.current;
+    return () => { if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current); };
   }, [previewHtml]);
 
-  if (mode === "desktop") {
-    return <iframe ref={iframeRef} className="w-full h-full border-0 bg-[#0a0a0f]" sandbox="allow-scripts allow-same-origin" />;
-  }
-
-  const frameWidth = mode === "tablet" ? "768px" : "390px";
+  const isDevice = mode !== "desktop";
+  const frameWidth = mode === "mobile" ? "390px" : mode === "tablet" ? "768px" : "100%";
+  const frameHeight = mode === "mobile" ? "844px" : "100%";
   const isMobile = mode === "mobile";
 
   return (
-    <div className="h-full flex items-center justify-center overflow-auto bg-[#080810] py-6">
-      <div
-        style={{ width: frameWidth, height: isMobile ? "844px" : "100%", maxHeight: "calc(100% - 48px)", flexShrink: 0 }}
-        className={`relative overflow-hidden shadow-2xl ${isMobile ? "rounded-[3rem] border-[6px] border-gray-700" : "rounded-xl border border-white/10"}`}
-      >
-        {isMobile && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-gray-700 rounded-b-3xl z-10" />}
-        <iframe ref={iframeRef} className="w-full h-full border-0 bg-[#0a0a0f]" sandbox="allow-scripts allow-same-origin" />
+    <div style={{
+      height: "100%", display: "flex", justifyContent: "center", alignItems: "flex-start",
+      background: isDevice ? "#080810" : "transparent",
+      padding: isDevice ? "24px 16px" : "0",
+      overflowY: isDevice ? "auto" : "hidden",
+    }}>
+      <div style={{
+        width: frameWidth, height: frameHeight, flexShrink: 0, position: "relative",
+        overflow: "hidden",
+        borderRadius: isMobile ? "2.5rem" : isDevice ? "12px" : "0",
+        border: isMobile ? "6px solid #374151" : isDevice ? "1px solid rgba(255,255,255,0.12)" : "none",
+        boxShadow: isDevice ? "0 24px 60px rgba(0,0,0,0.6)" : "none",
+      }}>
+        {isMobile && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 28, background: "#374151", borderRadius: "0 0 20px 20px", zIndex: 10 }} />}
+        <iframe
+          ref={iframeRef}
+          style={{ width: "100%", height: "100%", border: "none", background: "#0a0a0f", display: "block" }}
+          sandbox="allow-scripts allow-same-origin"
+        />
       </div>
     </div>
   );
