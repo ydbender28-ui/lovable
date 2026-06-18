@@ -144,9 +144,9 @@ SPACING: Consistent rhythm — padding multiples of 8. Section gaps: 32-48px. Ca
 TYPOGRAPHY: Never all same size. Clear hierarchy: page title 24-28px/700, section head 16-18px/600, body 14px/400, label 11-12px/500/uppercase.
 
 ABSOLUTELY NEVER:
-- Gray `#999` or `#ccc` borders on interactive elements
-- Plain unstyled `<select>` or `<input>` (always style them)
-- `background:'gray'` or `background:'#f0f0f0'` buttons
+- Gray #999 or #ccc borders on interactive elements
+- Plain unstyled select or input elements (always style them)
+- background:gray or background:#f0f0f0 buttons
 - Zero box-shadow flat cards with no depth
 - Lorem ipsum or "Coming soon" placeholder text — use real realistic data
 - Walls of unstyled text with no visual hierarchy
