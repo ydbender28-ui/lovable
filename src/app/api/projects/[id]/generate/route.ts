@@ -43,7 +43,13 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         );
 
         const version = await prisma.version.create({
-          data: { projectId: id, files: JSON.stringify(result.files) },
+          data: {
+            projectId: id,
+            files: JSON.stringify(result.files),
+            modelUsed: result.modelUsed,
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+          },
         });
 
         const assistantMessage = await prisma.message.create({

@@ -3,11 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-function nameFromPrompt(prompt: string): string {
-  const words = prompt.trim().replace(/[^\w\s]/g, " ").trim().split(/\s+/).slice(0, 5).join(" ");
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
 export default function NewProjectButton() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -21,7 +16,7 @@ export default function NewProjectButton() {
     const res = await fetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: nameFromPrompt(trimmed) }),
+      body: JSON.stringify({ prompt: trimmed }),
     });
     const project = await res.json();
     router.push(`/projects/${project.id}?prompt=${encodeURIComponent(trimmed)}`);

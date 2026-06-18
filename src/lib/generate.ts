@@ -128,7 +128,7 @@ async function generateWithAnthropic(
   maxTokens: number,
   userContent: string,
   onToken: (t: string) => void
-): Promise<{ text: string; stopped: boolean }> {
+): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const stream = client.messages.stream({
     model,
@@ -145,7 +145,12 @@ async function generateWithAnthropic(
     }
   }
   const final = await stream.finalMessage();
-  return { text, stopped: final.stop_reason === "max_tokens" };
+  return {
+    text,
+    stopped: final.stop_reason === "max_tokens",
+    inputTokens: final.usage.input_tokens,
+    outputTokens: final.usage.output_tokens,
+  };
 }
 
 async function generateWithOpenAI(
@@ -153,7 +158,7 @@ async function generateWithOpenAI(
   maxTokens: number,
   userContent: string,
   onToken: (t: string) => void
-): Promise<{ text: string; stopped: boolean }> {
+): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -161,6 +166,7 @@ async function generateWithOpenAI(
     model,
     max_tokens: maxTokens,
     stream: true,
+    stream_options: { include_usage: true },
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user",   content: userContent },
@@ -169,12 +175,14 @@ async function generateWithOpenAI(
 
   let text = "";
   let stopped = false;
+  let inputTokens = 0, outputTokens = 0;
   for await (const chunk of stream) {
     const delta = chunk.choices[0]?.delta?.content ?? "";
     if (delta) { text += delta; onToken(delta); }
     if (chunk.choices[0]?.finish_reason === "length") stopped = true;
+    if (chunk.usage) { inputTokens = chunk.usage.prompt_tokens; outputTokens = chunk.usage.completion_tokens; }
   }
-  return { text, stopped };
+  return { text, stopped, inputTokens, outputTokens };
 }
 
 async function generateWithGoogle(
@@ -182,7 +190,7 @@ async function generateWithGoogle(
   maxTokens: number,
   userContent: string,
   onToken: (t: string) => void
-): Promise<{ text: string; stopped: boolean }> {
+): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const { GoogleGenAI } = await import("@google/genai");
   const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
 
@@ -197,12 +205,17 @@ async function generateWithGoogle(
 
   let text = "";
   let stopped = false;
+  let inputTokens = 0, outputTokens = 0;
   for await (const chunk of response) {
     const delta = chunk.text ?? "";
     if (delta) { text += delta; onToken(delta); }
     if (chunk.candidates?.[0]?.finishReason === "MAX_TOKENS") stopped = true;
+    if (chunk.usageMetadata) {
+      inputTokens = chunk.usageMetadata.promptTokenCount ?? 0;
+      outputTokens = chunk.usageMetadata.candidatesTokenCount ?? 0;
+    }
   }
-  return { text, stopped };
+  return { text, stopped, inputTokens, outputTokens };
 }
 
 // ─── JSON extraction ──────────────────────────────────────────────────────────
@@ -229,6 +242,8 @@ export interface GenerateResult {
   files: ProjectFiles;
   summary: string;
   modelUsed: string;
+  inputTokens: number;
+  outputTokens: number;
 }
 
 export async function generateProject(
@@ -256,6 +271,7 @@ export async function generateProject(
 
   let text = "";
   let stopped = false;
+  let inputTokens = 0, outputTokens = 0;
 
   const statusMap: [number, string][] = [
     [200,   "Reading your request…"],
@@ -280,11 +296,11 @@ export async function generateProject(
 
   try {
     if (modelOpt.provider === "anthropic") {
-      ({ stopped } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
     } else if (modelOpt.provider === "openai") {
-      ({ stopped } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
     } else {
-      ({ stopped } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
     }
   } catch (err) {
     // Provider failed — fall back to Claude Sonnet
@@ -292,7 +308,7 @@ export async function generateProject(
     if (modelOpt.provider !== "anthropic") {
       onStatus?.(`${modelOpt.displayName} failed, retrying with ${fallback.displayName}…`);
       text = "";
-      ({ stopped } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, tokenCallback));
       modelOpt.displayName = fallback.displayName;
     } else {
       throw err;
@@ -334,6 +350,8 @@ export async function generateProject(
     files: parsed.files,
     summary: parsed.summary ?? "Done! Check the preview.",
     modelUsed: modelOpt.displayName,
+    inputTokens,
+    outputTokens,
   };
 }
 

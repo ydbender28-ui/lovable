@@ -40,11 +40,6 @@ export default async function Home() {
       </nav>
 
       <main className="relative z-10 flex flex-1 w-full max-w-3xl flex-col items-center justify-center text-center px-6 -mt-16">
-        <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-300 backdrop-blur">
-          <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse-glow" />
-          Powered by Claude · GPT-4o · Gemini
-        </span>
-
         <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.1]">
           Build something{" "}
           <span className="bg-gradient-to-r from-fuchsia-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
