@@ -11,7 +11,7 @@ async function nameFromPrompt(prompt: string): Promise<string> {
       max_tokens: 20,
       messages: [{
         role: "user",
-        content: `Give a 2-4 word project name for this app idea. Reply with ONLY the name, title case, no punctuation.\n\nIdea: ${prompt.slice(0, 300)}`,
+        content: `Create a short 2-4 word project name from this description. Use the actual words from the description — do NOT invent creative names. Just extract the core noun/type of app in title case. No punctuation, reply with ONLY the name.\n\nExamples:\n"build e commerce store" → "E Commerce Store"\n"todo app with reminders" → "Todo App"\n"admin dashboard for products" → "Product Admin Dashboard"\n"landing page for my startup" → "Startup Landing Page"\n\nDescription: ${prompt.slice(0, 300)}`,
       }],
     });
     const name = (msg.content[0] as { text: string }).text.trim().replace(/['"]/g, "");
