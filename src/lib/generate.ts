@@ -265,9 +265,9 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
 
 // Priority order per complexity — cheapest capable model first
 const ROUTING: Record<Complexity, string[]> = {
-  simple:  ["gemini-2.5-flash",       "gpt-4o-mini",          "claude-haiku-4-5-20251001"],
-  medium:  ["gpt-4o-mini",           "gemini-2.5-flash",     "claude-haiku-4-5-20251001"],
-  complex: ["claude-haiku-4-5-20251001", "gpt-4o-mini",      "claude-sonnet-4-6"],
+  simple:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",    "gemini-2.5-flash"],
+  medium:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",    "gemini-2.5-flash"],
+  complex: ["claude-sonnet-4-6",         "claude-haiku-4-5-20251001", "gpt-4o-mini"],
 };
 
 function hasKey(provider: ModelOption["provider"]) {
