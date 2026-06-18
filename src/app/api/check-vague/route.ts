@@ -15,7 +15,16 @@ export async function POST(req: Request) {
       config: { maxOutputTokens: 5 },
       contents: [{
         role: "user",
-        parts: [{ text: `Does this app request need clarification before building? Answer only YES or NO.\n\nExamples that need clarification: "make an app", "build a website", "create a tool"\nExamples that do NOT need clarification: "salesforce CRM", "e-commerce store for shoes", "landing page for my gym", "todo app"\n\nRequest: "${prompt}"` }],
+        parts: [{ text: `You are deciding if an app request needs clarification. Answer only YES or NO.
+
+Say YES only if the request has NO subject/domain at all — literally just generic words like "make an app" or "build a website" or "create a tool".
+
+Say NO (build it) if the request mentions ANY specific thing: a product name, industry, company type, feature, or domain. When in doubt, say NO.
+
+NO examples (build immediately): "salesforce app", "create salesforce", "crm", "e-commerce", "fitness tracker", "portfolio", "todo list", "dashboard", "inventory system", "booking app", "restaurant menu"
+YES examples (needs clarification): "make an app", "build me something", "create a website", "build a tool"
+
+Request: "${prompt}"` }],
       }],
     });
     const answer = res.text?.trim().toUpperCase() ?? "NO";
