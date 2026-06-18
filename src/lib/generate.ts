@@ -2,9 +2,29 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export type ProjectFiles = Record<string, string>;
 
+// ─── Design seeds ─────────────────────────────────────────────────────────────
+
+const DESIGN_THEMES = [
+  { bg: "#0a0a0f", card: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)", accent: "#8b5cf6", accent2: "#6366f1", text: "#f4f4f5", muted: "#71717a", radius: "12px", style: "dark minimal" },
+  { bg: "#030712", card: "rgba(14,165,233,0.08)", border: "rgba(14,165,233,0.2)",  accent: "#0ea5e9", accent2: "#06b6d4", text: "#f0f9ff", muted: "#64748b", radius: "8px",  style: "dark blue tech" },
+  { bg: "#0d0f0a", card: "rgba(34,197,94,0.07)",  border: "rgba(34,197,94,0.15)", accent: "#22c55e", accent2: "#10b981", text: "#f0fdf4", muted: "#6b7280", radius: "6px",  style: "dark green terminal" },
+  { bg: "#0f0a0a", card: "rgba(239,68,68,0.07)",  border: "rgba(239,68,68,0.15)", accent: "#ef4444", accent2: "#f97316", text: "#fff1f2", muted: "#6b7280", radius: "10px", style: "dark red bold" },
+  { bg: "#ffffff", card: "#f8fafc",                border: "#e2e8f0",               accent: "#6366f1", accent2: "#8b5cf6", text: "#0f172a", muted: "#64748b", radius: "12px", style: "light clean" },
+  { bg: "#fafaf9", card: "#f5f5f4",                border: "#d6d3d1",               accent: "#0f172a", accent2: "#374151", text: "#1c1917", muted: "#78716c", radius: "4px",  style: "light minimal editorial" },
+  { bg: "#0f172a", card: "rgba(99,102,241,0.1)",  border: "rgba(99,102,241,0.25)", accent: "#a78bfa", accent2: "#818cf8", text: "#e2e8f0", muted: "#94a3b8", radius: "16px", style: "dark purple glass" },
+  { bg: "#18181b", card: "rgba(251,191,36,0.07)", border: "rgba(251,191,36,0.2)",  accent: "#fbbf24", accent2: "#f59e0b", text: "#fefce8", muted: "#a1a1aa", radius: "8px",  style: "dark gold premium" },
+] as const;
+
+function pickDesign(prompt: string) {
+  // Hash the prompt so same prompt gets same theme, but different prompts get different themes
+  let h = 0;
+  for (let i = 0; i < prompt.length; i++) h = ((h << 5) - h + prompt.charCodeAt(i)) | 0;
+  return DESIGN_THEMES[Math.abs(h) % DESIGN_THEMES.length];
+}
+
 // ─── System prompt ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are an expert React developer. Build exactly what the user asks — full, complete, production-quality apps with real data and working interactions.
+const BASE_SYSTEM_PROMPT = `You are an expert React developer. Build exactly what the user asks — full, complete, production-quality apps with real data and working interactions.
 
 CRITICAL OUTPUT FORMAT — return ONLY this JSON object, nothing else, no markdown fences, no commentary:
 {"summary":"2-3 sentences describing what you built","files":{"index.html":"...","src/main.tsx":"...","src/App.tsx":"..."}}
@@ -57,7 +77,10 @@ QUALITY BAR:
 - Error/empty/loading states for every async or conditional section
 - Mobile-responsive using flexbox wrap and min-width
 - Working forms with validation and feedback
-- NO placeholders, NO TODOs, NO stub functions — implement everything completely`;
+- NO placeholders, NO TODOs, NO stub functions — implement everything completely
+
+DESIGN SYSTEM (injected per request — follow exactly):
+{{DESIGN_INJECTION}}`;
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
@@ -127,13 +150,14 @@ async function generateWithAnthropic(
   model: string,
   maxTokens: number,
   userContent: string,
+  systemPrompt: string,
   onToken: (t: string) => void
 ): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const stream = client.messages.stream({
     model,
     max_tokens: maxTokens,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: [{ role: "user", content: userContent }],
   });
 
@@ -157,6 +181,7 @@ async function generateWithOpenAI(
   model: string,
   maxTokens: number,
   userContent: string,
+  systemPrompt: string,
   onToken: (t: string) => void
 ): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const { default: OpenAI } = await import("openai");
@@ -168,7 +193,7 @@ async function generateWithOpenAI(
     stream: true,
     stream_options: { include_usage: true },
     messages: [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemPrompt },
       { role: "user",   content: userContent },
     ],
   });
@@ -189,6 +214,7 @@ async function generateWithGoogle(
   model: string,
   maxTokens: number,
   userContent: string,
+  systemPrompt: string,
   onToken: (t: string) => void
 ): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const { GoogleGenAI } = await import("@google/genai");
@@ -198,7 +224,7 @@ async function generateWithGoogle(
     model,
     config: {
       maxOutputTokens: maxTokens,
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     },
     contents: [{ role: "user", parts: [{ text: userContent }] }],
   });
@@ -255,6 +281,21 @@ export async function generateProject(
 ): Promise<GenerateResult> {
   const complexity = scoreComplexity(prompt, existingFiles);
   const modelOpt   = pickModel(complexity);
+  const design     = pickDesign(prompt);
+
+  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace(
+    "{{DESIGN_INJECTION}}",
+    `Style: ${design.style}
+- body background: ${design.bg}
+- card/surface background: ${design.card}
+- border color: ${design.border}
+- primary accent: ${design.accent}
+- secondary accent: ${design.accent2}
+- main text: ${design.text}
+- muted text: ${design.muted}
+- border-radius: ${design.radius}
+Use these exact colors throughout the app. Make the design feel cohesive and intentional for this style.`
+  );
 
   onStatus?.(`Using ${modelOpt.displayName}…`);
 
@@ -296,11 +337,11 @@ export async function generateProject(
 
   try {
     if (modelOpt.provider === "anthropic") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     } else if (modelOpt.provider === "openai") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     } else {
-      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
   } catch (err) {
     // Provider failed — fall back to Claude Sonnet
@@ -308,7 +349,7 @@ export async function generateProject(
     if (modelOpt.provider !== "anthropic") {
       onStatus?.(`${modelOpt.displayName} failed, retrying with ${fallback.displayName}…`);
       text = "";
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
       modelOpt.displayName = fallback.displayName;
     } else {
       throw err;

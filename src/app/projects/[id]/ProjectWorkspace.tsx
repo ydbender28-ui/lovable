@@ -176,40 +176,14 @@ export default function ProjectWorkspace({
 
   async function handlePublish() {
     setPublishing(true);
-    setPublishStatus("Starting deployment...");
+    setPublishStatus("Publishing...");
     setError(null);
     try {
       const res = await fetch(`/api/projects/${projectId}/publish`, { method: "POST" });
-      if (!res.body) throw new Error("No response body");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          const eventLine = part.match(/^event: (\w+)/)?.[1];
-          const dataLine = part.match(/^data: (.+)/m)?.[1];
-          if (!eventLine || !dataLine) continue;
-          try {
-            const payload = JSON.parse(dataLine);
-            if (eventLine === "status") {
-              setPublishStatus(payload.text);
-            } else if (eventLine === "done") {
-              setPublishSlug(payload.url);
-              setPublishStatus("");
-            } else if (eventLine === "error") {
-              setError(payload.error ?? "Publish failed");
-              setPublishStatus("");
-            }
-          } catch { /* ignore */ }
-        }
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Publish failed");
+      setPublishSlug(data.url);
+      setPublishStatus("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Publish failed");
       setPublishStatus("");
