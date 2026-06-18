@@ -83,9 +83,9 @@ export default async function AdminPage() {
               }[tier];
               // Find which model would be picked for this tier
               const models = {
-                simple: ["Claude Haiku", "Gemini Flash", "GPT-4o mini"],
-                medium: ["Claude Haiku", "GPT-4o mini", "Gemini Flash"],
-                complex: ["Claude Sonnet", "GPT-4o", "Gemini Pro"],
+                simple: ["Gemini 2.5 Flash", "GPT-4o mini", "Claude Haiku"],
+                medium: ["GPT-4o mini", "Gemini 2.5 Flash", "Claude Haiku"],
+                complex: ["Claude Haiku", "GPT-4o mini", "Claude Sonnet"],
               }[tier];
               return (
                 <div key={tier} className={`rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3`}>

@@ -207,15 +207,10 @@ export const MODELS: Record<string, ModelOption> = {
     displayName: "GPT-4o", maxTokens: 16384,
     costPer1kInput: 0.005, costPer1kOutput: 0.015,
   },
-  "gemini-2.0-flash": {
-    provider: "google", model: "gemini-2.0-flash",
-    displayName: "Gemini Flash", maxTokens: 8192,
-    costPer1kInput: 0.00010, costPer1kOutput: 0.00040,
-  },
-  "gemini-2.5-pro-preview-06-05": {
-    provider: "google", model: "gemini-2.5-pro-preview-06-05",
-    displayName: "Gemini Pro", maxTokens: 16384,
-    costPer1kInput: 0.00125, costPer1kOutput: 0.010,
+  "gemini-2.5-flash": {
+    provider: "google", model: "gemini-2.5-flash",
+    displayName: "Gemini 2.5 Flash", maxTokens: 8192,
+    costPer1kInput: 0.00015, costPer1kOutput: 0.00060,
   },
 };
 
@@ -231,11 +226,9 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   const reasons: string[] = [];
   let score = 0;
 
-  // Editing existing large codebase
+  // Editing existing app — only a small signal (the prompt keywords matter more than codebase size)
   const existingSize = existingFiles ? JSON.stringify(existingFiles).length : 0;
-  if (existingSize > 12000) { score += 4; reasons.push(`large existing app (${Math.round(existingSize/1000)}KB)`); }
-  else if (existingSize > 4000) { score += 2; reasons.push(`existing app (${Math.round(existingSize/1000)}KB)`); }
-  else if (existingSize > 0) { score += 1; reasons.push("editing existing app"); }
+  if (existingSize > 0) { score += 1; reasons.push("editing existing app"); }
 
   // Prompt length signal
   if (prompt.length > 300) { score += 2; reasons.push("long detailed prompt"); }
@@ -270,16 +263,12 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   return { complexity, score, reasons };
 }
 
-// Priority order per complexity — Claude-first since it's most reliable
-// Gemini/OpenAI are tried only if key exists AND hasn't been failing
+// Priority order per complexity — cheapest capable model first
 const ROUTING: Record<Complexity, string[]> = {
-  simple:  ["claude-haiku-4-5-20251001", "gemini-2.0-flash", "gpt-4o-mini"],
-  medium:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",      "gemini-2.0-flash"],
-  complex: ["claude-sonnet-4-6",         "gpt-4o",           "gemini-2.5-pro-preview-06-05"],
+  simple:  ["gemini-2.5-flash",       "gpt-4o-mini",          "claude-haiku-4-5-20251001"],
+  medium:  ["gpt-4o-mini",           "gemini-2.5-flash",     "claude-haiku-4-5-20251001"],
+  complex: ["claude-haiku-4-5-20251001", "gpt-4o-mini",      "claude-sonnet-4-6"],
 };
-
-// Track which providers have failed this process lifetime to skip them faster
-const _failedProviders = new Set<string>();
 
 function hasKey(provider: ModelOption["provider"]) {
   if (provider === "anthropic") return !!process.env.ANTHROPIC_API_KEY;
@@ -293,7 +282,6 @@ function pickModel(complexity: Complexity): ModelOption {
     const opt = MODELS[modelId];
     if (!opt) continue;
     if (!hasKey(opt.provider)) continue;
-    if (_failedProviders.has(opt.provider)) continue;
     return opt;
   }
   // Hard fallback — Claude Sonnet always works if Anthropic key is set
@@ -313,14 +301,25 @@ async function generateWithAnthropic(
   maxTokens: number,
   userContent: string,
   systemPrompt: string,
-  onToken: (t: string) => void
+  onToken: (t: string) => void,
+  imageBase64?: string | null,
+  imageMimeType?: string
 ): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  type ContentBlock = Anthropic.ImageBlockParam | Anthropic.TextBlockParam;
+  const msgContent: string | ContentBlock[] = imageBase64
+    ? [
+        { type: "image", source: { type: "base64", media_type: (imageMimeType ?? "image/png") as "image/png" | "image/jpeg" | "image/gif" | "image/webp", data: imageBase64 } },
+        { type: "text", text: userContent },
+      ]
+    : userContent;
+
   const stream = client.messages.stream({
     model,
     max_tokens: maxTokens,
     system: systemPrompt,
-    messages: [{ role: "user", content: userContent }],
+    messages: [{ role: "user", content: msgContent }],
   });
 
   let text = "";
@@ -450,7 +449,9 @@ export async function generateProject(
   existingFiles: ProjectFiles | null,
   envVars: Record<string, string> | null,
   onToken?: (text: string) => void,
-  onStatus?: (text: string) => void
+  onStatus?: (text: string) => void,
+  imageBase64?: string | null,
+  imageMimeType?: string
 ): Promise<GenerateResult> {
   const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
   let modelOpt = pickModel(complexity);
@@ -527,21 +528,20 @@ Make the entire layout and structure match this design system. It should look DR
 
   try {
     if (modelOpt.provider === "anthropic") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
     } else if (modelOpt.provider === "openai") {
       ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     } else {
       ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
   } catch {
-    // Provider failed — mark it so future requests skip it immediately
-    _failedProviders.add(modelOpt.provider);
+    // Provider failed — silently fall back to Claude Sonnet
     const fallback = MODELS["claude-sonnet-4-6"];
     if (modelOpt.provider !== "anthropic") {
       text = "";
       lastStatusIdx = -1;
       ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-        fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback
+        fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
       ));
       modelOpt = { ...fallback };
     } else {

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateProject } from "@/lib/generate";
+import { buildStandaloneHtml } from "@/lib/buildHtml";
 
 export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/generate">) {
   const session = await auth();
@@ -8,7 +9,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const { id } = await ctx.params;
   const body = await req.json();
-  const { prompt, envVars: bodyEnvVars } = body;
+  const { prompt, envVars: bodyEnvVars, imageBase64, imageMimeType } = body;
 
   if (!prompt || typeof prompt !== "string") {
     return new Response("Prompt is required", { status: 400 });
@@ -41,8 +42,14 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           existingFiles,
           envVars,
           undefined,
-          (text) => send("status", { text })
+          (text) => send("status", { text }),
+          imageBase64 ?? null,
+          imageMimeType
         );
+
+        // Auto-republish if already live — build new HTML before sending done
+        const wasPublished = !!project.publishSlug;
+        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name) : null;
 
         // Send done immediately — don't wait for DB writes
         const tempMessageId = `msg-${Date.now()}`;
@@ -54,6 +61,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           complexity: result.complexity,
           complexityReasons: result.complexityReasons,
           estimatedCostUsd: result.estimatedCostUsd,
+          liveUpdated: wasPublished,
         });
 
         // Write to DB in parallel after responding
@@ -68,7 +76,14 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
             },
           }),
           prisma.message.create({ data: { projectId: id, role: "assistant", content: result.summary } }),
-          prisma.project.update({ where: { id }, data: { updatedAt: new Date() } }),
+          prisma.project.update({
+            where: { id },
+            data: {
+              updatedAt: new Date(),
+              // Auto-update published HTML so live site reflects changes immediately
+              ...(wasPublished && newHtml ? { publishedHtml: newHtml, publishedAt: new Date() } : {}),
+            },
+          }),
         ]);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Generation failed";

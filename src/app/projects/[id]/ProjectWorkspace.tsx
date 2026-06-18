@@ -8,8 +8,8 @@ import Logo from "@/components/Logo";
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type ProjectFiles = Record<string, string>;
 type EnvVars = Record<string, string>;
+type PreviewMode = "desktop" | "tablet" | "mobile";
 
-// Known APIs that need keys
 const API_DETECTORS = [
   { keywords: ["stripe", "payment", "checkout", "subscription", "billing"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "Get from stripe.com/dashboard → Developers → API keys", placeholder: "pk_live_..." },
   { keywords: ["openai", "gpt", "chatgpt", "dall-e"], name: "OpenAI", key: "OPENAI_API_KEY", hint: "Get from platform.openai.com/api-keys", placeholder: "sk-..." },
@@ -21,23 +21,46 @@ const API_DETECTORS = [
   { keywords: ["mapbox"], name: "Mapbox", key: "MAPBOX_TOKEN", hint: "Get from account.mapbox.com/access-tokens", placeholder: "pk.ey..." },
 ];
 
+const QUICK_ACTIONS = [
+  { label: "📱 Make responsive", prompt: "Make the entire layout fully responsive for mobile. Fix overflows, adjust font sizes, stack columns on mobile, ensure touch targets are at least 44px." },
+  { label: "🌙 Dark mode", prompt: "Add a dark/light mode toggle button. Use CSS variables for colors and persist the preference in localStorage." },
+  { label: "✨ Animations", prompt: "Add smooth micro-animations and transitions throughout — hover effects, entry animations, state transitions. Keep them fast (150-300ms) and polished." },
+  { label: "🎨 Polish UI", prompt: "Significantly improve the visual design. Better spacing, consistent typography, refined shadows, modern color usage. Make it look like a premium product." },
+  { label: "⚡ Loading states", prompt: "Add skeleton loading placeholders and loading spinners to all async operations. Add disabled states and loading indicators to buttons." },
+  { label: "🔍 Add search", prompt: "Add real-time search/filter functionality to the main content area that works as the user types." },
+  { label: "🔔 Notifications", prompt: "Add a toast notification system for user feedback. Show success, error, and info toasts with smooth slide-in animations." },
+  { label: "♿ Accessibility", prompt: "Improve accessibility: add ARIA labels, keyboard navigation (Tab/Enter/Escape), visible focus rings, and screen reader support throughout." },
+  { label: "📊 Add stats", prompt: "Add an analytics/stats section with key metrics, animated number counters, and trend indicators." },
+  { label: "❌ Fix errors", prompt: "Review the code for runtime errors, missing null checks, and edge cases. Fix all issues found." },
+];
+
 function detectNeededApis(prompt: string, existing: EnvVars) {
   const t = prompt.toLowerCase();
-  return API_DETECTORS.filter(api =>
-    api.keywords.some(kw => t.includes(kw)) && !existing[api.key]
-  );
+  return API_DETECTORS.filter(api => api.keywords.some(kw => t.includes(kw)) && !existing[api.key]);
 }
 
-function isVague(prompt: string) {
-  const t = prompt.trim().toLowerCase();
-  if (t.length > 80) return false;
-  const vagueWords = ["app", "website", "site", "page", "thing", "something", "tool", "platform"];
-  const hasVague = vagueWords.some(w => t.includes(w));
-  const words = t.split(/\s+/).length;
-  return words < 6 || (words < 10 && hasVague);
+
+function getSmartSuggestions(files: ProjectFiles): string[] {
+  const c = Object.values(files).join(" ").toLowerCase();
+  const pool: [boolean, string][] = [
+    [c.includes("table"), "Add column sorting, search filtering, and pagination to the table"],
+    [c.includes("form"), "Add real-time input validation with inline error messages and success states"],
+    [c.includes("chart") || c.includes("recharts"), "Make charts interactive with hover tooltips, zoom, and animated entry"],
+    [c.includes("card"), "Add smooth hover lift effects and click animations to the cards"],
+    [!c.includes("dark") && !c.includes("theme"), "Add a dark / light mode toggle with smooth transitions"],
+    [!c.includes("responsive") && !c.includes("@media"), "Make the full layout responsive for all screen sizes"],
+    [c.includes("button"), "Add loading spinners and success checkmarks to action buttons"],
+    [c.includes("nav") || c.includes("sidebar"), "Make navigation sticky with scroll-aware highlight and mobile hamburger menu"],
+    [c.includes("list") || c.includes("items"), "Add drag-and-drop reordering with visual drop indicators"],
+    [c.includes("modal") || c.includes("dialog"), "Add keyboard navigation (Escape to close) and focus trapping to modals"],
+    [true, "Add skeleton loading states for all dynamic content"],
+    [true, "Polish with better typography, spacing rhythm, and consistent shadows"],
+    [true, "Add confetti or success animations for key user actions"],
+  ];
+  return pool.filter(([show]) => show).slice(0, 3).map(([, t]) => t as string);
 }
 
-function IframePreview({ files, projectName }: { files: ProjectFiles; projectName: string }) {
+function IframePreview({ files, projectName, mode }: { files: ProjectFiles; projectName: string; mode: PreviewMode }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
@@ -60,15 +83,42 @@ function IframePreview({ files, projectName }: { files: ProjectFiles; projectNam
     return () => URL.revokeObjectURL(url);
   }, [previewHtml]);
 
-  return <iframe ref={iframeRef} className="w-full h-full border-0 bg-[#0a0a0f]" sandbox="allow-scripts allow-same-origin" />;
+  if (mode === "desktop") {
+    return <iframe ref={iframeRef} className="w-full h-full border-0 bg-[#0a0a0f]" sandbox="allow-scripts allow-same-origin" />;
+  }
+
+  const frameWidth = mode === "tablet" ? "768px" : "390px";
+  const isMobile = mode === "mobile";
+
+  return (
+    <div className="h-full flex items-center justify-center overflow-auto bg-[#080810] py-6">
+      <div
+        style={{ width: frameWidth, height: isMobile ? "844px" : "100%", maxHeight: "calc(100% - 48px)", flexShrink: 0 }}
+        className={`relative overflow-hidden shadow-2xl ${isMobile ? "rounded-[3rem] border-[6px] border-gray-700" : "rounded-xl border border-white/10"}`}
+      >
+        {isMobile && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-gray-700 rounded-b-3xl z-10" />}
+        <iframe ref={iframeRef} className="w-full h-full border-0 bg-[#0a0a0f]" sandbox="allow-scripts allow-same-origin" />
+      </div>
+    </div>
+  );
 }
 
 function CodeViewer({ files }: { files: ProjectFiles }) {
   const [activeFile, setActiveFile] = useState(() => Object.keys(files)[0] ?? "");
+  const [copied, setCopied] = useState(false);
   const fileKeys = Object.keys(files);
+
   useEffect(() => {
     if (!files[activeFile] && fileKeys.length > 0) setActiveFile(fileKeys[0]);
-  }, [files]);
+  }, [files, activeFile, fileKeys]);
+
+  function copyFile() {
+    navigator.clipboard.writeText(files[activeFile] ?? "").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
   return (
     <div className="h-full flex overflow-hidden">
       <div className="w-48 shrink-0 border-r border-white/10 bg-[#0c0c12] overflow-y-auto p-2 space-y-0.5">
@@ -79,9 +129,17 @@ function CodeViewer({ files }: { files: ProjectFiles }) {
           </button>
         ))}
       </div>
-      <pre className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] whitespace-pre-wrap break-all">
-        {files[activeFile] ?? ""}
-      </pre>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[#0c0c12] shrink-0">
+          <span className="text-[10px] text-gray-500 font-mono truncate">{activeFile}</span>
+          <button onClick={copyFile} className="text-[11px] text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10 shrink-0 ml-2">
+            {copied ? "✓ Copied" : "Copy"}
+          </button>
+        </div>
+        <pre className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] whitespace-pre-wrap break-all">
+          {files[activeFile] ?? ""}
+        </pre>
+      </div>
     </div>
   );
 }
@@ -105,9 +163,21 @@ export default function ProjectWorkspace({
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
   const [publishing, setPublishing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [liveUpdated, setLiveUpdated] = useState(false);
   const [envVars, setEnvVars] = useState<EnvVars>({});
 
-  // Clarification / API key flow
+  // New features
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [enhancing, setEnhancing] = useState(false);
+  const [uploadImage, setUploadImage] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
+  const [previousFiles, setPreviousFiles] = useState<ProjectFiles | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [versionList, setVersionList] = useState<Array<{ id: string; createdAt: string; modelUsed: string | null }>>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   type FlowState =
     | { type: "idle" }
     | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
@@ -117,6 +187,8 @@ export default function ProjectWorkspace({
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoFired = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (initialPrompt && !autoFired.current && initialMessages.length === 0) {
@@ -135,7 +207,7 @@ export default function ProjectWorkspace({
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading, flow]);
+  }, [messages, loading, flow, suggestions]);
 
   useEffect(() => { if (!loading) setLoadingStatus("Thinking..."); }, [loading]);
 
@@ -158,12 +230,9 @@ export default function ProjectWorkspace({
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  // Mobile: when coming back from another app, check if generation finished in DB
   useEffect(() => {
     function onVisibility() {
-      if (document.visibilityState !== "visible") return;
-      if (!loading) return;
-      // Poll for a new version — if generation completed server-side, pick it up
+      if (document.visibilityState !== "visible" || !loading) return;
       fetch(`/api/projects/${projectId}/latest-version`)
         .then(r => r.json())
         .then(data => {
@@ -180,6 +249,18 @@ export default function ProjectWorkspace({
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, [loading, projectId]);
 
+  // ⌘K focuses the prompt
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        textareaRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   async function saveEnvVars(vars: EnvVars) {
     setEnvVars(vars);
     await fetch(`/api/projects/${projectId}/envvars`, {
@@ -189,27 +270,39 @@ export default function ProjectWorkspace({
     });
   }
 
-  // Main entry point — checks for vague prompt / missing API keys first
-  function handlePromptSubmit(text: string) {
+  async function handlePromptSubmit(text: string) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
-
     const needed = detectNeededApis(trimmed, envVars);
     if (needed.length > 0) {
       setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
       return;
     }
-
-    if (isVague(trimmed) && messages.length === 0) {
-      setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
-      return;
+    if (messages.length === 0) {
+      setLoadingStatus("Analyzing your request…");
+      setLoading(true);
+      try {
+        const res = await fetch("/api/check-vague", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: trimmed }),
+        });
+        const { vague } = await res.json();
+        if (vague) {
+          setLoading(false);
+          setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
+          return;
+        }
+      } catch { /* ignore — just generate */ }
+      setLoading(false);
     }
-
     runGenerate(trimmed);
   }
 
   async function runGenerate(text: string, extraEnv?: EnvVars) {
     setFlow({ type: "idle" });
+    setSuggestions([]);
+    setShowUndo(false);
     const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
@@ -217,13 +310,17 @@ export default function ProjectWorkspace({
     setIframeError(null);
     setLastPrompt(text);
 
+    if (Object.keys(files).length > 0) setPreviousFiles({ ...files });
+
     const mergedEnv = extraEnv ? { ...envVars, ...extraEnv } : envVars;
+    const imgPayload = uploadImage ? { imageBase64: uploadImage.base64, imageMimeType: uploadImage.mimeType } : {};
+    setUploadImage(null);
 
     try {
       const res = await fetch(`/api/projects/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, envVars: mergedEnv }),
+        body: JSON.stringify({ prompt: text, envVars: mergedEnv, ...imgPayload }),
       });
       if (!res.ok) throw new Error("Generation failed");
       if (!res.body) throw new Error("No response body");
@@ -249,7 +346,17 @@ export default function ProjectWorkspace({
               const meta = payload.modelUsed
                 ? `\n\n_${payload.modelUsed} · ${payload.complexity ?? ""} · $${(payload.estimatedCostUsd ?? 0).toFixed(4)}_`
                 : "";
-              setMessages((prev) => [...prev, { id: payload.tempMessageId ?? `msg-${Date.now()}`, role: "assistant", content: (payload.summary ?? "Done! Check the preview.") + meta }]);
+              const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
+              setMessages((prev) => [...prev, {
+                id: payload.tempMessageId ?? `msg-${Date.now()}`,
+                role: "assistant",
+                content: (payload.summary ?? "Done! Check the preview.") + meta + liveNote,
+              }]);
+              if (payload.liveUpdated) setLiveUpdated(true);
+              setSuggestions(getSmartSuggestions(payload.files));
+              setShowUndo(true);
+              if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+              undoTimerRef.current = setTimeout(() => setShowUndo(false), 60000);
               setMobileTab("preview");
             } else if (eventLine === "error") setError(payload.error ?? "Generation failed");
           } catch { /* ignore */ }
@@ -260,6 +367,83 @@ export default function ProjectWorkspace({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleEnhancePrompt() {
+    if (!prompt.trim() || enhancing) return;
+    setEnhancing(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/enhance-prompt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (data.enhanced) setPrompt(data.enhanced);
+    } catch { /* ignore */ }
+    setEnhancing(false);
+  }
+
+  function handleImagePaste(e: React.ClipboardEvent) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) readImageFile(file);
+        break;
+      }
+    }
+  }
+
+  function handleImageFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) readImageFile(file);
+    e.target.value = "";
+  }
+
+  function readImageFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string;
+      setUploadImage({ base64: result.split(",")[1], mimeType: file.type, name: file.name });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleLoadVersions() {
+    if (loadingVersions || versionList.length > 0) return;
+    setLoadingVersions(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/versions`);
+      const data = await res.json();
+      setVersionList(data);
+    } catch { /* ignore */ }
+    setLoadingVersions(false);
+  }
+
+  async function handleRestoreVersion(versionId: string) {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/versions/${versionId}`);
+      const data = await res.json();
+      if (data.files) {
+        setPreviousFiles({ ...files });
+        setFiles(data.files);
+        setShowUndo(true);
+        setShowHistory(false);
+        setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: "Restored that version. You can continue editing from here, or undo to go back." }]);
+      }
+    } catch { /* ignore */ }
+  }
+
+  function handleUndo() {
+    if (!previousFiles) return;
+    setFiles(previousFiles);
+    setPreviousFiles(null);
+    setShowUndo(false);
+    setSuggestions([]);
+    setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: "Undone — reverted to the previous version." }]);
   }
 
   async function handleSend() {
@@ -292,6 +476,7 @@ export default function ProjectWorkspace({
   async function handleUnpublish() {
     await fetch(`/api/projects/${projectId}/publish`, { method: "DELETE" });
     setPublishSlug(null);
+    setLiveUpdated(false);
   }
 
   function exportHtml() {
@@ -309,7 +494,7 @@ export default function ProjectWorkspace({
   const publishUrl = publishSlug ?? null;
   const publishDomain = publishUrl ? publishUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
 
-  // ── Inline flow cards ─────────────────────────────────────────────────────
+  // ── Flow cards ────────────────────────────────────────────────────────────────
   function ClarifyCard() {
     const [style, setStyle] = useState("");
     const [type, setType] = useState("");
@@ -393,14 +578,14 @@ export default function ProjectWorkspace({
     );
   }
 
-  // ── Shared chat panel ─────────────────────────────────────────────────────
+  // ── Chat panel ─────────────────────────────────────────────────────────────────
   const chatPanel = (
     <div className="flex flex-col h-full bg-[#0c0c12]">
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && !loading && flow.type === "idle" && (
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
             <p className="text-sm text-gray-300 font-medium mb-1">Start building</p>
-            <p className="text-xs text-gray-500">Describe the app you want and I will generate a live preview instantly.</p>
+            <p className="text-xs text-gray-500 leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>
             <div className="mt-3 space-y-1">
               {["A SaaS dashboard with charts and analytics", "An e-commerce store with product catalog", "A landing page for a startup"].map((ex) => (
                 <button key={ex} onClick={() => setPrompt(ex)}
@@ -409,23 +594,44 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
+
         {messages.map((m) => (
           <div key={m.id} className={`text-sm max-w-[92%] ${m.role === "user" ? "ml-auto" : ""}`}>
             {m.role === "user" ? (
-              <div className="rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3.5 py-2.5 leading-relaxed">{m.content}</div>
+              <div className="rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3.5 py-2.5 leading-relaxed whitespace-pre-wrap">{m.content}</div>
             ) : (
               <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 text-gray-200 px-3.5 py-2.5 leading-relaxed">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
                   <span className="text-xs font-medium text-fuchsia-300">AI</span>
                 </div>
-                {m.content}
+                <span className="whitespace-pre-wrap">{m.content}</span>
               </div>
             )}
           </div>
         ))}
 
-        {/* Clarification / API key flow cards */}
+        {/* Smart suggestions */}
+        {suggestions.length > 0 && !loading && (
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-gray-600 px-0.5">What&apos;s next?</p>
+            {suggestions.map((s) => (
+              <button key={s} onClick={() => { setSuggestions([]); runGenerate(s); }}
+                className="block w-full text-left text-xs rounded-xl border border-fuchsia-400/15 bg-fuchsia-500/5 text-fuchsia-300/80 px-3.5 py-2 hover:bg-fuchsia-500/10 hover:border-fuchsia-400/30 transition-colors">
+                {s} →
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Undo */}
+        {showUndo && previousFiles && !loading && (
+          <button onClick={handleUndo}
+            className="text-xs rounded-xl border border-orange-400/20 bg-orange-500/5 text-orange-300/80 px-3.5 py-2 hover:bg-orange-500/10 transition-colors w-fit">
+            ↩ Undo last change
+          </button>
+        )}
+
         <ClarifyCard />
         <ApiKeyCard />
 
@@ -468,15 +674,61 @@ export default function ProjectWorkspace({
         )}
       </div>
 
+      {/* Quick actions */}
+      {messages.length > 0 && !loading && (
+        <div className="px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto shrink-0" style={{ scrollbarWidth: "none" }}>
+          {QUICK_ACTIONS.map((a) => (
+            <button key={a.label} onClick={() => { setSuggestions([]); runGenerate(a.prompt); }}
+              className="shrink-0 text-[11px] rounded-full border border-white/10 bg-white/[0.03] text-gray-400 px-2.5 py-1 hover:border-fuchsia-400/30 hover:text-fuchsia-300 hover:bg-fuchsia-500/5 transition-colors whitespace-nowrap">
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Uploaded image preview */}
+      {uploadImage && (
+        <div className="px-3 pt-1 shrink-0">
+          <div className="relative inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`data:${uploadImage.mimeType};base64,${uploadImage.base64}`} alt="Upload" className="h-14 w-14 object-cover rounded-lg border border-white/10" />
+            <button onClick={() => setUploadImage(null)} className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center hover:bg-red-400 leading-none">×</button>
+          </div>
+        </div>
+      )}
+
+      {/* Input */}
       <div className="border-t border-white/10 p-3 shrink-0">
         <div className="rounded-xl border border-white/10 bg-white/[0.03] focus-within:border-fuchsia-400/40 transition-colors">
-          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}
+          <textarea
+            ref={textareaRef}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Describe what to build or change..."
+            onPaste={handleImagePaste}
+            placeholder="Describe what to build or change… paste a screenshot too"
             rows={3}
-            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none" />
+            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none"
+          />
           <div className="flex items-center justify-between px-2.5 pb-2.5">
-            <span className="text-[10px] text-gray-600">Enter to send</span>
+            <div className="flex items-center gap-0.5">
+              <button onClick={() => fileInputRef.current?.click()} title="Upload screenshot or image"
+                className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
+                📎
+              </button>
+              <button onClick={handleEnhancePrompt} disabled={!prompt.trim() || enhancing} title="AI improves your prompt">
+                <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
+                  {enhancing ? "⏳" : "✨"}
+                </span>
+              </button>
+              {lastPrompt && !loading && (
+                <button onClick={() => runGenerate(lastPrompt)} title="Regenerate last prompt"
+                  className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
+                  ↺
+                </button>
+              )}
+              <span className="text-[10px] text-gray-700 pl-1 hidden sm:block">⌘K</span>
+            </div>
             <button onClick={handleSend} disabled={loading || !prompt.trim()}
               className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
               {loading ? "Generating..." : "Send"}
@@ -484,10 +736,11 @@ export default function ProjectWorkspace({
           </div>
         </div>
       </div>
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
     </div>
   );
 
-  // ── Shared preview panel ──────────────────────────────────────────────────
+  // ── Preview panel ─────────────────────────────────────────────────────────────
   const previewPanel = (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex items-center gap-1 px-3 py-2 border-b border-white/10 bg-[#0d0d14] shrink-0">
@@ -497,16 +750,34 @@ export default function ProjectWorkspace({
             {tab === "preview" ? "Preview" : "Code"}
           </button>
         ))}
+
+        {activeTab === "preview" && (
+          <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+            {([
+              { mode: "desktop" as PreviewMode, icon: "🖥", label: "Desktop" },
+              { mode: "tablet" as PreviewMode, icon: "📲", label: "Tablet (768px)" },
+              { mode: "mobile" as PreviewMode, icon: "📱", label: "Mobile (390px)" },
+            ]).map(({ mode, icon, label }) => (
+              <button key={mode} onClick={() => setPreviewMode(mode)} title={label}
+                className={`px-2 py-0.5 rounded-md text-sm transition-colors ${previewMode === mode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+                {icon}
+              </button>
+            ))}
+          </div>
+        )}
+
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
-            className="ml-auto text-xs text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />{publishDomain}
+            className="ml-auto text-xs text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors truncate">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />{publishDomain}
           </a>
         )}
       </div>
       <div className="flex-1 overflow-hidden relative">
         {hasFiles ? (
-          activeTab === "preview" ? <IframePreview files={files} projectName={projectName} /> : <CodeViewer files={files} />
+          activeTab === "preview"
+            ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
+            : <CodeViewer files={files} />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-600 text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
@@ -533,8 +804,19 @@ export default function ProjectWorkspace({
           <h1 className="text-sm font-medium text-white truncate hidden sm:block">{projectName}</h1>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => { setShowHistory(true); handleLoadVersions(); }}
+            title="Version history"
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+            ⏱ History
+          </button>
+
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
+              <button onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
+                className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
+                {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Updating...</> : liveUpdated ? "Updated ✓" : "Update"}
+              </button>
               <a href={publishUrl} target="_blank" rel="noreferrer"
                 className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-300 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
               <button onClick={() => navigator.clipboard.writeText(publishUrl ?? "")}
@@ -544,7 +826,7 @@ export default function ProjectWorkspace({
           ) : (
             <button onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
               className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
-              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" /> Publishing...</> : "Publish"}
+              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Publishing...</> : "Publish"}
             </button>
           )}
           <button onClick={exportHtml} disabled={!hasFiles}
@@ -573,9 +855,9 @@ export default function ProjectWorkspace({
             <button key={tab} onClick={() => setMobileTab(tab)}
               className={`flex-1 py-3 text-sm font-medium transition-colors flex flex-col items-center gap-0.5 ${mobileTab === tab ? "text-fuchsia-400 border-t-2 border-fuchsia-400 -mt-px" : "text-gray-500"}`}>
               {tab === "chat" ? (
-                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</>
+                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>Chat</>
               ) : (
-                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Preview</>
+                <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></svg>Preview</>
               )}
             </button>
           ))}
@@ -592,6 +874,41 @@ export default function ProjectWorkspace({
           onPublish={(slug) => handlePublish(slug)}
           onClose={() => setShowPublishDialog(false)}
         />
+      )}
+
+      {/* Version history slide-over */}
+      {showHistory && (
+        <div className="fixed inset-0 z-50 flex" onClick={() => setShowHistory(false)}>
+          <div className="ml-auto h-full w-full max-w-xs bg-[#141418] border-l border-white/10 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
+              <h3 className="text-sm font-semibold text-white">Version History</h3>
+              <button onClick={() => setShowHistory(false)} className="text-gray-500 hover:text-white transition-colors text-xl leading-none">×</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {loadingVersions ? (
+                <div className="text-xs text-gray-500 text-center py-8">Loading versions…</div>
+              ) : versionList.length === 0 ? (
+                <div className="text-xs text-gray-500 text-center py-8">No saved versions yet.</div>
+              ) : (
+                versionList.map((v, i) => (
+                  <div key={v.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      {i === 0 && <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">Latest</span>}
+                      <span className="text-[10px] text-gray-500 ml-auto">{new Date(v.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400">{v.modelUsed ?? "Unknown model"}</p>
+                    {i > 0 && (
+                      <button onClick={() => handleRestoreVersion(v.id)}
+                        className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
+                        Restore this version
+                      </button>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -655,18 +972,13 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
           </span>
         </div>
 
-        {availability === "taken" && (
-          <p className="mt-1.5 text-xs text-red-400">That name is already taken. Try something else.</p>
-        )}
-        {availability === "available" && (
-          <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>
-        )}
+        {availability === "taken" && <p className="mt-1.5 text-xs text-red-400">That name is already taken. Try something else.</p>}
+        {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
         {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
 
         <div className="mt-2 pt-3 text-xs text-gray-600 border-t border-white/5">
           <p className="font-medium text-gray-500 mb-1">Want a custom domain? (e.g. myapp.com)</p>
           <p>1. Add a CNAME record: <code className="bg-white/5 px-1 rounded">yourdomain.com → cname.thatcode.dev</code></p>
-          <p className="mt-0.5">2. Come back here and enter it — we'll link it automatically.</p>
           <p className="mt-0.5 text-gray-700">Custom domain support coming soon.</p>
         </div>
 
