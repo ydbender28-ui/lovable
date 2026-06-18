@@ -7,8 +7,10 @@ import { type AgentTool, type ToolParam } from "@/lib/agentTools";
 
 type Agent = {
   id: string; name: string; description: string | null; systemPrompt: string;
-  model: string; avatar: string; slug: string; public: boolean; tools: string;
+  model: string; avatar: string; slug: string; public: boolean; tools: string; knowledge: string;
 };
+
+type KnowledgeItem = { id: string; title: string; content: string };
 
 type TextBlock = { type: "text"; text: string };
 type ToolStartBlock = { type: "tool_start"; name: string; description: string; input: Record<string, unknown> };
@@ -238,11 +240,14 @@ function ToolEditor({ tool, onChange, onDelete }: {
 // ── Main workspace ──────────────────────────────────────────────────────────
 export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
   const [agent, setAgent] = useState(initial);
-  const [panel, setPanel] = useState<"chat" | "settings" | "tools" | "share">("chat");
+  const [panel, setPanel] = useState<"chat" | "teach" | "tools" | "share">("chat");
   const [draft, setDraft] = useState(initial);
   const [tools, setTools] = useState<AgentTool[]>(JSON.parse(initial.tools || "[]"));
+  const [knowledge, setKnowledge] = useState<KnowledgeItem[]>(JSON.parse(initial.knowledge || "[]"));
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+  const [promptDescription, setPromptDescription] = useState("");
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -267,13 +272,38 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(tools),
         }),
+        fetch(`/api/agents/${agent.id}/knowledge`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(knowledge),
+        }),
       ]);
-      setAgent({ ...draft, tools: JSON.stringify(tools) });
+      setAgent({ ...draft, tools: JSON.stringify(tools), knowledge: JSON.stringify(knowledge) });
       setSaveMsg("Saved!");
       setTimeout(() => setSaveMsg(null), 2000);
     } finally {
       setSaving(false);
     }
+  }
+
+  async function generatePrompt() {
+    if (!promptDescription.trim()) return;
+    setGeneratingPrompt(true);
+    try {
+      const res = await fetch(`/api/agents/${agent.id}/generate-prompt`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: promptDescription }),
+      });
+      const data = await res.json();
+      if (data.prompt) setDraft(d => ({ ...d, systemPrompt: data.prompt }));
+    } finally {
+      setGeneratingPrompt(false);
+    }
+  }
+
+  function addKnowledge() {
+    setKnowledge(prev => [...prev, { id: `k_${Math.random().toString(36).slice(2, 8)}`, title: "New document", content: "" }]);
   }
 
   function addTool(template?: Partial<AgentTool>) {
@@ -409,7 +439,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
   const tabs = [
     { id: "chat", label: "Chat" },
-    { id: "settings", label: "Settings" },
+    { id: "teach", label: `Teach ${knowledge.length > 0 ? `(${knowledge.length})` : ""}` },
     { id: "tools", label: `Tools ${tools.length > 0 ? `(${tools.length})` : ""}` },
     { id: "share", label: "Share" },
   ] as const;
@@ -423,7 +453,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
         <span className="text-sm font-medium text-white truncate hidden sm:block">{agent.avatar} {agent.name}</span>
         <div className="ml-auto flex items-center gap-2 shrink-0">
           {saveMsg && <span className="text-xs text-green-400">{saveMsg}</span>}
-          {(panel === "settings" || panel === "tools") && (
+          {(panel === "teach" || panel === "tools") && (
             <button onClick={saveAll} disabled={saving}
               className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40">
               {saving ? "Saving…" : "Save"}
@@ -513,52 +543,161 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
         </div>
       )}
 
-      {/* Settings panel */}
-      {panel === "settings" && (
-        <div className="flex-1 overflow-y-auto p-5 max-w-lg space-y-5">
-          <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Avatar</label>
-            <div className="flex flex-wrap gap-2">
-              {AVATAR_OPTIONS.map(a => (
-                <button key={a} onClick={() => setDraft(d => ({ ...d, avatar: a }))}
-                  className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-white/5 hover:bg-white/10"}`}>
-                  {a}
-                </button>
+      {/* Teach panel */}
+      {panel === "teach" && (
+        <div className="flex-1 overflow-y-auto p-5 max-w-2xl space-y-6">
+
+          {/* Section 1: Identity */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">1</span>
+              <h3 className="text-sm font-medium text-white">Who is this agent?</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">Name</label>
+                <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40" />
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-500 mb-1 block">One-line description</label>
+                <input value={draft.description ?? ""} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
+                  placeholder="e.g. Sales assistant for ACME Corp"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-gray-500 mb-1 block">Avatar</label>
+              <div className="flex flex-wrap gap-2">
+                {AVATAR_OPTIONS.map(a => (
+                  <button key={a} onClick={() => setDraft(d => ({ ...d, avatar: a }))}
+                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-white/5 hover:bg-white/10"}`}>
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Section 2: Instructions */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">2</span>
+              <h3 className="text-sm font-medium text-white">How should it behave?</h3>
+            </div>
+
+            {/* AI prompt generator */}
+            <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-3">
+              <p className="text-xs font-medium text-indigo-300">✨ Generate instructions with AI</p>
+              <p className="text-[10px] text-gray-500">Describe what you want in plain English — AI will write professional instructions for you.</p>
+              <textarea value={promptDescription} onChange={e => setPromptDescription(e.target.value)}
+                placeholder={`e.g. "A sales assistant for my software company. It should qualify leads, explain our pricing plans (Basic $29/mo, Pro $99/mo, Enterprise custom), handle objections, and book demos. Should be friendly but professional. Never give discounts without manager approval."`}
+                rows={4}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-400/40 resize-none leading-relaxed" />
+              <button onClick={generatePrompt} disabled={generatingPrompt || !promptDescription.trim()}
+                className="rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 px-4 py-2 text-xs font-medium hover:bg-indigo-500/30 transition-colors disabled:opacity-40 flex items-center gap-2">
+                {generatingPrompt ? <><span className="h-3 w-3 rounded-full border border-indigo-400 border-t-transparent animate-spin" />Generating…</> : "✨ Generate instructions"}
+              </button>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-gray-500">Instructions (edit directly)</label>
+                <span className="text-[10px] text-gray-600">{draft.systemPrompt.length} chars</span>
+              </div>
+              <textarea value={draft.systemPrompt} onChange={e => setDraft(d => ({ ...d, systemPrompt: e.target.value }))}
+                rows={12}
+                placeholder={"You are a sales assistant for [Company].\n\nYou should:\n- Help customers understand our products\n- Answer pricing questions\n- Book demos when appropriate\n\nYou should NOT:\n- Give unauthorized discounts\n- Make promises you can't keep"}
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none font-mono leading-relaxed" />
+            </div>
+
+            <div>
+              <label className="text-[10px] text-gray-500 mb-1.5 block">AI model</label>
+              <div className="flex gap-2">
+                {MODELS.map(m => (
+                  <button key={m.id} onClick={() => setDraft(d => ({ ...d, model: m.id }))}
+                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+              <div>
+                <p className="text-sm text-white">Public link</p>
+                <p className="text-xs text-gray-500">{draft.public ? "Anyone with the link can chat" : "Only you"}</p>
+              </div>
+              <button onClick={() => setDraft(d => ({ ...d, public: !d.public }))}
+                className={`relative inline-flex h-5 w-9 rounded-full transition-colors shrink-0 ${draft.public ? "bg-fuchsia-500" : "bg-white/10"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${draft.public ? "translate-x-4" : "translate-x-0.5"}`} />
+              </button>
+            </div>
+          </section>
+
+          {/* Section 3: Knowledge base */}
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">3</span>
+              <h3 className="text-sm font-medium text-white">What does it know?</h3>
+              <button onClick={addKnowledge} className="ml-auto text-xs text-fuchsia-400 hover:text-fuchsia-300">+ Add</button>
+            </div>
+
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Paste anything — your product catalog, pricing table, FAQ, return policy, company info.
+              The agent reads this every time it answers and uses it to give accurate responses.
+            </p>
+
+            {knowledge.length === 0 && (
+              <div className="rounded-xl border border-dashed border-white/10 p-6 text-center space-y-3">
+                <p className="text-xs text-gray-600">No knowledge added yet.</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {[
+                    { title: "Pricing", content: "Basic plan: $29/mo — includes X, Y, Z\nPro plan: $99/mo — includes everything in Basic plus A, B, C\nEnterprise: Custom pricing, contact sales" },
+                    { title: "FAQ", content: "Q: How do I cancel?\nA: You can cancel anytime from your account settings.\n\nQ: Do you offer refunds?\nA: Yes, within 30 days of purchase." },
+                    { title: "Products", content: "Product 1: [Description, price, features]\nProduct 2: [Description, price, features]" },
+                    { title: "Company info", content: "Company name:\nFounded:\nWhat we do:\nContact: support@yourcompany.com" },
+                  ].map(template => (
+                    <button key={template.title} onClick={() => setKnowledge(prev => [...prev, { id: `k_${Math.random().toString(36).slice(2,8)}`, title: template.title, content: template.content }])}
+                      className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                      + {template.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {knowledge.map((item, i) => (
+                <div key={item.id} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                  <div className="flex items-center gap-2 px-3 pt-3 pb-2">
+                    <input value={item.title}
+                      onChange={e => setKnowledge(prev => prev.map((k, ki) => ki === i ? { ...k, title: e.target.value } : k))}
+                      className="flex-1 bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                      placeholder="Document title (e.g. Pricing, FAQ, Products)" />
+                    <button onClick={() => setKnowledge(prev => prev.filter((_, ki) => ki !== i))}
+                      className="text-gray-600 hover:text-red-400 text-sm px-1">×</button>
+                  </div>
+                  <textarea value={item.content}
+                    onChange={e => setKnowledge(prev => prev.map((k, ki) => ki === i ? { ...k, content: e.target.value } : k))}
+                    rows={8} placeholder={`Paste anything here — product details, pricing, policies, FAQs, company info...\n\nNo special formatting needed. Just write it naturally.`}
+                    className="w-full bg-transparent px-3 pb-3 text-xs text-gray-300 placeholder:text-gray-700 focus:outline-none resize-none leading-relaxed border-t border-white/5" />
+                  <div className="px-3 pb-2 text-[10px] text-gray-700">{item.content.length} characters · ~{Math.ceil(item.content.length / 4)} tokens</div>
+                </div>
               ))}
             </div>
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Name</label>
-            <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400/40" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Description</label>
-            <input value={draft.description ?? ""} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Instructions (system prompt)</label>
-            <textarea value={draft.systemPrompt} onChange={e => setDraft(d => ({ ...d, systemPrompt: e.target.value }))}
-              rows={10} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 resize-none font-mono leading-relaxed" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Model</label>
-            {MODELS.map(m => (
-              <button key={m.id} onClick={() => setDraft(d => ({ ...d, model: m.id }))}
-                className={`w-full mb-1.5 text-left rounded-xl border px-3 py-2 text-sm transition-colors ${draft.model === m.id ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>
-                {m.label}
+
+            {knowledge.length > 0 && (
+              <button onClick={addKnowledge} className="w-full rounded-xl border border-dashed border-white/10 text-gray-600 py-3 text-xs hover:text-gray-400 hover:border-white/20 transition-colors">
+                + Add another document
               </button>
-            ))}
-          </div>
-          <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
-            <div>
-              <p className="text-sm text-white">Public link</p>
-              <p className="text-xs text-gray-500">{draft.public ? "Anyone with the link can chat" : "Only you"}</p>
-            </div>
-            <button onClick={() => setDraft(d => ({ ...d, public: !d.public }))}
-              className={`relative inline-flex h-5 w-9 rounded-full transition-colors shrink-0 ${draft.public ? "bg-fuchsia-500" : "bg-white/10"}`}>
-              <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${draft.public ? "translate-x-4" : "translate-x-0.5"}`} />
+            )}
+          </section>
+
+          <div className="pb-8">
+            <button onClick={saveAll} disabled={saving}
+              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-3 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+              {saving ? "Saving…" : "Save changes"}
             </button>
           </div>
         </div>

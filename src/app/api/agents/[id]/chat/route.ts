@@ -25,6 +25,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const allTools: AgentTool[] = [...BUILTIN_TOOLS, ...userTools];
   const claudeTools = allTools.map(toClaudeTool);
 
+  // Inject knowledge base into system prompt
+  type KnowledgeItem = { id: string; title: string; content: string };
+  const knowledge: KnowledgeItem[] = JSON.parse(agent.knowledge || "[]");
+  const systemPrompt = knowledge.length > 0
+    ? `${agent.systemPrompt}\n\n---\nKNOWLEDGE BASE — use this information to answer questions accurately:\n\n${
+        knowledge.map(k => `### ${k.title}\n${k.content}`).join("\n\n")
+      }\n---`
+    : agent.systemPrompt;
+
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const encoder = new TextEncoder();
 
@@ -44,7 +53,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
           const response = await client.messages.create({
             model: agent.model,
             max_tokens: 4096,
-            system: agent.systemPrompt,
+            system: systemPrompt,
             tools: claudeTools,
             messages: anthropicMessages,
           });

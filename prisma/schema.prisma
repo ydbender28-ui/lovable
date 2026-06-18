@@ -32,6 +32,7 @@ model Agent {
   owner        User     @relation(fields: [ownerId], references: [id])
   public       Boolean  @default(true)
   tools        String   @default("[]") // JSON: AgentTool[]
+  knowledge    String   @default("[]") // JSON: { id, title, content }[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
