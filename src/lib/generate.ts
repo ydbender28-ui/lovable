@@ -26,12 +26,19 @@ function pickDesign(prompt: string) {
 
 const BASE_SYSTEM_PROMPT = `You are an expert React developer. Build exactly what the user asks — full, complete, production-quality apps with real data and working interactions.
 
-CRITICAL OUTPUT FORMAT — return ONLY this JSON object, nothing else, no markdown fences, no commentary:
-{"summary":"2-3 sentences describing what you built","files":{"index.html":"...","src/main.tsx":"...","src/App.tsx":"..."}}
+CRITICAL OUTPUT FORMAT — use EXACTLY this delimiter format, nothing else, no markdown fences:
 
-JSON ESCAPING (strictly required):
-- Escape ALL special chars in string values: " → \\", \\ → \\\\, newline → \\n, tab → \\t
-- Never put raw newlines inside a JSON string value
+SUMMARY: <2-3 sentences describing what you built>
+
+===FILE: index.html===
+<full file content>
+===FILE: src/main.tsx===
+<full file content>
+===FILE: src/App.tsx===
+<full file content>
+===END===
+
+Rules: no JSON, no code fences, no commentary outside the format above.
 
 FILE RULES:
 - index.html: minimal shell with <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0f;color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style>
@@ -244,22 +251,30 @@ async function generateWithGoogle(
   return { text, stopped, inputTokens, outputTokens };
 }
 
-// ─── JSON extraction ──────────────────────────────────────────────────────────
+// ─── Delimiter format parser ──────────────────────────────────────────────────
 
-function extractOutermostJson(text: string): string | null {
-  const start = text.indexOf("{");
-  if (start === -1) return null;
-  let depth = 0, inStr = false, esc = false;
-  for (let i = start; i < text.length; i++) {
-    const ch = text[i];
-    if (esc)          { esc = false; continue; }
-    if (ch === "\\" && inStr) { esc = true;  continue; }
-    if (ch === '"')   { inStr = !inStr; continue; }
-    if (inStr)        continue;
-    if (ch === "{")   depth++;
-    if (ch === "}")   { depth--; if (depth === 0) return text.slice(start, i + 1); }
+function parseDelimitedOutput(text: string): { summary: string; files: ProjectFiles } | null {
+  const files: ProjectFiles = {};
+
+  // Extract summary (text between SUMMARY: and first ===FILE:)
+  const summaryStart = text.indexOf("SUMMARY:");
+  const firstFile = text.indexOf("===FILE:");
+  const summaryRaw = summaryStart !== -1
+    ? text.slice(summaryStart + 8, firstFile !== -1 ? firstFile : undefined).trim()
+    : "";
+  const summary = summaryRaw || "Done! Check the preview.";
+
+  // Extract each file block ([\s\S] matches any char including newlines, works without 's' flag)
+  const fileRegex = /===FILE:\s*([^\n=]+?)===\n([\s\S]*?)(?====FILE:|===END===|$)/g;
+  let match;
+  while ((match = fileRegex.exec(text)) !== null) {
+    const path = match[1].trim();
+    const content = match[2].trimEnd();
+    if (path && content) files[path] = content;
   }
-  return null;
+
+  if (Object.keys(files).length === 0) return null;
+  return { summary, files };
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -303,12 +318,19 @@ Use these exact colors throughout the app. Make the design feel cohesive and int
     ? `\n\nEnvironment variables available (inject as const at top of App.tsx):\n${JSON.stringify(envVars)}`
     : "";
 
-  const existingStr = existingFiles ? JSON.stringify(existingFiles) : null;
-  const isEdit = !!existingStr && existingStr.length < 60000;
+  // Serialize existing files as delimited blocks so the model can read them without JSON confusion
+  let existingSection = "";
+  if (existingFiles && Object.keys(existingFiles).length > 0) {
+    const serialized = Object.entries(existingFiles)
+      .map(([path, content]) => `===FILE: ${path}===\n${content}`)
+      .join("\n");
+    if (serialized.length < 60000) existingSection = serialized;
+  }
+  const isEdit = !!existingSection;
 
   const userContent = isEdit
-    ? `CURRENT CODE:\n${existingStr}${envSection}\n\nEDIT REQUEST: ${prompt}\n\nReturn the complete updated JSON with all changes applied.`
-    : `BUILD REQUEST: ${prompt}${envSection}\n\nReturn the complete JSON with all 3 files.`;
+    ? `CURRENT CODE:\n${existingSection}${envSection}\n\nEDIT REQUEST: ${prompt}\n\nReturn the complete updated files in the delimiter format.`
+    : `BUILD REQUEST: ${prompt}${envSection}\n\nReturn all 3 files in the delimiter format.`;
 
   let text = "";
   let stopped = false;
@@ -363,24 +385,13 @@ Use these exact colors throughout the app. Make the design feel cohesive and int
     );
   }
 
-  const stripped = text.replace(/^```(?:json)?\n?/m, "").replace(/\n?```\s*$/m, "").trim();
-  const jsonStr  = extractOutermostJson(stripped) ?? extractOutermostJson(text);
+  const parsed = parseDelimitedOutput(text);
 
-  if (!jsonStr) {
-    throw new Error("Model did not return valid JSON. Try rephrasing your request.");
+  if (!parsed) {
+    throw new Error("Model did not return files in the expected format. Please try again.");
   }
 
-  let parsed: { summary?: string; files?: ProjectFiles };
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch {
-    throw new Error(
-      "The response contained code that couldn't be serialized. " +
-      "Try breaking the request into smaller steps — build the basic UI first, then add complex features."
-    );
-  }
-
-  if (!parsed.files?.["src/App.tsx"]) {
+  if (!parsed.files["src/App.tsx"]) {
     throw new Error("Model response was incomplete — missing App.tsx. Please try again.");
   }
   if (parsed.files["src/App.tsx"].length < 200) {
@@ -389,7 +400,7 @@ Use these exact colors throughout the app. Make the design feel cohesive and int
 
   return {
     files: parsed.files,
-    summary: parsed.summary ?? "Done! Check the preview.",
+    summary: parsed.summary,
     modelUsed: modelOpt.displayName,
     inputTokens,
     outputTokens,
