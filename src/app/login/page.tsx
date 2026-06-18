@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,10 +42,7 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl shadow-2xl">
-        <Link href="/" className="flex items-center gap-2 mb-8">
-          <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-fuchsia-500 to-indigo-500" />
-          <span className="font-semibold text-white text-sm">lovable<span className="text-fuchsia-400">.clone</span></span>
-        </Link>
+        <Link href="/" className="mb-8 block"><Logo /></Link>
 
         <h1 className="text-2xl font-semibold text-white mb-1">Welcome back</h1>
         <p className="text-gray-400 text-sm mb-6">Log in to continue building.</p>

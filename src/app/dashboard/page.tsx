@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import NewProjectButton from "./NewProjectButton";
 import SignOutButton from "@/components/SignOutButton";
+import Logo from "@/components/Logo";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -22,10 +23,7 @@ export default async function DashboardPage() {
 
       <header className="relative z-10 border-b border-white/10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-fuchsia-500 to-indigo-500" />
-            <span className="font-semibold text-white text-sm">lovable<span className="text-fuchsia-400">.clone</span></span>
-          </Link>
+          <Link href="/"><Logo /></Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-400">{session.user.email}</span>
             <SignOutButton />
