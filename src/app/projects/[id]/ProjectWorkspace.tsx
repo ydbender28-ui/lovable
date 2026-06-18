@@ -546,8 +546,13 @@ export default function ProjectWorkspace({
           )}
           <button onClick={exportHtml} disabled={!hasFiles}
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10 transition-colors disabled:opacity-40 hidden sm:block">
-            Export
+            HTML
           </button>
+          <a href={hasFiles ? `/api/projects/${projectId}/export-app` : undefined}
+            download
+            className={`text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block ${!hasFiles ? "pointer-events-none opacity-40" : ""}`}>
+            📱 Export App
+          </a>
         </div>
       </header>
 
