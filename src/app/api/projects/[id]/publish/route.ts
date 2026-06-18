@@ -11,11 +11,13 @@ function toSlug(name: string) {
     .slice(0, 40);
 }
 
-export async function POST(_req: Request, ctx: RouteContext<"/api/projects/[id]/publish">) {
+export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/publish">) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await ctx.params;
+  const body = await req.json().catch(() => ({}));
+  const requestedSlug = body.slug ? toSlug(body.slug) : null;
 
   const project = await prisma.project.findFirst({
     where: { id, ownerId: session.user.id },
@@ -28,10 +30,16 @@ export async function POST(_req: Request, ctx: RouteContext<"/api/projects/[id]/
   const files = JSON.parse(project.versions[0].files);
   const html = buildStandaloneHtml(files, project.name);
 
-  // Generate a unique slug
-  let slug = toSlug(project.name);
+  // Use requested slug if provided, else generate from project name
+  let slug = requestedSlug || toSlug(project.name);
+  if (!slug || slug.length < 2) slug = `app-${Math.random().toString(36).slice(2, 8)}`;
+
+  // Check if slug is taken by a different project
   const existing = await prisma.project.findUnique({ where: { publishSlug: slug } });
   if (existing && existing.id !== id) {
+    if (requestedSlug) {
+      return NextResponse.json({ error: `"${slug}" is already taken. Choose a different name.` }, { status: 409 });
+    }
     slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
   }
 

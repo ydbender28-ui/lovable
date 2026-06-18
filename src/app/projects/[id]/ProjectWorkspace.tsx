@@ -104,6 +104,7 @@ export default function ProjectWorkspace({
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
   const [publishing, setPublishing] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [envVars, setEnvVars] = useState<EnvVars>({});
 
   // Clarification / API key flow
@@ -156,6 +157,28 @@ export default function ProjectWorkspace({
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, []);
+
+  // Mobile: when coming back from another app, check if generation finished in DB
+  useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState !== "visible") return;
+      if (!loading) return;
+      // Poll for a new version — if generation completed server-side, pick it up
+      fetch(`/api/projects/${projectId}/latest-version`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.files && data.summary) {
+            setFiles(data.files);
+            setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: data.summary }]);
+            setMobileTab("preview");
+            setLoading(false);
+          }
+        })
+        .catch(() => {});
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [loading, projectId]);
 
   async function saveEnvVars(vars: EnvVars) {
     setEnvVars(vars);
@@ -243,14 +266,19 @@ export default function ProjectWorkspace({
     handlePromptSubmit(text);
   }
 
-  async function handlePublish() {
+  async function handlePublish(slug?: string) {
     setPublishing(true);
     setError(null);
     try {
-      const res = await fetch(`/api/projects/${projectId}/publish`, { method: "POST" });
+      const res = await fetch(`/api/projects/${projectId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Publish failed");
       setPublishSlug(data.url);
+      setShowPublishDialog(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Publish failed");
     } finally {
@@ -511,7 +539,7 @@ export default function ProjectWorkspace({
               <button onClick={handleUnpublish} className="text-xs text-gray-500 hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
             </div>
           ) : (
-            <button onClick={handlePublish} disabled={!hasFiles || publishing}
+            <button onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
               className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
               {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" /> Publishing...</> : "Publish"}
             </button>
@@ -543,6 +571,105 @@ export default function ProjectWorkspace({
               )}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Publish dialog */}
+      {showPublishDialog && (
+        <PublishDialog
+          projectId={projectId}
+          projectName={projectName}
+          publishing={publishing}
+          publishError={error}
+          onPublish={(slug) => handlePublish(slug)}
+          onClose={() => setShowPublishDialog(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Publish dialog ─────────────────────────────────────────────────────────────
+function PublishDialog({ projectId, projectName, publishing, publishError, onPublish, onClose }: {
+  projectId: string; projectName: string; publishing: boolean;
+  publishError: string | null; onPublish: (slug: string) => void; onClose: () => void;
+}) {
+  function defaultSlug(name: string) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+  }
+  const [slug, setSlug] = useState(defaultSlug(projectName));
+  const [checking, setChecking] = useState(false);
+  const [availability, setAvailability] = useState<"available" | "taken" | null>(null);
+  const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function sanitize(v: string) {
+    return v.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-").slice(0, 40);
+  }
+
+  function onChange(v: string) {
+    const s = sanitize(v);
+    setSlug(s);
+    setAvailability(null);
+    if (checkTimeout.current) clearTimeout(checkTimeout.current);
+    if (s.length < 2) return;
+    setChecking(true);
+    checkTimeout.current = setTimeout(async () => {
+      try {
+        const r = await fetch(`/api/projects/${projectId}/publish/check-slug?slug=${s}`);
+        const d = await r.json();
+        setAvailability(d.available ? "available" : "taken");
+      } catch { /* ignore */ }
+      setChecking(false);
+    }, 400);
+  }
+
+  const canPublish = slug.length >= 2 && availability !== "taken" && !publishing;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+        <h2 className="text-base font-semibold text-white mb-1">Publish your app</h2>
+        <p className="text-xs text-gray-500 mb-5">Choose your subdomain on thatcode.dev</p>
+
+        <div className="flex items-center rounded-xl border border-white/10 bg-white/5 focus-within:border-fuchsia-400/40 transition-colors overflow-hidden">
+          <span className="pl-3 pr-1 text-gray-500 text-sm shrink-0 select-none">thatcode.dev/</span>
+          <input
+            value={slug}
+            onChange={e => onChange(e.target.value)}
+            placeholder="your-app-name"
+            className="flex-1 bg-transparent py-2.5 pr-3 text-sm text-white focus:outline-none font-mono"
+            autoFocus
+          />
+          <span className="pr-3 text-xs shrink-0">
+            {checking && <span className="text-gray-500">…</span>}
+            {!checking && availability === "available" && <span className="text-green-400">✓</span>}
+            {!checking && availability === "taken" && <span className="text-red-400">✗</span>}
+          </span>
+        </div>
+
+        {availability === "taken" && (
+          <p className="mt-1.5 text-xs text-red-400">That name is already taken. Try something else.</p>
+        )}
+        {availability === "available" && (
+          <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>
+        )}
+        {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
+
+        <div className="mt-2 pt-3 text-xs text-gray-600 border-t border-white/5">
+          <p className="font-medium text-gray-500 mb-1">Want a custom domain? (e.g. myapp.com)</p>
+          <p>1. Add a CNAME record: <code className="bg-white/5 px-1 rounded">yourdomain.com → cname.thatcode.dev</code></p>
+          <p className="mt-0.5">2. Come back here and enter it — we'll link it automatically.</p>
+          <p className="mt-0.5 text-gray-700">Custom domain support coming soon.</p>
+        </div>
+
+        <div className="flex gap-2 mt-5">
+          <button onClick={() => onPublish(slug)} disabled={!canPublish}
+            className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+            {publishing ? "Publishing…" : "Publish →"}
+          </button>
+          <button onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 text-gray-400 px-4 py-2.5 text-sm hover:bg-white/10 transition-colors">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
