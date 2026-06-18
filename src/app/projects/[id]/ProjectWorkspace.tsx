@@ -246,7 +246,10 @@ export default function ProjectWorkspace({
             if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
-              setMessages((prev) => [...prev, { id: payload.tempMessageId ?? `msg-${Date.now()}`, role: "assistant", content: payload.summary ?? "Done! Check the preview." }]);
+              const meta = payload.modelUsed
+                ? `\n\n_${payload.modelUsed} · ${payload.complexity ?? ""} · $${(payload.estimatedCostUsd ?? 0).toFixed(4)}_`
+                : "";
+              setMessages((prev) => [...prev, { id: payload.tempMessageId ?? `msg-${Date.now()}`, role: "assistant", content: (payload.summary ?? "Done! Check the preview.") + meta }]);
               setMobileTab("preview");
             } else if (eventLine === "error") setError(payload.error ?? "Generation failed");
           } catch { /* ignore */ }

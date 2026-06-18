@@ -174,64 +174,136 @@ DESIGN SYSTEM (injected per request — follow exactly):
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
-type Complexity = "simple" | "medium" | "complex";
+export type Complexity = "simple" | "medium" | "complex";
 
-interface ModelOption {
+export interface ModelOption {
   provider: "anthropic" | "openai" | "google";
   model: string;
   displayName: string;
   maxTokens: number;
+  costPer1kInput: number;   // USD
+  costPer1kOutput: number;  // USD
 }
 
-// Ordered cheapest-first within each tier
-const ROUTING: Record<Complexity, ModelOption[]> = {
-  simple: [
-    { provider: "google",    model: "gemini-2.0-flash",        displayName: "Gemini Flash",  maxTokens: 8192 },
-    { provider: "openai",    model: "gpt-4o-mini",             displayName: "GPT-4o mini",   maxTokens: 16384 },
-    { provider: "anthropic", model: "claude-haiku-4-5-20251001", displayName: "Claude Haiku",  maxTokens: 16000 },
-  ],
-  medium: [
-    { provider: "openai",    model: "gpt-4o-mini",             displayName: "GPT-4o mini",   maxTokens: 16384 },
-    { provider: "google",    model: "gemini-2.0-flash",        displayName: "Gemini Flash",  maxTokens: 8192 },
-    { provider: "anthropic", model: "claude-haiku-4-5-20251001", displayName: "Claude Haiku",  maxTokens: 16000 },
-  ],
-  complex: [
-    { provider: "anthropic", model: "claude-sonnet-4-6",       displayName: "Claude Sonnet", maxTokens: 32000 },
-    { provider: "openai",    model: "gpt-4o",                  displayName: "GPT-4o",        maxTokens: 16384 },
-    { provider: "google",    model: "gemini-2.5-pro-preview-06-05", displayName: "Gemini Pro", maxTokens: 16384 },
-  ],
+// All known models with pricing
+export const MODELS: Record<string, ModelOption> = {
+  "claude-haiku-4-5-20251001": {
+    provider: "anthropic", model: "claude-haiku-4-5-20251001",
+    displayName: "Claude Haiku", maxTokens: 16000,
+    costPer1kInput: 0.0008, costPer1kOutput: 0.004,
+  },
+  "claude-sonnet-4-6": {
+    provider: "anthropic", model: "claude-sonnet-4-6",
+    displayName: "Claude Sonnet", maxTokens: 32000,
+    costPer1kInput: 0.003, costPer1kOutput: 0.015,
+  },
+  "gpt-4o-mini": {
+    provider: "openai", model: "gpt-4o-mini",
+    displayName: "GPT-4o mini", maxTokens: 16384,
+    costPer1kInput: 0.00015, costPer1kOutput: 0.0006,
+  },
+  "gpt-4o": {
+    provider: "openai", model: "gpt-4o",
+    displayName: "GPT-4o", maxTokens: 16384,
+    costPer1kInput: 0.005, costPer1kOutput: 0.015,
+  },
+  "gemini-2.0-flash": {
+    provider: "google", model: "gemini-2.0-flash",
+    displayName: "Gemini Flash", maxTokens: 8192,
+    costPer1kInput: 0.00010, costPer1kOutput: 0.00040,
+  },
+  "gemini-2.5-pro-preview-06-05": {
+    provider: "google", model: "gemini-2.5-pro-preview-06-05",
+    displayName: "Gemini Pro", maxTokens: 16384,
+    costPer1kInput: 0.00125, costPer1kOutput: 0.010,
+  },
 };
 
-function scoreComplexity(prompt: string, existingFiles: ProjectFiles | null): Complexity {
-  const t = prompt.toLowerCase();
-  const complexWords = [
-    "admin", "upload", "image", "photo", "file", "auth", "login", "signup",
-    "payment", "chart", "graph", "dashboard", "crud", "real-time", "drag", "drop",
-    "animation", "3d", "canvas", "video", "audio", "websocket", "api key",
-    "multi", "multi-step", "wizard", "workflow", "notification", "email",
-  ];
-  const mediumWords = [
-    "search", "filter", "sort", "pagination", "modal", "carousel", "table",
-    "form", "calendar", "map", "todo", "kanban", "analytics", "report",
-  ];
-  const complexCount = complexWords.filter(w => t.includes(w)).length;
-  const mediumCount  = mediumWords.filter(w => t.includes(w)).length;
+// What each complexity level scores
+export type ComplexityScore = {
+  complexity: Complexity;
+  score: number;
+  reasons: string[];
+};
 
-  // Large existing codebase → complex
-  if (existingFiles && JSON.stringify(existingFiles).length > 8000) return "complex";
-  if (complexCount >= 2 || prompt.length > 250) return "complex";
-  if (complexCount >= 1 || mediumCount >= 2 || prompt.length > 100) return "medium";
-  return "simple";
+export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | null): ComplexityScore {
+  const t = prompt.toLowerCase();
+  const reasons: string[] = [];
+  let score = 0;
+
+  // Editing existing large codebase
+  const existingSize = existingFiles ? JSON.stringify(existingFiles).length : 0;
+  if (existingSize > 12000) { score += 4; reasons.push(`large existing app (${Math.round(existingSize/1000)}KB)`); }
+  else if (existingSize > 4000) { score += 2; reasons.push(`existing app (${Math.round(existingSize/1000)}KB)`); }
+  else if (existingSize > 0) { score += 1; reasons.push("editing existing app"); }
+
+  // Prompt length signal
+  if (prompt.length > 300) { score += 2; reasons.push("long detailed prompt"); }
+  else if (prompt.length > 150) { score += 1; reasons.push("medium prompt length"); }
+
+  // Complex feature keywords
+  const complexKeywords: [string, number][] = [
+    ["dashboard", 2], ["admin", 2], ["authentication", 3], ["login", 2], ["signup", 2],
+    ["payment", 3], ["stripe", 3], ["checkout", 2], ["subscription", 2],
+    ["chart", 2], ["graph", 2], ["analytics", 2], ["real-time", 3], ["websocket", 3],
+    ["drag", 2], ["drop", 2], ["kanban", 2], ["calendar", 2],
+    ["upload", 2], ["image", 1], ["file", 1], ["video", 2], ["audio", 2],
+    ["crud", 2], ["database", 2], ["api", 1], ["multi-step", 2], ["wizard", 2],
+    ["animation", 1], ["3d", 3], ["canvas", 2], ["map", 2],
+    ["notification", 1], ["email", 1], ["workflow", 2],
+  ];
+  for (const [kw, pts] of complexKeywords) {
+    if (t.includes(kw)) { score += pts; reasons.push(kw); }
+  }
+
+  // Medium feature keywords (if no complex ones already detected)
+  const mediumKeywords = ["search", "filter", "sort", "table", "form", "modal", "carousel", "pagination", "todo", "report"];
+  for (const kw of mediumKeywords) {
+    if (t.includes(kw)) { score += 1; reasons.push(kw); }
+  }
+
+  let complexity: Complexity;
+  if (score >= 6) complexity = "complex";
+  else if (score >= 2) complexity = "medium";
+  else complexity = "simple";
+
+  return { complexity, score, reasons };
+}
+
+// Priority order per complexity — Claude-first since it's most reliable
+// Gemini/OpenAI are tried only if key exists AND hasn't been failing
+const ROUTING: Record<Complexity, string[]> = {
+  simple:  ["claude-haiku-4-5-20251001", "gemini-2.0-flash", "gpt-4o-mini"],
+  medium:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",      "gemini-2.0-flash"],
+  complex: ["claude-sonnet-4-6",         "gpt-4o",           "gemini-2.5-pro-preview-06-05"],
+};
+
+// Track which providers have failed this process lifetime to skip them faster
+const _failedProviders = new Set<string>();
+
+function hasKey(provider: ModelOption["provider"]) {
+  if (provider === "anthropic") return !!process.env.ANTHROPIC_API_KEY;
+  if (provider === "openai")    return !!process.env.OPENAI_API_KEY;
+  if (provider === "google")    return !!process.env.GOOGLE_AI_API_KEY;
+  return false;
 }
 
 function pickModel(complexity: Complexity): ModelOption {
-  for (const opt of ROUTING[complexity]) {
-    if (opt.provider === "anthropic" && process.env.ANTHROPIC_API_KEY) return opt;
-    if (opt.provider === "openai"    && process.env.OPENAI_API_KEY)    return opt;
-    if (opt.provider === "google"    && process.env.GOOGLE_AI_API_KEY) return opt;
+  for (const modelId of ROUTING[complexity]) {
+    const opt = MODELS[modelId];
+    if (!opt) continue;
+    if (!hasKey(opt.provider)) continue;
+    if (_failedProviders.has(opt.provider)) continue;
+    return opt;
   }
-  // Fallback: Claude Sonnet (always available if the app is running)
-  return { provider: "anthropic", model: "claude-sonnet-4-6", displayName: "Claude Sonnet", maxTokens: 32000 };
+  // Hard fallback — Claude Sonnet always works if Anthropic key is set
+  return MODELS["claude-sonnet-4-6"];
+}
+
+export function estimateCost(modelId: string, inputTokens: number, outputTokens: number): number {
+  const m = MODELS[modelId];
+  if (!m) return 0;
+  return (inputTokens / 1000) * m.costPer1kInput + (outputTokens / 1000) * m.costPer1kOutput;
 }
 
 // ─── Provider adapters ────────────────────────────────────────────────────────
@@ -366,8 +438,11 @@ export interface GenerateResult {
   files: ProjectFiles;
   summary: string;
   modelUsed: string;
+  complexity: Complexity;
+  complexityReasons: string[];
   inputTokens: number;
   outputTokens: number;
+  estimatedCostUsd: number;
 }
 
 export async function generateProject(
@@ -377,8 +452,8 @@ export async function generateProject(
   onToken?: (text: string) => void,
   onStatus?: (text: string) => void
 ): Promise<GenerateResult> {
-  const complexity = scoreComplexity(prompt, existingFiles);
-  const modelOpt   = pickModel(complexity);
+  const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
+  let modelOpt = pickModel(complexity);
   const design     = pickDesign(prompt);
 
   const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace(
@@ -459,13 +534,16 @@ Make the entire layout and structure match this design system. It should look DR
       ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
   } catch {
-    // Provider failed — silently fall back to Claude Sonnet
-    const fallback = { provider: "anthropic" as const, model: "claude-sonnet-4-6", displayName: "Claude Sonnet", maxTokens: 32000 };
+    // Provider failed — mark it so future requests skip it immediately
+    _failedProviders.add(modelOpt.provider);
+    const fallback = MODELS["claude-sonnet-4-6"];
     if (modelOpt.provider !== "anthropic") {
       text = "";
       lastStatusIdx = -1;
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
-      modelOpt.displayName = fallback.displayName;
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
+        fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback
+      ));
+      modelOpt = { ...fallback };
     } else {
       throw new Error("Generation failed. Please try again.");
     }
@@ -495,8 +573,11 @@ Make the entire layout and structure match this design system. It should look DR
     files: parsed.files,
     summary: parsed.summary,
     modelUsed: modelOpt.displayName,
+    complexity,
+    complexityReasons,
     inputTokens,
     outputTokens,
+    estimatedCostUsd: estimateCost(modelOpt.model, inputTokens, outputTokens),
   };
 }
 

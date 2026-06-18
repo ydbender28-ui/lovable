@@ -46,7 +46,15 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
         // Send done immediately — don't wait for DB writes
         const tempMessageId = `msg-${Date.now()}`;
-        send("done", { files: result.files, summary: result.summary, tempMessageId });
+        send("done", {
+          files: result.files,
+          summary: result.summary,
+          tempMessageId,
+          modelUsed: result.modelUsed,
+          complexity: result.complexity,
+          complexityReasons: result.complexityReasons,
+          estimatedCostUsd: result.estimatedCostUsd,
+        });
 
         // Write to DB in parallel after responding
         await Promise.all([

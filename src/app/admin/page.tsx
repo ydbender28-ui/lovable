@@ -1,23 +1,14 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { MODELS, estimateCost, scoreComplexity } from "@/lib/generate";
 
 const OWNER_EMAIL = "ydbender28@gmail.com";
 
-// Cost per 1M tokens in USD (approximate)
-const COST_PER_M: Record<string, { input: number; output: number }> = {
-  "Claude Haiku":  { input: 0.25,  output: 1.25  },
-  "Claude Sonnet": { input: 3.00,  output: 15.00 },
-  "GPT-4o mini":   { input: 0.15,  output: 0.60  },
-  "GPT-4o":        { input: 2.50,  output: 10.00 },
-  "Gemini Flash":  { input: 0.075, output: 0.30  },
-  "Gemini Pro":    { input: 1.25,  output: 5.00  },
-};
-
-function calcCost(model: string, inputTokens: number, outputTokens: number): number {
-  const rates = COST_PER_M[model];
-  if (!rates) return 0;
-  return (inputTokens / 1_000_000) * rates.input + (outputTokens / 1_000_000) * rates.output;
+function calcCost(modelDisplay: string, inputTokens: number, outputTokens: number): number {
+  const found = Object.values(MODELS).find(m => m.displayName === modelDisplay);
+  if (!found) return 0;
+  return estimateCost(found.model, inputTokens, outputTokens);
 }
 
 function fmt(n: number) {
@@ -71,6 +62,91 @@ export default async function AdminPage() {
               <p className="text-xl font-semibold">{value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Routing logic explainer */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-300 mb-3">Model routing logic</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {(["simple", "medium", "complex"] as const).map(tier => {
+              const colors = { simple: "green", medium: "yellow", complex: "fuchsia" };
+              const c = colors[tier];
+              const example = {
+                simple: '"add a button", "change color", short edits',
+                medium: '"add search", "make a form", "add a table"',
+                complex: '"build a dashboard", "add auth", "payment checkout"',
+              }[tier];
+              const thresholds = {
+                simple: "score < 2",
+                medium: "score 2–5",
+                complex: "score ≥ 6",
+              }[tier];
+              // Find which model would be picked for this tier
+              const models = {
+                simple: ["Claude Haiku", "Gemini Flash", "GPT-4o mini"],
+                medium: ["Claude Haiku", "GPT-4o mini", "Gemini Flash"],
+                complex: ["Claude Sonnet", "GPT-4o", "Gemini Pro"],
+              }[tier];
+              return (
+                <div key={tier} className={`rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3`}>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${c === "green" ? "text-green-400" : c === "yellow" ? "text-yellow-400" : "text-fuchsia-400"}`}>{tier}</span>
+                    <span className="text-[10px] text-gray-600 font-mono ml-auto">{thresholds}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">{example}</p>
+                  <div className="space-y-1">
+                    {models.map((m, i) => (
+                      <div key={m} className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-600 w-3">{i + 1}.</span>
+                        <span className={`text-xs ${i === 0 ? "text-white font-medium" : "text-gray-500"}`}>{m}</span>
+                        {i === 0 && <span className="text-[10px] text-green-400 ml-auto">primary</span>}
+                        {i > 0 && <span className="text-[10px] text-gray-700 ml-auto">fallback</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-gray-600 mt-2">
+            Scoring: prompt length + keyword detection (dashboard+2, auth+3, payment+3, etc.). Each provider is tried in order; if it fails it&apos;s skipped for the rest of the session. Claude is always primary since it&apos;s most reliable.
+          </p>
+        </div>
+
+        {/* Live scoring demo */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-300 mb-3">How recent prompts were scored</h2>
+          <div className="rounded-xl border border-white/10 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
+                <tr>
+                  <th className="text-left px-4 py-3">Project</th>
+                  <th className="text-left px-4 py-3">Model used</th>
+                  <th className="text-right px-4 py-3">Input</th>
+                  <th className="text-right px-4 py-3">Output</th>
+                  <th className="text-right px-4 py-3">Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {versions.slice(0, 20).map((v) => {
+                  const cost = calcCost(v.modelUsed ?? "", v.inputTokens ?? 0, v.outputTokens ?? 0);
+                  const modelColor = (v.modelUsed ?? "").includes("Haiku") ? "text-green-400"
+                    : (v.modelUsed ?? "").includes("Sonnet") ? "text-fuchsia-400"
+                    : (v.modelUsed ?? "").includes("GPT") ? "text-blue-400"
+                    : "text-yellow-400";
+                  return (
+                    <tr key={v.id} className="hover:bg-white/[0.02]">
+                      <td className="px-4 py-3 font-medium truncate max-w-[200px]">{v.project.name}</td>
+                      <td className={`px-4 py-3 font-medium ${modelColor}`}>{v.modelUsed ?? "—"}</td>
+                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.inputTokens ?? 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.outputTokens ?? 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right font-mono text-xs">{cost < 0.0001 ? "<$0.0001" : `$${cost.toFixed(4)}`}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* By model */}
