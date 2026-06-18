@@ -125,9 +125,32 @@ FILE RULES:
 
 STYLING (mandatory):
 - ALL styles via inline style={{}} — never className with Tailwind/CSS files
-- Dark theme: bg #0a0a0f, cards rgba(255,255,255,0.05) border 1px solid rgba(255,255,255,0.1), accent #8b5cf6
-- Hover effects: onMouseEnter/onMouseLeave + useState per element
-- Transitions: transition:'all 0.2s'
+- Transitions: transition:'all 0.2s' on EVERY interactive element
+
+MODERN UI — NON-NEGOTIABLE RULES:
+Every app must look like a premium 2025 product. Follow these exactly:
+
+BUTTONS: Never plain gray. Primary = gradient: 'linear-gradient(135deg, accent, accent2)', borderRadius:10, padding:'10px 22px', fontWeight:600, boxShadow:'0 4px 15px accent+40', border:'none'. On hover: scale to 1.03, brighter shadow.
+INPUTS & SELECTS: background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:10, padding:'10px 14px', color:inherit, outline:'none'. On focus: border color = accent.
+CARDS: borderRadius:16, background:card color, border:'1px solid border color', boxShadow:'0 4px 24px rgba(0,0,0,0.2)', padding:'20px 24px'. Never flat zero-shadow cards.
+BADGES/TAGS: borderRadius:999, padding:'3px 10px', fontSize:11, fontWeight:600, uppercase. Use accent color with 20% opacity bg.
+TABLES: No raw HTML tables. Use divs with grid layout. Header row: fontWeight:700, fontSize:11, uppercase, letterSpacing:1, muted color. Alternating row bg or hover highlight.
+EMPTY STATES: Always show an icon (emoji) + heading + subtext when a list is empty. Never show a blank space.
+SIDEBAR (if present): fixed width 240px, full height, subtle border-right, nav items with rounded hover states (borderRadius:10, padding:'8px 12px'), active item = accent background.
+STAT CARDS: Large number (32px+, fontWeight:700), small label below (11px, uppercase, muted), optional trend indicator with color (green up, red down).
+MODALS: backdrop blur background (rgba(0,0,0,0.5)), centered white/dark card, borderRadius:20, padding:32, max-width:480px.
+GRADIENTS: Use subtle gradients on hero sections, stat numbers, and key headings. Never flat monotone sections.
+SPACING: Consistent rhythm — padding multiples of 8. Section gaps: 32-48px. Card gaps: 16-20px.
+TYPOGRAPHY: Never all same size. Clear hierarchy: page title 24-28px/700, section head 16-18px/600, body 14px/400, label 11-12px/500/uppercase.
+
+ABSOLUTELY NEVER:
+- Gray `#999` or `#ccc` borders on interactive elements
+- Plain unstyled `<select>` or `<input>` (always style them)
+- `background:'gray'` or `background:'#f0f0f0'` buttons
+- Zero box-shadow flat cards with no depth
+- Lorem ipsum or "Coming soon" placeholder text — use real realistic data
+- Walls of unstyled text with no visual hierarchy
+- Default blue underlined links
 
 HANDLING COMPLEX FEATURES:
 
