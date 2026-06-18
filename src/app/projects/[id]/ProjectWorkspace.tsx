@@ -80,9 +80,8 @@ export default function ProjectWorkspace({
   const [loadingStatus, setLoadingStatus] = useState("Thinking...");
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
-  const [modelUsed, setModelUsed] = useState<string | null>(null);
+  const [iframeError, setIframeError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
-  // Mobile tab: "chat" | "preview"
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
   const [publishing, setPublishing] = useState(false);
@@ -92,6 +91,7 @@ export default function ProjectWorkspace({
   const [newVal, setNewVal] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoFired = useRef(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
     if (initialPrompt && !autoFired.current && initialMessages.length === 0) {
@@ -116,13 +116,45 @@ export default function ProjectWorkspace({
     if (!loading) setLoadingStatus("Thinking...");
   }, [loading]);
 
+  // Wake lock — keep screen on while generating
+  useEffect(() => {
+    if (loading) {
+      if ("wakeLock" in navigator) {
+        navigator.wakeLock.request("screen").then((lock) => {
+          wakeLockRef.current = lock;
+        }).catch(() => {});
+      }
+    } else {
+      wakeLockRef.current?.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+  }, [loading]);
+
+  // Listen for errors posted from the preview iframe
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type === "preview-error") {
+        setIframeError(e.data.error as string);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  async function fixErrors() {
+    if (!iframeError) return;
+    const fixPrompt = `There is a JavaScript error in the app:\n\n${iframeError}\n\nFix this error completely.`;
+    setIframeError(null);
+    await runGenerate(fixPrompt);
+  }
+
   async function runGenerate(text: string) {
     const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
     setError(null);
+    setIframeError(null);
     setLastPrompt(text);
-    setModelUsed(null);
     try {
       const res = await fetch(`/api/projects/${projectId}/generate`, {
         method: "POST",
@@ -152,7 +184,6 @@ export default function ProjectWorkspace({
               setLoadingStatus(payload.text);
             } else if (eventLine === "done") {
               setFiles(payload.files);
-              if (payload.modelUsed) setModelUsed(payload.modelUsed);
               setMessages((prev) => [...prev, { id: payload.message.id, role: "assistant", content: payload.message.content }]);
               // Switch to preview on mobile after generation
               setMobileTab("preview");
@@ -287,8 +318,17 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
-        {!loading && modelUsed && (
-          <div className="text-[10px] text-gray-600 px-1">via {modelUsed}</div>
+        {iframeError && !loading && (
+          <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
+            <p className="font-medium">App error detected</p>
+            <p className="text-orange-400/80 line-clamp-2">{iframeError}</p>
+            <button
+              onClick={fixErrors}
+              className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium"
+            >
+              Fix errors →
+            </button>
+          </div>
         )}
         {error && (
           <div className="rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">

@@ -107,16 +107,12 @@ export function buildPublishHtml(
   <script>${reactScripts.react}</script>
   <script>${reactScripts.reactDom}</script>
   <script>
-    window.addEventListener('error',function(e){
-      var el=document.getElementById('__err');
-      el.style.display='block';
-      el.textContent='Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||'');
-    });
-    window.addEventListener('unhandledrejection',function(e){
-      var el=document.getElementById('__err');
-      el.style.display='block';
-      el.textContent='Unhandled promise rejection: '+(e.reason&&e.reason.message||e.reason||'unknown');
-    });
+    function __reportErr(msg){
+      var el=document.getElementById('__err');el.style.display='block';el.textContent=msg;
+      try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}
+    }
+    window.addEventListener('error',function(e){__reportErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
+    window.addEventListener('unhandledrejection',function(e){__reportErr('Unhandled rejection: '+(e.reason&&e.reason.message||String(e.reason)));});
     ${fullCode}
   </script>
 </body>
@@ -143,7 +139,7 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
   <div id="__err" style="display:none;position:fixed;inset:0;background:#1a0000;color:#ff8080;font:13px/1.6 monospace;padding:32px;z-index:9999;white-space:pre-wrap;overflow:auto;cursor:pointer" onclick="this.style.display='none'"></div>
   <script>
-    function showErr(msg){var el=document.getElementById('__err');el.style.display='block';el.textContent=msg;}
+    function showErr(msg){var el=document.getElementById('__err');el.style.display='block';el.textContent=msg;try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}}
     window.addEventListener('error',function(e){showErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
     window.addEventListener('unhandledrejection',function(e){showErr('Promise error: '+(e.reason&&e.reason.message||String(e.reason)));});
     setTimeout(function(){

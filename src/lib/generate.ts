@@ -312,7 +312,7 @@ export async function generateProject(
 Use these exact colors throughout the app. Make the design feel cohesive and intentional for this style.`
   );
 
-  onStatus?.(`Using ${modelOpt.displayName}…`);
+  onStatus?.("Starting generation…");
 
   const envSection = envVars && Object.keys(envVars).length > 0
     ? `\n\nEnvironment variables available (inject as const at top of App.tsx):\n${JSON.stringify(envVars)}`
@@ -337,12 +337,14 @@ Use these exact colors throughout the app. Make the design feel cohesive and int
   let inputTokens = 0, outputTokens = 0;
 
   const statusMap: [number, string][] = [
-    [200,   "Reading your request…"],
-    [800,   "Planning the layout…"],
-    [2000,  "Writing components…"],
-    [5000,  "Building interactions…"],
-    [10000, "Styling the UI…"],
-    [18000, "Almost done…"],
+    [100,   "Analyzing your request…"],
+    [500,   "Planning app structure…"],
+    [1200,  "Writing HTML shell…"],
+    [2500,  "Building React components…"],
+    [5000,  "Adding state & interactions…"],
+    [9000,  "Wiring up data & logic…"],
+    [15000, "Styling & polishing UI…"],
+    [22000, "Finalizing & cleaning up…"],
   ];
   let lastStatusIdx = -1;
   const tokenCallback = (token: string) => {
