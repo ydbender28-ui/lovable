@@ -18,8 +18,8 @@ export default auth((req) => {
   const isAuthed = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  const protectedPaths = ["/dashboard", "/projects"];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+  const protectedPaths = ["/dashboard", "/projects", "/agents"];
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p)) && !pathname.startsWith("/a/");
 
   if (isProtected && !isAuthed) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
