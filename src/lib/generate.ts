@@ -209,7 +209,7 @@ export const MODELS: Record<string, ModelOption> = {
   },
   "gemini-2.5-flash": {
     provider: "google", model: "gemini-2.5-flash",
-    displayName: "Gemini 2.5 Flash", maxTokens: 8192,
+    displayName: "Gemini 2.5 Flash", maxTokens: 32000,
     costPer1kInput: 0.00015, costPer1kOutput: 0.00060,
   },
 };
