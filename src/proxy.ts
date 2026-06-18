@@ -2,6 +2,19 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
+  const host = req.headers.get("host") ?? "";
+  const hostname = host.split(":")[0];
+
+  // Route *.thatcode.dev subdomains to /p/[slug]
+  if (hostname.endsWith(".thatcode.dev")) {
+    const subdomain = hostname.replace(/\.thatcode\.dev$/, "");
+    if (subdomain && subdomain !== "www") {
+      const url = req.nextUrl.clone();
+      url.pathname = `/p/${subdomain}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   const isAuthed = !!req.auth;
   const { pathname } = req.nextUrl;
 
@@ -17,5 +30,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/projects/:path*"],
+  matcher: ["/dashboard/:path*", "/projects/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
 };
