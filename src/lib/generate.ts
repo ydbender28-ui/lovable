@@ -5,21 +5,99 @@ export type ProjectFiles = Record<string, string>;
 // ─── Design seeds ─────────────────────────────────────────────────────────────
 
 const DESIGN_THEMES = [
-  { bg: "#0a0a0f", card: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)", accent: "#8b5cf6", accent2: "#6366f1", text: "#f4f4f5", muted: "#71717a", radius: "12px", style: "dark minimal" },
-  { bg: "#030712", card: "rgba(14,165,233,0.08)", border: "rgba(14,165,233,0.2)",  accent: "#0ea5e9", accent2: "#06b6d4", text: "#f0f9ff", muted: "#64748b", radius: "8px",  style: "dark blue tech" },
-  { bg: "#0d0f0a", card: "rgba(34,197,94,0.07)",  border: "rgba(34,197,94,0.15)", accent: "#22c55e", accent2: "#10b981", text: "#f0fdf4", muted: "#6b7280", radius: "6px",  style: "dark green terminal" },
-  { bg: "#0f0a0a", card: "rgba(239,68,68,0.07)",  border: "rgba(239,68,68,0.15)", accent: "#ef4444", accent2: "#f97316", text: "#fff1f2", muted: "#6b7280", radius: "10px", style: "dark red bold" },
-  { bg: "#ffffff", card: "#f8fafc",                border: "#e2e8f0",               accent: "#6366f1", accent2: "#8b5cf6", text: "#0f172a", muted: "#64748b", radius: "12px", style: "light clean" },
-  { bg: "#fafaf9", card: "#f5f5f4",                border: "#d6d3d1",               accent: "#0f172a", accent2: "#374151", text: "#1c1917", muted: "#78716c", radius: "4px",  style: "light minimal editorial" },
-  { bg: "#0f172a", card: "rgba(99,102,241,0.1)",  border: "rgba(99,102,241,0.25)", accent: "#a78bfa", accent2: "#818cf8", text: "#e2e8f0", muted: "#94a3b8", radius: "16px", style: "dark purple glass" },
-  { bg: "#18181b", card: "rgba(251,191,36,0.07)", border: "rgba(251,191,36,0.2)",  accent: "#fbbf24", accent2: "#f59e0b", text: "#fefce8", muted: "#a1a1aa", radius: "8px",  style: "dark gold premium" },
+  {
+    name: "dark-minimal",
+    bg: "#0a0a0f", card: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)",
+    accent: "#8b5cf6", accent2: "#6366f1", text: "#f4f4f5", muted: "#71717a", radius: "12px",
+    layout: "centered",
+    description: `Dark minimal — centered layout, sidebar navigation, generous whitespace.
+LAYOUT: sidebar nav (240px) + main content area. Nav items stacked vertically with icon + label.
+TYPOGRAPHY: font-size 13px base, 24px headings, tight letter-spacing on headings.
+CARDS: subtle blur backdrop-filter, very low opacity backgrounds.`,
+  },
+  {
+    name: "dark-tech",
+    bg: "#020817", card: "rgba(14,165,233,0.06)", border: "rgba(14,165,233,0.18)",
+    accent: "#0ea5e9", accent2: "#06b6d4", text: "#e2f3ff", muted: "#64748b", radius: "6px",
+    layout: "dashboard",
+    description: `Dark blue tech — dense dashboard, grid layout, data-heavy.
+LAYOUT: top nav + grid of stat cards (3-4 cols), tables with monospace data, compact 12px text.
+TYPOGRAPHY: monospace font for data (font-family:'Courier New',monospace), sans for labels.
+CARDS: solid colored header row, striped table rows, dot indicators.`,
+  },
+  {
+    name: "dark-terminal",
+    bg: "#0d1117", card: "rgba(34,197,94,0.05)", border: "rgba(34,197,94,0.12)",
+    accent: "#22c55e", accent2: "#10b981", text: "#c9d1d9", muted: "#6b7280", radius: "4px",
+    layout: "terminal",
+    description: `Dark terminal — hacker/dev aesthetic, monospace everything, command-line inspired.
+LAYOUT: full-width, no sidebar, content in terminal-style panels. Prefix labels with > or $.
+TYPOGRAPHY: font-family:'Courier New',monospace for ALL text. 13px base.
+CARDS: border-left:3px solid accent, no border-radius, plain solid borders.`,
+  },
+  {
+    name: "dark-bold",
+    bg: "#09090b", card: "#18181b", border: "#27272a",
+    accent: "#f97316", accent2: "#ef4444", text: "#fafafa", muted: "#a1a1aa", radius: "16px",
+    layout: "bold",
+    description: `Dark bold — large typography, expressive, magazine-like.
+LAYOUT: hero section with huge headline (64px+), full-width sections, alternating left/right content.
+TYPOGRAPHY: font-weight:900, font-size:56px+ for heroes, lots of visual contrast.
+CARDS: large rounded corners (24px), gradient backgrounds, prominent CTAs.`,
+  },
+  {
+    name: "light-clean",
+    bg: "#ffffff", card: "#f8fafc", border: "#e2e8f0",
+    accent: "#6366f1", accent2: "#8b5cf6", text: "#0f172a", muted: "#64748b", radius: "10px",
+    layout: "saas",
+    description: `Light clean SaaS — professional, Notion/Linear inspired.
+LAYOUT: left sidebar (220px, white bg, light border) + main content, top breadcrumb bar.
+TYPOGRAPHY: Inter-like sans-serif, 14px base, 600 weight for headings, very clean hierarchy.
+CARDS: white bg, 1px border, subtle box-shadow, no heavy decorations.`,
+  },
+  {
+    name: "light-editorial",
+    bg: "#fafaf9", card: "#f5f5f4", border: "#d6d3d1",
+    accent: "#dc2626", accent2: "#ea580c", text: "#1c1917", muted: "#78716c", radius: "2px",
+    layout: "editorial",
+    description: `Light editorial — newspaper/magazine, strong typographic hierarchy.
+LAYOUT: 2-column editorial grid, wide left content + narrow right sidebar, ruled dividers.
+TYPOGRAPHY: serif font (Georgia,serif) for body, 800 weight sans-serif for headlines.
+CARDS: no rounded corners, thick left border accent, dividing lines instead of card shadows.`,
+  },
+  {
+    name: "dark-glass",
+    bg: "linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)",
+    card: "rgba(255,255,255,0.07)", border: "rgba(255,255,255,0.12)",
+    accent: "#a78bfa", accent2: "#818cf8", text: "#e2e8f0", muted: "#94a3b8", radius: "20px",
+    layout: "glass",
+    description: `Dark purple glass — glassmorphism, floating cards, gradient background.
+LAYOUT: centered floating cards, gradient mesh background, cards with blur effect.
+CSS: backdrop-filter:blur(20px) on all cards, background must be the gradient string above.
+TYPOGRAPHY: 15px base, light font-weight:300 for body, 700 for headings.
+CARDS: rgba white background + blur, large rounded corners (20-28px), subtle glow shadows.`,
+  },
+  {
+    name: "dark-premium",
+    bg: "#0c0a00", card: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.15)",
+    accent: "#fbbf24", accent2: "#f59e0b", text: "#fef9c3", muted: "#a1a1aa", radius: "8px",
+    layout: "premium",
+    description: `Dark gold premium — luxury, high-end, financial/crypto aesthetic.
+LAYOUT: centered max-width 900px, prominent hero metric (huge number center), stacked sections.
+TYPOGRAPHY: uppercase labels with letter-spacing:4px, thin font-weight:200 for large numbers.
+CARDS: very dark bg, gold border-bottom:2px solid accent, minimalist data display.`,
+  },
 ] as const;
 
+let _lastThemeIdx = -1;
 function pickDesign(prompt: string) {
-  // Hash the prompt so same prompt gets same theme, but different prompts get different themes
+  // Use prompt hash as seed but always pick differently from last time
   let h = 0;
   for (let i = 0; i < prompt.length; i++) h = ((h << 5) - h + prompt.charCodeAt(i)) | 0;
-  return DESIGN_THEMES[Math.abs(h) % DESIGN_THEMES.length];
+  let idx = Math.abs(h) % DESIGN_THEMES.length;
+  if (idx === _lastThemeIdx) idx = (idx + 1) % DESIGN_THEMES.length;
+  _lastThemeIdx = idx;
+  return DESIGN_THEMES[idx];
 }
 
 // ─── System prompt ────────────────────────────────────────────────────────────
@@ -85,6 +163,11 @@ QUALITY BAR:
 - Mobile-responsive using flexbox wrap and min-width
 - Working forms with validation and feedback
 - NO placeholders, NO TODOs, NO stub functions — implement everything completely
+
+SECURITY — CRITICAL:
+- NEVER display passwords, admin credentials, secret codes, access instructions, or how to reach hidden/admin features in ANY visible UI text, labels, tooltips, or comments rendered on screen.
+- Secret/admin access MUST use only invisible triggers: e.g., clicking the logo 5 times, a keyboard shortcut like Ctrl+Shift+A, or a hidden element. Never render text like "Admin password:", "To access admin:", "Secret code:", etc.
+- If asked to build an admin panel, implement it with a hidden trigger and a password check in state — but NEVER show the password or instructions in the rendered output.
 
 DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
@@ -300,16 +383,17 @@ export async function generateProject(
 
   const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace(
     "{{DESIGN_INJECTION}}",
-    `Style: ${design.style}
+    `${design.description}
+COLORS (use exactly):
 - body background: ${design.bg}
-- card/surface background: ${design.card}
-- border color: ${design.border}
+- card/surface: ${design.card}
+- border: ${design.border}
 - primary accent: ${design.accent}
 - secondary accent: ${design.accent2}
-- main text: ${design.text}
+- text: ${design.text}
 - muted text: ${design.muted}
 - border-radius: ${design.radius}
-Use these exact colors throughout the app. Make the design feel cohesive and intentional for this style.`
+Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`
   );
 
   onStatus?.("Starting generation…");
@@ -367,16 +451,16 @@ Use these exact colors throughout the app. Make the design feel cohesive and int
     } else {
       ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
-  } catch (err) {
-    // Provider failed — fall back to Claude Sonnet
+  } catch {
+    // Provider failed — silently fall back to Claude Sonnet
     const fallback = { provider: "anthropic" as const, model: "claude-sonnet-4-6", displayName: "Claude Sonnet", maxTokens: 32000 };
     if (modelOpt.provider !== "anthropic") {
-      onStatus?.(`${modelOpt.displayName} failed, retrying with ${fallback.displayName}…`);
       text = "";
+      lastStatusIdx = -1;
       ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
       modelOpt.displayName = fallback.displayName;
     } else {
-      throw err;
+      throw new Error("Generation failed. Please try again.");
     }
   }
 

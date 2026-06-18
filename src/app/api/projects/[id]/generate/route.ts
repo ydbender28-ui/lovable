@@ -7,7 +7,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
 
   const { id } = await ctx.params;
-  const { prompt } = await req.json();
+  const body = await req.json();
+  const { prompt, envVars: bodyEnvVars } = body;
 
   if (!prompt || typeof prompt !== "string") {
     return new Response("Prompt is required", { status: 400 });
@@ -23,7 +24,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   await prisma.message.create({ data: { projectId: id, role: "user", content: prompt } });
 
   const existingFiles = project.versions[0] ? JSON.parse(project.versions[0].files) : null;
-  const envVars = project.envVars ? JSON.parse(project.envVars) : null;
+  // Use env vars from request body if provided (client may have just saved new keys), else fall back to DB
+  const envVars = bodyEnvVars ?? (project.envVars ? JSON.parse(project.envVars) : null);
 
   const encoder = new TextEncoder();
 
