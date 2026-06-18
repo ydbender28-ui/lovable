@@ -184,7 +184,7 @@ export default function ProjectWorkspace({
               setLoadingStatus(payload.text);
             } else if (eventLine === "done") {
               setFiles(payload.files);
-              setMessages((prev) => [...prev, { id: payload.message.id, role: "assistant", content: payload.message.content }]);
+              setMessages((prev) => [...prev, { id: payload.tempMessageId ?? `msg-${Date.now()}`, role: "assistant", content: payload.summary ?? "Done! Check the preview." }]);
               // Switch to preview on mobile after generation
               setMobileTab("preview");
             } else if (eventLine === "error") {

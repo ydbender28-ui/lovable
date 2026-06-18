@@ -42,23 +42,24 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           (text) => send("status", { text })
         );
 
-        const version = await prisma.version.create({
-          data: {
-            projectId: id,
-            files: JSON.stringify(result.files),
-            modelUsed: result.modelUsed,
-            inputTokens: result.inputTokens,
-            outputTokens: result.outputTokens,
-          },
-        });
+        // Send done immediately — don't wait for DB writes
+        const tempMessageId = `msg-${Date.now()}`;
+        send("done", { files: result.files, summary: result.summary, tempMessageId });
 
-        const assistantMessage = await prisma.message.create({
-          data: { projectId: id, role: "assistant", content: result.summary },
-        });
-
-        await prisma.project.update({ where: { id }, data: { updatedAt: new Date() } });
-
-        send("done", { files: result.files, version, message: assistantMessage, modelUsed: result.modelUsed });
+        // Write to DB in parallel after responding
+        await Promise.all([
+          prisma.version.create({
+            data: {
+              projectId: id,
+              files: JSON.stringify(result.files),
+              modelUsed: result.modelUsed,
+              inputTokens: result.inputTokens,
+              outputTokens: result.outputTokens,
+            },
+          }),
+          prisma.message.create({ data: { projectId: id, role: "assistant", content: result.summary } }),
+          prisma.project.update({ where: { id }, data: { updatedAt: new Date() } }),
+        ]);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Generation failed";
         await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });
