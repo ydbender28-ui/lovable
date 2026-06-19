@@ -465,14 +465,14 @@ export default function ProjectWorkspace({
     handlePromptSubmit(text);
   }
 
-  async function handlePublish(slug?: string) {
+  async function handlePublish(slug?: string, customDomain?: string, password?: string) {
     setPublishing(true);
     setError(null);
     try {
       const res = await fetch(`/api/projects/${projectId}/publish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, customDomain, password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Publish failed");
@@ -883,7 +883,7 @@ export default function ProjectWorkspace({
           projectName={projectName}
           publishing={publishing}
           publishError={error}
-          onPublish={(slug) => handlePublish(slug)}
+          onPublish={(slug, customDomain, password) => handlePublish(slug, customDomain, password)}
           onClose={() => setShowPublishDialog(false)}
         />
       )}
@@ -929,7 +929,7 @@ export default function ProjectWorkspace({
 // ── Publish dialog ─────────────────────────────────────────────────────────────
 function PublishDialog({ projectId, projectName, publishing, publishError, onPublish, onClose }: {
   projectId: string; projectName: string; publishing: boolean;
-  publishError: string | null; onPublish: (slug: string) => void; onClose: () => void;
+  publishError: string | null; onPublish: (slug: string, customDomain?: string, password?: string) => void; onClose: () => void;
 }) {
   function defaultSlug(name: string) {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
@@ -937,6 +937,9 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
   const [slug, setSlug] = useState(defaultSlug(projectName));
   const [checking, setChecking] = useState(false);
   const [availability, setAvailability] = useState<"available" | "taken" | null>(null);
+  const [customDomain, setCustomDomain] = useState("");
+  const [password, setPassword] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function sanitize(v: string) {
@@ -988,14 +991,42 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
         {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
         {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
 
-        <div className="mt-2 pt-3 text-xs text-gray-600 border-t border-white/5">
-          <p className="font-medium text-gray-500 mb-1">Want a custom domain? (e.g. myapp.com)</p>
-          <p>1. Add a CNAME record: <code className="bg-white/5 px-1 rounded">yourdomain.com → cname.thatcode.dev</code></p>
-          <p className="mt-0.5 text-gray-700">Custom domain support coming soon.</p>
-        </div>
+        <button onClick={() => setShowAdvanced(v => !v)} className="mt-4 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
+          <span>{showAdvanced ? "▾" : "▸"}</span> Advanced options
+        </button>
+
+        {showAdvanced && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Custom domain (optional)</label>
+              <input
+                value={customDomain}
+                onChange={e => setCustomDomain(e.target.value.trim().toLowerCase().replace(/^https?:\/\//, ""))}
+                placeholder="myapp.com"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 transition-colors font-mono"
+              />
+              {customDomain && (
+                <p className="mt-1.5 text-[11px] text-gray-600 space-y-0.5">
+                  <span className="block">Add a CNAME DNS record at your registrar:</span>
+                  <code className="bg-white/5 px-1.5 py-0.5 rounded text-gray-400">{customDomain} → cname.vercel-dns.com</code>
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Password protect (optional)</label>
+              <input
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Leave blank for public access"
+                type="password"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 transition-colors"
+              />
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 mt-5">
-          <button onClick={() => onPublish(slug)} disabled={!canPublish}
+          <button onClick={() => onPublish(slug, customDomain || undefined, password || undefined)} disabled={!canPublish}
             className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
             {publishing ? "Publishing…" : "Publish →"}
           </button>

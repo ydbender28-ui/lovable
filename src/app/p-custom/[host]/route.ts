@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-function passwordGate(slug: string, projectName: string) {
+function passwordGate(host: string, projectName: string) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${projectName}</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px;width:360px;text-align:center}
@@ -16,43 +16,40 @@ input:focus{border-color:#8b5cf6}button{width:100%;background:linear-gradient(13
 <script>
 function check(){
   const pw=document.getElementById('pw').value;
-  fetch('/p/${slug}?pw='+encodeURIComponent(pw)).then(r=>{
-    if(r.ok&&r.headers.get('x-pw-ok')==='1'){sessionStorage.setItem('pw_${slug}',pw);location.reload()}
+  fetch(location.href+'?pw='+encodeURIComponent(pw)).then(r=>{
+    if(r.ok&&r.headers.get('x-pw-ok')==='1'){sessionStorage.setItem('pw_custom',pw);location.reload()}
     else{document.getElementById('err').style.display='block'}
   })
 }
-const saved=sessionStorage.getItem('pw_${slug}');
-if(saved)fetch('/p/${slug}?pw='+encodeURIComponent(saved)).then(r=>{if(r.ok&&r.headers.get('x-pw-ok')==='1')document.getElementById('pw').value=saved});
+const saved=sessionStorage.getItem('pw_custom');
+if(saved)document.getElementById('pw').value=saved;
 </script></body></html>`;
 }
 
-export async function GET(req: Request, ctx: RouteContext<"/p/[slug]">) {
-  const { slug } = await ctx.params;
+export async function GET(req: Request, ctx: { params: Promise<{ host: string }> }) {
+  const { host } = await ctx.params;
+  const domain = decodeURIComponent(host);
   const url = new URL(req.url);
   const pwAttempt = url.searchParams.get("pw");
 
-  const project = await prisma.project.findUnique({ where: { publishSlug: slug } });
+  const project = await prisma.project.findFirst({ where: { customDomain: domain } });
 
   if (!project?.publishedHtml) {
     return new Response("<h1>Not found</h1>", { status: 404, headers: { "Content-Type": "text/html" } });
   }
 
-  // Password check
   if (project.publishPassword) {
     const correct = project.publishPassword === pwAttempt;
     if (pwAttempt !== null) {
-      // Checking password via fetch
       return correct
         ? new Response("ok", { headers: { "x-pw-ok": "1", "Content-Type": "text/plain" } })
         : new Response("bad", { status: 401, headers: { "Content-Type": "text/plain" } });
     }
-    // No pw provided — show gate
-    return new Response(passwordGate(slug, project.name), {
+    return new Response(passwordGate(domain, project.name), {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
   }
 
-  // Track visit (fire-and-forget)
   prisma.project.update({ where: { id: project.id }, data: { visitCount: { increment: 1 } } }).catch(() => {});
 
   return new Response(project.publishedHtml, {

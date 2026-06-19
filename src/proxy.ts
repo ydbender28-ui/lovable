@@ -15,6 +15,14 @@ export default auth((req) => {
     }
   }
 
+  // Route custom domains to /p/[slug] via /custom-domain/[host] lookup
+  const isKnownHost = hostname === "thatcode.dev" || hostname === "www.thatcode.dev" || hostname.endsWith(".thatcode.dev") || hostname === "localhost";
+  if (!isKnownHost && !hostname.endsWith(".vercel.app")) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/p-custom/${encodeURIComponent(hostname)}`;
+    return NextResponse.rewrite(url);
+  }
+
   const isAuthed = !!req.auth;
   const { pathname } = req.nextUrl;
 

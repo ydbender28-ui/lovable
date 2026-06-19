@@ -46,10 +46,13 @@ model Project {
   updatedAt     DateTime  @updatedAt
   messages      Message[]
   versions      Version[]
-  publishSlug   String?   @unique
-  publishedHtml String?
-  publishedAt   DateTime?
-  envVars       String?   // JSON: { KEY: VALUE }
+  publishSlug     String?   @unique
+  publishedHtml   String?
+  publishedAt     DateTime?
+  envVars         String?   // JSON: { KEY: VALUE }
+  customDomain    String?   @unique
+  publishPassword String?
+  visitCount      Int       @default(0)
 }
 
 model Message {
