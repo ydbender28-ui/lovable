@@ -223,7 +223,7 @@ export interface ModelOption {
 export const MODELS: Record<string, ModelOption> = {
   "claude-haiku-4-5-20251001": {
     provider: "anthropic", model: "claude-haiku-4-5-20251001",
-    displayName: "Claude Haiku", maxTokens: 16000,
+    displayName: "Claude Haiku", maxTokens: 32000,
     costPer1kInput: 0.0008, costPer1kOutput: 0.004,
   },
   "claude-sonnet-4-6": {
@@ -581,6 +581,17 @@ Make the entire layout and structure match this design system. It should look DR
     } else {
       throw new Error("Generation failed. Please try again.");
     }
+  }
+
+  // If output was cut off and we're not already on Sonnet, retry with Sonnet
+  if (stopped && modelOpt.model !== "claude-sonnet-4-6") {
+    const sonnet = MODELS["claude-sonnet-4-6"];
+    text = "";
+    lastStatusIdx = -1;
+    ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
+      sonnet.model, sonnet.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
+    ));
+    modelOpt = { ...sonnet };
   }
 
   if (stopped) {
