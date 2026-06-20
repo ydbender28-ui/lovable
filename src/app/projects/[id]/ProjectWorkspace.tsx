@@ -100,7 +100,7 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
 
   return (
     <div style={{
-      height: "100%", display: "flex", justifyContent: "center", alignItems: "flex-start",
+      flex: 1, minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start",
       background: isDevice ? "#080810" : "transparent",
       padding: isDevice ? "24px 16px" : "0",
       overflowY: isDevice ? "auto" : "hidden",
@@ -881,7 +881,7 @@ export default function ProjectWorkspace({
 
   // ── Preview panel ─────────────────────────────────────────────────────────────
   const previewPanel = (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col overflow-hidden" style={{ height: "100%" }}>
       <div className="flex items-center gap-1 px-3 py-2 border-b border-white/10 bg-[#0d0d14] shrink-0">
         {(["preview", "code"] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
@@ -912,7 +912,7 @@ export default function ProjectWorkspace({
           </a>
         )}
       </div>
-      <div className="flex-1 overflow-hidden relative">
+      <div style={{ flex: 1, minHeight: 0, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" }}>
         {/* Floating error banner over preview */}
         {iframeError && !loading && activeTab === "preview" && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
@@ -1019,8 +1019,8 @@ export default function ProjectWorkspace({
       </div>
 
       {/* Mobile */}
-      <div className="flex sm:hidden flex-1 overflow-hidden flex-col min-h-0">
-        <div className="flex-1 overflow-hidden min-h-0">{mobileTab === "chat" ? chatPanel : previewPanel}</div>
+      <div className="sm:hidden" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
+        <div style={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" }}>{mobileTab === "chat" ? chatPanel : previewPanel}</div>
         <div className="shrink-0 border-t border-white/10 bg-[#0c0c12] flex">
           {(["chat", "preview"] as const).map((tab) => (
             <button key={tab} onClick={() => setMobileTab(tab)}
