@@ -293,11 +293,25 @@ export default function ProjectWorkspace({
     // If user types a short fix command, inject full context so AI knows what to fix
     const isFix = /^fix(\s|$)/i.test(trimmed) || trimmed.toLowerCase() === "fix";
     if (isFix) {
-      const fixPrompt = iframeError
-        ? `Fix this JavaScript runtime error completely. Only fix the bug, do not change any app functionality:\n\n${iframeError}`
-        : `Fix any JavaScript errors or bugs in the current code so the app renders correctly. Return all files in the correct format.`;
+      // Try to read the error from the iframe DOM directly
+      let liveError = iframeError;
+      if (!liveError) {
+        try {
+          const iframes = document.querySelectorAll("iframe");
+          for (const f of iframes) {
+            const errEl = f.contentDocument?.getElementById("__err");
+            if (errEl && errEl.style.display !== "none" && errEl.textContent) {
+              liveError = errEl.textContent;
+              break;
+            }
+          }
+        } catch { /* cross-origin, ignore */ }
+      }
+      const fixPrompt = liveError
+        ? `Fix this JavaScript runtime error completely. Only fix the bug, do not change any app functionality:\n\n${liveError}\n\nCommon causes: using CSS property names like 'uppercase' as bare JS identifiers — replace with textTransform:'uppercase' inside a style object.`
+        : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return all files in the ===FILE: path=== format.`;
       setIframeError(null);
-      runGenerate(fixPrompt);
+      runGenerate(fixPrompt, undefined, "claude-sonnet-4-6");
       return;
     }
 
@@ -327,7 +341,7 @@ export default function ProjectWorkspace({
     runGenerate(trimmed);
   }
 
-  async function runGenerate(text: string, extraEnv?: EnvVars) {
+  async function runGenerate(text: string, extraEnv?: EnvVars, forceModel?: string) {
     setFlow({ type: "idle" });
     setSuggestions([]);
     setShowUndo(false);
@@ -348,7 +362,7 @@ export default function ProjectWorkspace({
       const res = await fetch(`/api/projects/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, envVars: mergedEnv, ...imgPayload }),
+        body: JSON.stringify({ prompt: text, envVars: mergedEnv, forceModel, ...imgPayload }),
       });
       if (!res.ok) throw new Error("Generation failed");
       if (!res.body) throw new Error("No response body");

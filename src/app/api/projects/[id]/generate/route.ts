@@ -9,7 +9,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const { id } = await ctx.params;
   const body = await req.json();
-  const { prompt, envVars: bodyEnvVars, imageBase64, imageMimeType } = body;
+  const { prompt, envVars: bodyEnvVars, imageBase64, imageMimeType, forceModel } = body;
 
   if (!prompt || typeof prompt !== "string") {
     return new Response("Prompt is required", { status: 400 });
@@ -44,7 +44,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           undefined,
           (text) => send("status", { text }),
           imageBase64 ?? null,
-          imageMimeType
+          imageMimeType,
+          forceModel ?? undefined
         );
 
         // Auto-republish if already live — build new HTML before sending done

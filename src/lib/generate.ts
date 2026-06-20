@@ -501,10 +501,11 @@ export async function generateProject(
   onToken?: (text: string) => void,
   onStatus?: (text: string) => void,
   imageBase64?: string | null,
-  imageMimeType?: string
+  imageMimeType?: string,
+  forceModel?: string
 ): Promise<GenerateResult> {
   const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
-  let modelOpt = pickModel(complexity);
+  let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
   const design     = pickDesign(prompt);
 
   const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace(
