@@ -308,7 +308,7 @@ export default function ProjectWorkspace({
         } catch { /* cross-origin, ignore */ }
       }
       const fixPrompt = liveError
-        ? `Fix this JavaScript runtime error completely. Only fix the bug, do not change any app functionality:\n\n${liveError}\n\nCommon causes: using CSS property names like 'uppercase' as bare JS identifiers — replace with textTransform:'uppercase' inside a style object.`
+        ? `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${liveError}`
         : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return all files in the ===FILE: path=== format.`;
       setIframeError(null);
       runGenerate(fixPrompt, undefined, "claude-sonnet-4-6");
@@ -698,11 +698,11 @@ export default function ProjectWorkspace({
         )}
         {iframeError && !loading && (
           <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
-            <p className="font-medium">App error detected</p>
-            <p className="text-orange-400/80 line-clamp-2">{iframeError}</p>
-            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`Fix this JavaScript error completely:\n\n${e}`); }}
+            <p className="font-medium">Error detected</p>
+            <p className="text-orange-400/80">Type <strong>fix</strong> in the chat to repair it.</p>
+            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6"); }}
               className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium">
-              Fix errors →
+              Fix error →
             </button>
           </div>
         )}
@@ -823,9 +823,9 @@ export default function ProjectWorkspace({
         {iframeError && !loading && activeTab === "preview" && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/90 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
             <span className="text-red-400 text-sm shrink-0">⚠</span>
-            <p className="text-xs text-red-300 truncate flex-1">{iframeError.split("\n")[0]}</p>
+            <p className="text-xs text-red-300 truncate flex-1">Error detected — press Fix to repair</p>
             <button
-              onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`Fix this JavaScript runtime error completely. Do NOT change the app functionality, only fix the bug:\n\n${e}`); }}
+              onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6"); }}
               className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
             >
               Fix for free →
