@@ -89,7 +89,7 @@ export function buildPublishHtml(
 ): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
-  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e){var el=document.getElementById('__err');el.style.display='block';el.textContent='Render error: '+e.message+'\\n'+(e.stack||'');}render(){if(this.state.e)return null;return this.props.children;}}`;
+  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){__reportErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
   const renderCall = `${errorBoundary}\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__EB,null,React.createElement(${componentName},null)));`;
   const fullCode = (code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
 
@@ -103,12 +103,16 @@ export function buildPublishHtml(
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
-  <div id="__err" style="display:none;position:fixed;inset:0;background:#1a0000;color:#ff8080;font:13px/1.6 monospace;padding:32px;z-index:9999;white-space:pre-wrap;overflow:auto;cursor:pointer" onclick="this.style.display='none'"></div>
+  <div id="__err" style="display:none;position:fixed;inset:0;background:#0d0d0d;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;font-family:-apple-system,sans-serif" onclick="this.style.display='none'">
+    <div style="font-size:32px">⚠️</div>
+    <div style="color:#f87171;font-size:15px;font-weight:600">Error detected</div>
+    <div style="color:#6b7280;font-size:13px">Auto-fixing… or type <strong style="color:#a78bfa">fix</strong> in the chat</div>
+  </div>
   <script>${reactScripts.react}</script>
   <script>${reactScripts.reactDom}</script>
   <script>
     function __reportErr(msg){
-      var el=document.getElementById('__err');el.style.display='block';el.textContent=msg;
+      var el=document.getElementById('__err');el.style.display='flex';
       try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}
     }
     window.addEventListener('error',function(e){__reportErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
@@ -123,7 +127,7 @@ export function buildPublishHtml(
 export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
-  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e){var el=document.getElementById('__err');el.style.display='block';el.textContent='Render error: '+e.message+'\\n'+(e.stack||'');}render(){if(this.state.e)return null;return this.props.children;}}`;
+  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
   const renderCall = `${errorBoundary}\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__EB,null,React.createElement(${componentName},null)));`;
   const fullCode = (code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
 
@@ -137,9 +141,13 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
-  <div id="__err" style="display:none;position:fixed;inset:0;background:#1a0000;color:#ff8080;font:13px/1.6 monospace;padding:32px;z-index:9999;white-space:pre-wrap;overflow:auto;cursor:pointer" onclick="this.style.display='none'"></div>
+  <div id="__err" style="display:none;position:fixed;inset:0;background:#0d0d0d;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;font-family:-apple-system,sans-serif" onclick="this.style.display='none'">
+    <div style="font-size:32px">⚠️</div>
+    <div style="color:#f87171;font-size:15px;font-weight:600">Error detected</div>
+    <div style="color:#6b7280;font-size:13px">Auto-fixing… or type <strong style="color:#a78bfa">fix</strong> in the chat</div>
+  </div>
   <script>
-    function showErr(msg){var el=document.getElementById('__err');el.style.display='block';el.textContent=msg;try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}}
+    function showErr(msg){var el=document.getElementById('__err');el.style.display='flex';try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}}
     window.addEventListener('error',function(e){showErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
     window.addEventListener('unhandledrejection',function(e){showErr('Promise error: '+(e.reason&&e.reason.message||String(e.reason)));});
     setTimeout(function(){
