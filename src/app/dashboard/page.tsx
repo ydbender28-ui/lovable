@@ -6,7 +6,7 @@ import NewProjectButton from "./NewProjectButton";
 import NewAgentButton from "./NewAgentButton";
 import SignOutButton from "@/components/SignOutButton";
 import Logo from "@/components/Logo";
-import DeleteProjectButton from "./DeleteProjectButton";
+import ProjectCard from "./ProjectCard";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -52,26 +52,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {projects.map((project) => (
-                <div key={project.id} className="group relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur transition-all hover:border-fuchsia-400/40 hover:bg-white/[0.05] hover:-translate-y-0.5">
-                  <DeleteProjectButton projectId={project.id} />
-                  <Link href={`/projects/${project.id}`} className="block p-5">
-                    <div className="h-24 rounded-xl bg-gradient-to-br from-fuchsia-600/20 via-purple-600/15 to-indigo-600/20 mb-4 flex items-center justify-center">
-                      <span className="text-2xl font-semibold text-white/20 group-hover:text-white/30 transition-colors">
-                        {project.name.slice(0, 1).toUpperCase()}
-                      </span>
-                    </div>
-                    <h2 className="font-medium text-white truncate">{project.name}</h2>
-                    <p className="text-xs text-gray-500 mt-1.5">Updated {new Date(project.updatedAt).toLocaleString()}</p>
-                    {project.publishedAt && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-400">Live</span>
-                        {project.visitCount > 0 && (
-                          <span className="text-[10px] text-gray-500">{project.visitCount} visit{project.visitCount !== 1 ? "s" : ""}</span>
-                        )}
-                      </div>
-                    )}
-                  </Link>
-                </div>
+                <ProjectCard key={project.id} project={project} />
               ))}
             </div>
           )}
