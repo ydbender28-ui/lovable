@@ -6,7 +6,7 @@ import { buildStandaloneHtml } from "@/lib/buildHtml";
 async function addVercelDomain(domain: string): Promise<{ cname: string; error?: string }> {
   const token = process.env.VERCEL_TOKEN;
   const projectId = process.env.VERCEL_PROJECT_ID;
-  if (!token || !projectId) return { cname: "cname.vercel-dns.com" };
+  if (!token || !projectId) return { cname: "domains.thatcode.dev" };
 
   const res = await fetch(`https://api.vercel.com/v10/projects/${projectId}/domains`, {
     method: "POST",
@@ -16,7 +16,7 @@ async function addVercelDomain(domain: string): Promise<{ cname: string; error?:
   const data = await res.json();
 
   if (!res.ok && data.error?.code !== "domain_already_in_use") {
-    return { cname: "cname.vercel-dns.com", error: data.error?.message };
+    return { cname: "domains.thatcode.dev", error: data.error?.message };
   }
 
   // Get verification/DNS info
@@ -26,7 +26,7 @@ async function addVercelDomain(domain: string): Promise<{ cname: string; error?:
   const info = await infoRes.json();
   const cname = info.apexName === domain
     ? (info.verification?.[0]?.value ?? "76.76.21.21") // apex → A record
-    : "cname.vercel-dns.com";
+    : "domains.thatcode.dev";
 
   return { cname };
 }
@@ -84,7 +84,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
   }
 
   // Register custom domain with Vercel
-  let vercelCname = "cname.vercel-dns.com";
+  let vercelCname = "domains.thatcode.dev";
   let domainError: string | undefined;
   if (customDomain) {
     const result = await addVercelDomain(customDomain);

@@ -1206,7 +1206,7 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
               {customDomain && (
                 <p className="mt-1.5 text-[11px] text-gray-600 space-y-0.5">
                   <span className="block">Add a CNAME DNS record at your registrar:</span>
-                  <code className="bg-white/5 px-1.5 py-0.5 rounded text-gray-400">{customDomain} → cname.vercel-dns.com</code>
+                  <code className="bg-white/5 px-1.5 py-0.5 rounded text-gray-400">{customDomain} → domains.thatcode.dev</code>
                 </p>
               )}
             </div>
