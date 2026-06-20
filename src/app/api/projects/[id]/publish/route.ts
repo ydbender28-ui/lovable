@@ -24,11 +24,12 @@ async function addVercelDomain(domain: string): Promise<{ cname: string; error?:
     headers: { Authorization: `Bearer ${token}` },
   });
   const info = await infoRes.json();
-  const cname = info.apexName === domain
-    ? (info.verification?.[0]?.value ?? "76.76.21.21") // apex → A record
-    : "domains.thatcode.dev";
+  // Apex domains (e.g. thatcode.xyz) use an A record pointing to Vercel's IP
+  // Subdomains (e.g. app.thatcode.xyz) use a CNAME
+  const isApex = domain.split(".").length === 2;
+  const cname = isApex ? "76.76.21.21" : "domains.thatcode.dev";
 
-  return { cname };
+  return { cname, vercelDomain: info };
 }
 
 async function removeVercelDomain(domain: string) {
