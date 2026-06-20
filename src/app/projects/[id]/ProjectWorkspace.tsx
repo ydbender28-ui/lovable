@@ -71,9 +71,12 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
 function IframePreview({ files, projectName, mode }: { files: ProjectFiles; projectName: string; mode: PreviewMode }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [iframeReady, setIframeReady] = useState(false);
   const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
+    setPreviewHtml(null);
+    setIframeReady(false);
     fetch(`/api/preview`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -89,6 +92,7 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
     if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
     const blob = new Blob([previewHtml], { type: "text/html" });
     blobUrlRef.current = URL.createObjectURL(blob);
+    setIframeReady(false);
     iframeRef.current.src = blobUrlRef.current;
     return () => { if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current); };
   }, [previewHtml]);
@@ -111,11 +115,22 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
         borderRadius: isMobile ? "2.5rem" : isDevice ? "12px" : "0",
         border: isMobile ? "6px solid #374151" : isDevice ? "1px solid rgba(255,255,255,0.12)" : "none",
         boxShadow: isDevice ? "0 24px 60px rgba(0,0,0,0.6)" : "none",
+        background: "#0a0a0f",
       }}>
         {isMobile && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 28, background: "#374151", borderRadius: "0 0 20px 20px", zIndex: 10 }} />}
+        {/* Loading skeleton shown until iframe fires onLoad */}
+        {!iframeReady && (
+          <div style={{ position: "absolute", inset: 0, background: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, border: "2px solid rgba(139,92,246,0.3)", borderTopColor: "#8b5cf6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <span style={{ fontSize: 12, color: "#4b5563" }}>Loading preview…</span>
+            </div>
+          </div>
+        )}
         <iframe
           ref={iframeRef}
-          style={{ width: "100%", height: "100%", border: "none", background: "#0a0a0f", display: "block" }}
+          onLoad={() => setIframeReady(true)}
+          style={{ width: "100%", height: "100%", border: "none", background: "#0a0a0f", display: "block", opacity: iframeReady ? 1 : 0, transition: "opacity 0.2s" }}
           sandbox="allow-scripts allow-same-origin"
         />
       </div>

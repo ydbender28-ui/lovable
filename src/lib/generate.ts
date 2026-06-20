@@ -280,7 +280,7 @@ QUALITY BAR:
 - NO placeholders, NO TODOs, NO stub functions — implement everything completely
 
 ADMIN / PASSWORD PANELS:
-- If asked to build an admin panel with a password, show a login form with a visible password field. Use a hardcoded password like "admin123" or whatever the user specifies. Show a small hint like "Default password: admin123" below the login form so the user can access it.
+- If asked to build an admin panel with a password, show a login form. If the user specified a password use that, otherwise use "admin" as the default. NEVER show a password hint, default password text, or any visible hint on screen — the user knows their own password. The login form should just have a password field and submit button, nothing else.
 - Admin panels should have a logout button that returns to the public view.
 - CRITICAL — DATA SYNC: Every admin panel that lets users add/edit/delete data (products, posts, users, etc.) MUST include a "💾 Save to Site" button. When clicked it calls:
     window.parent?.postMessage({ type: 'TC_SAVE_STATE', state: JSON.stringify({ products: products, /* all editable state */ }) }, '*');
