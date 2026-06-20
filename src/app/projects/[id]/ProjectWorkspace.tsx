@@ -515,8 +515,8 @@ export default function ProjectWorkspace({
                 }];
                 // If the app has an admin panel and no password was specified, ask inline
                 const htmlContent = Object.values(payload.files as Record<string, string>).join("\n");
-                const hasAdmin = /admin.*password|password.*admin|adminPassword|admin_password|checkPassword|verifyPassword/i.test(htmlContent);
-                const userSpecifiedPassword = /password[:\s]+\S+|pass[:\s]+\S+/i.test(text);
+                const hasAdmin = /admin\s*(login|panel|view|password|auth)|password.*===|===.*password|checkPass|verifyPass|adminPw|adminPass|isAdmin.*state|setIsAdmin|Admin Login/i.test(htmlContent);
+                const userSpecifiedPassword = /password[:\s"']+\w{3,}|pass(word)?[:\s"']+\w{3,}/i.test(text);
                 if (hasAdmin && !userSpecifiedPassword && !silent) {
                   msgs.push({
                     id: `msg-adminpw-${Date.now()}`,
