@@ -6,86 +6,108 @@ export type ProjectFiles = Record<string, string>;
 
 const DESIGN_THEMES = [
   {
-    name: "dark-minimal",
-    bg: "#0a0a0f", card: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.1)",
-    accent: "#8b5cf6", accent2: "#6366f1", text: "#f4f4f5", muted: "#71717a", radius: "12px",
-    layout: "centered",
-    description: `Dark minimal — centered layout, sidebar navigation, generous whitespace.
-LAYOUT: sidebar nav (240px) + main content area. Nav items stacked vertically with icon + label.
-TYPOGRAPHY: font-size 13px base, 24px headings, tight letter-spacing on headings.
-CARDS: subtle blur backdrop-filter, very low opacity backgrounds.`,
+    name: "shopify-clean",
+    bg: "#f6f6f7", card: "#ffffff", border: "#e4e4e7",
+    accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", radius: "8px",
+    layout: "ecommerce",
+    description: `Clean e-commerce — Shopify/ASOS inspired, light, professional retail.
+LAYOUT: sticky top nav with logo + search + cart icon. Product grid 3-4 cols. Filter sidebar or horizontal filter pills.
+TYPOGRAPHY: 14px base, system sans-serif. Product names 15px/600. Prices bold black. Labels uppercase 11px.
+CARDS: white bg, 1px #e4e4e7 border, 4px radius, NO gradient buttons. Add to cart = solid black button, white text, no shadow. Hover: bg #333.
+IMAGES: large product image area (aspect-ratio:1), object-fit:cover, light gray placeholder #f0f0f0.
+PRICES: font-size:18px, fontWeight:700, color:#1a1a1a. Sale price red #dc2626, original struck through.
+NO: gradients on buttons, emoji product icons, purple/pink colors, glow shadows, glassmorphism.`,
   },
   {
-    name: "dark-tech",
-    bg: "#020817", card: "rgba(14,165,233,0.06)", border: "rgba(14,165,233,0.18)",
-    accent: "#0ea5e9", accent2: "#06b6d4", text: "#e2f3ff", muted: "#64748b", radius: "6px",
-    layout: "dashboard",
-    description: `Dark blue tech — dense dashboard, grid layout, data-heavy.
-LAYOUT: top nav + grid of stat cards (3-4 cols), tables with monospace data, compact 12px text.
-TYPOGRAPHY: monospace font for data (font-family:'Courier New',monospace), sans for labels.
-CARDS: solid colored header row, striped table rows, dot indicators.`,
-  },
-  {
-    name: "dark-terminal",
-    bg: "#0d1117", card: "rgba(34,197,94,0.05)", border: "rgba(34,197,94,0.12)",
-    accent: "#22c55e", accent2: "#10b981", text: "#c9d1d9", muted: "#6b7280", radius: "4px",
-    layout: "terminal",
-    description: `Dark terminal — hacker/dev aesthetic, monospace everything, command-line inspired.
-LAYOUT: full-width, no sidebar, content in terminal-style panels. Prefix labels with > or $.
-TYPOGRAPHY: font-family:'Courier New',monospace for ALL text. 13px base.
-CARDS: border-left:3px solid accent, no border-radius, plain solid borders.`,
-  },
-  {
-    name: "dark-bold",
-    bg: "#09090b", card: "#18181b", border: "#27272a",
-    accent: "#f97316", accent2: "#ef4444", text: "#fafafa", muted: "#a1a1aa", radius: "16px",
-    layout: "bold",
-    description: `Dark bold — large typography, expressive, magazine-like.
-LAYOUT: hero section with huge headline (64px+), full-width sections, alternating left/right content.
-TYPOGRAPHY: font-weight:900, font-size:56px+ for heroes, lots of visual contrast.
-CARDS: large rounded corners (24px), gradient backgrounds, prominent CTAs.`,
-  },
-  {
-    name: "light-clean",
-    bg: "#ffffff", card: "#f8fafc", border: "#e2e8f0",
-    accent: "#6366f1", accent2: "#8b5cf6", text: "#0f172a", muted: "#64748b", radius: "10px",
+    name: "saas-light",
+    bg: "#ffffff", card: "#ffffff", border: "#e5e7eb",
+    accent: "#2563eb", accent2: "#1d4ed8", text: "#111827", muted: "#6b7280", radius: "8px",
     layout: "saas",
-    description: `Light clean SaaS — professional, Notion/Linear inspired.
-LAYOUT: left sidebar (220px, white bg, light border) + main content, top breadcrumb bar.
-TYPOGRAPHY: Inter-like sans-serif, 14px base, 600 weight for headings, very clean hierarchy.
-CARDS: white bg, 1px border, subtle box-shadow, no heavy decorations.`,
+    description: `Professional SaaS — Linear/Notion/Stripe inspired. Light, minimal, business.
+LAYOUT: left sidebar 220px (white, 1px right border #e5e7eb) + main area. Top bar with breadcrumb + user avatar. Content max-width 900px centered.
+TYPOGRAPHY: -apple-system sans-serif. 14px base, 600 for section headings, 700 for page titles. Very tight spacing.
+BUTTONS: Primary = solid #2563eb, white text, 6px radius, 10px 18px padding, NO gradient, NO shadow. Hover: #1d4ed8. Secondary = white bg + 1px border.
+CARDS: white bg, 1px #e5e7eb border, 8px radius, 20px padding. Shadow: 0 1px 3px rgba(0,0,0,0.08).
+TABLES: clean dividers, alternating #f9fafb rows, left-aligned text, no card wrapper.
+NO: dark backgrounds, gradients, purple/violet colors, glow effects, emoji icons in nav.`,
   },
   {
-    name: "light-editorial",
-    bg: "#fafaf9", card: "#f5f5f4", border: "#d6d3d1",
-    accent: "#dc2626", accent2: "#ea580c", text: "#1c1917", muted: "#78716c", radius: "2px",
+    name: "dark-dashboard",
+    bg: "#0f1117", card: "#1a1d27", border: "#2a2d3a",
+    accent: "#3b82f6", accent2: "#2563eb", text: "#f1f5f9", muted: "#64748b", radius: "10px",
+    layout: "dashboard",
+    description: `Dark analytics dashboard — Vercel/Planetscale inspired. Dense, data-focused.
+LAYOUT: fixed left sidebar 240px (#13151f, no border just shadow) + content area. Top stats row 3-4 KPI cards. Charts + tables below.
+TYPOGRAPHY: 13px base, monospace for numbers (font-variant-numeric:tabular-nums). Muted labels 11px uppercase.
+BUTTONS: solid #3b82f6, 7px radius, NO gradient. Icon buttons: 32px square, #1e2130 bg, hover #252836.
+CARDS: #1a1d27 bg, 1px #2a2d3a border, subtle shadow. Stat cards: large number 28px/700, trend badge (green/red).
+CHARTS: use div-based bar charts with percentage heights, blue bars, muted grid lines.
+NO: purple gradients, glow shadows, glassmorphism, emoji in data tables.`,
+  },
+  {
+    name: "agency-bold",
+    bg: "#0a0a0a", card: "#111111", border: "#222222",
+    accent: "#ffffff", accent2: "#e5e5e5", text: "#ffffff", muted: "#888888", radius: "0px",
+    layout: "bold",
+    description: `Bold agency/portfolio — Apple/Awwwards inspired. High contrast, editorial, striking.
+LAYOUT: full-width sections, no sidebar. Hero = huge headline (72-96px, fontWeight:900) + subtext + single CTA. Sections alternate black/white.
+TYPOGRAPHY: system-ui,-apple-system. 96px hero, 48px section titles, 16px body. ALL caps section labels with letterSpacing:6.
+BUTTONS: white bg + black text (on dark sections) OR black bg + white text (on light). Sharp corners (borderRadius:0 or 4px). Padding:14px 32px. NO gradients.
+CARDS: stark minimal. Just content, maybe a thin 1px border. No shadows. Let content breathe with big padding (48px+).
+IMAGES: large, full-bleed where possible. Black and white tones. Strong contrast.
+NO: gradients, purple/pink, card shadows, rounded corners, glow, emoji icons.`,
+  },
+  {
+    name: "restaurant-warm",
+    bg: "#faf8f5", card: "#ffffff", border: "#e8e0d5",
+    accent: "#b45309", accent2: "#92400e", text: "#1c1109", muted: "#78716c", radius: "4px",
     layout: "editorial",
-    description: `Light editorial — newspaper/magazine, strong typographic hierarchy.
-LAYOUT: 2-column editorial grid, wide left content + narrow right sidebar, ruled dividers.
-TYPOGRAPHY: serif font (Georgia,serif) for body, 800 weight sans-serif for headlines.
-CARDS: no rounded corners, thick left border accent, dividing lines instead of card shadows.`,
+    description: `Warm restaurant/food — earthy, artisan, upscale hospitality feel.
+LAYOUT: centered max-width 1100px. Top nav: logo center, links either side. Hero: full-width image area with overlay text. Menu grid 2-3 cols.
+TYPOGRAPHY: serif headings (Georgia,serif, fontStyle:italic for dish names). Sans body. 15px base. Warm brown text #1c1109.
+BUTTONS: background:#b45309, white text, borderRadius:2px, padding:12px 28px, letterSpacing:1, textTransform:'uppercase', NO gradient, NO shadow.
+CARDS: white bg, 1px #e8e0d5 border, 4px radius. Food items: image top, name/description/price below. Clean, no decoration.
+PRICES: amber color #b45309, fontWeight:600.
+NO: dark mode cards, gradients, purple colors, emoji icons, glow effects.`,
   },
   {
-    name: "dark-glass",
-    bg: "linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)",
-    card: "rgba(255,255,255,0.07)", border: "rgba(255,255,255,0.12)",
-    accent: "#a78bfa", accent2: "#818cf8", text: "#e2e8f0", muted: "#94a3b8", radius: "20px",
-    layout: "glass",
-    description: `Dark purple glass — glassmorphism, floating cards, gradient background.
-LAYOUT: centered floating cards, gradient mesh background, cards with blur effect.
-CSS: backdrop-filter:blur(20px) on all cards, background must be the gradient string above.
-TYPOGRAPHY: 15px base, light font-weight:300 for body, 700 for headings.
-CARDS: rgba white background + blur, large rounded corners (20-28px), subtle glow shadows.`,
+    name: "fintech-professional",
+    bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0",
+    accent: "#0f766e", accent2: "#0d9488", text: "#0f172a", muted: "#64748b", radius: "6px",
+    layout: "fintech",
+    description: `Professional fintech/banking — Stripe/Wise/Mercury inspired. Trustworthy, clean.
+LAYOUT: top nav (white, 1px bottom border) + page content max-width 1100px. Dashboard: summary bar + 2-col layout (main + sidebar).
+TYPOGRAPHY: Inter-like, 14px base. Numbers: font-variant-numeric:tabular-nums, monospace feel. Green for positive, red for negative amounts.
+BUTTONS: teal #0f766e solid, white text, 6px radius, NO gradient. Hover: #0d9488. Destructive: #dc2626.
+CARDS: white, 1px #e2e8f0 border, 8px radius, 24px padding. Transaction rows: hover #f8fafc bg, left icon + right amount.
+AMOUNTS: large (24px+) with currency symbol smaller. Color-code: green income, red expense.
+NO: dark themes, gradients, purple, shadows with glow, emoji in financial data.`,
   },
   {
-    name: "dark-premium",
-    bg: "#0c0a00", card: "rgba(251,191,36,0.06)", border: "rgba(251,191,36,0.15)",
-    accent: "#fbbf24", accent2: "#f59e0b", text: "#fef9c3", muted: "#a1a1aa", radius: "8px",
-    layout: "premium",
-    description: `Dark gold premium — luxury, high-end, financial/crypto aesthetic.
-LAYOUT: centered max-width 900px, prominent hero metric (huge number center), stacked sections.
-TYPOGRAPHY: textTransform:'uppercase' labels with letterSpacing:4, thin font-weight:200 for large numbers.
-CARDS: very dark bg, gold border-bottom:2px solid accent, minimalist data display.`,
+    name: "startup-modern",
+    bg: "#ffffff", card: "#f9fafb", border: "#f3f4f6",
+    accent: "#7c3aed", accent2: "#6d28d9", text: "#111827", muted: "#9ca3af", radius: "12px",
+    layout: "landing",
+    description: `Modern startup landing page — Loom/Linear/Vercel marketing page style.
+LAYOUT: centered, max-width 1100px. Full-screen hero with headline + subhead + 2 CTAs. Features grid 3-col. Testimonials. Pricing section.
+TYPOGRAPHY: 64px hero headline (fontWeight:800, letterSpacing:-2px), 18px subhead, 15px body. Clean and modern.
+BUTTONS: Primary = #7c3aed solid, white text, 10px radius, 14px 28px padding. Secondary = white + 1px border #e5e7eb. NO glow shadows.
+CARDS: #f9fafb bg or white, very subtle border, 16px radius. Feature icons: colored square bg (not emoji), 40px.
+HERO: gradient text for ONE key word only (background-clip:text). Everything else solid color.
+NO: full-page gradients, multiple gradient buttons, purple everywhere, glassmorphism, floating blobs.`,
+  },
+  {
+    name: "dark-minimal-pro",
+    bg: "#111111", card: "#1a1a1a", border: "#2a2a2a",
+    accent: "#22c55e", accent2: "#16a34a", text: "#f5f5f5", muted: "#737373", radius: "8px",
+    layout: "minimal",
+    description: `Dark minimal pro — GitHub/Raycast inspired. Focused, no-nonsense, developer tool feel.
+LAYOUT: top nav (48px, #111, bottom border #2a2a2a) + content. Sidebar optional 200px. Content max-width 800px, lots of breathing room.
+TYPOGRAPHY: 14px base, monospace for code/data, 600 for headings. Minimal color use — almost everything is white/gray.
+BUTTONS: #1a1a1a bg + 1px #3a3a3a border, #f5f5f5 text. Primary action only: #22c55e bg, black text. Hover: brighten 10%. NO gradients.
+CARDS: #1a1a1a bg, 1px #2a2a2a border, 8px radius. No shadows. Content-first.
+LISTS: simple divider lines, no card wrapping. Hover: #222 row bg.
+NO: gradient buttons, purple/pink, glow effects, heavy shadows, decorative elements.`,
   },
 ] as const;
 
@@ -138,30 +160,28 @@ STYLING (mandatory):
 - ALL styles via inline style={{}} — never className with Tailwind/CSS files
 - Transitions: transition:'all 0.2s' on EVERY interactive element
 
-MODERN UI — NON-NEGOTIABLE RULES:
-Every app must look like a premium 2025 product. Follow these exactly:
+DESIGN RULES — LOOK LIKE A REAL PRODUCT, NOT AN AI DEMO:
+The #1 goal: someone should look at this and think a professional designer built it, not AI.
 
-BUTTONS: Never plain gray. Primary = gradient: 'linear-gradient(135deg, accent, accent2)', borderRadius:10, padding:'10px 22px', fontWeight:600, boxShadow:'0 4px 15px accent+40', border:'none'. On hover: scale to 1.03, brighter shadow.
-INPUTS & SELECTS: background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:10, padding:'10px 14px', color:inherit, outline:'none'. On focus: border color = accent.
-CARDS: borderRadius:16, background:card color, border:'1px solid border color', boxShadow:'0 4px 24px rgba(0,0,0,0.2)', padding:'20px 24px'. Never flat zero-shadow cards.
-BADGES/TAGS: borderRadius:999, padding:'3px 10px', fontSize:11, fontWeight:600, textTransform:'uppercase'. Use accent color with 20% opacity bg.
-TABLES: No raw HTML tables. Use divs with grid layout. Header row: fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:1, muted color. Alternating row bg or hover highlight.
-EMPTY STATES: Always show an icon (emoji) + heading + subtext when a list is empty. Never show a blank space.
-SIDEBAR (if present): fixed width 240px, full height, subtle border-right, nav items with rounded hover states (borderRadius:10, padding:'8px 12px'), active item = accent background.
-STAT CARDS: Large number (32px+, fontWeight:700), small label below (11px, uppercase, muted), optional trend indicator with color (green up, red down).
-MODALS: backdrop blur background (rgba(0,0,0,0.5)), centered white/dark card, borderRadius:20, padding:32, max-width:480px.
-GRADIENTS: Use subtle gradients on hero sections, stat numbers, and key headings. Never flat monotone sections.
-SPACING: Consistent rhythm — padding multiples of 8. Section gaps: 32-48px. Card gaps: 16-20px.
-TYPOGRAPHY: Never all same size. Clear hierarchy: page title 24-28px/700, section head 16-18px/600, body 14px/400, label 11-12px/500/textTransform:'uppercase'.
+BUTTONS: Match the design theme exactly. NO gradient buttons unless the theme specifies it. NO glow box-shadows. Solid color buttons look more professional. padding:'10px 20px', fontWeight:600, cursor:'pointer', border:'none'. Hover: darken bg by 10%, no scale transform.
+INPUTS: background matches card bg. border:'1px solid [border color]'. borderRadius matches theme. padding:'10px 14px'. outline:'none'. Focus: border-color = accent. Always styled, never browser default.
+CARDS: Follow the theme. Light themes = white bg + subtle border. Dark themes = slightly lighter than page bg + border. NO heavy glow shadows. Shadow max: '0 1px 4px rgba(0,0,0,0.1)' for light, '0 2px 8px rgba(0,0,0,0.3)' for dark.
+ICONS: Use text/Unicode symbols (→ ✓ × ↑ ↓ ‹ ›) or simple SVG. NO emoji as product/feature icons (🛒🚀⚡) — they look cheap. Exception: status indicators (✓ for success is fine).
+IMAGES/PRODUCTS: Use colored div placeholders with the product initials or category, NOT emoji. e.g. a gray #e5e7eb div with centered 2-letter abbreviation in muted color.
+TYPOGRAPHY: Clear hierarchy but natural — not every label needs to be UPPERCASE with letterSpacing. Reserve uppercase for nav items and table headers only.
+EMPTY STATES: Simple text message + one action button. No emoji circus.
+SPACING: Generous whitespace. Padding 16-24px on cards. 32-48px between sections. Don't cram everything together.
+REAL DATA: Product names, prices, descriptions must sound real (not "Product 1", "Item A"). Use industry-appropriate realistic names.
 
 ABSOLUTELY NEVER:
-- Gray #999 or #ccc borders on interactive elements
-- Plain unstyled select or input elements (always style them)
-- background:gray or background:#f0f0f0 buttons
-- Zero box-shadow flat cards with no depth
-- Lorem ipsum or "Coming soon" placeholder text — use real realistic data
-- Walls of unstyled text with no visual hierarchy
-- Default blue underlined links
+- Gradient buttons with glow shadows (screams AI-generated)
+- Emoji as product images or feature icons (🛒📦⚡🚀)
+- Purple/pink color scheme unless theme specifically calls for it
+- Multiple different accent colors fighting each other
+- Lorem ipsum or placeholder text — use real realistic content
+- Every element having a rainbow of colors — pick 1-2 colors and stick to them
+- Glassmorphism blur cards on solid backgrounds (looks dated/AI)
+- Animated floating blobs or gradient orbs in backgrounds
 
 INTEGRATIONS — EXACT PATTERNS TO USE:
 
