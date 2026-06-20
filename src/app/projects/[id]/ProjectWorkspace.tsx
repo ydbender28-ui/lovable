@@ -419,6 +419,16 @@ export default function ProjectWorkspace({
       return;
     }
 
+    // If last assistant message was asking for admin password, treat reply as password setting
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === "assistant" && lastMsg.content.includes("admin panel") && lastMsg.content.includes("password")) {
+      const pw = trimmed.replace(/^[`'"]+|[`'"]+$/g, "").trim();
+      if (pw && !pw.includes(" ")) {
+        runGenerate(`Set the admin panel password to "${pw}". Update only the password check in the code, keep everything else exactly the same.`);
+        return;
+      }
+    }
+
     const needed = detectNeededApis(trimmed, envVars);
     if (needed.length > 0) {
       setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
@@ -498,11 +508,25 @@ export default function ProjectWorkspace({
               const summary = silent
                 ? "✓ Error fixed automatically." + (payload.liveUpdated ? "\n\n✓ Live site updated." : "")
                 : (payload.summary ?? "Done! Check the preview.") + meta + liveNote;
-              setMessages((prev) => [...prev, {
-                id: payload.tempMessageId ?? `msg-${Date.now()}`,
-                role: "assistant",
-                content: summary,
-              }]);
+              setMessages((prev) => {
+                const msgs: typeof prev = [...prev, {
+                  id: payload.tempMessageId ?? `msg-${Date.now()}`,
+                  role: "assistant",
+                  content: summary,
+                }];
+                // If the app has an admin panel and no password was specified, ask inline
+                const htmlContent = Object.values(payload.files as Record<string, string>).join("\n");
+                const hasAdmin = /admin.*password|password.*admin|adminPassword|admin_password|checkPassword|verifyPassword/i.test(htmlContent);
+                const userSpecifiedPassword = /password[:\s]+\S+|pass[:\s]+\S+/i.test(text);
+                if (hasAdmin && !userSpecifiedPassword && !silent) {
+                  msgs.push({
+                    id: `msg-adminpw-${Date.now()}`,
+                    role: "assistant",
+                    content: "🔑 Your app has an admin panel. What password do you want to use? (Reply with just the password, e.g. `MySecret123`)",
+                  });
+                }
+                return msgs;
+              });
               if (payload.liveUpdated) setLiveUpdated(true);
               setSuggestions(getSmartSuggestions(payload.files));
               setShowUndo(true);
