@@ -961,7 +961,7 @@ export default function ProjectWorkspace({
   );
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0f]">
+    <div className="flex flex-col bg-[#0a0a0f]" style={{ height: "100dvh" }}>
       <header className="border-b border-white/10 bg-[#0a0a0f]/90 backdrop-blur px-4 py-2.5 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
@@ -1019,8 +1019,8 @@ export default function ProjectWorkspace({
       </div>
 
       {/* Mobile */}
-      <div className="flex sm:hidden flex-1 overflow-hidden flex-col">
-        <div className="flex-1 overflow-hidden">{mobileTab === "chat" ? chatPanel : previewPanel}</div>
+      <div className="flex sm:hidden flex-1 overflow-hidden flex-col min-h-0">
+        <div className="flex-1 overflow-hidden min-h-0">{mobileTab === "chat" ? chatPanel : previewPanel}</div>
         <div className="shrink-0 border-t border-white/10 bg-[#0c0c12] flex">
           {(["chat", "preview"] as const).map((tab) => (
             <button key={tab} onClick={() => setMobileTab(tab)}
