@@ -247,10 +247,63 @@ export default function ProjectWorkspace({
         const err = e.data.error as string;
         setIframeError(err);
       }
+      // Admin "Save to Site" button in generated apps sends TC_SAVE_STATE
+      if (e.data?.type === "TC_SAVE_STATE" && e.data?.state) {
+        handleAdminSave(e.data.state as string);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [files]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleAdminSave(serializedState: string) {
+    // Embed the saved admin data into the source code so published site reflects changes
+    const currentApp = files["src/App.tsx"] ?? "";
+    if (!currentApp) return;
+
+    // Replace or inject a TC_SAVED_DATA block near the top of App.tsx
+    const dataBlock = `// TC_SAVED_DATA — auto-updated by admin panel\nconst TC_INITIAL_DATA = ${serializedState};\n`;
+    let updatedApp: string;
+    if (currentApp.includes("// TC_SAVED_DATA")) {
+      updatedApp = currentApp.replace(/\/\/ TC_SAVED_DATA[\s\S]*?const TC_INITIAL_DATA = .*?;\n/, dataBlock);
+    } else {
+      // Inject after the first const/let/function line so it's accessible
+      updatedApp = currentApp.replace(/^(import .+;\n)+/, (m) => m + "\n" + dataBlock);
+    }
+
+    // Also inject a hint into the HTML so window.TC_INITIAL_DATA is available
+    const currentHtml = files["index.html"] ?? "";
+    const dataScript = `<script>window.TC_INITIAL_DATA = ${serializedState};</script>`;
+    let updatedHtml = currentHtml;
+    if (currentHtml.includes("window.TC_INITIAL_DATA")) {
+      updatedHtml = currentHtml.replace(/<script>window\.TC_INITIAL_DATA = .*?;<\/script>/, dataScript);
+    } else {
+      updatedHtml = currentHtml.replace("</body>", `  ${dataScript}\n</body>`);
+    }
+
+    const updatedFiles = { ...files, "src/App.tsx": updatedApp, "index.html": updatedHtml };
+    setFiles(updatedFiles);
+
+    // Save as a new version
+    try {
+      await fetch(`/api/projects/${projectId}/save-version`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: updatedFiles, summary: "Admin data saved to site" }),
+      });
+      // Auto-republish if already published
+      if (publishSlug) {
+        await fetch(`/api/projects/${projectId}/publish`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: publishSlug }),
+        });
+      }
+      setMessages((prev) => [...prev, { id: `msg-admin-${Date.now()}`, role: "assistant", content: "✓ Admin changes saved to your site. The published version is now updated." }]);
+    } catch {
+      // silent
+    }
+  }
 
   useEffect(() => {
     function onVisibility() {

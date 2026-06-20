@@ -251,6 +251,11 @@ QUALITY BAR:
 ADMIN / PASSWORD PANELS:
 - If asked to build an admin panel with a password, show a login form with a visible password field. Use a hardcoded password like "admin123" or whatever the user specifies. Show a small hint like "Default password: admin123" below the login form so the user can access it.
 - Admin panels should have a logout button that returns to the public view.
+- CRITICAL — DATA SYNC: Every admin panel that lets users add/edit/delete data (products, posts, users, etc.) MUST include a "💾 Save to Site" button. When clicked it calls:
+    window.parent?.postMessage({ type: 'TC_SAVE_STATE', state: JSON.stringify({ products: products, /* all editable state */ }) }, '*');
+  This syncs admin changes to the live published site. Show a "✓ Saved to site!" confirmation after clicking. Place this button prominently in the admin header.
+- On load, initialize state from window.TC_INITIAL_DATA if it exists, otherwise use the hardcoded defaults:
+    const [products, setProducts] = useState(() => (window as any).TC_INITIAL_DATA?.products ?? DEFAULT_PRODUCTS);
 
 DO NOT LOOK LIKE AN AI TOOL — CRITICAL:
 The app must look like it was built by a professional design team, NOT like an AI demo. Avoid ALL of these patterns:
@@ -591,12 +596,16 @@ Make the entire layout and structure match this design system. It should look DR
 
   const userContent = isEdit
     ? `CURRENT CODE:\n${existingSection}${envSection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
-- Make ONLY the minimal changes needed to address the edit request
-- PRESERVE the app's overall purpose, type, and theme completely — if it's a Salesforce CRM, keep it a Salesforce CRM
-- PRESERVE all existing components, features, data, and design style not mentioned in the edit
-- If asked to fix mobile layout: add responsive CSS only, do NOT restructure or redesign
-- If asked to fix a bug: fix only that bug, touch nothing else
-- NEVER change the application from one type to another (e.g., CRM → e-commerce is forbidden)
+- Make ONLY the minimal changes needed to address the edit request — add the feature, fix the bug, nothing more
+- PRESERVE 100% of the existing visual design: colors, fonts, spacing, layout, theme, background — DO NOT change any of these
+- PRESERVE all existing components, features, interactions, and data that are not part of the edit request
+- If it's a modern e-commerce site and you're asked to add admin: keep the EXACT same store UI, just add the admin section
+- If it's a dark terminal theme and asked to add search: add search, keep the terminal theme
+- NEVER change, restyle, or redesign any part of the app that was not explicitly mentioned in the edit request
+- NEVER change the application from one type to another (e.g., modern store → terminal hacker is forbidden)
+- NEVER change color scheme, typography, or visual style unless explicitly asked
+- ADMIN PANELS: when adding admin, add a password-protected route/view that reuses the existing design language — same colors, same card style, same button style
+- DATA PERSISTENCE WITH ADMIN: When adding admin CRUD for products/items, generate a "💾 Save to Site" button in the admin panel. That button must call: window.parent?.postMessage({type:'TC_SAVE_STATE',state:JSON.stringify({products: allProducts, /* other state */})}, '*'). This syncs admin edits back to the source code so the published site stays up to date.
 - You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
     : `BUILD REQUEST: ${prompt}${envSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
 
