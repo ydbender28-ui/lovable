@@ -20,7 +20,6 @@ const API_DETECTORS = [
   { keywords: ["twilio", "sms", "text message", "send sms"], name: "Twilio", key: "TWILIO_ACCOUNT_SID", hint: "console.twilio.com → Account Info", placeholder: "AC..." },
   { keywords: ["firebase", "firestore"], name: "Firebase", key: "FIREBASE_API_KEY", hint: "Firebase Console → Project Settings → Your apps", placeholder: "AIza..." },
   { keywords: ["airtable", "airtable base", "airtable database"], name: "Airtable", key: "AIRTABLE_API_KEY", hint: "airtable.com → Account → API", placeholder: "pat..." },
-  { keywords: ["cloudinary", "image upload", "upload image", "file upload"], name: "Cloudinary", key: "CLOUDINARY_CLOUD_NAME", hint: "cloudinary.com/console → Dashboard", placeholder: "my-cloud" },
   { keywords: ["resend", "send email", "email form", "contact form email"], name: "Resend", key: "RESEND_API_KEY", hint: "resend.com → API Keys", placeholder: "re_..." },
   { keywords: ["clerk", "user auth", "user login", "authentication"], name: "Clerk", key: "CLERK_PUBLISHABLE_KEY", hint: "dashboard.clerk.com → API Keys", placeholder: "pk_live_..." },
   { keywords: ["pusher", "realtime", "live update", "websocket"], name: "Pusher", key: "PUSHER_APP_KEY", hint: "dashboard.pusher.com → App → Keys", placeholder: "abc..." },

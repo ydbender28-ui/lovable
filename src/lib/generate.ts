@@ -218,10 +218,14 @@ OpenAI (OPENAI_API_KEY available):
     body: JSON.stringify({model:'gpt-4o-mini', messages:[{role:'user',content:prompt}]})
   });
 
-Cloudinary (CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET available):
-  const form = new FormData(); form.append('file', file); form.append('upload_preset', window.ENV.CLOUDINARY_UPLOAD_PRESET);
-  const res = await fetch('https://api.cloudinary.com/v1_1/'+window.ENV.CLOUDINARY_CLOUD_NAME+'/image/upload', {method:'POST',body:form});
-  const {secure_url} = await res.json();
+Image uploads (built-in, no API key needed):
+  // POST to /api/upload — works for all users, stores to CDN, returns a permanent URL
+  async function uploadImage(file: File): Promise<string> {
+    const form = new FormData(); form.append('file', file);
+    const res = await fetch('/api/upload', {method:'POST', body:form});
+    const {url} = await res.json();
+    return url; // permanent CDN URL or base64 fallback
+  }
 
 Google Maps (GOOGLE_MAPS_API_KEY available):
   // In index.html <head>: <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_KEY&callback=__initMap" async defer></script>
@@ -246,10 +250,17 @@ NEVER hardcode secret keys in App.tsx source. Always read from window.ENV.
 
 HANDLING COMPLEX FEATURES:
 
-Image uploads:
-  const [img, setImg] = useState('');
-  <input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>setImg(r.result as string);r.readAsDataURL(f)}}/>
-  <img src={img} style={{maxWidth:'100%'}}/>
+Image uploads (ALWAYS use /api/upload — built-in, no API keys needed):
+  const [imgUrl, setImgUrl] = useState('');
+  async function handleImageUpload(file: File) {
+    const form = new FormData(); form.append('file', file);
+    const res = await fetch('/api/upload', {method:'POST', body:form});
+    const {url} = await res.json();
+    setImgUrl(url);
+  }
+  <input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(f)handleImageUpload(f)}}/>
+  {imgUrl && <img src={imgUrl} style={{maxWidth:'100%'}}/>}
+  // Store imgUrl in localStorage or state as needed. URL is permanent and publicly accessible.
 
 Data persistence:
   const [items, setItems] = useState<T[]>(()=>JSON.parse(localStorage.getItem('key')||'[]'));
