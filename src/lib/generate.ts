@@ -11,12 +11,15 @@ const DESIGN_THEMES = [
     accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", radius: "8px",
     layout: "ecommerce",
     description: `Clean e-commerce — Shopify/ASOS inspired, light, professional retail.
-LAYOUT: sticky top nav with logo + search + cart icon. Product grid 3-4 cols. Filter sidebar or horizontal filter pills.
-TYPOGRAPHY: 14px base, system sans-serif. Product names 15px/600. Prices bold black. Labels uppercase 11px.
-CARDS: white bg, 1px #e4e4e7 border, 4px radius, NO gradient buttons. Add to cart = solid black button, white text, no shadow. Hover: bg #333.
-IMAGES: large product image area (aspect-ratio:1), object-fit:cover, light gray placeholder #f0f0f0.
-PRICES: font-size:18px, fontWeight:700, color:#1a1a1a. Sale price red #dc2626, original struck through.
-NO: gradients on buttons, emoji product icons, purple/pink colors, glow shadows, glassmorphism.`,
+LAYOUT: white top nav (bg:#fff, border-bottom:1px solid #e4e4e7), logo left (black text, font-weight:800), search bar center, cart + account right. Product grid 4 cols desktop / 2 cols mobile. Horizontal category filter pills below nav.
+TYPOGRAPHY: -apple-system, 14px base. Product names: 14px/600, color:#1a1a1a. NO colored text except sale prices.
+BUTTONS: "Add to Cart" = background:#111, color:#fff, border-radius:6px, padding:10px 0, width:100%, font-size:13px, font-weight:600, NO gradient, NO shadow, NO blue. Hover: background:#333.
+CARDS: white bg, 1px #e8e8e8 border, 8px radius, 12px padding, subtle box-shadow:0 1px 4px rgba(0,0,0,0.06). NO hover glow.
+IMAGES: aspect-ratio:4/3, background:#f5f5f5, display:flex, align-items:center, justify-content:center. Placeholder = a simple SVG camera icon in #ccc, NO text abbreviations like "WHP".
+PRICES: font-size:16px, font-weight:700, color:#111 (NEVER blue, NEVER accent color). Sale price: color:#dc2626. Original price: text-decoration:line-through, color:#9ca3af, font-size:13px.
+CATEGORIES: pill buttons, default = border:1px solid #e4e4e7 bg:#fff color:#374151. Active = bg:#111 color:#fff border:#111. NO blue.
+LOGO/BRAND NAME: color:#111, font-weight:800, font-size:20px. NEVER colored.
+NO: blue prices, blue buttons, colored accent text on prices, text abbreviations as image placeholders, gradients, purple/pink, glow shadows, glassmorphism.`,
   },
   {
     name: "saas-light",
@@ -182,6 +185,10 @@ ABSOLUTELY NEVER:
 - Every element having a rainbow of colors — pick 1-2 colors and stick to them
 - Glassmorphism blur cards on solid backgrounds (looks dated/AI)
 - Animated floating blobs or gradient orbs in backgrounds
+- BLUE PRICES on e-commerce sites — prices are always dark (#111 or #1a1a1a), never colored
+- BLUE BUTTONS on e-commerce sites — "Add to Cart" is always dark/black, never blue
+- Text abbreviations as image placeholders ("WHP", "UCC", "ABC") — use an SVG icon or just a blank gray box
+- Colored logo/brand names — logos are black or white depending on bg, never purple/blue/gradient
 
 INTEGRATIONS — EXACT PATTERNS TO USE:
 
