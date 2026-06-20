@@ -790,6 +790,20 @@ export default function ProjectWorkspace({
         )}
       </div>
       <div className="flex-1 overflow-hidden relative">
+        {/* Floating error banner over preview */}
+        {iframeError && !loading && activeTab === "preview" && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/90 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
+            <span className="text-red-400 text-sm shrink-0">⚠</span>
+            <p className="text-xs text-red-300 truncate flex-1">{iframeError.split("\n")[0]}</p>
+            <button
+              onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`Fix this JavaScript runtime error completely. Do NOT change the app functionality, only fix the bug:\n\n${e}`); }}
+              className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
+            >
+              Fix for free →
+            </button>
+            <button onClick={() => setIframeError(null)} className="text-gray-600 hover:text-gray-400 text-base leading-none">×</button>
+          </div>
+        )}
         {hasFiles ? (
           activeTab === "preview"
             ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
