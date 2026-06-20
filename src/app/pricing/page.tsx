@@ -7,7 +7,7 @@ const TIERS = [
     price: "$0",
     period: "forever",
     desc: "Perfect for experimenting and personal side projects.",
-    features: ["5 apps", "Unlimited edits per app", "Live preview", "thatcode.xyz subdomain", "Community support"],
+    features: ["5 apps", "Unlimited edits per app", "Live preview", "thatcode.dev subdomain", "Community support"],
     cta: "Get started free",
     href: "/signup",
     highlight: false,
@@ -44,7 +44,7 @@ const TIERS = [
       "Dedicated Slack support",
     ],
     cta: "Contact us",
-    href: "mailto:hi@thatcode.xyz",
+    href: "mailto:hi@thatcode.dev",
     highlight: false,
   },
 ];

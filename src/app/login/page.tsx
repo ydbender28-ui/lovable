@@ -99,7 +99,7 @@ export default function LoginPage() {
         </div>
 
         <p className="relative z-10 text-xs" style={{ color: "#4b5263" }}>
-          © 2025 ThatCode · thatcode.xyz
+          © 2025 ThatCode · thatcode.dev
         </p>
       </div>
 

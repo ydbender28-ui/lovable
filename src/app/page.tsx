@@ -21,7 +21,7 @@ const FEATURES = [
   {
     icon: "🚀",
     title: "Publish anywhere",
-    desc: "Ship to thatcode.xyz or your own custom domain with password protection.",
+    desc: "Ship to thatcode.dev or your own custom domain with password protection.",
     tint: "rgba(245,158,11,0.14)",
     ring: "rgba(245,158,11,0.30)",
   },
@@ -72,7 +72,7 @@ const PRICING = [
       "5 apps",
       "Unlimited edits",
       "Live preview",
-      "thatcode.xyz subdomain",
+      "thatcode.dev subdomain",
       "Community support",
     ],
     cta: "Start free",
@@ -110,7 +110,7 @@ const PRICING = [
       "Dedicated support",
     ],
     cta: "Contact us",
-    href: "mailto:hi@thatcode.xyz",
+    href: "mailto:hi@thatcode.dev",
     highlight: false,
   },
 ];
@@ -242,7 +242,7 @@ export default async function Home() {
                 </div>
                 <div className="ml-2 flex h-7 flex-1 items-center gap-2 rounded-md px-3 text-xs" style={{ background: "rgba(255,255,255,0.04)", color: "#7a8099" }}>
                   <span style={{ color: "#22c55e" }}>●</span>
-                  mystore.thatcode.xyz
+                  mystore.thatcode.dev
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "#5b6070" }}>
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#22c55e" }} />
@@ -439,9 +439,9 @@ export default async function Home() {
             <a href="#features" className="transition-colors hover:text-white">Features</a>
             <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>
             <Link href="/docs" className="transition-colors hover:text-white">Docs</Link>
-            <a href="mailto:hi@thatcode.xyz" className="transition-colors hover:text-white">Contact</a>
+            <a href="mailto:hi@thatcode.dev" className="transition-colors hover:text-white">Contact</a>
           </div>
-          <span>© 2025 ThatCode · thatcode.xyz</span>
+          <span>© 2025 ThatCode · thatcode.dev</span>
         </footer>
       </main>
     </div>

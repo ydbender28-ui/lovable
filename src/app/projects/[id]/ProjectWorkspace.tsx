@@ -1175,10 +1175,10 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
         <h2 className="text-base font-semibold text-white mb-1">Publish your app</h2>
-        <p className="text-xs text-gray-500 mb-5">Choose your subdomain on thatcode.xyz</p>
+        <p className="text-xs text-gray-500 mb-5">Choose your subdomain on thatcode.dev</p>
 
         <div className="flex items-center rounded-xl border border-white/10 bg-white/5 focus-within:border-fuchsia-400/40 transition-colors overflow-hidden">
-          <span className="pl-3 pr-1 text-gray-500 text-sm shrink-0 select-none">thatcode.xyz/</span>
+          <span className="pl-3 pr-1 text-gray-500 text-sm shrink-0 select-none">thatcode.dev/</span>
           <input
             value={slug}
             onChange={e => onChange(e.target.value)}
@@ -1194,7 +1194,7 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
         </div>
 
         {availability === "taken" && <p className="mt-1.5 text-xs text-red-400">That name is already taken. Try something else.</p>}
-        {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.xyz</strong></p>}
+        {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
         {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
 
         <button onClick={() => setShowAdvanced(v => !v)} className="mt-4 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
@@ -1226,7 +1226,7 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
                     </div>
                     <div className="flex justify-between gap-4">
                       <span className="text-gray-600">Value</span>
-                      <span className="text-fuchsia-300">domains.thatcode.xyz</span>
+                      <span className="text-fuchsia-300">domains.thatcode.dev</span>
                     </div>
                   </div>
                   <p className="text-gray-600">Usually takes 5–10 minutes to go live.</p>

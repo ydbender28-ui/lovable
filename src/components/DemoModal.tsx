@@ -163,7 +163,7 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
                 <span className="h-2 w-2 rounded-full" style={{ background: "#28c840" }} />
               </div>
               <div className="ml-1 flex h-5 flex-1 items-center gap-1.5 rounded px-2 text-[10px]" style={{ background: "rgba(255,255,255,0.04)", color: "#7a8099" }}>
-                <span style={{ color: "#22c55e", fontSize: 7 }}>●</span> myapp.thatcode.xyz
+                <span style={{ color: "#22c55e", fontSize: 7 }}>●</span> myapp.thatcode.dev
               </div>
             </div>
 
