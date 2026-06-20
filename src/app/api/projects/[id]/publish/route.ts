@@ -29,7 +29,7 @@ async function addVercelDomain(domain: string): Promise<{ cname: string; error?:
   const isApex = domain.split(".").length === 2;
   const cname = isApex ? "76.76.21.21" : "domains.thatcode.dev";
 
-  return { cname, vercelDomain: info };
+  return { cname };
 }
 
 async function removeVercelDomain(domain: string) {
