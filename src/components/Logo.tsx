@@ -1,51 +1,91 @@
-export default function Logo({ size = "sm" }: { size?: "sm" | "md" | "lg" }) {
-  const s = size === "lg" ? 40 : size === "md" ? 34 : 28;
-  const text = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-base";
+interface LogoProps {
+  size?: "sm" | "md" | "lg";
+}
+
+const SIZES = {
+  sm: { icon: 26, font: 16, radius: 7 },
+  md: { icon: 32, font: 19, radius: 9 },
+  lg: { icon: 40, font: 24, radius: 11 },
+};
+
+export default function Logo({ size = "md" }: LogoProps) {
+  const s = SIZES[size];
+  const gid = `tc-bolt-${size}`;
 
   return (
-    <div className="flex items-center gap-2.5" style={{ userSelect: "none" }}>
-      {/* Icon mark */}
-      <svg width={s} height={s} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bg-g" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#1e1b4b"/>
-            <stop offset="100%" stopColor="#0f172a"/>
-          </linearGradient>
-          <linearGradient id="spark-g" x1="20" y1="5" x2="20" y2="37" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#a78bfa"/>
-            <stop offset="60%" stopColor="#7c6af7"/>
-            <stop offset="100%" stopColor="#4f46e5"/>
-          </linearGradient>
-          <linearGradient id="dot-g" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
-            <stop stopColor="#f0abfc"/>
-            <stop offset="1" stopColor="#818cf8"/>
-          </linearGradient>
-          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        {/* Background pill */}
-        <rect width="40" height="40" rx="10" fill="url(#bg-g)"/>
-        <rect width="40" height="40" rx="10" fill="white" opacity="0.03"/>
-        {/* Lightning bolt */}
-        <path
-          d="M23 6L12 22h8.5L17 34l13-18H21L23 6z"
-          fill="url(#spark-g)"
-          filter="url(#glow)"
-        />
-      </svg>
+    <span
+      style={{ display: "inline-flex", alignItems: "center", gap: s.icon * 0.32, userSelect: "none" }}
+    >
+      {/* Icon: dark rounded square with a two-triangle lightning bolt */}
+      <span
+        style={{
+          width: s.icon,
+          height: s.icon,
+          borderRadius: s.radius,
+          background: "linear-gradient(160deg, #1a1d24 0%, #0c0d11 100%)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow:
+            "0 2px 12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width={s.icon * 0.58}
+          height={s.icon * 0.58}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient
+              id={gid}
+              x1="5"
+              y1="1"
+              x2="19"
+              y2="23"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stopColor="#9a82ff" />
+              <stop offset="0.5" stopColor="#6d5fff" />
+              <stop offset="1" stopColor="#3da9ff" />
+            </linearGradient>
+          </defs>
+          {/* upper triangular shard */}
+          <path d="M13.4 1.5 L5 13.2 L11.2 12.3 Z" fill={`url(#${gid})`} />
+          {/* lower triangular shard, overlapping */}
+          <path
+            d="M10.6 22.5 L19 10.8 L12.8 11.7 Z"
+            fill={`url(#${gid})`}
+            opacity="0.92"
+          />
+        </svg>
+      </span>
 
       {/* Wordmark */}
-      <span className={`font-bold tracking-tight ${text}`} style={{ letterSpacing: "-0.03em" }}>
-        <span style={{ color: "#f0f4ff" }}>That</span>
-        <span style={{
-          backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #7c6af7 50%, #6366f1 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}>Code</span>
+      <span
+        style={{
+          fontSize: s.font,
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          lineHeight: 1,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{ color: "#eef0f6" }}>That</span>
+        <span
+          style={{
+            backgroundImage: "linear-gradient(120deg, #6d5fff 0%, #a78bfa 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
+        >
+          Code
+        </span>
       </span>
-    </div>
+    </span>
   );
 }

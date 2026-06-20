@@ -24,16 +24,25 @@ export default function ProjectCard({ project }: Props) {
   };
 
   return (
-    <div className="group relative rounded-2xl overflow-hidden transition-all"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(124,106,247,0.35)")}
-      onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}>
-
+    <div
+      className="group relative overflow-hidden rounded-2xl transition-all duration-200"
+      style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "rgba(109,95,255,0.45)";
+        e.currentTarget.style.transform = "translateY(-3px)";
+        e.currentTarget.style.boxShadow = "0 18px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(109,95,255,0.12)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
       <DeleteProjectButton projectId={project.id} />
 
       <Link href={`/projects/${project.id}`} className="block">
-        {/* Preview thumbnail */}
-        <div className="relative overflow-hidden" style={{ height: 156, background: "#161b27" }}>
+        {/* Preview area */}
+        <div className="relative overflow-hidden" style={{ height: 160, background: "#0d0e12" }}>
           {project.hasVersion ? (
             <>
               <iframe
@@ -41,43 +50,76 @@ export default function ProjectCard({ project }: Props) {
                 title={project.name}
                 scrolling="no"
                 style={{
-                  position: "absolute", top: 0, left: 0,
-                  width: 1280, height: 720,
-                  transform: "scale(0.225)",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: 1280,
+                  height: 720,
+                  transform: "scale(0.23)",
                   transformOrigin: "top left",
-                  pointerEvents: "none", border: "none",
+                  pointerEvents: "none",
+                  border: "none",
                 }}
               />
-              <div className="absolute inset-0" />
-              {/* Bottom fade */}
-              <div className="absolute bottom-0 left-0 right-0 h-12"
-                style={{ background: "linear-gradient(to bottom, transparent, #161b27)" }} />
+              <div
+                className="absolute inset-x-0 bottom-0 h-12"
+                style={{ background: "linear-gradient(to bottom, transparent, #0d0e12)" }}
+              />
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center gap-2">
-              <span className="text-4xl font-bold" style={{ color: "rgba(255,255,255,0.06)" }}>
+            <div
+              className="flex h-full flex-col items-center justify-center gap-1"
+              style={{
+                background:
+                  "radial-gradient(ellipse 80% 80% at 50% 30%, rgba(109,95,255,0.10) 0%, transparent 70%)",
+              }}
+            >
+              <span
+                className="text-6xl font-bold"
+                style={{
+                  backgroundImage: "linear-gradient(135deg, rgba(167,139,250,0.35), rgba(109,95,255,0.10))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  letterSpacing: "-0.04em",
+                }}
+              >
                 {project.name[0]?.toUpperCase()}
               </span>
-              <span className="text-xs" style={{ color: "rgba(255,255,255,0.15)" }}>Not built yet</span>
+              <span className="text-xs" style={{ color: "#5b6070" }}>
+                Generate your first build
+              </span>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 flex items-center justify-between gap-2"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div
+          className="flex items-center justify-between gap-2 px-4 py-3"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        >
           <div className="min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: "#f0f4ff" }}>{project.name}</p>
-            <p className="text-xs mt-0.5" style={{ color: "#8b92a5" }}>{timeAgo(project.updatedAt)}</p>
+            <p className="truncate text-sm font-semibold" style={{ color: "#eef0f6" }}>
+              {project.name}
+            </p>
+            <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
+              {timeAgo(project.updatedAt)}
+            </p>
           </div>
           {project.publishedAt && (
-            <div className="shrink-0 flex items-center gap-1.5 text-xs font-medium"
-              style={{ color: "#34d399" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"
-                style={{ boxShadow: "0 0 5px #34d399" }} />
+            <div
+              className="flex shrink-0 items-center gap-1.5 text-xs font-medium"
+              style={{ color: "#4ade80" }}
+            >
+              <span
+                className="animate-dot-pulse h-1.5 w-1.5 rounded-full"
+                style={{ background: "#22c55e" }}
+              />
               Live
               {project.visitCount > 0 && (
-                <span className="ml-1" style={{ color: "#8b92a5" }}>· {project.visitCount}</span>
+                <span className="ml-1" style={{ color: "#7a8099" }}>
+                  · {project.visitCount}
+                </span>
               )}
             </div>
           )}

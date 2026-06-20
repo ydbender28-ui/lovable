@@ -14,28 +14,56 @@ export default async function DashboardPage() {
     prisma.project.findMany({
       where: { ownerId: session.user.id },
       orderBy: { updatedAt: "desc" },
-      select: { id: true, name: true, updatedAt: true, publishedAt: true, visitCount: true, versions: { select: { id: true }, take: 1 } },
+      select: {
+        id: true,
+        name: true,
+        updatedAt: true,
+        publishedAt: true,
+        visitCount: true,
+        versions: { select: { id: true }, take: 1 },
+      },
     }),
-    prisma.agent.findMany({ where: { ownerId: session.user.id }, orderBy: { updatedAt: "desc" } }),
+    prisma.agent.findMany({
+      where: { ownerId: session.user.id },
+      orderBy: { updatedAt: "desc" },
+    }),
   ]);
 
-  const projectsWithVersion = projects.map(p => ({ ...p, hasVersion: p.versions.length > 0 }));
+  const projectsWithVersion = projects.map((p) => ({
+    ...p,
+    hasVersion: p.versions.length > 0,
+  }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#0e1117" }}>
+    <div className="min-h-screen" style={{ background: "#0a0b0e" }}>
+      {/* ambient glow */}
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 h-80"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 100% at 50% -30%, rgba(109,95,255,0.12) 0%, transparent 65%)",
+        }}
+      />
+
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b"
-        style={{ background: "rgba(14,17,23,0.85)", backdropFilter: "blur(16px)", borderColor: "rgba(255,255,255,0.07)" }}>
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/"><Logo /></Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs" style={{ color: "#8b92a5" }}>{session.user.email}</span>
+      <header
+        className="glass sticky top-0 z-30"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+      >
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+          <Link href="/">
+            <Logo size="md" />
+          </Link>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-xs sm:block" style={{ color: "#7a8099" }}>
+              {session.user.email}
+            </span>
             <SignOutButton />
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="relative z-10 mx-auto max-w-6xl px-6 py-10">
         <DashboardTabs projects={projectsWithVersion} agents={agents} />
       </main>
     </div>
