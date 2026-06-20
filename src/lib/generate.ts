@@ -546,8 +546,8 @@ Make the entire layout and structure match this design system. It should look DR
 - If asked to fix mobile layout: add responsive CSS only, do NOT restructure or redesign
 - If asked to fix a bug: fix only that bug, touch nothing else
 - NEVER change the application from one type to another (e.g., CRM → e-commerce is forbidden)
-- Return the complete updated files in the delimiter format.`
-    : `BUILD REQUEST: ${prompt}${envSection}\n\nReturn all 3 files in the delimiter format.`;
+- You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
+    : `BUILD REQUEST: ${prompt}${envSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
 
   let text = "";
   let stopped = false;

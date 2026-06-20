@@ -290,10 +290,12 @@ export default function ProjectWorkspace({
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    // If there's a known iframe error and user is asking to fix, inject full error details
-    const isFix = /^fix\b/i.test(trimmed) || trimmed.toLowerCase() === "fix";
-    if (isFix && iframeError) {
-      const fixPrompt = `Fix this JavaScript runtime error completely. Only fix the bug, do not change any functionality:\n\n${iframeError}`;
+    // If user types a short fix command, inject full context so AI knows what to fix
+    const isFix = /^fix(\s|$)/i.test(trimmed) || trimmed.toLowerCase() === "fix";
+    if (isFix) {
+      const fixPrompt = iframeError
+        ? `Fix this JavaScript runtime error completely. Only fix the bug, do not change any app functionality:\n\n${iframeError}`
+        : `Fix any JavaScript errors or bugs in the current code so the app renders correctly. Return all files in the correct format.`;
       setIframeError(null);
       runGenerate(fixPrompt);
       return;
