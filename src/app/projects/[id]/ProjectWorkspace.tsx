@@ -37,6 +37,9 @@ const QUICK_ACTIONS = [
   { label: "♿ Accessibility", prompt: "Improve accessibility: add ARIA labels, keyboard navigation (Tab/Enter/Escape), visible focus rings, and screen reader support throughout." },
   { label: "📊 Add stats", prompt: "Add an analytics/stats section with key metrics, animated number counters, and trend indicators." },
   { label: "❌ Fix errors", prompt: "Review the code for runtime errors, missing null checks, and edge cases. Fix all issues found." },
+  { label: "🌐 Add SEO", prompt: "Add SEO meta tags (title, description, og:image, twitter card) to index.html. Make the title and description match the app's purpose. Add a canonical URL, viewport meta, and favicon link." },
+  { label: "⚡ Performance", prompt: "Optimize performance: lazy-load images with loading='lazy', debounce search inputs, memoize expensive list renders with useMemo, and minimize re-renders." },
+  { label: "🔐 Auth gate", prompt: "Add a simple login gate: a login page with email/password form (use localStorage to persist session with a demo account: user@demo.com / demo123), redirect to main app on success, and a logout button in the header." },
 ];
 
 function detectNeededApis(prompt: string, existing: EnvVars) {
@@ -175,6 +178,9 @@ export default function ProjectWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
+  const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
+  const autoFixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoFixCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
@@ -246,6 +252,29 @@ export default function ProjectWorkspace({
       if (e.data?.type === "preview-error") {
         const err = e.data.error as string;
         setIframeError(err);
+        // Auto-fix: start 4-second countdown then fix automatically
+        if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+        if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
+        setAutoFixCountdown(4);
+        autoFixCountdownRef.current = setInterval(() => {
+          setAutoFixCountdown((n) => {
+            if (n === null || n <= 1) {
+              clearInterval(autoFixCountdownRef.current!);
+              autoFixCountdownRef.current = null;
+              return null;
+            }
+            return n - 1;
+          });
+        }, 1000);
+        autoFixTimerRef.current = setTimeout(() => {
+          setIframeError(null);
+          setAutoFixCountdown(null);
+          runGenerate(
+            `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${err}`,
+            undefined,
+            "claude-sonnet-4-6"
+          );
+        }, 4000);
       }
       // Admin "Save to Site" button in generated apps sends TC_SAVE_STATE
       if (e.data?.type === "TC_SAVE_STATE" && e.data?.state) {
@@ -880,16 +909,28 @@ export default function ProjectWorkspace({
       <div className="flex-1 overflow-hidden relative">
         {/* Floating error banner over preview */}
         {iframeError && !loading && activeTab === "preview" && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/90 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
             <span className="text-red-400 text-sm shrink-0">⚠</span>
-            <p className="text-xs text-red-300 truncate flex-1">Error detected — press Fix to repair</p>
+            <p className="text-xs text-red-300 flex-1 whitespace-nowrap">
+              Error detected — auto-fixing in {autoFixCountdown ?? 0}s
+            </p>
             <button
-              onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6"); }}
+              onClick={() => {
+                if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+                if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
+                setAutoFixCountdown(null);
+                const e = iframeError; setIframeError(null);
+                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6");
+              }}
               className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
             >
-              Fix for free →
+              Fix now →
             </button>
-            <button onClick={() => setIframeError(null)} className="text-gray-600 hover:text-gray-400 text-base leading-none">×</button>
+            <button onClick={() => {
+              if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+              if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
+              setAutoFixCountdown(null); setIframeError(null);
+            }} className="text-gray-600 hover:text-gray-400 text-base leading-none">×</button>
           </div>
         )}
         {hasFiles ? (

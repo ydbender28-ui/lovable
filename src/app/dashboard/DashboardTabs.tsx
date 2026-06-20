@@ -136,16 +136,15 @@ export default function DashboardTabs({
               ))}
             </div>
           ) : (
-            <div
-              className="mt-6 rounded-2xl p-16 text-center"
-              style={{
-                border: "1px dashed rgba(255,255,255,0.09)",
-                background: "rgba(255,255,255,0.01)",
-              }}
-            >
-              <p className="text-sm" style={{ color: "#7a8099" }}>
-                No apps yet — describe one above to get started.
-              </p>
+            <div className="mt-6 space-y-4">
+              <div className="rounded-2xl p-10 text-center" style={{ border: "1px dashed rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.01)" }}>
+                <p className="text-2xl mb-2">✨</p>
+                <p className="text-sm font-medium mb-1" style={{ color: "#eef0f6" }}>No apps yet</p>
+                <p className="text-xs mb-4" style={{ color: "#7a8099" }}>Describe what you want above, or start from a template.</p>
+                <Link href="/templates" className="inline-block rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px" style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 4px 16px rgba(109,95,255,0.30)" }}>
+                  Browse templates →
+                </Link>
+              </div>
             </div>
           )}
         </div>

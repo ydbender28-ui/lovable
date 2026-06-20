@@ -146,7 +146,8 @@ export default async function Home() {
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Logo size="md" />
           <div className="hidden items-center gap-8 text-sm md:flex" style={{ color: "#7a8099" }}>
-            <a href="#features" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Features</a>
+            <Link href="/templates" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Templates</Link>
+            <Link href="/showcase" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Showcase</Link>
             <a href="#pricing" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Pricing</a>
             <Link href="/docs" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Docs</Link>
           </div>

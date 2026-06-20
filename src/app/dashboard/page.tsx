@@ -55,6 +55,9 @@ export default async function DashboardPage() {
             <Logo size="md" />
           </Link>
           <div className="flex items-center gap-4">
+            <Link href="/templates" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Templates</Link>
+            <Link href="/showcase" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Showcase</Link>
+            <span className="hidden text-xs sm:block" style={{ color: "rgba(255,255,255,0.12)" }}>|</span>
             <span className="hidden text-xs sm:block" style={{ color: "#7a8099" }}>
               {session.user.email}
             </span>
