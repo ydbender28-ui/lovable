@@ -204,9 +204,20 @@ Cloudinary (CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET available):
   const {secure_url} = await res.json();
 
 Google Maps (GOOGLE_MAPS_API_KEY available):
-  // In index.html: <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_KEY"></script>
-  // Replace REPLACE_KEY dynamically OR set in index.html if key is in window.ENV
-  const map = new (window as any).google.maps.Map(document.getElementById('map'), {center:{lat:40.7,lng:-74},zoom:12});
+  // In index.html <head>: <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_KEY&callback=__initMap" async defer></script>
+  // CRITICAL: window.google.maps is NOT available synchronously — always defer initialization.
+  // In index.html before </body>: <script>window.__initMap = function(){/* maps ready */};</script>
+  // In App.tsx, use a useEffect with polling to wait for the API:
+  useEffect(()=>{
+    const interval = setInterval(()=>{
+      if((window as any).google?.maps){
+        clearInterval(interval);
+        const map = new (window as any).google.maps.Map(document.getElementById('map'),{center:{lat:40.7,lng:-74},zoom:12});
+        // add markers etc here
+      }
+    },100);
+    return ()=>clearInterval(interval);
+  },[]);
 
 ENV INJECTION RULE: When envVars are provided, inject them at the top of App.tsx:
   const ENV = window.ENV || {};  // always declare this — window.ENV is set by index.html

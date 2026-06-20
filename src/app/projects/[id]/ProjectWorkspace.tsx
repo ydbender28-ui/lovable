@@ -272,7 +272,8 @@ export default function ProjectWorkspace({
           runGenerate(
             `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${err}`,
             undefined,
-            "claude-sonnet-4-6"
+            "claude-sonnet-4-6",
+            true
           );
         }, 4000);
       }
@@ -399,7 +400,7 @@ export default function ProjectWorkspace({
         ? `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${liveError}`
         : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return all files in the ===FILE: path=== format.`;
       setIframeError(null);
-      runGenerate(fixPrompt, undefined, "claude-sonnet-4-6");
+      runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
       return;
     }
 
@@ -429,12 +430,14 @@ export default function ProjectWorkspace({
     runGenerate(trimmed);
   }
 
-  async function runGenerate(text: string, extraEnv?: EnvVars, forceModel?: string) {
+  async function runGenerate(text: string, extraEnv?: EnvVars, forceModel?: string, silent?: boolean) {
     setFlow({ type: "idle" });
     setSuggestions([]);
     setShowUndo(false);
-    const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
-    setMessages((prev) => [...prev, userMessage]);
+    if (!silent) {
+      const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
+      setMessages((prev) => [...prev, userMessage]);
+    }
     setLoading(true);
     setError(null);
     setIframeError(null);
@@ -477,10 +480,13 @@ export default function ProjectWorkspace({
                 ? `\n\n_${payload.modelUsed} · ${payload.complexity ?? ""} · $${(payload.estimatedCostUsd ?? 0).toFixed(4)}_`
                 : "";
               const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
+              const summary = silent
+                ? "✓ Error fixed automatically." + (payload.liveUpdated ? "\n\n✓ Live site updated." : "")
+                : (payload.summary ?? "Done! Check the preview.") + meta + liveNote;
               setMessages((prev) => [...prev, {
                 id: payload.tempMessageId ?? `msg-${Date.now()}`,
                 role: "assistant",
-                content: (payload.summary ?? "Done! Check the preview.") + meta + liveNote,
+                content: summary,
               }]);
               if (payload.liveUpdated) setLiveUpdated(true);
               setSuggestions(getSmartSuggestions(payload.files));
@@ -788,7 +794,7 @@ export default function ProjectWorkspace({
           <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
             <p className="font-medium">Error detected</p>
             <p className="text-orange-400/80">Type <strong>fix</strong> in the chat to repair it.</p>
-            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6"); }}
+            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6", true); }}
               className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium">
               Fix error →
             </button>
@@ -920,7 +926,7 @@ export default function ProjectWorkspace({
                 if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
                 setAutoFixCountdown(null);
                 const e = iframeError; setIframeError(null);
-                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6");
+                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6", true);
               }}
               className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
             >
