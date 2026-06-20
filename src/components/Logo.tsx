@@ -1,32 +1,44 @@
 export default function Logo({ size = "sm" }: { size?: "sm" | "md" | "lg" }) {
-  const iconSize = size === "lg" ? 40 : size === "md" ? 32 : 24;
-  const textClass = size === "lg" ? "text-2xl" : size === "md" ? "text-lg" : "text-sm";
+  const scale = size === "lg" ? 1.5 : size === "md" ? 1.15 : 1;
+  const iconW = Math.round(32 * scale);
+  const iconH = Math.round(32 * scale);
+  const textSize = size === "lg" ? "text-xl" : size === "md" ? "text-base" : "text-sm";
 
   return (
-    <div className="flex items-center gap-2">
-      <svg width={iconSize} height={iconSize} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="40" height="40" rx="10" fill="#0f0f13"/>
-        <rect width="40" height="40" rx="10" fill="url(#logo-border)" opacity="0.15"/>
-        {/* Stylized < > brackets */}
-        <path d="M11 20L17 14" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M11 20L17 26" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M29 20L23 14" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M29 20L23 26" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round"/>
-        {/* Center dot — accent */}
-        <circle cx="20" cy="20" r="2.5" fill="url(#logo-dot)"/>
+    <div className="flex items-center gap-2.5">
+      <svg width={iconW} height={iconH} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Background square with rounded corners */}
+        <rect width="32" height="32" rx="8" fill="#0f0e17"/>
+        {/* Subtle top shine */}
+        <rect width="32" height="16" rx="8" fill="url(#shine)" opacity="0.06"/>
+        {/* Left bracket */}
+        <path d="M10 10L6 16L10 22" stroke="url(#bracketL)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+        {/* Right bracket */}
+        <path d="M22 10L26 16L22 22" stroke="url(#bracketR)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+        {/* Center slash */}
+        <path d="M19 9L13 23" stroke="url(#slash)" strokeWidth="2" strokeLinecap="round"/>
         <defs>
-          <linearGradient id="logo-border" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <linearGradient id="bracketL" x1="6" y1="10" x2="10" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#c084fc"/>
+            <stop offset="1" stopColor="#818cf8"/>
+          </linearGradient>
+          <linearGradient id="bracketR" x1="22" y1="10" x2="26" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#818cf8"/>
+            <stop offset="1" stopColor="#c084fc"/>
+          </linearGradient>
+          <linearGradient id="slash" x1="19" y1="9" x2="13" y2="23" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#f0abfc"/>
+            <stop offset="1" stopColor="#a5b4fc"/>
+          </linearGradient>
+          <linearGradient id="shine" x1="0" y1="0" x2="32" y2="16" gradientUnits="userSpaceOnUse">
             <stop stopColor="#fff"/>
             <stop offset="1" stopColor="#fff" stopOpacity="0"/>
           </linearGradient>
-          <linearGradient id="logo-dot" x1="17.5" y1="17.5" x2="22.5" y2="22.5" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#a78bfa"/>
-            <stop offset="1" stopColor="#38bdf8"/>
-          </linearGradient>
         </defs>
       </svg>
-      <span className={`font-semibold tracking-tight text-white ${textClass}`} style={{ letterSpacing: "-0.02em" }}>
-        that<span style={{ color: "#a78bfa" }}>code</span>
+
+      <span className={`font-bold tracking-tight text-white ${textSize}`} style={{ letterSpacing: "-0.025em" }}>
+        That<span style={{ backgroundImage: "linear-gradient(135deg, #c084fc, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Code</span>
       </span>
     </div>
   );
