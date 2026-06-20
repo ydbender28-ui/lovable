@@ -5,8 +5,8 @@ export default auth((req) => {
   const host = req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
 
-  // Route *.thatcode.dev subdomains to /p/[slug]
-  if (hostname.endsWith(".thatcode.dev")) {
+  // Route *.thatcode.xyz subdomains to /p/[slug]
+  if (hostname.endsWith(".thatcode.xyz")) {
     const subdomain = hostname.replace(/\.thatcode\.dev$/, "");
     if (subdomain && subdomain !== "www") {
       const url = req.nextUrl.clone();
@@ -16,7 +16,7 @@ export default auth((req) => {
   }
 
   // Route custom domains to /p/[slug] via /custom-domain/[host] lookup
-  const isKnownHost = hostname === "thatcode.dev" || hostname === "www.thatcode.dev" || hostname.endsWith(".thatcode.dev") || hostname === "localhost";
+  const isKnownHost = hostname === "thatcode.xyz" || hostname === "www.thatcode.xyz" || hostname.endsWith(".thatcode.xyz") || hostname === "localhost";
   if (!isKnownHost && !hostname.endsWith(".vercel.app")) {
     const url = req.nextUrl.clone();
     url.pathname = `/p-custom/${encodeURIComponent(hostname)}`;

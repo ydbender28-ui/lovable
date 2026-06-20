@@ -8,7 +8,7 @@ const SECTIONS = [
     items: [
       {
         title: "Your first app",
-        content: `Sign up for free at thatcode.dev. Once logged in, you'll land on your dashboard. Type what you want to build in the text box — be as descriptive as you like — and press Enter or click Build.\n\nThatCode will write the code and open a live preview in seconds. You can keep chatting to make changes.`,
+        content: `Sign up for free at thatcode.xyz. Once logged in, you'll land on your dashboard. Type what you want to build in the text box — be as descriptive as you like — and press Enter or click Build.\n\nThatCode will write the code and open a live preview in seconds. You can keep chatting to make changes.`,
       },
       {
         title: "Describing what you want",
@@ -39,8 +39,8 @@ const SECTIONS = [
     title: "Publishing",
     items: [
       {
-        title: "Publish to thatcode.dev",
-        content: `Click Publish in the top-right corner. Choose a slug (e.g. my-project) and your app will be live at my-project.thatcode.dev instantly. Every time you make changes and they rebuild, the live URL updates automatically.`,
+        title: "Publish to thatcode.xyz",
+        content: `Click Publish in the top-right corner. Choose a slug (e.g. my-project) and your app will be live at my-project.thatcode.xyz instantly. Every time you make changes and they rebuild, the live URL updates automatically.`,
       },
       {
         title: "Custom domains",

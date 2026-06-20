@@ -90,7 +90,7 @@ export default function SignupPage() {
           {[
             { icon: "⚡", t: "Built in seconds", d: "Full working apps, not boilerplate" },
             { icon: "🖥", t: "Real live preview", d: "See it render as it is written" },
-            { icon: "🚀", t: "Publish anywhere", d: "Custom domain or thatcode.dev" },
+            { icon: "🚀", t: "Publish anywhere", d: "Custom domain or thatcode.xyz" },
           ].map((f) => (
             <div key={f.t} className="flex items-start gap-3.5">
               <span
@@ -115,7 +115,7 @@ export default function SignupPage() {
         </div>
 
         <p className="relative z-10 text-xs" style={{ color: "#4b5263" }}>
-          © 2025 ThatCode · thatcode.dev
+          © 2025 ThatCode · thatcode.xyz
         </p>
       </div>
 

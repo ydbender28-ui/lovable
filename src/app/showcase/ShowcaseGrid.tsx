@@ -27,7 +27,7 @@ export default function ShowcaseGrid({ projects }: { projects: Project[] }) {
       {projects.map((p) => (
         <a
           key={p.id}
-          href={`https://${p.publishSlug}.thatcode.dev`}
+          href={`https://${p.publishSlug}.thatcode.xyz`}
           target="_blank"
           rel="noreferrer"
           className="group overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 block"
