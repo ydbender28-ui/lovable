@@ -195,8 +195,8 @@ export default async function Home() {
 
           {/* Headline */}
           <h1
-            className="animate-fade-slide-up max-w-3xl text-5xl font-bold sm:text-6xl lg:text-[78px]"
-            style={{ letterSpacing: "-0.045em", lineHeight: 1.02, color: "#eef0f6", animationDelay: "0.05s" }}
+            className="animate-fade-slide-up max-w-3xl text-[36px] font-bold sm:text-5xl lg:text-[72px]"
+            style={{ letterSpacing: "-0.04em", lineHeight: 1.05, color: "#eef0f6", animationDelay: "0.05s" }}
           >
             Build apps that
             <br />
@@ -215,8 +215,8 @@ export default async function Home() {
           {/* CTAs — client component for demo modal */}
           <HeroActions startHref={startHref} />
 
-          {/* ---------- Real browser mockup ---------- */}
-          <div className="animate-fade-slide-up relative mt-20 w-full max-w-4xl" style={{ animationDelay: "0.22s" }}>
+          {/* ---------- Real browser mockup — hidden on mobile to avoid overlap ---------- */}
+          <div className="animate-fade-slide-up relative mt-16 hidden w-full max-w-4xl sm:block" style={{ animationDelay: "0.22s" }}>
             {/* glow underneath */}
             <div
               className="animate-glow-pulse pointer-events-none absolute -inset-x-10 bottom-[-40px] top-10 -z-10"
@@ -251,33 +251,30 @@ export default async function Home() {
               </div>
 
               {/* Real e-commerce app preview */}
-              <div style={{ background: "#fafafa" }}>
+              <div style={{ background: "#fafafa", overflow: "hidden" }}>
                 {/* Store nav */}
-                <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontWeight: 800, fontSize: 16, color: "#111", letterSpacing: "-0.03em" }}>ShopCraft</span>
-                  <div style={{ display: "flex", gap: 20, fontSize: 12, color: "#6b7280" }}>
+                <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "nowrap" }}>
+                  <span style={{ fontWeight: 800, fontSize: 15, color: "#111", letterSpacing: "-0.03em", flexShrink: 0 }}>ShopCraft</span>
+                  <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#6b7280" }}>
                     {["Products", "Collections", "About"].map(l => <span key={l}>{l}</span>)}
                   </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <div style={{ background: "#f3f4f6", borderRadius: 8, padding: "6px 12px", fontSize: 11, color: "#6b7280" }}>Search…</div>
-                    <div style={{ background: "#111", color: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 11, fontWeight: 600 }}>Cart (2)</div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                    <div style={{ background: "#111", color: "#fff", borderRadius: 8, padding: "5px 12px", fontSize: 11, fontWeight: 600 }}>Cart (2)</div>
                   </div>
                 </div>
 
                 {/* Hero banner */}
-                <div style={{ background: "linear-gradient(135deg,#0f0a23,#1e1150)", padding: "28px 24px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 600, letterSpacing: "0.1em", marginBottom: 8, textTransform: "uppercase" }}>Summer Collection 2025</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.04em", marginBottom: 6 }}>
-                    Style that speaks
-                  </div>
-                  <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 16 }}>Free shipping on orders over $50</div>
-                  <div style={{ display: "inline-block", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", color: "#fff", borderRadius: 8, padding: "8px 20px", fontSize: 11, fontWeight: 700 }}>Shop Now →</div>
+                <div style={{ background: "linear-gradient(135deg,#0f0a23,#1e1150)", padding: "24px 24px 20px", textAlign: "center" }}>
+                  <div style={{ fontSize: 10, color: "#a78bfa", fontWeight: 600, letterSpacing: "0.1em", marginBottom: 6, textTransform: "uppercase" }}>Summer Collection 2025</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-0.04em", marginBottom: 4 }}>Style that speaks</div>
+                  <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 14 }}>Free shipping on orders over $50</div>
+                  <div style={{ display: "inline-block", background: "linear-gradient(135deg,#7c3aed,#4f46e5)", color: "#fff", borderRadius: 8, padding: "7px 18px", fontSize: 11, fontWeight: 700 }}>Shop Now →</div>
                 </div>
 
-                {/* Products grid */}
-                <div style={{ padding: "20px 24px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111", marginBottom: 14 }}>Featured Products</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+                {/* Products grid — 2 cols on sm, 4 on lg */}
+                <div style={{ padding: "18px 24px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111", marginBottom: 12 }}>Featured Products</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
                     {[
                       { name: "Air Runner Pro", price: "$129", badge: "New", color: "#4f46e5" },
                       { name: "Classic Tee", price: "$34", badge: "Sale", color: "#dc2626" },
@@ -285,19 +282,19 @@ export default async function Home() {
                       { name: "Canvas Bag", price: "$56", badge: "Hot", color: "#d97706" },
                     ].map((p) => (
                       <div key={p.name} style={{ background: "#fff", borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb" }}>
-                        <div style={{ height: 80, background: `linear-gradient(135deg,${p.color}22,${p.color}44)`, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ height: 72, background: `linear-gradient(135deg,${p.color}22,${p.color}44)`, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           {p.badge && (
-                            <div style={{ position: "absolute", top: 6, left: 6, background: p.badge === "Sale" ? "#dc2626" : p.badge === "Hot" ? "#d97706" : "#4f46e5", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 8, fontWeight: 700 }}>
+                            <div style={{ position: "absolute", top: 5, left: 5, background: p.badge === "Sale" ? "#dc2626" : p.badge === "Hot" ? "#d97706" : "#4f46e5", color: "#fff", borderRadius: 4, padding: "2px 5px", fontSize: 8, fontWeight: 700 }}>
                               {p.badge}
                             </div>
                           )}
-                          <div style={{ width: 36, height: 36, borderRadius: 8, background: p.color, opacity: 0.6 }} />
+                          <div style={{ width: 32, height: 32, borderRadius: 8, background: p.color, opacity: 0.6 }} />
                         </div>
-                        <div style={{ padding: "10px 10px 8px" }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#111", marginBottom: 3 }}>{p.name}</div>
+                        <div style={{ padding: "8px 10px 7px" }}>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: "#111", marginBottom: 4 }}>{p.name}</div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#111" }}>{p.price}</span>
-                            <div style={{ background: "#111", color: "#fff", borderRadius: 5, padding: "3px 7px", fontSize: 9, fontWeight: 600 }}>Add</div>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#111" }}>{p.price}</span>
+                            <div style={{ background: "#111", color: "#fff", borderRadius: 4, padding: "2px 6px", fontSize: 9, fontWeight: 600 }}>Add</div>
                           </div>
                         </div>
                       </div>
@@ -305,6 +302,19 @@ export default async function Home() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Mobile-only: simple feature highlight instead of mockup */}
+          <div className="mt-10 block w-full sm:hidden">
+            <div className="rounded-2xl p-6 text-center" style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <div className="mb-4 flex justify-center gap-3">
+                {["⚡", "🖥", "🚀"].map(e => (
+                  <span key={e} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: "rgba(109,95,255,0.14)", border: "1px solid rgba(109,95,255,0.26)" }}>{e}</span>
+                ))}
+              </div>
+              <p className="text-sm font-semibold" style={{ color: "#eef0f6" }}>From prompt to live app in seconds</p>
+              <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#7a8099" }}>No code. No setup. Just describe it and watch it build.</p>
             </div>
           </div>
 

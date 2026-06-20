@@ -6,13 +6,13 @@ export const revalidate = 60;
 
 export default async function ShowcasePage() {
   const published = await prisma.project.findMany({
-    where: { publishedAt: { not: null }, publishedSlug: { not: null } },
+    where: { publishedAt: { not: null }, publishSlug: { not: null } },
     orderBy: { visitCount: "desc" },
     take: 30,
     select: {
       id: true,
       name: true,
-      publishedSlug: true,
+      publishSlug: true,
       visitCount: true,
       publishedAt: true,
       owner: { select: { name: true } },
@@ -59,7 +59,7 @@ export default async function ShowcasePage() {
             {published.map((p) => (
               <a
                 key={p.id}
-                href={`https://${p.publishedSlug}.thatcode.dev`}
+                href={`https://${p.publishSlug}.thatcode.dev`}
                 target="_blank"
                 rel="noreferrer"
                 className="group overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 block"
