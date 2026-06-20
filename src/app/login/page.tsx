@@ -17,75 +17,73 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
+    const res = await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
-
-    if (res?.error) {
-      setError("Invalid email or password");
-      return;
-    }
-
+    if (res?.error) { setError("Invalid email or password"); return; }
     router.push("/dashboard");
     router.refresh();
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0f] px-4">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-1/4 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-600/25 via-purple-600/15 to-indigo-600/15 blur-3xl" />
+    <div className="min-h-screen flex bg-[#080809]">
+      {/* Left panel */}
+      <div className="hidden lg:flex flex-col w-[420px] shrink-0 border-r border-white/[0.06] p-10 justify-between">
+        <Link href="/"><Logo size="md" /></Link>
+        <div>
+          <blockquote className="text-base text-gray-400 leading-relaxed">
+            &ldquo;Built our internal CRM in 20 minutes. Would have taken our dev team two weeks.&rdquo;
+          </blockquote>
+          <p className="mt-4 text-sm text-gray-600">— Early user</p>
+        </div>
+        <p className="text-xs text-gray-700">© {new Date().getFullYear()} ThatCode</p>
       </div>
 
-      <div className="relative z-10 w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl shadow-2xl">
-        <Link href="/" className="mb-8 block"><Logo /></Link>
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 lg:hidden"><Link href="/"><Logo size="md" /></Link></div>
 
-        <h1 className="text-2xl font-semibold text-white mb-1">Welcome back</h1>
-        <p className="text-gray-400 text-sm mb-6">Log in to continue building.</p>
+          <h1 className="text-2xl font-semibold text-white mb-1" style={{ letterSpacing: "-0.02em" }}>Welcome back</h1>
+          <p className="text-sm text-gray-500 mb-8">Log in to continue building.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/50 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-400/50 transition-colors"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Email</label>
+              <input
+                type="email" required value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.06] transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password</label>
+              <input
+                type="password" required value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.06] transition-all"
+              />
+            </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-400 bg-red-500/[0.08] border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
+            )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Log in"}
-          </button>
-        </form>
+            <button type="submit" disabled={loading}
+              className="w-full rounded-lg py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50 hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #0ea5e9)" }}>
+              {loading ? "Logging in…" : "Log in"}
+            </button>
+          </form>
 
-        <p className="mt-6 text-sm text-gray-400 text-center">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-fuchsia-400 font-medium hover:text-fuchsia-300">
-            Sign up
-          </Link>
-        </p>
+          <p className="mt-6 text-sm text-gray-600 text-center">
+            No account?{" "}
+            <Link href="/signup" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+              Sign up free
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
