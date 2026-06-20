@@ -1019,7 +1019,7 @@ export default function ProjectWorkspace({
       </div>
 
       {/* Mobile */}
-      <div className="sm:hidden" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minHeight: 0 }}>
+      <div className="sm:hidden flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
         <div style={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" }}>{mobileTab === "chat" ? chatPanel : previewPanel}</div>
         <div className="shrink-0 border-t border-white/10 bg-[#0c0c12] flex">
           {(["chat", "preview"] as const).map((tab) => (
