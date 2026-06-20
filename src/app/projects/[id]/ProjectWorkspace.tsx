@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import Logo from "@/components/Logo";
+import IntegrationsPanel from "./IntegrationsPanel";
 
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type ProjectFiles = Record<string, string>;
@@ -11,14 +12,18 @@ type EnvVars = Record<string, string>;
 type PreviewMode = "desktop" | "tablet" | "mobile";
 
 const API_DETECTORS = [
-  { keywords: ["stripe", "payment", "checkout", "subscription", "billing"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "Get from stripe.com/dashboard → Developers → API keys", placeholder: "pk_live_..." },
-  { keywords: ["openai", "gpt", "chatgpt", "dall-e"], name: "OpenAI", key: "OPENAI_API_KEY", hint: "Get from platform.openai.com/api-keys", placeholder: "sk-..." },
-  { keywords: ["google maps", "maps api", "directions", "geocod"], name: "Google Maps", key: "GOOGLE_MAPS_API_KEY", hint: "Get from console.cloud.google.com → Maps JavaScript API", placeholder: "AIza..." },
-  { keywords: ["twilio", "sms", "text message"], name: "Twilio", key: "TWILIO_ACCOUNT_SID", hint: "Get from console.twilio.com", placeholder: "AC..." },
-  { keywords: ["sendgrid", "email api"], name: "SendGrid", key: "SENDGRID_API_KEY", hint: "Get from app.sendgrid.com/settings/api_keys", placeholder: "SG..." },
-  { keywords: ["firebase", "firestore", "realtime database"], name: "Firebase", key: "FIREBASE_API_KEY", hint: "Get from Firebase console → Project settings", placeholder: "AIza..." },
-  { keywords: ["ups", "fedex", "shippo", "shipping rate"], name: "Shipping API", key: "SHIPPING_API_KEY", hint: "Your shipping provider API key", placeholder: "" },
-  { keywords: ["mapbox"], name: "Mapbox", key: "MAPBOX_TOKEN", hint: "Get from account.mapbox.com/access-tokens", placeholder: "pk.ey..." },
+  { keywords: ["stripe", "payment", "checkout", "subscription", "billing", "accept card", "credit card"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "stripe.com → Developers → API Keys", placeholder: "pk_live_..." },
+  { keywords: ["supabase", "postgres", "realtime database", "supabase auth"], name: "Supabase", key: "SUPABASE_URL", hint: "app.supabase.com → Project Settings → API", placeholder: "https://xyz.supabase.co" },
+  { keywords: ["openai", "gpt", "chatgpt", "dall-e", "ai chat", "ai completion"], name: "OpenAI", key: "OPENAI_API_KEY", hint: "platform.openai.com → API Keys", placeholder: "sk-..." },
+  { keywords: ["google maps", "maps api", "directions", "geocod", "show map", "embed map"], name: "Google Maps", key: "GOOGLE_MAPS_API_KEY", hint: "console.cloud.google.com → Maps JavaScript API", placeholder: "AIza..." },
+  { keywords: ["mapbox", "mapbox map"], name: "Mapbox", key: "MAPBOX_TOKEN", hint: "account.mapbox.com → Access Tokens", placeholder: "pk.ey..." },
+  { keywords: ["twilio", "sms", "text message", "send sms"], name: "Twilio", key: "TWILIO_ACCOUNT_SID", hint: "console.twilio.com → Account Info", placeholder: "AC..." },
+  { keywords: ["firebase", "firestore"], name: "Firebase", key: "FIREBASE_API_KEY", hint: "Firebase Console → Project Settings → Your apps", placeholder: "AIza..." },
+  { keywords: ["airtable", "airtable base", "airtable database"], name: "Airtable", key: "AIRTABLE_API_KEY", hint: "airtable.com → Account → API", placeholder: "pat..." },
+  { keywords: ["cloudinary", "image upload", "upload image", "file upload"], name: "Cloudinary", key: "CLOUDINARY_CLOUD_NAME", hint: "cloudinary.com/console → Dashboard", placeholder: "my-cloud" },
+  { keywords: ["resend", "send email", "email form", "contact form email"], name: "Resend", key: "RESEND_API_KEY", hint: "resend.com → API Keys", placeholder: "re_..." },
+  { keywords: ["clerk", "user auth", "user login", "authentication"], name: "Clerk", key: "CLERK_PUBLISHABLE_KEY", hint: "dashboard.clerk.com → API Keys", placeholder: "pk_live_..." },
+  { keywords: ["pusher", "realtime", "live update", "websocket"], name: "Pusher", key: "PUSHER_APP_KEY", hint: "dashboard.pusher.com → App → Keys", placeholder: "abc..." },
 ];
 
 const QUICK_ACTIONS = [
@@ -174,6 +179,7 @@ export default function ProjectWorkspace({
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
   const [publishing, setPublishing] = useState(false);
+  const [showIntegrations, setShowIntegrations] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [liveUpdated, setLiveUpdated] = useState(false);
   const [dnsInfo, setDnsInfo] = useState<{ domain: string; cname: string } | null>(null);
@@ -864,6 +870,12 @@ export default function ProjectWorkspace({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
+            onClick={() => setShowIntegrations(true)}
+            title="Integrations"
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1.5">
+            🔌 Integrations
+          </button>
+          <button
             onClick={() => { setShowHistory(true); handleLoadVersions(); }}
             title="Version history"
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
@@ -932,6 +944,15 @@ export default function ProjectWorkspace({
           publishError={error}
           onPublish={(slug, customDomain, password) => handlePublish(slug, customDomain, password)}
           onClose={() => setShowPublishDialog(false)}
+        />
+      )}
+
+      {showIntegrations && (
+        <IntegrationsPanel
+          envVars={envVars}
+          onSaveEnv={async (vars) => { await saveEnvVars(vars); }}
+          onAutoPrompt={(prompt, env) => { setShowIntegrations(false); runGenerate(prompt, env); }}
+          onClose={() => setShowIntegrations(false)}
         />
       )}
 

@@ -163,6 +163,56 @@ ABSOLUTELY NEVER:
 - Walls of unstyled text with no visual hierarchy
 - Default blue underlined links
 
+INTEGRATIONS — EXACT PATTERNS TO USE:
+
+When env vars are provided (window.ENV object injected at top of App.tsx), use these exact patterns:
+
+Stripe payments (STRIPE_PUBLISHABLE_KEY available):
+  // In index.html <head>: <script src="https://js.stripe.com/v3/"></script>
+  // In App.tsx:
+  const stripe = (window as any).Stripe(window.ENV.STRIPE_PUBLISHABLE_KEY);
+  const elements = stripe.elements();
+  const card = elements.create('card', { style: { base: { color: '#fff', fontSize: '16px' } } });
+  card.mount('#card-element');
+  // On submit: const {paymentMethod, error} = await stripe.createPaymentMethod({type:'card',card});
+  // NEVER use server-side Stripe SDK — only Stripe.js frontend methods with publishable key
+
+Supabase (SUPABASE_URL + SUPABASE_ANON_KEY available):
+  // In index.html <head>: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  // In App.tsx:
+  const supabase = (window as any).supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
+  const { data, error } = await supabase.from('table_name').select('*');
+  // For auth: await supabase.auth.signInWithPassword({email, password})
+  // NEVER import from npm — always use the CDN UMD build via window.supabase
+
+Firebase (FIREBASE_API_KEY + FIREBASE_PROJECT_ID available):
+  // In index.html <head>: add firebase-app-compat and firebase-firestore-compat scripts from gstatic.com
+  // In App.tsx:
+  const app = (window as any).firebase.initializeApp({ apiKey: window.ENV.FIREBASE_API_KEY, projectId: window.ENV.FIREBASE_PROJECT_ID, authDomain: window.ENV.FIREBASE_PROJECT_ID+'.firebaseapp.com' });
+  const db = (window as any).firebase.firestore();
+  const snap = await db.collection('items').get();
+
+OpenAI (OPENAI_API_KEY available):
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.ENV.OPENAI_API_KEY},
+    body: JSON.stringify({model:'gpt-4o-mini', messages:[{role:'user',content:prompt}]})
+  });
+
+Cloudinary (CLOUDINARY_CLOUD_NAME + CLOUDINARY_UPLOAD_PRESET available):
+  const form = new FormData(); form.append('file', file); form.append('upload_preset', window.ENV.CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch('https://api.cloudinary.com/v1_1/'+window.ENV.CLOUDINARY_CLOUD_NAME+'/image/upload', {method:'POST',body:form});
+  const {secure_url} = await res.json();
+
+Google Maps (GOOGLE_MAPS_API_KEY available):
+  // In index.html: <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_KEY"></script>
+  // Replace REPLACE_KEY dynamically OR set in index.html if key is in window.ENV
+  const map = new (window as any).google.maps.Map(document.getElementById('map'), {center:{lat:40.7,lng:-74},zoom:12});
+
+ENV INJECTION RULE: When envVars are provided, inject them at the top of App.tsx:
+  const ENV = window.ENV || {};  // always declare this — window.ENV is set by index.html
+In index.html, before </body>: <script>window.ENV = {KEY1:"val1",KEY2:"val2"};</script>
+NEVER hardcode secret keys in App.tsx source. Always read from window.ENV.
+
 HANDLING COMPLEX FEATURES:
 
 Image uploads:
