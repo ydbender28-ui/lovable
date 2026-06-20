@@ -2,82 +2,61 @@ interface LogoProps {
   size?: "sm" | "md" | "lg";
 }
 
-const SIZES = {
-  sm: { icon: 26, font: 16, radius: 7 },
-  md: { icon: 32, font: 19, radius: 9 },
-  lg: { icon: 40, font: 24, radius: 11 },
-};
-
 export default function Logo({ size = "md" }: LogoProps) {
-  const s = SIZES[size];
-  const gid = `tc-bolt-${size}`;
+  const dim = size === "sm" ? 30 : size === "lg" ? 46 : 36;
+  const fs = size === "sm" ? 14 : size === "lg" ? 20 : 16;
+  const gap = size === "sm" ? 8 : 10;
 
   return (
-    <span
-      style={{ display: "inline-flex", alignItems: "center", gap: s.icon * 0.32, userSelect: "none" }}
-    >
-      {/* Icon: dark rounded square with a two-triangle lightning bolt */}
-      <span
+    <div style={{ display: "inline-flex", alignItems: "center", gap }}>
+      {/* Mark */}
+      <div
         style={{
-          width: s.icon,
-          height: s.icon,
-          borderRadius: s.radius,
-          background: "linear-gradient(160deg, #1a1d24 0%, #0c0d11 100%)",
-          border: "1px solid rgba(255,255,255,0.10)",
-          display: "inline-flex",
+          width: dim,
+          height: dim,
+          borderRadius: Math.round(dim * 0.30),
+          background: "linear-gradient(145deg, #17152a 0%, #0e0c1a 100%)",
+          border: "1px solid rgba(139,113,255,0.40)",
+          boxShadow:
+            "0 0 0 1px rgba(109,95,255,0.08), 0 4px 16px rgba(109,95,255,0.22), inset 0 1px 0 rgba(255,255,255,0.09)",
+          display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow:
-            "0 2px 12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)",
           flexShrink: 0,
         }}
       >
         <svg
-          width={s.icon * 0.58}
-          height={s.icon * 0.58}
-          viewBox="0 0 24 24"
+          width={Math.round(dim * 0.50)}
+          height={Math.round(dim * 0.60)}
+          viewBox="0 0 16 20"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient
-              id={gid}
-              x1="5"
-              y1="1"
-              x2="19"
-              y2="23"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stopColor="#9a82ff" />
-              <stop offset="0.5" stopColor="#6d5fff" />
-              <stop offset="1" stopColor="#3da9ff" />
+            <linearGradient id="tc-bolt" x1="0" y1="0" x2="16" y2="20" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="#c4b5fd" />
+              <stop offset="55%" stopColor="#818cf8" />
+              <stop offset="100%" stopColor="#60a5fa" />
             </linearGradient>
           </defs>
-          {/* upper triangular shard */}
-          <path d="M13.4 1.5 L5 13.2 L11.2 12.3 Z" fill={`url(#${gid})`} />
-          {/* lower triangular shard, overlapping */}
-          <path
-            d="M10.6 22.5 L19 10.8 L12.8 11.7 Z"
-            fill={`url(#${gid})`}
-            opacity="0.92"
-          />
+          <path d="M10 0L1 11H7L5 20L15 9H9L10 0Z" fill="url(#tc-bolt)" />
         </svg>
-      </span>
+      </div>
 
       {/* Wordmark */}
       <span
         style={{
-          fontSize: s.font,
+          fontSize: fs,
           fontWeight: 700,
-          letterSpacing: "-0.03em",
+          letterSpacing: "-0.04em",
           lineHeight: 1,
-          whiteSpace: "nowrap",
+          userSelect: "none",
         }}
       >
         <span style={{ color: "#eef0f6" }}>That</span>
         <span
           style={{
-            backgroundImage: "linear-gradient(120deg, #6d5fff 0%, #a78bfa 100%)",
+            background: "linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -86,6 +65,6 @@ export default function Logo({ size = "md" }: LogoProps) {
           Code
         </span>
       </span>
-    </span>
+    </div>
   );
 }
