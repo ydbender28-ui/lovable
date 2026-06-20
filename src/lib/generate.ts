@@ -561,11 +561,14 @@ export async function generateProject(
 ): Promise<GenerateResult> {
   const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
   let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
-  const design     = pickDesign(prompt);
+  const isEdit = !!(existingFiles && Object.keys(existingFiles).length > 0);
 
-  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace(
-    "{{DESIGN_INJECTION}}",
-    `${design.description}
+  // Only inject a design system for new builds — edits must preserve existing design
+  const designInjection = isEdit
+    ? `EDITING AN EXISTING APP — DO NOT apply any new design system. Read the existing code and match its exact colors, fonts, spacing, and visual style. Your only job is to add/change what was requested.`
+    : (() => {
+        const design = pickDesign(prompt);
+        return `${design.description}
 COLORS (use exactly):
 - body background: ${design.bg}
 - card/surface: ${design.card}
@@ -575,8 +578,10 @@ COLORS (use exactly):
 - text: ${design.text}
 - muted text: ${design.muted}
 - border-radius: ${design.radius}
-Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`
-  );
+Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`;
+      })();
+
+  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace("{{DESIGN_INJECTION}}", designInjection);
 
   onStatus?.("Starting generation…");
 
@@ -592,8 +597,6 @@ Make the entire layout and structure match this design system. It should look DR
       .join("\n");
     if (serialized.length < 60000) existingSection = serialized;
   }
-  const isEdit = !!existingSection;
-
   const userContent = isEdit
     ? `CURRENT CODE:\n${existingSection}${envSection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
 - Make ONLY the minimal changes needed to address the edit request — add the feature, fix the bug, nothing more
