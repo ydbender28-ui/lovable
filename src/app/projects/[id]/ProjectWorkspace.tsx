@@ -237,7 +237,10 @@ export default function ProjectWorkspace({
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
-      if (e.data?.type === "preview-error") setIframeError(e.data.error as string);
+      if (e.data?.type === "preview-error") {
+        const err = e.data.error as string;
+        setIframeError(err);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -286,6 +289,16 @@ export default function ProjectWorkspace({
   async function handlePromptSubmit(text: string) {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
+
+    // If there's a known iframe error and user is asking to fix, inject full error details
+    const isFix = /^fix\b/i.test(trimmed) || trimmed.toLowerCase() === "fix";
+    if (isFix && iframeError) {
+      const fixPrompt = `Fix this JavaScript runtime error completely. Only fix the bug, do not change any functionality:\n\n${iframeError}`;
+      setIframeError(null);
+      runGenerate(fixPrompt);
+      return;
+    }
+
     const needed = detectNeededApis(trimmed, envVars);
     if (needed.length > 0) {
       setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
