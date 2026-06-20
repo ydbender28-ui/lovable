@@ -245,7 +245,10 @@ export default function ProjectWorkspace({
   }, [projectId]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const t = setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(t);
   }, [messages, loading, flow, suggestions]);
 
   useEffect(() => { if (!loading) setLoadingStatus("Thinking..."); }, [loading]);
