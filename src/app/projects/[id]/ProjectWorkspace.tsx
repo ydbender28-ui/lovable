@@ -1057,42 +1057,7 @@ export default function ProjectWorkspace({
       )}
 
       {/* DNS instructions after custom domain publish */}
-      {dnsInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setDnsInfo(null)}>
-          <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="text-2xl mb-3">🎉</div>
-            <h2 className="text-base font-semibold text-white mb-1">One last step</h2>
-            <p className="text-xs text-gray-400 mb-4">
-              Your app is published! To make it live at <strong className="text-white">{dnsInfo.domain}</strong>, log into wherever you bought that domain and add this DNS record:
-            </p>
-
-            <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-2.5 font-mono text-xs mb-4">
-              {dnsInfo.cname === "76.76.21.21" ? (
-                <>
-                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">A</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">@</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">76.76.21.21</span></div>
-                </>
-              ) : (
-                <>
-                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">CNAME</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">{dnsInfo.domain.split(".").slice(0, -2).join(".") || "@"}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">{dnsInfo.cname}</span></div>
-                </>
-              )}
-            </div>
-
-            <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 text-[11px] text-gray-500 space-y-1 mb-4">
-              <p><strong className="text-gray-400">Where do I go?</strong> Login to GoDaddy, Namecheap, Cloudflare, or wherever you registered <strong className="text-gray-300">{dnsInfo.domain.split(".").slice(-2).join(".")}</strong> → find "DNS" or "DNS Records" → add the record above.</p>
-              <p>Usually live within 5–10 minutes.</p>
-            </div>
-
-            <button onClick={() => setDnsInfo(null)} className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
-              Got it, I'll set it up →
-            </button>
-          </div>
-        </div>
-      )}
+      {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
 
       {/* Version history slide-over */}
       {showHistory && (
@@ -1128,6 +1093,99 @@ export default function ProjectWorkspace({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── DNS Verify Modal ───────────────────────────────────────────────────────────
+function DnsVerifyModal({ dnsInfo, onClose }: { dnsInfo: { domain: string; cname: string }; onClose: () => void }) {
+  const [status, setStatus] = useState<"waiting" | "verified">("waiting");
+  const [elapsed, setElapsed] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    let secs = 0;
+    async function check() {
+      try {
+        const r = await fetch(`/api/check-dns?domain=${encodeURIComponent(dnsInfo.domain)}`);
+        const d = await r.json();
+        if (d.verified) {
+          setStatus("verified");
+          if (intervalRef.current) clearInterval(intervalRef.current);
+        }
+      } catch { /* ignore */ }
+    }
+    check();
+    intervalRef.current = setInterval(() => {
+      secs += 5;
+      setElapsed(secs);
+      check();
+    }, 5000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [dnsInfo.domain]);
+
+  const isApex = dnsInfo.domain.split(".").length === 2;
+  const recordName = isApex ? "@" : (dnsInfo.domain.split(".").slice(0, -2).join(".") || "@");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={status === "verified" ? onClose : undefined}>
+      <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+
+        {status === "verified" ? (
+          <>
+            <div className="text-4xl mb-3 text-center">🎉</div>
+            <h2 className="text-base font-semibold text-white mb-1 text-center">You&apos;re live!</h2>
+            <p className="text-xs text-gray-400 mb-5 text-center">
+              <strong className="text-white">{dnsInfo.domain}</strong> is now pointing to your app.
+            </p>
+            <a href={`https://${dnsInfo.domain}`} target="_blank" rel="noreferrer"
+              className="block w-full text-center rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity mb-2">
+              Visit {dnsInfo.domain} ↗
+            </a>
+            <button onClick={onClose} className="w-full text-center text-xs text-gray-600 hover:text-gray-400 transition-colors py-1">
+              Close
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="text-2xl mb-3">🌐</div>
+            <h2 className="text-base font-semibold text-white mb-1">One last step</h2>
+            <p className="text-xs text-gray-400 mb-4">
+              Log into wherever you bought <strong className="text-white">{dnsInfo.domain.split(".").slice(-2).join(".")}</strong> (GoDaddy, Namecheap, Cloudflare, etc.) → find <strong className="text-white">"DNS Records"</strong> → add this:
+            </p>
+
+            <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-2.5 font-mono text-xs mb-4">
+              {dnsInfo.cname === "76.76.21.21" ? (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">A</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">@</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">76.76.21.21</span></div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">CNAME</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">{recordName}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">{dnsInfo.cname}</span></div>
+                </>
+              )}
+            </div>
+
+            {/* Live polling status */}
+            <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 mb-4 flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
+              <div className="text-[11px] text-gray-500">
+                <span className="text-gray-300">Checking your DNS automatically…</span>
+                {elapsed > 0 && <span className="ml-1">(checked {Math.floor(elapsed / 5)}x)</span>}
+                <div className="mt-0.5">This page will update the moment it&apos;s live — no need to refresh.</div>
+              </div>
+            </div>
+
+            <button onClick={onClose} className="w-full text-center text-xs text-gray-600 hover:text-gray-400 transition-colors py-1">
+              I&apos;ll do this later
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
