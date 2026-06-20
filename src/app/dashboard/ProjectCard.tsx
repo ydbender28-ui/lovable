@@ -8,27 +8,23 @@ interface Props {
     id: string;
     name: string;
     updatedAt: Date;
-    publishSlug: string | null;
     publishedAt: Date | null;
     visitCount: number;
+    hasVersion: boolean;
   };
 }
 
 export default function ProjectCard({ project }: Props) {
-  const previewUrl = project.publishSlug
-    ? `https://${project.publishSlug}.thatcode.dev`
-    : null;
-
   return (
     <div className="group relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur transition-all hover:border-fuchsia-400/40 hover:bg-white/[0.05] hover:-translate-y-0.5 overflow-hidden">
       <DeleteProjectButton projectId={project.id} />
       <Link href={`/projects/${project.id}`} className="block">
         {/* Preview area */}
         <div className="relative h-36 bg-[#0d0d12] overflow-hidden rounded-t-2xl">
-          {previewUrl ? (
+          {project.hasVersion ? (
             <>
               <iframe
-                src={previewUrl}
+                src={`/api/projects/${project.id}/preview`}
                 title={project.name}
                 scrolling="no"
                 style={{
@@ -43,7 +39,6 @@ export default function ProjectCard({ project }: Props) {
                   border: "none",
                 }}
               />
-              {/* Overlay to block clicks on iframe, keep Link working */}
               <div className="absolute inset-0" />
             </>
           ) : (

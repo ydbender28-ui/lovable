@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   if (!session?.user) redirect("/login");
 
   const [projects, agents] = await Promise.all([
-    prisma.project.findMany({ where: { ownerId: session.user.id }, orderBy: { updatedAt: "desc" }, select: { id: true, name: true, updatedAt: true, publishSlug: true, publishedAt: true, visitCount: true } }),
+    prisma.project.findMany({ where: { ownerId: session.user.id }, orderBy: { updatedAt: "desc" }, select: { id: true, name: true, updatedAt: true, publishedAt: true, visitCount: true, versions: { select: { id: true }, take: 1 } } }),
     prisma.agent.findMany({ where: { ownerId: session.user.id }, orderBy: { updatedAt: "desc" } }),
   ]);
 
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard key={project.id} project={{ ...project, hasVersion: project.versions.length > 0 }} />
               ))}
             </div>
           )}
