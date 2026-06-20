@@ -1060,27 +1060,35 @@ export default function ProjectWorkspace({
       {dnsInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setDnsInfo(null)}>
           <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="text-2xl mb-3">🌐</div>
-            <h2 className="text-base font-semibold text-white mb-1">Almost there — point your DNS</h2>
-            <p className="text-xs text-gray-400 mb-4">Your domain <strong className="text-white">{dnsInfo.domain}</strong> has been registered with Vercel. Now add this DNS record at your domain registrar:</p>
-            <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-2 font-mono text-xs">
+            <div className="text-2xl mb-3">🎉</div>
+            <h2 className="text-base font-semibold text-white mb-1">One last step</h2>
+            <p className="text-xs text-gray-400 mb-4">
+              Your app is published! To make it live at <strong className="text-white">{dnsInfo.domain}</strong>, log into wherever you bought that domain and add this DNS record:
+            </p>
+
+            <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-2.5 font-mono text-xs mb-4">
               {dnsInfo.cname === "76.76.21.21" ? (
                 <>
                   <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">A</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-white">@</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">@</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">76.76.21.21</span></div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">CNAME</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-white">{dnsInfo.domain.split(".").slice(0, -2).join(".") || "www"}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">{dnsInfo.domain.split(".").slice(0, -2).join(".") || "@"}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">{dnsInfo.cname}</span></div>
                 </>
               )}
             </div>
-            <p className="mt-3 text-[11px] text-gray-600">DNS changes can take a few minutes to a few hours to propagate. Once done, your app will be live at <span className="text-gray-400">{dnsInfo.domain}</span>.</p>
-            <button onClick={() => setDnsInfo(null)} className="mt-4 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
-              Got it
+
+            <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 text-[11px] text-gray-500 space-y-1 mb-4">
+              <p><strong className="text-gray-400">Where do I go?</strong> Login to GoDaddy, Namecheap, Cloudflare, or wherever you registered <strong className="text-gray-300">{dnsInfo.domain.split(".").slice(-2).join(".")}</strong> → find "DNS" or "DNS Records" → add the record above.</p>
+              <p>Usually live within 5–10 minutes.</p>
+            </div>
+
+            <button onClick={() => setDnsInfo(null)} className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+              Got it, I'll set it up →
             </button>
           </div>
         </div>
@@ -1196,18 +1204,33 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
         {showAdvanced && (
           <div className="mt-3 space-y-3">
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Custom domain (optional)</label>
+              <label className="text-xs text-gray-400 mb-1.5 block">Custom domain <span className="text-gray-600">(optional)</span></label>
               <input
                 value={customDomain}
                 onChange={e => setCustomDomain(e.target.value.trim().toLowerCase().replace(/^https?:\/\//, ""))}
-                placeholder="myapp.com"
+                placeholder="myapp.com or app.mysite.com"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 transition-colors font-mono"
               />
               {customDomain && (
-                <p className="mt-1.5 text-[11px] text-gray-600 space-y-0.5">
-                  <span className="block">Add a CNAME DNS record at your registrar:</span>
-                  <code className="bg-white/5 px-1.5 py-0.5 rounded text-gray-400">{customDomain} → domains.thatcode.dev</code>
-                </p>
+                <div className="mt-2 rounded-xl bg-white/[0.03] border border-white/10 p-3 space-y-2 text-[11px]">
+                  <p className="text-gray-300 font-medium">After publishing, you'll need to do one quick step:</p>
+                  <p className="text-gray-500">Log into wherever you bought <strong className="text-gray-300">{customDomain.split(".").slice(-2).join(".")}</strong> (GoDaddy, Namecheap, Cloudflare, etc.) and add this DNS record:</p>
+                  <div className="rounded-lg bg-black/30 border border-white/10 p-2.5 space-y-1.5 font-mono">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Type</span>
+                      <span className="text-white">CNAME</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Name</span>
+                      <span className="text-fuchsia-300">{customDomain.split(".").slice(0, -2).join(".") || "@"}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Value</span>
+                      <span className="text-fuchsia-300">domains.thatcode.dev</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-600">Usually takes 5–10 minutes to go live.</p>
+                </div>
               )}
             </div>
             <div>
