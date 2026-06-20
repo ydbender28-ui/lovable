@@ -24,62 +24,77 @@ export default function LoginPage() {
     router.refresh();
   }
 
+  const inputStyle = {
+    width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: 10, padding: "11px 14px", color: "#f0f4ff", fontSize: 14, outline: "none",
+  };
+
   return (
-    <div className="min-h-screen flex bg-[#080809]">
+    <div className="min-h-screen flex"
+      style={{ background: "radial-gradient(ellipse 70% 50% at 50% -5%, #1a1040 0%, #0e1117 60%)" }}>
+
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col w-[420px] shrink-0 border-r border-white/[0.06] p-10 justify-between">
+      <div className="hidden lg:flex flex-col w-96 shrink-0 px-10 py-12 justify-between"
+        style={{ borderRight: "1px solid rgba(255,255,255,0.06)" }}>
         <Link href="/"><Logo size="md" /></Link>
-        <div>
-          <blockquote className="text-base text-gray-400 leading-relaxed">
-            &ldquo;Built our internal CRM in 20 minutes. Would have taken our dev team two weeks.&rdquo;
-          </blockquote>
-          <p className="mt-4 text-sm text-gray-600">— Early user</p>
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold" style={{ color: "#f0f4ff", letterSpacing: "-0.03em" }}>
+            Your ideas deserve to exist.
+          </h2>
+          <p className="text-sm leading-relaxed" style={{ color: "#8b92a5" }}>
+            ThatCode turns plain English into working apps — with live preview, instant publish, and version history.
+          </p>
+          <div className="space-y-3 pt-2">
+            {["Build apps in under a minute", "Live preview as it generates", "Publish with custom domain"].map(f => (
+              <div key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#c4cad6" }}>
+                <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px]"
+                  style={{ background: "rgba(124,106,247,0.2)", color: "#a78bfa" }}>✓</span>
+                {f}
+              </div>
+            ))}
+          </div>
         </div>
-        <p className="text-xs text-gray-700">© {new Date().getFullYear()} ThatCode</p>
+        <p className="text-xs" style={{ color: "#4b5263" }}>© {new Date().getFullYear()} ThatCode</p>
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center px-6">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden"><Link href="/"><Logo size="md" /></Link></div>
+          <div className="lg:hidden mb-10"><Link href="/"><Logo size="md" /></Link></div>
 
-          <h1 className="text-2xl font-semibold text-white mb-1" style={{ letterSpacing: "-0.02em" }}>Welcome back</h1>
-          <p className="text-sm text-gray-500 mb-8">Log in to continue building.</p>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "#f0f4ff", letterSpacing: "-0.03em" }}>Welcome back</h1>
+          <p className="text-sm mb-8" style={{ color: "#8b92a5" }}>Log in to continue building.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Email</label>
-              <input
-                type="email" required value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.06] transition-all"
-              />
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "#8b92a5", textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com" style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = "rgba(124,106,247,0.6)")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wide">Password</label>
-              <input
-                type="password" required value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-lg border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-violet-500/50 focus:bg-white/[0.06] transition-all"
-              />
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "#8b92a5", textTransform: "uppercase", letterSpacing: "0.08em" }}>Password</label>
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" style={inputStyle}
+                onFocus={e => (e.target.style.borderColor = "rgba(124,106,247,0.6)")}
+                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
             </div>
 
             {error && (
-              <p className="text-sm text-red-400 bg-red-500/[0.08] border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
+              <p className="text-sm rounded-lg px-3 py-2" style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>{error}</p>
             )}
 
             <button type="submit" disabled={loading}
-              className="w-full rounded-lg py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50 hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #0ea5e9)" }}>
-              {loading ? "Logging in…" : "Log in"}
+              className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #7c6af7, #6366f1)", boxShadow: "0 4px 20px rgba(124,106,247,0.3)" }}>
+              {loading ? "Logging in…" : "Log in →"}
             </button>
           </form>
 
-          <p className="mt-6 text-sm text-gray-600 text-center">
+          <p className="mt-6 text-sm text-center" style={{ color: "#8b92a5" }}>
             No account?{" "}
-            <Link href="/signup" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+            <Link href="/signup" className="font-medium transition-colors hover:opacity-80" style={{ color: "#a78bfa" }}>
               Sign up free
             </Link>
           </p>

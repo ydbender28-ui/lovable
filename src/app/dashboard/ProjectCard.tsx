@@ -15,8 +15,8 @@ interface Props {
 }
 
 export default function ProjectCard({ project }: Props) {
-  const timeAgo = (date: Date) => {
-    const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  const timeAgo = (d: Date) => {
+    const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
     if (s < 60) return "just now";
     if (s < 3600) return `${Math.floor(s / 60)}m ago`;
     if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
@@ -24,12 +24,16 @@ export default function ProjectCard({ project }: Props) {
   };
 
   return (
-    <div className="group relative rounded-xl border border-white/[0.07] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04] transition-all overflow-hidden">
+    <div className="group relative rounded-2xl overflow-hidden transition-all"
+      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(124,106,247,0.35)")}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}>
+
       <DeleteProjectButton projectId={project.id} />
 
       <Link href={`/projects/${project.id}`} className="block">
-        {/* Preview */}
-        <div className="relative bg-[#0c0c10] overflow-hidden" style={{ height: 152 }}>
+        {/* Preview thumbnail */}
+        <div className="relative overflow-hidden" style={{ height: 156, background: "#161b27" }}>
           {project.hasVersion ? (
             <>
               <iframe
@@ -41,41 +45,42 @@ export default function ProjectCard({ project }: Props) {
                   width: 1280, height: 720,
                   transform: "scale(0.225)",
                   transformOrigin: "top left",
-                  pointerEvents: "none",
-                  border: "none",
+                  pointerEvents: "none", border: "none",
                 }}
               />
               <div className="absolute inset-0" />
-              {/* Fade bottom */}
-              <div className="absolute bottom-0 left-0 right-0 h-10"
-                style={{ background: "linear-gradient(to bottom, transparent, #0c0c10)" }} />
+              {/* Bottom fade */}
+              <div className="absolute bottom-0 left-0 right-0 h-12"
+                style={{ background: "linear-gradient(to bottom, transparent, #161b27)" }} />
             </>
           ) : (
-            <div className="h-full flex items-center justify-center">
-              <span className="text-5xl font-bold text-white/[0.06] select-none">
-                {project.name.slice(0, 1).toUpperCase()}
+            <div className="h-full flex flex-col items-center justify-center gap-2">
+              <span className="text-4xl font-bold" style={{ color: "rgba(255,255,255,0.06)" }}>
+                {project.name[0]?.toUpperCase()}
               </span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.15)" }}>Not built yet</span>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 flex items-center justify-between gap-2">
+        <div className="px-4 py-3 flex items-center justify-between gap-2"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{project.name}</p>
-            <p className="text-xs text-gray-600 mt-0.5">{timeAgo(project.updatedAt)}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: "#f0f4ff" }}>{project.name}</p>
+            <p className="text-xs mt-0.5" style={{ color: "#8b92a5" }}>{timeAgo(project.updatedAt)}</p>
           </div>
-          <div className="shrink-0 flex items-center gap-1.5">
-            {project.publishedAt && (
-              <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ boxShadow: "0 0 4px #34d399" }} />
-                Live
-              </span>
-            )}
-            {project.visitCount > 0 && (
-              <span className="text-[10px] text-gray-600">{project.visitCount} visits</span>
-            )}
-          </div>
+          {project.publishedAt && (
+            <div className="shrink-0 flex items-center gap-1.5 text-xs font-medium"
+              style={{ color: "#34d399" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                style={{ boxShadow: "0 0 5px #34d399" }} />
+              Live
+              {project.visitCount > 0 && (
+                <span className="ml-1" style={{ color: "#8b92a5" }}>· {project.visitCount}</span>
+              )}
+            </div>
+          )}
         </div>
       </Link>
     </div>

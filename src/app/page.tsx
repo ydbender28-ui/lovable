@@ -6,37 +6,46 @@ export default async function Home() {
   const session = await auth();
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-[#080809] overflow-hidden">
+    <div className="relative flex flex-col min-h-screen overflow-hidden"
+      style={{ background: "radial-gradient(ellipse 80% 60% at 50% -10%, #1e1545 0%, #0e1117 55%)" }}>
 
-      {/* Subtle noise texture overlay */}
-      <div className="pointer-events-none fixed inset-0 opacity-[0.025]"
-        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")" }} />
+      {/* Grid overlay */}
+      <div className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+        }} />
 
-      {/* Glow spots */}
+      {/* Glow orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-200px] left-[10%] w-[600px] h-[600px] rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)", filter: "blur(80px)" }} />
-        <div className="absolute top-[100px] right-[5%] w-[400px] h-[400px] rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle, #0ea5e9 0%, transparent 70%)", filter: "blur(80px)" }} />
+        <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full opacity-30"
+          style={{ background: "radial-gradient(circle, #6d28d9 0%, transparent 65%)", filter: "blur(60px)" }} />
+        <div className="absolute top-[40%] left-[15%] w-[300px] h-[300px] rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #4f46e5 0%, transparent 70%)", filter: "blur(50px)" }} />
+        <div className="absolute top-[30%] right-[10%] w-[250px] h-[250px] rounded-full opacity-10"
+          style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)", filter: "blur(50px)" }} />
       </div>
 
       {/* Nav */}
       <nav className="relative z-10 w-full px-6 py-5 flex items-center justify-between max-w-6xl mx-auto">
         <Logo size="md" />
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2">
           {session?.user ? (
             <Link href="/dashboard"
-              className="rounded-lg bg-white text-black px-4 py-2 font-medium text-sm hover:bg-gray-100 transition-colors">
-              Dashboard
+              className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7c6af7, #6366f1)" }}>
+              Dashboard →
             </Link>
           ) : (
             <>
-              <Link href="/login" className="text-gray-400 hover:text-white transition-colors px-3 py-2 text-sm">
+              <Link href="/login"
+                className="px-4 py-2 text-sm text-[#8b92a5] hover:text-white transition-colors">
                 Log in
               </Link>
               <Link href="/signup"
-                className="rounded-lg bg-white text-black px-4 py-2 font-medium text-sm hover:bg-gray-100 transition-colors">
-                Get started
+                className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #7c6af7, #6366f1)" }}>
+                Get started free
               </Link>
             </>
           )}
@@ -44,49 +53,62 @@ export default async function Home() {
       </nav>
 
       {/* Hero */}
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center text-center px-6 pt-16 pb-24">
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center text-center px-6 py-20">
 
-        {/* Pill badge */}
-        <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 text-xs text-gray-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-violet-400" style={{ boxShadow: "0 0 6px #7c3aed" }} />
-          Build full-stack apps with one sentence
+        {/* Badge */}
+        <div className="mb-8 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium"
+          style={{ background: "rgba(124,106,247,0.12)", border: "1px solid rgba(124,106,247,0.3)", color: "#a78bfa" }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+          Ship your idea today — no code needed
         </div>
 
-        <h1 className="max-w-3xl text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-tight" style={{ letterSpacing: "-0.03em" }}>
-          From idea to{" "}
-          <span style={{ background: "linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            working app
+        {/* Headline */}
+        <h1 className="max-w-3xl text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.06] mb-6"
+          style={{ letterSpacing: "-0.04em", color: "#f0f4ff" }}>
+          Build real apps
+          <br />
+          <span style={{
+            backgroundImage: "linear-gradient(135deg, #a78bfa 0%, #7c6af7 40%, #6366f1 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}>
+            in seconds.
           </span>
-          <br />in seconds.
         </h1>
 
-        <p className="mt-6 text-lg text-gray-500 max-w-xl leading-relaxed">
-          Describe what you want. ThatCode writes the code, renders a live preview, and ships it — no setup, no config, no waiting.
+        <p className="text-lg max-w-xl leading-relaxed mb-10" style={{ color: "#8b92a5" }}>
+          Describe what you want in plain English. ThatCode writes the code,
+          shows a live preview, and ships a working app — instantly.
         </p>
 
-        {/* CTA input-style button */}
-        <div className="mt-10 w-full max-w-xl">
+        {/* CTA */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-lg">
           <Link href={session?.user ? "/dashboard" : "/signup"}
-            className="group flex items-center gap-3 w-full rounded-xl border border-white/10 bg-white/[0.04] px-5 py-4 text-left hover:border-white/20 hover:bg-white/[0.06] transition-all">
-            <span className="flex-1 text-sm text-gray-500">Build a SaaS dashboard, e-commerce store, CRM…</span>
-            <span className="shrink-0 rounded-lg px-4 py-2 text-sm font-medium text-white transition-all group-hover:translate-x-0.5"
-              style={{ background: "linear-gradient(135deg, #7c3aed, #0ea5e9)" }}>
-              Start →
-            </span>
+            className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:-translate-y-0.5"
+            style={{ background: "linear-gradient(135deg, #7c6af7, #6366f1)", boxShadow: "0 8px 32px rgba(124,106,247,0.35)" }}>
+            Start building free →
+          </Link>
+          <Link href="/login"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-medium transition-all hover:opacity-80"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#c4cad6" }}>
+            Log in
           </Link>
         </div>
 
-        {/* Social proof / feature strip */}
-        <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl overflow-hidden border border-white/[0.06] bg-white/[0.06] max-w-2xl w-full">
+        {/* Feature cards */}
+        <div className="mt-20 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl w-full">
           {[
-            { label: "Live preview", desc: "Instant sandbox" },
-            { label: "Multi-model", desc: "GPT · Claude · Gemini" },
-            { label: "One-click publish", desc: "Custom domains" },
-            { label: "Version history", desc: "Restore any build" },
+            { icon: "⚡", label: "Instant generation", desc: "Apps in under 30 seconds" },
+            { icon: "👁", label: "Live preview", desc: "See it as it's built" },
+            { icon: "🌐", label: "One-click publish", desc: "Custom domain support" },
+            { icon: "🕐", label: "Version history", desc: "Restore any past build" },
           ].map((f) => (
-            <div key={f.label} className="bg-[#080809] px-5 py-4">
-              <p className="text-xs font-medium text-white">{f.label}</p>
-              <p className="text-xs text-gray-600 mt-0.5">{f.desc}</p>
+            <div key={f.label} className="rounded-xl p-4 text-left"
+              style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="text-2xl mb-3">{f.icon}</div>
+              <p className="text-sm font-medium mb-1" style={{ color: "#f0f4ff" }}>{f.label}</p>
+              <p className="text-xs" style={{ color: "#8b92a5" }}>{f.desc}</p>
             </div>
           ))}
         </div>

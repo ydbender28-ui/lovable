@@ -22,12 +22,14 @@ export default async function DashboardPage() {
   const projectsWithVersion = projects.map(p => ({ ...p, hasVersion: p.versions.length > 0 }));
 
   return (
-    <div className="min-h-screen bg-[#080809]">
-      <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#080809]/80 backdrop-blur-xl">
+    <div className="min-h-screen" style={{ background: "#0e1117" }}>
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b"
+        style={{ background: "rgba(14,17,23,0.85)", backdropFilter: "blur(16px)", borderColor: "rgba(255,255,255,0.07)" }}>
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/"><Logo /></Link>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs text-gray-600">{session.user.email}</span>
+            <span className="hidden sm:block text-xs" style={{ color: "#8b92a5" }}>{session.user.email}</span>
             <SignOutButton />
           </div>
         </div>
