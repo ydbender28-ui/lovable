@@ -52,10 +52,18 @@ export async function GET(req: Request, ctx: RouteContext<"/p/[slug]">) {
     });
   }
 
-  // Track visit (fire-and-forget)
-  prisma.project.update({ where: { id: project.id }, data: { visitCount: { increment: 1 } } }).catch(() => {});
+  // Track unique visits — skip if visitor cookie already set
+  const cookieName = `v_${project.id}`;
+  const cookies = req.headers.get("cookie") ?? "";
+  const alreadyVisited = cookies.split(";").some(c => c.trim().startsWith(`${cookieName}=`));
+  if (!alreadyVisited) {
+    prisma.project.update({ where: { id: project.id }, data: { visitCount: { increment: 1 } } }).catch(() => {});
+  }
 
-  return new Response(project.publishedHtml, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+  const headers = new Headers({ "Content-Type": "text/html; charset=utf-8" });
+  if (!alreadyVisited) {
+    // 30-day cookie
+    headers.set("Set-Cookie", `${cookieName}=1; Path=/; Max-Age=2592000; SameSite=Lax`);
+  }
+  return new Response(project.publishedHtml, { headers });
 }
