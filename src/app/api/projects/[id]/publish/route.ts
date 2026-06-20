@@ -3,6 +3,44 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
+async function addVercelDomain(domain: string): Promise<{ cname: string; error?: string }> {
+  const token = process.env.VERCEL_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (!token || !projectId) return { cname: "cname.vercel-dns.com" };
+
+  const res = await fetch(`https://api.vercel.com/v10/projects/${projectId}/domains`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name: domain }),
+  });
+  const data = await res.json();
+
+  if (!res.ok && data.error?.code !== "domain_already_in_use") {
+    return { cname: "cname.vercel-dns.com", error: data.error?.message };
+  }
+
+  // Get verification/DNS info
+  const infoRes = await fetch(`https://api.vercel.com/v10/projects/${projectId}/domains/${domain}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const info = await infoRes.json();
+  const cname = info.apexName === domain
+    ? (info.verification?.[0]?.value ?? "76.76.21.21") // apex → A record
+    : "cname.vercel-dns.com";
+
+  return { cname };
+}
+
+async function removeVercelDomain(domain: string) {
+  const token = process.env.VERCEL_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (!token || !projectId) return;
+  await fetch(`https://api.vercel.com/v9/projects/${projectId}/domains/${domain}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 }
@@ -45,6 +83,20 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
     }
   }
 
+  // Register custom domain with Vercel
+  let vercelCname = "cname.vercel-dns.com";
+  let domainError: string | undefined;
+  if (customDomain) {
+    const result = await addVercelDomain(customDomain);
+    vercelCname = result.cname;
+    domainError = result.error;
+  }
+
+  // If old custom domain is being replaced, remove it from Vercel
+  if (project.customDomain && project.customDomain !== customDomain) {
+    removeVercelDomain(project.customDomain).catch(() => {});
+  }
+
   await prisma.project.update({
     where: { id },
     data: {
@@ -56,16 +108,18 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
     },
   });
 
-  const domain = process.env.PUBLISH_DOMAIN ?? "thatcode.dev";
-  const url = `https://${slug}.${domain}`;
+  const baseDomain = process.env.PUBLISH_DOMAIN ?? "thatcode.dev";
+  const url = `https://${slug}.${baseDomain}`;
 
-  return NextResponse.json({ url, customDomain, slug });
+  return NextResponse.json({ url, customDomain, slug, vercelCname, domainError });
 }
 
 export async function DELETE(_req: Request, ctx: RouteContext<"/api/projects/[id]/publish">) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await ctx.params;
+  const project = await prisma.project.findFirst({ where: { id, ownerId: session.user.id } });
+  if (project?.customDomain) removeVercelDomain(project.customDomain).catch(() => {});
   await prisma.project.updateMany({
     where: { id, ownerId: session.user.id },
     data: { publishSlug: null, publishedHtml: null, publishedAt: null, customDomain: null, publishPassword: null },

@@ -176,6 +176,7 @@ export default function ProjectWorkspace({
   const [publishing, setPublishing] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [liveUpdated, setLiveUpdated] = useState(false);
+  const [dnsInfo, setDnsInfo] = useState<{ domain: string; cname: string } | null>(null);
   const [envVars, setEnvVars] = useState<EnvVars>({});
 
   // New features
@@ -478,6 +479,9 @@ export default function ProjectWorkspace({
       if (!res.ok) throw new Error(data.error ?? "Publish failed");
       setPublishSlug(data.url);
       setShowPublishDialog(false);
+      if (data.customDomain && data.vercelCname) {
+        setDnsInfo({ domain: data.customDomain, cname: data.vercelCname });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Publish failed");
     } finally {
@@ -886,6 +890,36 @@ export default function ProjectWorkspace({
           onPublish={(slug, customDomain, password) => handlePublish(slug, customDomain, password)}
           onClose={() => setShowPublishDialog(false)}
         />
+      )}
+
+      {/* DNS instructions after custom domain publish */}
+      {dnsInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setDnsInfo(null)}>
+          <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="text-2xl mb-3">🌐</div>
+            <h2 className="text-base font-semibold text-white mb-1">Almost there — point your DNS</h2>
+            <p className="text-xs text-gray-400 mb-4">Your domain <strong className="text-white">{dnsInfo.domain}</strong> has been registered with Vercel. Now add this DNS record at your domain registrar:</p>
+            <div className="rounded-xl bg-white/5 border border-white/10 p-4 space-y-2 font-mono text-xs">
+              {dnsInfo.cname === "76.76.21.21" ? (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">A</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-white">@</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">76.76.21.21</span></div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">CNAME</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-white">{dnsInfo.domain.split(".").slice(0, -2).join(".") || "www"}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">{dnsInfo.cname}</span></div>
+                </>
+              )}
+            </div>
+            <p className="mt-3 text-[11px] text-gray-600">DNS changes can take a few minutes to a few hours to propagate. Once done, your app will be live at <span className="text-gray-400">{dnsInfo.domain}</span>.</p>
+            <button onClick={() => setDnsInfo(null)} className="mt-4 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity">
+              Got it
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Version history slide-over */}
