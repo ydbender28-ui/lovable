@@ -124,7 +124,7 @@ export function buildPublishHtml(
 }
 
 // Used for local export download — uses CDN (needs internet)
-export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string): string {
+export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
@@ -163,6 +163,33 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
     } catch(e) {
       showErr('App init error: '+e.message+'\\n\\n'+(e.stack||''));
     }
+  </script>
+  <script>
+    // Analytics beacon — tracks pageviews, clicks, rage-clicks, form submits
+    (function(){
+      var pid="${projectId||''}";
+      if(!pid)return;
+      var base='';
+      function send(t,el){
+        var body=JSON.stringify({projectId:pid,eventType:t,path:location.pathname,element:el||null});
+        try{navigator.sendBeacon(base+'/api/events',new Blob([body],{type:'application/json'}));}catch(e){}
+      }
+      send('pageview');
+      var clicks={};
+      document.addEventListener('click',function(e){
+        var t=e.target;
+        var label=(t.getAttribute&&t.getAttribute('aria-label'))||t.textContent||t.tagName;
+        label=(label||'').trim().slice(0,60);
+        var key=label||t.tagName;
+        var now=Date.now();
+        if(!clicks[key])clicks[key]=[];
+        clicks[key]=clicks[key].filter(function(ts){return now-ts<2000;});
+        clicks[key].push(now);
+        send('click',label);
+        if(clicks[key].length>=3){send('ragclick',label);clicks[key]=[];}
+      },true);
+      document.addEventListener('submit',function(){send('form_submit');},true);
+    })();
   </script>
   <script>
     // Visual edit mode — activated by parent via postMessage

@@ -381,6 +381,38 @@ export default function ProjectWorkspace({
   const [proactiveAppType, setProactiveAppType] = useState<string | null>(null);
   const [proactiveLoading, setProactiveLoading] = useState(false);
 
+  // Voice input
+  const [voiceActive, setVoiceActive] = useState(false);
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
+
+  // Analytics
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  type AnalyticsData = { pageviews: number; clicks: number; rageclicks: number; formSubmits: number; daily: Array<{ date: string; pageviews: number; clicks: number; rageclicks: number }>; topRageClicks: Array<{ el: string; count: number }> };
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  // Compliance
+  const [showCompliance, setShowCompliance] = useState(false);
+  type ComplianceData = { appType: string; applicableLaws: string[]; issues: string[]; buildPrompt: string };
+  const [complianceData, setComplianceData] = useState<ComplianceData | null>(null);
+  const [complianceLoading, setComplianceLoading] = useState(false);
+
+  // URL clone
+  const [showCloneUrl, setShowCloneUrl] = useState(false);
+  const [cloneUrl, setCloneUrl] = useState("");
+  const [cloneLoading, setCloneLoading] = useState(false);
+  const [cloneError, setCloneError] = useState<string | null>(null);
+
+  // App merge
+  const [showMerge, setShowMerge] = useState(false);
+  const [mergeProjectId, setMergeProjectId] = useState("");
+  const [mergeGoal, setMergeGoal] = useState("");
+  const [mergeLoading, setMergeLoading] = useState(false);
+
+  // Self-verify (auto user test + fix after generation)
+  const [selfVerify, setSelfVerify] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoFired = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -722,6 +754,99 @@ export default function ProjectWorkspace({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  function toggleVoice() {
+    if (voiceActive) {
+      recognitionRef.current?.stop();
+      setVoiceActive(false);
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    if (!SR) { alert("Your browser doesn't support voice input. Try Chrome."); return; }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rec = new SR() as any;
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = "en-US";
+    let final = "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (e: any) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim = e.results[i][0].transcript;
+      }
+      setPrompt(final + interim);
+    };
+    rec.onend = () => setVoiceActive(false);
+    rec.start();
+    recognitionRef.current = rec;
+    setVoiceActive(true);
+  }
+
+  async function loadAnalytics() {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/analytics`);
+      if (res.ok) setAnalyticsData(await res.json());
+    } catch { /**/ }
+    setAnalyticsLoading(false);
+  }
+
+  async function runCompliance() {
+    setComplianceLoading(true);
+    setComplianceData(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/compliance`, { method: "POST" });
+      if (res.ok) setComplianceData(await res.json());
+    } catch { /**/ }
+    setComplianceLoading(false);
+  }
+
+  async function handleCloneUrl() {
+    if (!cloneUrl.trim() || cloneLoading) return;
+    setCloneLoading(true);
+    setCloneError(null);
+    try {
+      const res = await fetch("/api/clone-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: cloneUrl.trim() }),
+      });
+      const data = await res.json();
+      if (data.error) { setCloneError(data.error); return; }
+      setShowCloneUrl(false);
+      setCloneUrl("");
+      runGenerate(data.buildPrompt);
+    } catch {
+      setCloneError("Failed to analyze URL");
+    } finally {
+      setCloneLoading(false);
+    }
+  }
+
+  async function handleMerge() {
+    if (!mergeProjectId.trim() || mergeLoading) return;
+    setMergeLoading(true);
+    try {
+      const res = await fetch("/api/projects/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectAId: projectId, projectBId: mergeProjectId.trim(), mergeGoal }),
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setShowMerge(false);
+      setMergeProjectId("");
+      setMergeGoal("");
+      runGenerate(data.buildPrompt);
+    } catch {
+      alert("Merge failed");
+    } finally {
+      setMergeLoading(false);
+    }
+  }
+
   async function saveEnvVars(vars: EnvVars) {
     setEnvVars(vars);
     await fetch(`/api/projects/${projectId}/envvars`, {
@@ -941,6 +1066,20 @@ export default function ProjectWorkspace({
               if (payload.liveUpdated) setLiveUpdated(true);
               setSuggestions(getSmartSuggestions(payload.files));
               setShowUndo(true);
+              // Self-verify: auto user-test and fix if score is too low
+              if (selfVerify && !silent) {
+                setVerifying(true);
+                fetch(`/api/projects/${projectId}/user-test`, { method: "POST" })
+                  .then(r => r.json())
+                  .then(result => {
+                    setVerifying(false);
+                    if (result.overallScore < 65 && result.criticalIssues?.length) {
+                      const fixMsg = `Fix these UX issues found by automated testing (score: ${result.overallScore}/100):\n${result.criticalIssues.slice(0, 3).map((i: string) => `- ${i}`).join("\n")}\n\nAlso address: ${result.quickWins?.slice(0, 2).join(", ")}`;
+                      runGenerate(fixMsg, undefined, undefined, true);
+                    }
+                  })
+                  .catch(() => setVerifying(false));
+              }
               // Load proactive AI suggestions asynchronously
               setProactiveSuggestions([]);
               setProactiveLoading(true);
@@ -1405,6 +1544,26 @@ export default function ProjectWorkspace({
           className={`text-xs rounded-lg border px-2 py-1 transition-colors ${architectMode ? "border-purple-400/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-purple-300 hover:border-purple-400/30"}`}>
           🏗️
         </button>
+        <button onClick={() => setSelfVerify(v => !v)} title="Self-verify: auto-test and fix after each build"
+          className={`text-xs rounded-lg border px-2 py-1 transition-colors ${selfVerify ? "border-green-400/40 bg-green-500/10 text-green-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-green-300 hover:border-green-400/30"}`}>
+          🔬
+        </button>
+        <button onClick={() => { setShowAnalytics(true); loadAnalytics(); }} title="Analytics — pageviews, rage-clicks, engagement"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-blue-300 hover:border-blue-400/30 px-2 py-1 transition-colors">
+          📊
+        </button>
+        <button onClick={() => { setShowCompliance(true); runCompliance(); }} title="Legal compliance — GDPR, HIPAA, CCPA"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-amber-300 hover:border-amber-400/30 px-2 py-1 transition-colors">
+          ⚖️
+        </button>
+        <button onClick={() => { setShowCloneUrl(true); setCloneError(null); }} title="Build inspired by a URL"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-cyan-300 hover:border-cyan-400/30 px-2 py-1 transition-colors">
+          🔍
+        </button>
+        <button onClick={() => setShowMerge(true)} title="Merge another project into this one"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-orange-300 hover:border-orange-400/30 px-2 py-1 transition-colors">
+          ⚡
+        </button>
         <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
           className="ml-auto text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors">
           📚 {knowledge.length > 0 ? knowledge.length : ""}
@@ -1491,6 +1650,12 @@ export default function ProjectWorkspace({
           <div className="flex items-center gap-2 text-[10px] text-purple-500/60">
             <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
             Analyzing what you&apos;ll need next…
+          </div>
+        )}
+        {verifying && (
+          <div className="flex items-center gap-2 text-[10px] text-green-500/80">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+            Running automated UX verification…
           </div>
         )}
 
@@ -1648,6 +1813,10 @@ export default function ProjectWorkspace({
                 <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
                   {enhancing ? "⏳" : "✨"}
                 </span>
+              </button>
+              <button onClick={toggleVoice} title={voiceActive ? "Stop voice input" : "Voice input"}
+                className={`transition-colors p-1.5 rounded-lg text-sm ${voiceActive ? "text-red-400 bg-red-500/10 animate-pulse" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
+                🎤
               </button>
               {lastPrompt && !loading && (
                 <button onClick={() => runGenerate(lastPrompt)} title="Regenerate last prompt"
@@ -2229,15 +2398,162 @@ export default function ProjectWorkspace({
                     <p className="text-[11px] text-gray-400">{v.modelUsed ?? "Unknown model"}</p>
                     {v.bookmarkNote && <p className="text-[10px] text-amber-300/70 italic">{v.bookmarkNote}</p>}
                     {i > 0 && (
-                      <button onClick={() => handleRestoreVersion(v.id)}
-                        className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
-                        Restore this version
-                      </button>
+                      <div className="space-y-1">
+                        <button onClick={async () => {
+                          const res = await fetch(`/api/projects/${projectId}/versions/${v.id}/explain`, { method: "POST" });
+                          const data = await res.json();
+                          if (data.explanation) alert(data.explanation);
+                        }}
+                          className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-500 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
+                          What changed?
+                        </button>
+                        <button onClick={() => handleRestoreVersion(v.id)}
+                          className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
+                          Restore this version
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Analytics modal */}
+      {showAnalytics && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowAnalytics(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">📊 Analytics (last 7 days)</h2>
+              <button onClick={() => setShowAnalytics(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {analyticsLoading && <p className="text-xs text-gray-500">Loading…</p>}
+            {analyticsData && !analyticsLoading && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { label: "Pageviews", value: analyticsData.pageviews, color: "text-blue-300" },
+                    { label: "Clicks", value: analyticsData.clicks, color: "text-green-300" },
+                    { label: "Rage-clicks", value: analyticsData.rageclicks, color: "text-red-300" },
+                    { label: "Form Submits", value: analyticsData.formSubmits, color: "text-purple-300" },
+                  ].map(s => (
+                    <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
+                      <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                {analyticsData.topRageClicks.length > 0 && (
+                  <div>
+                    <p className="text-xs text-red-400 font-medium mb-2">🔥 Rage-click hotspots</p>
+                    {analyticsData.topRageClicks.map(r => (
+                      <div key={r.el} className="flex items-center justify-between text-xs py-1 border-b border-white/5">
+                        <span className="text-gray-400 truncate">{r.el}</span>
+                        <span className="text-red-300 font-medium ml-2">{r.count}×</span>
+                      </div>
+                    ))}
+                    <button onClick={() => {
+                      const prompt = `Fix these UX frustration points — users are rage-clicking (3+ fast clicks) on these elements:\n${analyticsData!.topRageClicks.map(r => `- "${r.el}" (${r.count} rage-clicks)`).join("\n")}\nMake these elements more responsive, add loading states, fix broken interactions.`;
+                      setShowAnalytics(false);
+                      runGenerate(prompt);
+                    }} className="mt-3 w-full rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-xs py-2 hover:bg-red-500/30 transition-colors">
+                      Fix rage-click issues →
+                    </button>
+                  </div>
+                )}
+                {analyticsData.pageviews === 0 && (
+                  <p className="text-xs text-gray-600">No data yet. Publish your app to start tracking visitors.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Compliance modal */}
+      {showCompliance && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowCompliance(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">⚖️ Legal Compliance Check</h2>
+              <button onClick={() => setShowCompliance(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {complianceLoading && <p className="text-xs text-gray-500">Analyzing your app for compliance requirements…</p>}
+            {complianceData && !complianceLoading && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {complianceData.applicableLaws.map(law => (
+                    <span key={law} className="text-xs rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 px-2.5 py-1">{law}</span>
+                  ))}
+                </div>
+                {complianceData.issues.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-gray-500 font-medium">Issues found:</p>
+                    {complianceData.issues.map((issue, i) => (
+                      <div key={i} className="text-xs text-gray-400 flex gap-2">
+                        <span className="text-amber-400 shrink-0">⚠</span>
+                        <span>{issue}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {complianceData.issues.length === 0 && (
+                  <p className="text-xs text-green-400">✓ No major compliance issues detected.</p>
+                )}
+                {complianceData.issues.length > 0 && (
+                  <button onClick={() => { setShowCompliance(false); runGenerate(complianceData.buildPrompt); }}
+                    className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                    Auto-fix compliance issues →
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Clone URL modal */}
+      {showCloneUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowCloneUrl(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🔍 Build inspired by a URL</h2>
+              <button onClick={() => setShowCloneUrl(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Paste any public URL — AI analyzes its structure and builds you something inspired by it (original design, no copyright issues).</p>
+            <input value={cloneUrl} onChange={e => setCloneUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+            {cloneError && <p className="text-xs text-red-400">{cloneError}</p>}
+            <button onClick={handleCloneUrl} disabled={cloneLoading || !cloneUrl.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              {cloneLoading ? "Analyzing…" : "Analyze & Build →"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* App merge modal */}
+      {showMerge && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowMerge(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">⚡ Merge Another Project</h2>
+              <button onClick={() => setShowMerge(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Paste the project ID of another app you own. AI will merge both apps into one unified experience.</p>
+            <input value={mergeProjectId} onChange={e => setMergeProjectId(e.target.value)}
+              placeholder="Project ID (from the URL: /projects/abc123)"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono text-xs" />
+            <textarea value={mergeGoal} onChange={e => setMergeGoal(e.target.value)}
+              placeholder="Describe the merge goal (optional) — e.g. 'Add the blog section from my other app into this dashboard'"
+              rows={3}
+              className="w-full resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+            <button onClick={handleMerge} disabled={mergeLoading || !mergeProjectId.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              {mergeLoading ? "Analyzing both apps…" : "Merge Projects →"}
+            </button>
           </div>
         </div>
       )}

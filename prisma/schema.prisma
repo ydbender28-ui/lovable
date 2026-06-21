@@ -99,6 +99,17 @@ model Version {
   createdAt    DateTime @default(now())
 }
 
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  projectId String
+  eventType String   // pageview | click | ragclick | form_submit
+  path      String?
+  element   String?
+  createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+}
+
 model ShareLink {
   id        String   @id @default(cuid())
   token     String   @unique @default(cuid())
