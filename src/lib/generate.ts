@@ -500,6 +500,98 @@ export function estimateCost(modelId: string, inputTokens: number, outputTokens:
   return (inputTokens / 1000) * m.costPer1kInput + (outputTokens / 1000) * m.costPer1kOutput;
 }
 
+// ─── Smart routing ────────────────────────────────────────────────────────────
+// Uses Haiku to semantically understand the prompt, pick the cheapest capable
+// model, and return a human-readable description of what it understood.
+
+export type RouteDecision = {
+  intent: string;        // "Adding a dark mode toggle with localStorage persistence"
+  taskType: "style" | "content" | "bugfix" | "feature" | "new-build" | "complex";
+  model: ModelOption;
+  modelReason: string;   // "Simple style change — Gemini Flash is fastest"
+};
+
+const TASK_TO_COMPLEXITY: Record<RouteDecision["taskType"], Complexity> = {
+  style:     "simple",
+  content:   "simple",
+  bugfix:    "simple",
+  feature:   "medium",
+  "new-build": "complex",
+  complex:   "complex",
+};
+
+export async function smartRoute(
+  prompt: string,
+  hasExistingCode: boolean,
+  forceModel?: string,
+): Promise<RouteDecision> {
+  // If caller already decided a model, just use it
+  if (forceModel && MODELS[forceModel]) {
+    return {
+      intent: prompt.slice(0, 100),
+      taskType: "feature",
+      model: MODELS[forceModel],
+      modelReason: `Forced to ${MODELS[forceModel].displayName}`,
+    };
+  }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  try {
+    const res = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 150,
+      system: `Classify a user's app-building request in one JSON object. Be concise.
+
+taskType options:
+- "style"     — color, font, spacing, layout tweak, background, border, size change
+- "content"   — text change, label rename, adding/removing copy, image swap
+- "bugfix"    — fixing an error, broken feature, crash, wrong behavior
+- "feature"   — adding a new section, component, or functionality to existing app
+- "new-build" — building a complete new app from scratch (no existing code, or total rebuild)
+- "complex"   — auth systems, payments, multi-page apps, real-time, 3rd-party APIs, data models
+
+Return ONLY JSON, no markdown:
+{"intent":"<10-15 word plain English description of exactly what will be built/changed>","taskType":"<one of the 6 types above>"}`,
+      messages: [{ role: "user", content: `${hasExistingCode ? "[Editing existing app] " : "[New app] "}${prompt.slice(0, 500)}` }],
+    });
+
+    const text = (res.content[0] as { type: string; text: string }).text.trim();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("no json");
+    const parsed = JSON.parse(match[0]) as { intent: string; taskType: RouteDecision["taskType"] };
+    const taskType = parsed.taskType ?? (hasExistingCode ? "feature" : "new-build");
+    const complexity = TASK_TO_COMPLEXITY[taskType] ?? "medium";
+    const model = pickModel(complexity);
+
+    const reasonMap: Record<RouteDecision["taskType"], string> = {
+      style:       `Style change — ${model.displayName} is fast and cheap`,
+      content:     `Content update — ${model.displayName} handles this efficiently`,
+      bugfix:      `Bug fix — ${model.displayName} is quick for targeted fixes`,
+      feature:     `New feature — ${model.displayName} has good code quality`,
+      "new-build": `Full build — ${model.displayName} for best output quality`,
+      complex:     `Complex task — ${model.displayName} for reliability`,
+    };
+
+    return {
+      intent: parsed.intent ?? prompt.slice(0, 80),
+      taskType,
+      model,
+      modelReason: reasonMap[taskType],
+    };
+  } catch {
+    // Fallback: use keyword scoring
+    const { complexity } = scoreComplexity(prompt, hasExistingCode ? {} : null);
+    const model = pickModel(complexity);
+    return {
+      intent: prompt.slice(0, 80),
+      taskType: hasExistingCode ? "feature" : "new-build",
+      model,
+      modelReason: `${model.displayName} selected by keyword analysis`,
+    };
+  }
+}
+
 // ─── Provider adapters ────────────────────────────────────────────────────────
 
 async function generateWithAnthropic(

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateProject } from "@/lib/generate";
+import { generateProject, smartRoute } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
 export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/generate">) {
@@ -15,6 +15,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     return new Response("Prompt is required", { status: 400 });
   }
 
+  // Fetch project first — we need to know if code exists before routing
   const project = await prisma.project.findFirst({
     where: { id, ownerId: session.user.id },
     include: {
@@ -25,7 +26,13 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   if (!project) return new Response("Not found", { status: 404 });
 
-  await prisma.message.create({ data: { projectId: id, role: "user", content: prompt } });
+  const hasExisting = !!project.versions[0];
+
+  // Smart route and message write in parallel — route uses hasExisting for accurate classification
+  const [finalRoute] = await Promise.all([
+    smartRoute(prompt, hasExisting, forceModel ?? undefined),
+    prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
+  ]);
 
   const existingFiles = project.versions[0] ? JSON.parse(project.versions[0].files) : null;
   const envVars = bodyEnvVars ?? (project.envVars ? JSON.parse(project.envVars) : null);
@@ -34,7 +41,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
     : null;
 
-  // Build project history from recent messages (reverse to get chronological order)
   const recentMsgs = (project.messages ?? []).reverse();
   const projectHistory = recentMsgs.length > 2
     ? recentMsgs
@@ -51,6 +57,14 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
+      // Stream routing decision immediately — frontend shows it before generation starts
+      send("route", {
+        intent: finalRoute.intent,
+        taskType: finalRoute.taskType,
+        model: finalRoute.model.displayName,
+        modelReason: finalRoute.modelReason,
+      });
+
       try {
         const result = await generateProject(
           prompt,
@@ -60,7 +74,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           (text) => send("status", { text }),
           imageBase64 ?? null,
           imageMimeType,
-          forceModel ?? undefined,
+          finalRoute.model.model, // use smart-routed model
           customKnowledge,
           projectHistory
         );

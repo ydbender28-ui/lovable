@@ -409,6 +409,10 @@ export default function ProjectWorkspace({
   const [mergeGoal, setMergeGoal] = useState("");
   const [mergeLoading, setMergeLoading] = useState(false);
 
+  // Smart routing — shown immediately when generation starts
+  type RouteInfo = { intent: string; taskType: string; model: string; modelReason: string };
+  const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
+
   // Self-verify (auto user test + fix after generation)
   const [selfVerify, setSelfVerify] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -1048,6 +1052,7 @@ export default function ProjectWorkspace({
     setFlow({ type: "idle" });
     setSuggestions([]);
     setShowUndo(false);
+    setRouteInfo(null);
 
     // Inject URL reference if set
     let fullText = text;
@@ -1111,7 +1116,8 @@ export default function ProjectWorkspace({
           if (!eventLine || !dataLine) continue;
           try {
             const payload = JSON.parse(dataLine);
-            if (eventLine === "status") setLoadingStatus(payload.text);
+            if (eventLine === "route") setRouteInfo(payload as RouteInfo);
+            else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
               // Auto preview switching based on prompt keywords
@@ -1763,18 +1769,35 @@ export default function ProjectWorkspace({
           </div>
         )}
         {loading && (
-          <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5 max-w-[92%]">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
-              <span className="text-xs font-medium text-fuchsia-300">AI</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
-                ))}
-              </span>
-              {loadingStatus}
+          <div className="space-y-2 max-w-[92%]">
+            {/* Route chip — appears instantly, shows what AI understood and which model */}
+            {routeInfo && (
+              <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03]">
+                <span className="text-xs text-gray-300">{routeInfo.intent}</span>
+                <span className="text-[10px] text-gray-600 mx-1">·</span>
+                <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${
+                  routeInfo.taskType === "style" || routeInfo.taskType === "content" ? "bg-green-500/10 text-green-400" :
+                  routeInfo.taskType === "bugfix" ? "bg-amber-500/10 text-amber-400" :
+                  routeInfo.taskType === "complex" || routeInfo.taskType === "new-build" ? "bg-fuchsia-500/10 text-fuchsia-400" :
+                  "bg-blue-500/10 text-blue-400"
+                }`}>{routeInfo.taskType}</span>
+                <span className="text-[10px] text-gray-600">→</span>
+                <span className="text-[10px] font-medium text-gray-400">{routeInfo.model}</span>
+              </div>
+            )}
+            <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
+                <span className="text-xs font-medium text-fuchsia-300">AI</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <span className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
+                  ))}
+                </span>
+                {loadingStatus}
+              </div>
             </div>
           </div>
         )}
