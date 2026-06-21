@@ -306,6 +306,20 @@ export default function ProjectWorkspace({
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
   const [lineRef, setLineRef] = useState<string | null>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [csvData, setCsvData] = useState<string | null>(null);
+
+  // User testing
+  type UserTestResult = { overallScore: number; testers: Array<{ persona: string; goal: string; steps: string[]; issues: string[]; verdict: string }>; criticalIssues: string[]; quickWins: string[] };
+  const [showUserTest, setShowUserTest] = useState(false);
+  const [userTestLoading, setUserTestLoading] = useState(false);
+  const [userTestResult, setUserTestResult] = useState<UserTestResult | null>(null);
+
+  // Monetize
+  const [showMonetize, setShowMonetize] = useState(false);
+  const [monetizeDesc, setMonetizeDesc] = useState("");
+  const [monetizeLoading, setMonetizeLoading] = useState(false);
+  const [monetizePlan, setMonetizePlan] = useState<{ summary: string; buildPrompt: string } | null>(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -839,6 +853,12 @@ export default function ProjectWorkspace({
       fullText += `\n\n(referring to ${lineRef})`;
       setLineRef(null);
     }
+    // Inject CSV data if uploaded
+    if (csvData) {
+      fullText += `\n\nUSER'S REAL DATA (CSV format, use this exact data in the app — not placeholder/fake data):\n\`\`\`csv\n${csvData}\n\`\`\`\nBuild the app around this real data. Infer the schema from the CSV headers and populate the app with the actual values shown.`;
+      setCsvData(null);
+    }
+
     // PWA detection
     const tl = text.toLowerCase();
     if (/\b(pwa|installable|install(able)? app|offline|service.?worker|push notification|add to home)/i.test(tl)) {
@@ -1085,6 +1105,46 @@ export default function ProjectWorkspace({
       }
     } catch { /* ignore */ }
     setShareLoading(false);
+  }
+
+  async function handleUserTest() {
+    setUserTestLoading(true);
+    setUserTestResult(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/user-test`, { method: "POST" });
+      const data = await res.json();
+      if (!data.error) setUserTestResult(data);
+    } catch { /* ignore */ }
+    setUserTestLoading(false);
+  }
+
+  async function handleMonetize() {
+    if (!monetizeDesc.trim() || monetizeLoading) return;
+    setMonetizeLoading(true);
+    setMonetizePlan(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/monetize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: monetizeDesc }),
+      });
+      const data = await res.json();
+      if (data.buildPrompt) setMonetizePlan(data);
+    } catch { /* ignore */ }
+    setMonetizeLoading(false);
+  }
+
+  function handleCsvFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const text = ev.target?.result as string;
+      const rows = text.split("\n").slice(0, 20).join("\n"); // first 20 rows
+      setCsvData(rows);
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   }
 
   async function handleUnpublish() {
@@ -1524,6 +1584,16 @@ export default function ProjectWorkspace({
         </div>
       )}
 
+      {/* CSV data indicator */}
+      {csvData && (
+        <div className="px-3 pt-1 shrink-0">
+          <div className="flex items-center gap-1.5 text-[10px] text-green-400 bg-green-500/10 border border-green-400/20 rounded-lg px-2.5 py-1">
+            <span>📊 CSV data ready ({csvData.split("\n").length} rows)</span>
+            <button onClick={() => setCsvData(null)} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+          </div>
+        </div>
+      )}
+
       {/* Uploaded image preview */}
       {uploadImage && (
         <div className="px-3 pt-1 shrink-0">
@@ -1550,6 +1620,10 @@ export default function ProjectWorkspace({
           />
           <div className="flex items-center justify-between px-2.5 pb-2.5">
             <div className="flex items-center gap-0.5">
+              <button onClick={() => csvInputRef.current?.click()} title="Import CSV data — AI builds around your real data"
+                className="text-gray-500 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
+                CSV
+              </button>
               <button onClick={() => fileInputRef.current?.click()} title="Upload screenshot or image"
                 className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
                 📎
@@ -1591,6 +1665,7 @@ export default function ProjectWorkspace({
         </div>
       </div>
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
+      <input ref={csvInputRef} type="file" accept=".csv,.tsv,text/csv" onChange={handleCsvFile} className="hidden" />
     </div>
   );
 
@@ -1717,6 +1792,18 @@ export default function ProjectWorkspace({
           </button>
 
           {hasFiles && (
+            <button onClick={() => { setShowUserTest(true); setUserTestResult(null); }} title="Run synthetic user testing"
+              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+              🧪 Test
+            </button>
+          )}
+          {hasFiles && (
+            <button onClick={() => { setShowMonetize(true); setMonetizePlan(null); }} title="One-prompt monetization"
+              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+              💰 Monetize
+            </button>
+          )}
+          {hasFiles && (
             <button onClick={() => { setShowShareModal(true); setShareLink(null); }} title="Share preview link (7 days, public)"
               className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
               🔗 Share
@@ -1810,6 +1897,120 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* User testing modal */}
+      {showUserTest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowUserTest(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🧪 Synthetic User Testing</h2>
+              <button onClick={() => setShowUserTest(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">AI simulates real users clicking through your app and reports back issues — before any real user sees it.</p>
+            {!userTestResult && (
+              <button onClick={handleUserTest} disabled={userTestLoading}
+                className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+                {userTestLoading ? "Testing… (15-20s)" : "Run User Test →"}
+              </button>
+            )}
+            {userTestResult && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`text-2xl font-bold ${userTestResult.overallScore >= 80 ? "text-green-400" : userTestResult.overallScore >= 60 ? "text-amber-400" : "text-red-400"}`}>
+                    {userTestResult.overallScore}/100
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Usability Score</p>
+                    <p className="text-xs text-gray-500">{userTestResult.testers.filter(t => t.verdict === "passed").length}/{userTestResult.testers.length} testers completed their goal</p>
+                  </div>
+                </div>
+                {userTestResult.criticalIssues.length > 0 && (
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 space-y-1.5">
+                    <p className="text-xs font-semibold text-red-400">Critical issues</p>
+                    {userTestResult.criticalIssues.map((issue, i) => (
+                      <p key={i} className="text-xs text-red-300/80">· {issue}</p>
+                    ))}
+                  </div>
+                )}
+                {userTestResult.quickWins.length > 0 && (
+                  <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3 space-y-1.5">
+                    <p className="text-xs font-semibold text-green-400">Quick wins</p>
+                    {userTestResult.quickWins.map((win, i) => (
+                      <p key={i} className="text-xs text-green-300/80">· {win}</p>
+                    ))}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {userTestResult.testers.map((t, i) => (
+                    <div key={i} className={`rounded-xl border p-3 space-y-2 ${t.verdict === "passed" ? "border-green-500/20 bg-green-500/5" : t.verdict === "confused" ? "border-amber-500/20 bg-amber-500/5" : "border-red-500/20 bg-red-500/5"}`}>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium text-white">{t.persona}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.verdict === "passed" ? "bg-green-500/20 text-green-300" : t.verdict === "confused" ? "bg-amber-500/20 text-amber-300" : "bg-red-500/20 text-red-300"}`}>
+                          {t.verdict}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-500">Goal: {t.goal}</p>
+                      {t.issues.map((issue, j) => (
+                        <p key={j} className="text-[10px] text-red-300/80">⚠ {issue}</p>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => {
+                    const fixes = [...(userTestResult.criticalIssues ?? []), ...(userTestResult.quickWins ?? [])].slice(0, 5).join("; ");
+                    setShowUserTest(false);
+                    runGenerate(`Fix these user testing issues: ${fixes}. Do not change the design or layout — only fix the reported UX problems.`);
+                  }}
+                    className="flex-1 text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2 hover:bg-fuchsia-500/30 transition-colors">
+                    Fix all issues →
+                  </button>
+                  <button onClick={handleUserTest} disabled={userTestLoading}
+                    className="text-xs rounded-xl border border-white/10 bg-white/5 text-gray-400 px-3 py-2 hover:bg-white/10 transition-colors">
+                    Re-test
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Monetize modal */}
+      {showMonetize && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowMonetize(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">💰 One-Prompt Monetization</h2>
+              <button onClick={() => setShowMonetize(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Describe your pricing model and we&apos;ll wire up Stripe — pricing page, checkout, trials, webhooks — all from one sentence.</p>
+            <textarea
+              value={monetizeDesc}
+              onChange={e => setMonetizeDesc(e.target.value)}
+              placeholder='e.g. "Charge $19/month, 14-day free trial. Team plan $49/month for up to 5 users. Annual gets 20% off."'
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+            />
+            {monetizePlan ? (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-3">
+                  <p className="text-xs text-green-300">✓ {monetizePlan.summary}</p>
+                </div>
+                <button onClick={() => { setShowMonetize(false); runGenerate(monetizePlan.buildPrompt); }}
+                  className="w-full text-sm rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                  Add to my app →
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleMonetize} disabled={monetizeLoading || !monetizeDesc.trim()}
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+                {monetizeLoading ? "Planning monetization…" : "Generate billing setup →"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Share modal */}
       {showShareModal && (
