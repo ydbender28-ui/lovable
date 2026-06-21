@@ -155,7 +155,7 @@ SUMMARY: <2-3 sentences describing what you built>
 Rules: no JSON, no code fences, no commentary outside the format above.
 
 FILE RULES:
-- index.html: minimal shell with <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0f;color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style>
+- index.html: minimal shell with <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:{{THEME_BG}};color:{{THEME_TEXT}};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}#root{min-height:100vh}</style>
 - src/main.tsx: just ReactDOM.createRoot + App mount
 - src/App.tsx: THE ENTIRE APPLICATION in one file — every component, hook, util, and data
 
@@ -613,24 +613,25 @@ export async function generateProject(
   const isEdit = !!(existingFiles && Object.keys(existingFiles).length > 0);
 
   // Only inject a design system for new builds — edits must preserve existing design
+  const pickedDesign = isEdit ? null : pickDesign(prompt);
   const designInjection = isEdit
     ? `EDITING AN EXISTING APP — DO NOT apply any new design system. Read the existing code and match its exact colors, fonts, spacing, and visual style. Your only job is to add/change what was requested.`
-    : (() => {
-        const design = pickDesign(prompt);
-        return `${design.description}
+    : `${pickedDesign!.description}
 COLORS (use exactly):
-- body background: ${design.bg}
-- card/surface: ${design.card}
-- border: ${design.border}
-- primary accent: ${design.accent}
-- secondary accent: ${design.accent2}
-- text: ${design.text}
-- muted text: ${design.muted}
-- border-radius: ${design.radius}
+- body background: ${pickedDesign!.bg}
+- card/surface: ${pickedDesign!.card}
+- border: ${pickedDesign!.border}
+- primary accent: ${pickedDesign!.accent}
+- secondary accent: ${pickedDesign!.accent2}
+- text: ${pickedDesign!.text}
+- muted text: ${pickedDesign!.muted}
+- border-radius: ${pickedDesign!.radius}
 Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`;
-      })();
 
-  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT.replace("{{DESIGN_INJECTION}}", designInjection);
+  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT
+    .replace("{{DESIGN_INJECTION}}", designInjection)
+    .replace("{{THEME_BG}}", pickedDesign?.bg ?? "#0a0a0f")
+    .replace("{{THEME_TEXT}}", pickedDesign?.text ?? "#f4f4f5");
 
   onStatus?.("Starting generation…");
 
