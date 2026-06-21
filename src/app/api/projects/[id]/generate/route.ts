@@ -25,8 +25,11 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   await prisma.message.create({ data: { projectId: id, role: "user", content: prompt } });
 
   const existingFiles = project.versions[0] ? JSON.parse(project.versions[0].files) : null;
-  // Use env vars from request body if provided (client may have just saved new keys), else fall back to DB
   const envVars = bodyEnvVars ?? (project.envVars ? JSON.parse(project.envVars) : null);
+  const knowledge: Array<{ title: string; content: string }> = JSON.parse(project.knowledge || "[]");
+  const customKnowledge = knowledge.length > 0
+    ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
+    : null;
 
   const encoder = new TextEncoder();
 
@@ -45,7 +48,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           (text) => send("status", { text }),
           imageBase64 ?? null,
           imageMimeType,
-          forceModel ?? undefined
+          forceModel ?? undefined,
+          customKnowledge
         );
 
         // Auto-republish if already live — build new HTML before sending done

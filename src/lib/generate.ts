@@ -606,7 +606,8 @@ export async function generateProject(
   onStatus?: (text: string) => void,
   imageBase64?: string | null,
   imageMimeType?: string,
-  forceModel?: string
+  forceModel?: string,
+  customKnowledge?: string | null
 ): Promise<GenerateResult> {
   const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
   let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
@@ -647,8 +648,10 @@ Make the entire layout and structure match this design system. It should look DR
       .join("\n");
     if (serialized.length < 60000) existingSection = serialized;
   }
+  const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
+
   const userContent = isEdit
-    ? `CURRENT CODE:\n${existingSection}${envSection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
+    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
 - Make ONLY the minimal changes needed to address the edit request — add the feature, fix the bug, nothing more
 - PRESERVE 100% of the existing visual design: colors, fonts, spacing, layout, theme, background — DO NOT change any of these
 - PRESERVE all existing components, features, interactions, and data that are not part of the edit request
@@ -660,7 +663,7 @@ Make the entire layout and structure match this design system. It should look DR
 - ADMIN PANELS: when adding admin, add a password-protected route/view that reuses the existing design language — same colors, same card style, same button style
 - DATA PERSISTENCE WITH ADMIN: When adding admin CRUD for products/items, generate a "💾 Save to Site" button in the admin panel. That button must call: window.parent?.postMessage({type:'TC_SAVE_STATE',state:JSON.stringify({products: allProducts, /* other state */})}, '*'). This syncs admin edits back to the source code so the published site stays up to date.
 - You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
-    : `BUILD REQUEST: ${prompt}${envSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
+    : `BUILD REQUEST: ${prompt}${envSection}${knowledgeSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
 
   let text = "";
   let stopped = false;

@@ -53,6 +53,7 @@ model Project {
   customDomain    String?   @unique
   publishPassword String?
   visitCount      Int       @default(0)
+  knowledge       String    @default("[]") // JSON: { id, title, content }[]
 }
 
 model Message {

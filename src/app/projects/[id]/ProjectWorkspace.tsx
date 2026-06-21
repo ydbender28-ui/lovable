@@ -217,6 +217,17 @@ export default function ProjectWorkspace({
   const [loadingVersions, setLoadingVersions] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Chat mode (plan without generating)
+  const [chatMode, setChatMode] = useState(false);
+  const [chatStreaming, setChatStreaming] = useState(false);
+  const [chatStreamContent, setChatStreamContent] = useState("");
+
+  // Knowledge panel
+  const [showKnowledge, setShowKnowledge] = useState(false);
+  type KnowledgeItem = { id: string; title: string; content: string };
+  const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
+  const [knowledgeDraft, setKnowledgeDraft] = useState<KnowledgeItem | null>(null);
+
   type FlowState =
     | { type: "idle" }
     | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
@@ -242,14 +253,61 @@ export default function ProjectWorkspace({
       .then((r) => r.json())
       .then((d) => { if (typeof d === "object") setEnvVars(d); })
       .catch(() => {});
+    fetch(`/api/projects/${projectId}/knowledge`)
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d)) setKnowledge(d); })
+      .catch(() => {});
   }, [projectId]);
+
+  async function saveKnowledge(items: KnowledgeItem[]) {
+    setKnowledge(items);
+    await fetch(`/api/projects/${projectId}/knowledge`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(items),
+    });
+  }
+
+  async function handleChatSend() {
+    if (!prompt.trim() || chatStreaming) return;
+    const text = prompt.trim();
+    setPrompt("");
+    const userMsg: Message = { id: `chat-${Date.now()}`, role: "user", content: text };
+    setMessages(prev => [...prev, userMsg]);
+    setChatStreaming(true);
+    setChatStreamContent("");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: messages.slice(-10) }),
+      });
+      if (!res.body) throw new Error("No stream");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        full += chunk;
+        setChatStreamContent(full);
+      }
+      setMessages(prev => [...prev, { id: `chat-ai-${Date.now()}`, role: "assistant", content: full }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { id: `chat-err-${Date.now()}`, role: "assistant", content: "Sorry, something went wrong." }]);
+    } finally {
+      setChatStreaming(false);
+      setChatStreamContent("");
+    }
+  }
 
   useEffect(() => {
     const t = setTimeout(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }, 50);
     return () => clearTimeout(t);
-  }, [messages, loading, flow, suggestions]);
+  }, [messages, loading, flow, suggestions, chatStreaming, chatStreamContent]);
 
   useEffect(() => { if (!loading) setLoadingStatus("Thinking..."); }, [loading]);
 
@@ -758,9 +816,90 @@ export default function ProjectWorkspace({
     );
   }
 
+  // ── Knowledge panel ────────────────────────────────────────────────────────────
+  const knowledgePanel = showKnowledge && (
+    <div className="absolute inset-0 z-20 bg-[#0c0c12] flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+        <span className="text-sm font-medium text-white">📚 Custom Knowledge</span>
+        <button onClick={() => setShowKnowledge(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <p className="text-xs text-gray-500">Add context the AI should always remember — brand colors, tech stack preferences, coding conventions, business rules.</p>
+        {knowledge.map(k => (
+          <div key={k.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white">{k.title}</span>
+              <div className="flex gap-2">
+                <button onClick={() => setKnowledgeDraft(k)} className="text-xs text-gray-500 hover:text-fuchsia-300">Edit</button>
+                <button onClick={() => saveKnowledge(knowledge.filter(x => x.id !== k.id))} className="text-xs text-gray-500 hover:text-red-400">Delete</button>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 line-clamp-2">{k.content}</p>
+          </div>
+        ))}
+        {knowledgeDraft ? (
+          <div className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-500/5 p-3 space-y-2">
+            <input
+              value={knowledgeDraft.title}
+              onChange={e => setKnowledgeDraft({ ...knowledgeDraft, title: e.target.value })}
+              placeholder="Title (e.g. Brand Colors, Tech Stack)"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40"
+            />
+            <textarea
+              value={knowledgeDraft.content}
+              onChange={e => setKnowledgeDraft({ ...knowledgeDraft, content: e.target.value })}
+              placeholder="Describe the convention, rule, or context..."
+              rows={4}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => {
+                const existing = knowledge.find(x => x.id === knowledgeDraft.id);
+                const updated = existing
+                  ? knowledge.map(x => x.id === knowledgeDraft.id ? knowledgeDraft : x)
+                  : [...knowledge, knowledgeDraft];
+                saveKnowledge(updated);
+                setKnowledgeDraft(null);
+              }} className="text-xs bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-3 py-1.5 rounded-lg hover:bg-fuchsia-500/30 transition-colors">Save</button>
+              <button onClick={() => setKnowledgeDraft(null)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setKnowledgeDraft({ id: `k-${Date.now()}`, title: "", content: "" })}
+            className="w-full text-xs rounded-xl border border-dashed border-white/10 text-gray-500 hover:border-fuchsia-400/30 hover:text-fuchsia-300 py-3 transition-colors">
+            + Add knowledge
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   // ── Chat panel ─────────────────────────────────────────────────────────────────
   const chatPanel = (
-    <div className="flex flex-col h-full bg-[#0c0c12]">
+    <div className="flex flex-col h-full bg-[#0c0c12] relative">
+      {knowledgePanel}
+      {/* Mode toggle */}
+      <div className="flex items-center gap-1 px-3 pt-2 pb-1 shrink-0">
+        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px]">
+          <button onClick={() => setChatMode(false)}
+            className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+            Build
+          </button>
+          <button onClick={() => setChatMode(true)}
+            className={`px-3 py-1 rounded-md transition-colors ${chatMode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+            Chat
+          </button>
+        </div>
+        <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
+          className="ml-auto text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors">
+          📚 {knowledge.length > 0 ? knowledge.length : ""}
+        </button>
+      </div>
+      {chatMode && (
+        <div className="px-3 pb-1 shrink-0">
+          <p className="text-[10px] text-gray-600">Chat mode — discuss your app without generating code</p>
+        </div>
+      )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && !loading && flow.type === "idle" && (
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
@@ -815,6 +954,15 @@ export default function ProjectWorkspace({
         <ClarifyCard />
         <ApiKeyCard />
 
+        {chatStreaming && (
+          <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5 max-w-[92%]">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
+              <span className="text-xs font-medium text-fuchsia-300">AI</span>
+            </div>
+            <span className="text-xs text-gray-200 whitespace-pre-wrap">{chatStreamContent || "..."}</span>
+          </div>
+        )}
         {loading && (
           <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5 max-w-[92%]">
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -884,7 +1032,7 @@ export default function ProjectWorkspace({
             ref={textareaRef}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chatMode ? handleChatSend() : handleSend(); } }}
             onPaste={handleImagePaste}
             placeholder="Describe what to build or change… paste a screenshot too"
             rows={3}
@@ -909,9 +1057,9 @@ export default function ProjectWorkspace({
               )}
               <span className="text-[10px] text-gray-700 pl-1 hidden sm:block">⌘K</span>
             </div>
-            <button onClick={handleSend} disabled={loading || !prompt.trim()}
+            <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : loading) || !prompt.trim()}
               className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
-              {loading ? "Generating..." : "Send"}
+              {chatMode ? (chatStreaming ? "Thinking..." : "Send") : (loading ? "Generating..." : "Send")}
             </button>
           </div>
         </div>
