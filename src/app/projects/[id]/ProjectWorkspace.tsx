@@ -228,6 +228,13 @@ export default function ProjectWorkspace({
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const [knowledgeDraft, setKnowledgeDraft] = useState<KnowledgeItem | null>(null);
 
+  // Image generation
+  const [showImageGen, setShowImageGen] = useState(false);
+  const [imageGenPrompt, setImageGenPrompt] = useState("");
+  const [imageGenLoading, setImageGenLoading] = useState(false);
+  const [imageGenResult, setImageGenResult] = useState<string | null>(null);
+  const [imageGenError, setImageGenError] = useState<string | null>(null);
+
   // GitHub sync
   const [showGithub, setShowGithub] = useState(false);
   const [githubToken, setGithubToken] = useState("");
@@ -268,6 +275,27 @@ export default function ProjectWorkspace({
       .then((d) => { if (Array.isArray(d)) setKnowledge(d); })
       .catch(() => {});
   }, [projectId]);
+
+  async function handleGenerateImage() {
+    if (!imageGenPrompt.trim() || imageGenLoading) return;
+    setImageGenLoading(true);
+    setImageGenResult(null);
+    setImageGenError(null);
+    try {
+      const res = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: imageGenPrompt }),
+      });
+      const data = await res.json();
+      if (data.url) setImageGenResult(data.url);
+      else setImageGenError(data.error ?? "Generation failed");
+    } catch {
+      setImageGenError("Something went wrong");
+    } finally {
+      setImageGenLoading(false);
+    }
+  }
 
   async function handleGithubExport() {
     if (!githubToken.trim() || !githubRepo.trim()) return;
@@ -1131,6 +1159,10 @@ export default function ProjectWorkspace({
                 className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
                 📎
               </button>
+              <button onClick={() => { setShowImageGen(true); setImageGenResult(null); setImageGenError(null); }} title="Generate an image with AI"
+                className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
+                🎨
+              </button>
               <button onClick={handleEnhancePrompt} disabled={!prompt.trim() || enhancing} title="AI improves your prompt">
                 <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
                   {enhancing ? "⏳" : "✨"}
@@ -1339,6 +1371,48 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* Image generation modal */}
+      {showImageGen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowImageGen(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🎨 Generate Image</h2>
+              <button onClick={() => setShowImageGen(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Describe the image you need. It will be generated and added to your app.</p>
+            <textarea
+              value={imageGenPrompt}
+              onChange={e => setImageGenPrompt(e.target.value)}
+              placeholder="A minimalist product photo of wireless headphones on a white background..."
+              rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+            />
+            {imageGenResult && (
+              <div className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imageGenResult} alt="Generated" className="w-full rounded-xl border border-white/10" />
+                <button onClick={() => {
+                  runGenerate(`Add this image to the app. Use this URL as an <img> src: ${imageGenResult}`);
+                  setShowImageGen(false);
+                }}
+                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2 hover:bg-fuchsia-500/30 transition-colors">
+                  Add to app →
+                </button>
+                <button onClick={() => { navigator.clipboard.writeText(imageGenResult); }}
+                  className="w-full text-xs rounded-xl border border-white/10 text-gray-400 py-2 hover:bg-white/5 transition-colors">
+                  Copy URL
+                </button>
+              </div>
+            )}
+            {imageGenError && <p className="text-xs text-red-400">{imageGenError}</p>}
+            <button onClick={handleGenerateImage} disabled={imageGenLoading || !imageGenPrompt.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              {imageGenLoading ? "Generating… (10-20s)" : "Generate →"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* GitHub export modal */}
       {showGithub && (
