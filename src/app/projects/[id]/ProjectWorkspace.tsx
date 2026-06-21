@@ -228,10 +228,20 @@ export default function ProjectWorkspace({
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const [knowledgeDraft, setKnowledgeDraft] = useState<KnowledgeItem | null>(null);
 
+  // GitHub sync
+  const [showGithub, setShowGithub] = useState(false);
+  const [githubToken, setGithubToken] = useState("");
+  const [githubRepo, setGithubRepo] = useState("");
+  const [githubPrivate, setGithubPrivate] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [githubResult, setGithubResult] = useState<{ repoUrl?: string; error?: string } | null>(null);
+
+  type DesignDirection = { name: string; description: string; bg: string; accent: string; text: string; style: string };
   type FlowState =
     | { type: "idle" }
     | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
-    | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> };
+    | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
+    | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] };
   const [flow, setFlow] = useState<FlowState>({ type: "idle" });
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -258,6 +268,25 @@ export default function ProjectWorkspace({
       .then((d) => { if (Array.isArray(d)) setKnowledge(d); })
       .catch(() => {});
   }, [projectId]);
+
+  async function handleGithubExport() {
+    if (!githubToken.trim() || !githubRepo.trim()) return;
+    setGithubLoading(true);
+    setGithubResult(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/github-export`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: githubToken.trim(), repoName: githubRepo.trim(), isPrivate: githubPrivate }),
+      });
+      const data = await res.json();
+      setGithubResult(data);
+    } catch {
+      setGithubResult({ error: "Failed to export" });
+    } finally {
+      setGithubLoading(false);
+    }
+  }
 
   async function saveKnowledge(items: KnowledgeItem[]) {
     setKnowledge(items);
@@ -511,6 +540,27 @@ export default function ProjectWorkspace({
         }
       } catch { /* ignore — just generate */ }
       setLoading(false);
+
+      // Show design directions for visually-open prompts (landing pages, portfolios, marketing sites)
+      const visualKeywords = ["landing page", "portfolio", "marketing", "homepage", "website", "blog", "agency"];
+      const isVisual = visualKeywords.some(kw => trimmed.toLowerCase().includes(kw));
+      if (isVisual) {
+        setLoadingStatus("Generating design directions…");
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/projects/${projectId}/design-directions`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: trimmed }),
+          });
+          const data = await res.json();
+          if (data.directions?.length > 0) {
+            setLoading(false);
+            setFlow({ type: "designpick", pendingPrompt: trimmed, directions: data.directions });
+            return;
+          }
+        } catch { /* ignore */ }
+        setLoading(false);
+      }
     }
     runGenerate(trimmed);
   }
@@ -733,6 +783,42 @@ export default function ProjectWorkspace({
   const publishDomain = publishUrl ? publishUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
 
   // ── Flow cards ────────────────────────────────────────────────────────────────
+  function DesignPickCard() {
+    if (flow.type !== "designpick") return null;
+    const f = flow;
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+        <p className="text-xs font-medium text-white">Choose a design direction</p>
+        <div className="space-y-2">
+          {f.directions.map((d, i) => (
+            <button key={i} onClick={() => {
+              setFlow({ type: "idle" });
+              runGenerate(`${f.pendingPrompt}\n\nDesign direction: ${d.name} — ${d.description}. Use this color palette: background ${d.bg}, accent ${d.accent}, text ${d.text}. Style: ${d.style}.`);
+            }}
+              className="w-full text-left rounded-xl border border-white/10 hover:border-fuchsia-400/30 bg-white/[0.02] hover:bg-fuchsia-500/5 p-3 transition-all group">
+              <div className="flex items-start gap-3">
+                <div className="flex gap-1 shrink-0 mt-0.5">
+                  {[d.bg, d.accent, d.text].map((c, j) => (
+                    <div key={j} className="h-4 w-4 rounded-full border border-white/10" style={{ background: c }} />
+                  ))}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-white group-hover:text-fuchsia-200">{d.name}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">{d.style}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{d.description}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <button onClick={() => { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); }}
+          className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          Skip — let AI choose →
+        </button>
+      </div>
+    );
+  }
+
   function ClarifyCard() {
     const [style, setStyle] = useState("");
     const [type, setType] = useState("");
@@ -951,6 +1037,7 @@ export default function ProjectWorkspace({
           </button>
         )}
 
+        <DesignPickCard />
         <ClarifyCard />
         <ApiKeyCard />
 
@@ -1193,6 +1280,11 @@ export default function ProjectWorkspace({
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10 transition-colors disabled:opacity-40 hidden sm:block">
             HTML
           </button>
+          <button onClick={() => { setShowGithub(true); setGithubResult(null); }} disabled={!hasFiles}
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10 transition-colors disabled:opacity-40 hidden sm:flex items-center gap-1.5">
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </button>
           <a href={hasFiles ? `/api/projects/${projectId}/export-app` : undefined}
             download
             className={`text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block ${!hasFiles ? "pointer-events-none opacity-40" : ""}`}>
@@ -1247,6 +1339,53 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* GitHub export modal */}
+      {showGithub && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowGithub(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <svg viewBox="0 0 16 16" className="h-4 w-4 fill-white"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                Export to GitHub
+              </h2>
+              <button onClick={() => setShowGithub(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {githubResult?.repoUrl ? (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 px-4 py-3 text-sm">
+                  ✓ Exported successfully!
+                </div>
+                <a href={githubResult.repoUrl} target="_blank" rel="noreferrer"
+                  className="block text-center text-sm text-fuchsia-300 hover:text-fuchsia-200 border border-fuchsia-400/30 rounded-xl py-2.5 hover:bg-fuchsia-500/5 transition-colors">
+                  View on GitHub ↗
+                </a>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500">Create a GitHub Personal Access Token with <code className="text-gray-400">repo</code> scope at github.com/settings/tokens</p>
+                <div className="space-y-2">
+                  <input type="password" value={githubToken} onChange={e => setGithubToken(e.target.value)}
+                    placeholder="GitHub token (ghp_...)"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono" />
+                  <input value={githubRepo} onChange={e => setGithubRepo(e.target.value)}
+                    placeholder="Repository name (e.g. my-app)"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                    <input type="checkbox" checked={githubPrivate} onChange={e => setGithubPrivate(e.target.checked)} className="rounded" />
+                    Private repository
+                  </label>
+                </div>
+                {githubResult?.error && <p className="text-xs text-red-400">{githubResult.error}</p>}
+                <button onClick={handleGithubExport} disabled={githubLoading || !githubToken.trim() || !githubRepo.trim()}
+                  className="w-full rounded-xl bg-white text-black text-sm font-semibold py-2.5 hover:bg-gray-100 transition-colors disabled:opacity-40">
+                  {githubLoading ? "Exporting..." : "Export to GitHub →"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Version history slide-over */}
       {showHistory && (
