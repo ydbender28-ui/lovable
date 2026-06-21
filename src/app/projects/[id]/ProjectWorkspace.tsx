@@ -413,6 +413,38 @@ export default function ProjectWorkspace({
   const [selfVerify, setSelfVerify] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
+  // Load test
+  const [showLoadTest, setShowLoadTest] = useState(false);
+  type LoadTestData = { appType: string; simulatedUsers: number; bottlenecks: Array<{ severity: string; location: string; issue: string; fix: string }>; estimatedCrashPoint: string; buildPrompt: string };
+  const [loadTestData, setLoadTestData] = useState<LoadTestData | null>(null);
+  const [loadTestLoading, setLoadTestLoading] = useState(false);
+
+  // Red team
+  const [showRedTeam, setShowRedTeam] = useState(false);
+  type RedTeamData = { securityScore: number; exploits: Array<{ severity: string; type: string; location: string; description: string; fix: string }>; passed: string[]; buildPrompt: string };
+  const [redTeamData, setRedTeamData] = useState<RedTeamData | null>(null);
+  const [redTeamLoading, setRedTeamLoading] = useState(false);
+
+  // Revenue model
+  const [showRevenue, setShowRevenue] = useState(false);
+  type RevenueData = { appCategory: string; strategies: Array<{ name: string; model: string; suggestedPrice: string; estimatedMRR: string; fit: number }>; recommended: string; launchPrice: string; willingness_to_pay_reasoning: string; buildPrompt: string };
+  const [revenueData, setRevenueData] = useState<RevenueData | null>(null);
+  const [revenueLoading, setRevenueLoading] = useState(false);
+
+  // Brand voice
+  const [showBrandVoice, setShowBrandVoice] = useState(false);
+  const [brandTone, setBrandTone] = useState("");
+  const [brandValues, setBrandValues] = useState("");
+  const [brandPersonality, setBrandPersonality] = useState("");
+  const [brandExamples, setBrandExamples] = useState("");
+  const [brandLoading, setBrandLoading] = useState(false);
+
+  // Sunset analysis
+  const [showSunset, setShowSunset] = useState(false);
+  type SunsetData = { recommendation: string; reason: string; unusedFeatures: string[]; cleanupActions: string[]; archivePrompt: string; daysSinceUpdate: number };
+  const [sunsetData, setSunsetData] = useState<SunsetData | null>(null);
+  const [sunsetLoading, setSunsetLoading] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoFired = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -845,6 +877,64 @@ export default function ProjectWorkspace({
     } finally {
       setMergeLoading(false);
     }
+  }
+
+  async function runLoadTest() {
+    setLoadTestLoading(true);
+    setLoadTestData(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/load-test`, { method: "POST" });
+      if (res.ok) setLoadTestData(await res.json());
+    } catch { /**/ }
+    setLoadTestLoading(false);
+  }
+
+  async function runRedTeam() {
+    setRedTeamLoading(true);
+    setRedTeamData(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/red-team`, { method: "POST" });
+      if (res.ok) setRedTeamData(await res.json());
+    } catch { /**/ }
+    setRedTeamLoading(false);
+  }
+
+  async function runRevenueModel() {
+    setRevenueLoading(true);
+    setRevenueData(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/revenue-model`, { method: "POST" });
+      if (res.ok) setRevenueData(await res.json());
+    } catch { /**/ }
+    setRevenueLoading(false);
+  }
+
+  async function saveBrandVoice() {
+    if (!brandTone.trim()) return;
+    setBrandLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/brand-voice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tone: brandTone, values: brandValues, personality: brandPersonality, examples: brandExamples }),
+      });
+      const data = await res.json();
+      if (data.rewritePrompt) {
+        setShowBrandVoice(false);
+        runGenerate(data.rewritePrompt + " Apply the brand voice to ALL user-facing strings in the app.");
+      }
+    } catch { /**/ }
+    setBrandLoading(false);
+  }
+
+  async function runSunset() {
+    setSunsetLoading(true);
+    setSunsetData(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/sunset`, { method: "POST" });
+      if (res.ok) setSunsetData(await res.json());
+    } catch { /**/ }
+    setSunsetLoading(false);
   }
 
   async function saveEnvVars(vars: EnvVars) {
@@ -1563,6 +1653,26 @@ export default function ProjectWorkspace({
         <button onClick={() => setShowMerge(true)} title="Merge another project into this one"
           className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-orange-300 hover:border-orange-400/30 px-2 py-1 transition-colors">
           ⚡
+        </button>
+        <button onClick={() => { setShowLoadTest(true); runLoadTest(); }} title="AI load test — find performance bottlenecks"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-indigo-300 hover:border-indigo-400/30 px-2 py-1 transition-colors">
+          🏋️
+        </button>
+        <button onClick={() => { setShowRedTeam(true); runRedTeam(); }} title="Adversarial red team — AI security hacker"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-red-300 hover:border-red-400/30 px-2 py-1 transition-colors">
+          🔴
+        </button>
+        <button onClick={() => { setShowRevenue(true); runRevenueModel(); }} title="Revenue model — monetization strategy"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-emerald-300 hover:border-emerald-400/30 px-2 py-1 transition-colors">
+          💰
+        </button>
+        <button onClick={() => setShowBrandVoice(true)} title="Brand voice — consistent copy tone"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-pink-300 hover:border-pink-400/30 px-2 py-1 transition-colors">
+          🎭
+        </button>
+        <button onClick={() => { setShowSunset(true); runSunset(); }} title="App lifecycle — sunset analysis"
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300 hover:border-gray-400/30 px-2 py-1 transition-colors">
+          🌅
         </button>
         <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
           className="ml-auto text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors">
@@ -2554,6 +2664,197 @@ export default function ProjectWorkspace({
               className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
               {mergeLoading ? "Analyzing both apps…" : "Merge Projects →"}
             </button>
+          </div>
+        </div>
+      )}
+      {/* Load test modal */}
+      {showLoadTest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowLoadTest(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🏋️ AI Load Test</h2>
+              <button onClick={() => setShowLoadTest(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {loadTestLoading && <p className="text-xs text-gray-500">Simulating 10,000 users across your app flows…</p>}
+            {loadTestData && !loadTestLoading && (
+              <div className="space-y-4">
+                <p className="text-xs text-gray-400">⚠ Estimated crash point: <span className="text-red-300">{loadTestData.estimatedCrashPoint}</span></p>
+                <div className="space-y-2">
+                  {loadTestData.bottlenecks.map((b, i) => (
+                    <div key={i} className={`rounded-xl border p-3 space-y-1 ${b.severity === "critical" ? "border-red-500/30 bg-red-500/5" : b.severity === "high" ? "border-amber-500/30 bg-amber-500/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-medium uppercase rounded px-1.5 py-0.5 ${b.severity === "critical" ? "bg-red-500/20 text-red-300" : b.severity === "high" ? "bg-amber-500/20 text-amber-300" : "bg-white/10 text-gray-400"}`}>{b.severity}</span>
+                        <span className="text-xs text-gray-300">{b.location}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">{b.issue}</p>
+                      <p className="text-xs text-green-400">Fix: {b.fix}</p>
+                    </div>
+                  ))}
+                </div>
+                {loadTestData.bottlenecks.length > 0 && (
+                  <button onClick={() => { setShowLoadTest(false); runGenerate(loadTestData.buildPrompt); }}
+                    className="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                    Fix all performance issues →
+                  </button>
+                )}
+                {loadTestData.bottlenecks.length === 0 && <p className="text-xs text-green-400">✓ No major performance issues found.</p>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Red team modal */}
+      {showRedTeam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowRedTeam(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🔴 Adversarial Red Team</h2>
+              <button onClick={() => setShowRedTeam(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {redTeamLoading && <p className="text-xs text-gray-500">AI is attempting to break your app like a real attacker…</p>}
+            {redTeamData && !redTeamLoading && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`text-2xl font-bold ${redTeamData.securityScore >= 80 ? "text-green-400" : redTeamData.securityScore >= 60 ? "text-amber-400" : "text-red-400"}`}>{redTeamData.securityScore}/100</div>
+                  <div>
+                    <p className="text-xs text-gray-300 font-medium">Security Score</p>
+                    <p className="text-[10px] text-gray-500">{redTeamData.exploits.length} exploit{redTeamData.exploits.length !== 1 ? "s" : ""} found</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {redTeamData.exploits.map((e, i) => (
+                    <div key={i} className={`rounded-xl border p-3 space-y-1 ${e.severity === "critical" ? "border-red-500/40 bg-red-500/5" : e.severity === "high" ? "border-orange-500/30 bg-orange-500/5" : "border-amber-500/20 bg-amber-500/5"}`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] uppercase font-medium rounded px-1.5 py-0.5 ${e.severity === "critical" ? "bg-red-500/20 text-red-300" : "bg-orange-500/20 text-orange-300"}`}>{e.severity}</span>
+                        <span className="text-xs text-gray-300 font-medium">{e.type}</span>
+                      </div>
+                      <p className="text-xs text-gray-400">{e.description}</p>
+                      <p className="text-xs text-green-400">Fix: {e.fix}</p>
+                    </div>
+                  ))}
+                </div>
+                {redTeamData.passed.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] text-gray-600 font-medium">Passed checks</p>
+                    {redTeamData.passed.map((p, i) => <p key={i} className="text-xs text-green-600">✓ {p}</p>)}
+                  </div>
+                )}
+                {redTeamData.exploits.length > 0 && (
+                  <button onClick={() => { setShowRedTeam(false); runGenerate(redTeamData.buildPrompt); }}
+                    className="w-full rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                    Patch all vulnerabilities →
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Revenue model modal */}
+      {showRevenue && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowRevenue(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">💰 Revenue Model</h2>
+              <button onClick={() => setShowRevenue(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {revenueLoading && <p className="text-xs text-gray-500">Modeling revenue strategies for your app…</p>}
+            {revenueData && !revenueLoading && (
+              <div className="space-y-4">
+                <div className="rounded-xl bg-emerald-500/10 border border-emerald-400/20 px-4 py-3">
+                  <p className="text-xs text-emerald-300 font-medium">Recommended: {revenueData.recommended} at {revenueData.launchPrice}</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{revenueData.willingness_to_pay_reasoning}</p>
+                </div>
+                <div className="space-y-2">
+                  {revenueData.strategies?.map((s, i) => (
+                    <div key={i} className={`rounded-xl border p-3 ${s.name === revenueData.recommended ? "border-emerald-400/30 bg-emerald-500/5" : "border-white/10 bg-white/5"}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-white font-medium">{s.name}</span>
+                        <span className="text-xs text-gray-400">{s.suggestedPrice}</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500">{s.estimatedMRR}</p>
+                      <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${s.fit}%` }} />
+                      </div>
+                      <p className="text-[10px] text-gray-600 mt-0.5">{s.fit}% fit</p>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => { setShowRevenue(false); runGenerate(revenueData.buildPrompt); }}
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                  Add billing infrastructure →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Brand voice modal */}
+      {showBrandVoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowBrandVoice(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🎭 Brand Voice</h2>
+              <button onClick={() => setShowBrandVoice(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Define your product&apos;s personality once — AI applies it to every error message, empty state, and UI string across your entire app.</p>
+            <div className="space-y-2">
+              <input value={brandTone} onChange={e => setBrandTone(e.target.value)} placeholder="Tone (e.g. friendly and direct, professional and warm)"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              <input value={brandValues} onChange={e => setBrandValues(e.target.value)} placeholder="Values (e.g. transparent, reliable, human)"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              <input value={brandPersonality} onChange={e => setBrandPersonality(e.target.value)} placeholder='Personality (e.g. "like a knowledgeable friend, not a corporate bot")'
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              <textarea value={brandExamples} onChange={e => setBrandExamples(e.target.value)} placeholder={'Example phrases:\n"Oops, that page wandered off" instead of "404 Not Found"\n"Let\'s get you sorted" instead of "Error, please try again"'}
+                rows={3} className="w-full resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+            </div>
+            <button onClick={saveBrandVoice} disabled={brandLoading || !brandTone.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              {brandLoading ? "Rewriting copy…" : "Apply brand voice to entire app →"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sunset modal */}
+      {showSunset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowSunset(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🌅 App Lifecycle</h2>
+              <button onClick={() => setShowSunset(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {sunsetLoading && <p className="text-xs text-gray-500">Analyzing app usage and lifecycle status…</p>}
+            {sunsetData && !sunsetLoading && (
+              <div className="space-y-4">
+                <div className={`rounded-xl border px-4 py-3 ${sunsetData.recommendation === "keep" ? "border-green-400/30 bg-green-500/10" : sunsetData.recommendation === "archive" ? "border-amber-400/30 bg-amber-500/10" : "border-red-400/30 bg-red-500/10"}`}>
+                  <p className="text-sm font-semibold text-white capitalize">{sunsetData.recommendation === "keep" ? "✓ Keep active" : sunsetData.recommendation === "archive" ? "⚠ Consider archiving" : "Archive this app"}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{sunsetData.reason}</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Last updated {sunsetData.daysSinceUpdate} days ago</p>
+                </div>
+                {sunsetData.unusedFeatures.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium mb-1.5">Possibly unused features</p>
+                    {sunsetData.unusedFeatures.map((f, i) => <p key={i} className="text-xs text-gray-600">· {f}</p>)}
+                  </div>
+                )}
+                {sunsetData.cleanupActions.length > 0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 font-medium mb-1.5">Cleanup checklist</p>
+                    {sunsetData.cleanupActions.map((a, i) => <p key={i} className="text-xs text-gray-600">☐ {a}</p>)}
+                  </div>
+                )}
+                {sunsetData.recommendation !== "keep" && (
+                  <button onClick={() => { setShowSunset(false); runGenerate(sunsetData.archivePrompt); }}
+                    className="w-full rounded-xl bg-gradient-to-r from-gray-600 to-gray-700 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                    Add graceful shutdown page →
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

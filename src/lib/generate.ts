@@ -289,6 +289,26 @@ Drag and drop:
   onDragOver={e=>e.preventDefault()}
   onDrop={e=>{const id=e.dataTransfer.getData('id'); /* reorder */}}
 
+EDITING EXISTING CODE — CRITICAL RULES:
+When the user asks to change something in an existing app:
+1. Apply the change EXACTLY as requested — "change background to black" means change the background color to black NOW
+2. Return ALL files in the output, not just the changed ones
+3. For SIMPLE style changes (color, font size, padding, border, layout tweak):
+   - Find the EXACT property in the code and change it
+   - Do NOT rebuild the app — just modify what was asked
+   - "change background color to X" → find body/root/container background and set it to X
+   - "change the button color to X" → find every button style and update background/color
+   - "make the header dark" → set the nav/header background to a dark color (#111 or #1a1a1a)
+4. NEVER ignore a style change request. If the user says change something, change it.
+
+IMAGE UPLOADS IN ADMIN PANELS:
+When building admin panels with products, blog posts, or any content with images:
+- ALWAYS include an image upload input using the /api/upload endpoint
+- Every product/item form MUST have: <input type="file" accept="image/*" onChange={async e => { const f=e.target.files[0]; if(!f) return; const form=new FormData(); form.append('file',f); const r=await fetch('/api/upload',{method:'POST',body:form}); const {url}=await r.json(); setCurrentItem(p=>({...p,imageUrl:url})); }} />
+- Show a preview of the uploaded image immediately: {currentItem.imageUrl && <img src={currentItem.imageUrl} style={{width:80,height:80,objectFit:'cover',borderRadius:4}} />}
+- Store imageUrl in the item/product data and display it in the public view
+- The /api/upload endpoint is BUILT IN — no API key needed, always available
+
 QUALITY BAR:
 - 15-20 realistic hardcoded items minimum for lists/products
 - Multiple views/pages via useState (not React Router)
@@ -390,9 +410,9 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   const reasons: string[] = [];
   let score = 0;
 
-  // Editing existing app — only a small signal (the prompt keywords matter more than codebase size)
+  // Editing existing app — boost score so Sonnet handles edits reliably
   const existingSize = existingFiles ? JSON.stringify(existingFiles).length : 0;
-  if (existingSize > 0) { score += 1; reasons.push("editing existing app"); }
+  if (existingSize > 0) { score += 3; reasons.push("editing existing app"); }
 
   // Prompt length signal
   if (prompt.length > 300) { score += 2; reasons.push("long detailed prompt"); }
