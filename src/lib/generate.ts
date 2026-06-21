@@ -410,9 +410,9 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   const reasons: string[] = [];
   let score = 0;
 
-  // Editing existing app — boost score so Sonnet handles edits reliably
+  // Editing existing app — small bump; let keywords drive the real score
   const existingSize = existingFiles ? JSON.stringify(existingFiles).length : 0;
-  if (existingSize > 0) { score += 3; reasons.push("editing existing app"); }
+  if (existingSize > 0) { score += 1; reasons.push("editing existing app"); }
 
   // Prompt length signal
   if (prompt.length > 300) { score += 2; reasons.push("long detailed prompt"); }
@@ -447,12 +447,34 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   return { complexity, score, reasons };
 }
 
-// Priority order per complexity — cheapest capable model first
-const ROUTING: Record<Complexity, string[]> = {
-  simple:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",    "gemini-2.5-flash"],
-  medium:  ["claude-haiku-4-5-20251001", "gpt-4o-mini",    "gemini-2.5-flash"],
-  complex: ["claude-sonnet-4-6",         "claude-haiku-4-5-20251001", "gpt-4o-mini"],
-};
+// Priority order per complexity.
+// Gemini 2.5 Flash is fast + cheap → use it first for simple/medium when key exists.
+// GPT-4o mini is second. Claude Haiku/Sonnet as reliable fallback.
+// Complex always uses Sonnet first for quality.
+function buildRouting(): Record<Complexity, string[]> {
+  const hasGemini = !!process.env.GOOGLE_AI_API_KEY;
+  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+
+  return {
+    simple: [
+      ...(hasGemini ? ["gemini-2.5-flash"] : []),
+      ...(hasOpenAI ? ["gpt-4o-mini"] : []),
+      "claude-haiku-4-5-20251001",
+    ],
+    medium: [
+      ...(hasOpenAI ? ["gpt-4o-mini"] : []),
+      ...(hasGemini ? ["gemini-2.5-flash"] : []),
+      "claude-haiku-4-5-20251001",
+    ],
+    complex: [
+      "claude-sonnet-4-6",
+      ...(hasOpenAI ? ["gpt-4o"] : []),
+      "claude-haiku-4-5-20251001",
+    ],
+  };
+}
+// Built once at startup (env vars don't change at runtime)
+const ROUTING = buildRouting();
 
 function hasKey(provider: ModelOption["provider"]) {
   if (provider === "anthropic") return !!process.env.ANTHROPIC_API_KEY;

@@ -21,7 +21,7 @@ export default async function AdminPage() {
 
   const versions = await prisma.version.findMany({
     orderBy: { createdAt: "desc" },
-    include: { project: { select: { name: true, owner: { select: { email: true } } } } },
+    include: { project: { select: { name: true, deletedAt: true, owner: { select: { email: true } } } } },
   });
 
   const users = await prisma.user.findMany({ select: { id: true, email: true, createdAt: true } });
@@ -136,7 +136,10 @@ export default async function AdminPage() {
                     : "text-yellow-400";
                   return (
                     <tr key={v.id} className="hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 font-medium truncate max-w-[200px]">{v.project.name}</td>
+                      <td className="px-4 py-3 font-medium truncate max-w-[200px]">
+                        {v.project.name}
+                        {v.project.deletedAt && <span className="ml-1 text-[10px] text-red-400/70">(deleted)</span>}
+                      </td>
                       <td className={`px-4 py-3 font-medium ${modelColor}`}>{v.modelUsed ?? "—"}</td>
                       <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.inputTokens ?? 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.outputTokens ?? 0).toLocaleString()}</td>
@@ -228,7 +231,10 @@ export default async function AdminPage() {
               <tbody className="divide-y divide-white/5">
                 {versions.slice(0, 50).map((v) => (
                   <tr key={v.id} className="hover:bg-white/[0.02]">
-                    <td className="px-4 py-3 font-medium truncate max-w-[150px]">{v.project.name}</td>
+                    <td className="px-4 py-3 font-medium truncate max-w-[150px]">
+                      {v.project.name}
+                      {v.project.deletedAt && <span className="ml-1 text-[10px] text-red-400/70">(deleted)</span>}
+                    </td>
                     <td className="px-4 py-3 text-gray-400 truncate max-w-[150px]">{v.project.owner.email}</td>
                     <td className="px-4 py-3">{v.modelUsed ?? "—"}</td>
                     <td className="px-4 py-3 text-right text-gray-300">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>

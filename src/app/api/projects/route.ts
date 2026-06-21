@@ -33,7 +33,7 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const projects = await prisma.project.findMany({
-    where: { ownerId: session.user.id },
+    where: { ownerId: session.user.id, deletedAt: null },
     orderBy: { updatedAt: "desc" },
   });
 

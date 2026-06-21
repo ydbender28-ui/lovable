@@ -9,7 +9,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/projects/[id]">
   const { id } = await ctx.params;
 
   const project = await prisma.project.findFirst({
-    where: { id, ownerId: session.user.id },
+    where: { id, ownerId: session.user.id, deletedAt: null },
     include: {
       messages: { orderBy: { createdAt: "asc" } },
       versions: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -33,9 +33,10 @@ export async function DELETE(_req: Request, ctx: RouteContext<"/api/projects/[id
   const project = await prisma.project.findFirst({ where: { id, ownerId: session.user.id } });
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Soft-delete: keeps Version rows so admin cost tracking stays accurate.
+  // Messages are safe to remove (they're not needed for cost tracking).
   await prisma.message.deleteMany({ where: { projectId: id } });
-  await prisma.version.deleteMany({ where: { projectId: id } });
-  await prisma.project.delete({ where: { id } });
+  await prisma.project.update({ where: { id }, data: { deletedAt: new Date() } });
 
   return NextResponse.json({ ok: true });
 }

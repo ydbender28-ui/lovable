@@ -990,63 +990,55 @@ export default function ProjectWorkspace({
       setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
       return;
     }
-    if (messages.length === 0) {
-      setLoadingStatus("Analyzing your request…");
-      setLoading(true);
-      try {
-        const res = await fetch("/api/check-vague", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: trimmed }),
-        });
-        const { vague } = await res.json();
-        if (vague) {
-          setLoading(false);
-          setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
-          return;
-        }
-      } catch { /* ignore — just generate */ }
-      setLoading(false);
 
-      // Show design directions for visually-open prompts (landing pages, portfolios, marketing sites)
+    if (messages.length === 0) {
+      // Run vague-check AND design-directions in parallel — no sequential blocking
       const visualKeywords = ["landing page", "portfolio", "marketing", "homepage", "website", "blog", "agency"];
       const isVisual = visualKeywords.some(kw => trimmed.toLowerCase().includes(kw));
-      if (isVisual) {
-        setLoadingStatus("Generating design directions…");
+
+      const checks = await Promise.allSettled([
+        fetch("/api/check-vague", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: trimmed }),
+        }).then(r => r.json()).catch(() => ({ vague: false })),
+        isVisual
+          ? fetch(`/api/projects/${projectId}/design-directions`, {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ prompt: trimmed }),
+            }).then(r => r.json()).catch(() => ({ directions: [] }))
+          : Promise.resolve({ directions: [] }),
+      ]);
+
+      const vagueResult = checks[0].status === "fulfilled" ? checks[0].value : { vague: false };
+      const designResult = checks[1].status === "fulfilled" ? checks[1].value : { directions: [] };
+
+      if (vagueResult.vague) {
+        setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
+        return;
+      }
+      if (isVisual && designResult.directions?.length > 0) {
+        setFlow({ type: "designpick", pendingPrompt: trimmed, directions: designResult.directions });
+        return;
+      }
+
+      // Architect mode — only extra sequential call (user opted in)
+      if (architectMode) {
         setLoading(true);
+        setLoadingStatus("Creating implementation plan…");
         try {
-          const res = await fetch(`/api/projects/${projectId}/design-directions`, {
+          const res = await fetch(`/api/projects/${projectId}/architect`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: trimmed }),
           });
-          const data = await res.json();
-          if (data.directions?.length > 0) {
+          const plan = await res.json();
+          if (plan.title && !plan.error) {
             setLoading(false);
-            setFlow({ type: "designpick", pendingPrompt: trimmed, directions: data.directions });
+            setFlow({ type: "architect", pendingPrompt: trimmed, plan });
             return;
           }
-        } catch { /* ignore */ }
+        } catch { /* fall through */ }
         setLoading(false);
       }
-    }
-    // Architect mode: show plan before building (only for first build or complex edits)
-    if (architectMode && messages.length === 0) {
-      setLoading(true);
-      setLoadingStatus("Creating implementation plan…");
-      try {
-        const res = await fetch(`/api/projects/${projectId}/architect`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: trimmed }),
-        });
-        const plan = await res.json();
-        if (plan.title && !plan.error) {
-          setLoading(false);
-          setFlow({ type: "architect", pendingPrompt: trimmed, plan });
-          return;
-        }
-      } catch { /* fall through */ }
-      setLoading(false);
     }
 
     runGenerate(trimmed);
@@ -1170,14 +1162,12 @@ export default function ProjectWorkspace({
                   })
                   .catch(() => setVerifying(false));
               }
-              // Load proactive AI suggestions asynchronously
+              // Load proactive suggestions silently — no loading state shown
               setProactiveSuggestions([]);
-              setProactiveLoading(true);
               fetch(`/api/projects/${projectId}/proactive-plan`, { method: "POST" })
                 .then(r => r.json())
                 .then(d => { if (d.suggestions?.length) { setProactiveSuggestions(d.suggestions); setProactiveAppType(d.appType ?? null); } })
-                .catch(() => {})
-                .finally(() => setProactiveLoading(false));
+                .catch(() => {});
               if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
               undoTimerRef.current = setTimeout(() => setShowUndo(false), 60000);
               setMobileTab("preview");
@@ -1754,12 +1744,6 @@ export default function ProjectWorkspace({
                 <p className="text-[10px] text-gray-500 mt-0.5">{s.description}</p>
               </button>
             ))}
-          </div>
-        )}
-        {proactiveLoading && (
-          <div className="flex items-center gap-2 text-[10px] text-purple-500/60">
-            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
-            Analyzing what you&apos;ll need next…
           </div>
         )}
         {verifying && (

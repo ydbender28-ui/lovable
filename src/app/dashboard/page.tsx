@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   const [projects, agents] = await Promise.all([
     prisma.project.findMany({
-      where: { ownerId: session.user.id },
+      where: { ownerId: session.user.id, deletedAt: null },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,
