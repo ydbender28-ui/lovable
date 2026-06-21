@@ -137,12 +137,40 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
   );
 }
 
-function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devMode?: boolean; onSaveFiles?: (files: ProjectFiles) => void }) {
+function SimpleMarkdown({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("# ")) elements.push(<h1 key={i} style={{ fontSize: 22, fontWeight: 700, color: "#f5f5f5", marginBottom: 8, marginTop: 16 }}>{line.slice(2)}</h1>);
+    else if (line.startsWith("## ")) elements.push(<h2 key={i} style={{ fontSize: 17, fontWeight: 600, color: "#e5e5e5", marginBottom: 6, marginTop: 14 }}>{line.slice(3)}</h2>);
+    else if (line.startsWith("### ")) elements.push(<h3 key={i} style={{ fontSize: 14, fontWeight: 600, color: "#d4d4d4", marginBottom: 4, marginTop: 12 }}>{line.slice(4)}</h3>);
+    else if (line.startsWith("- ") || line.startsWith("* ")) elements.push(<li key={i} style={{ fontSize: 13, color: "#a3a3a3", marginLeft: 16, marginBottom: 2 }}>{line.slice(2)}</li>);
+    else if (line.startsWith("```")) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) { codeLines.push(lines[i]); i++; }
+      elements.push(<pre key={i} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#86efac", overflowX: "auto", marginTop: 8, marginBottom: 8 }}>{codeLines.join("\n")}</pre>);
+    } else if (line.trim() === "") elements.push(<div key={i} style={{ height: 8 }} />);
+    else elements.push(<p key={i} style={{ fontSize: 13, color: "#a3a3a3", lineHeight: 1.6, marginBottom: 4 }}>{line}</p>);
+    i++;
+  }
+  return <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>{elements}</div>;
+}
+
+function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
+  files: ProjectFiles; devMode?: boolean;
+  onSaveFiles?: (files: ProjectFiles) => void;
+  onLineRef?: (ref: string) => void;
+}) {
   const [activeFile, setActiveFile] = useState(() => Object.keys(files)[0] ?? "");
   const [copied, setCopied] = useState(false);
   const [editedContent, setEditedContent] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [mdPreview, setMdPreview] = useState(false);
   const fileKeys = Object.keys(files);
+  const isMd = activeFile.endsWith(".md");
 
   useEffect(() => {
     if (!files[activeFile] && fileKeys.length > 0) setActiveFile(fileKeys[0]);
@@ -166,12 +194,13 @@ function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devM
 
   const currentContent = editedContent ?? (files[activeFile] ?? "");
   const isDirty = editedContent !== null && editedContent !== files[activeFile];
+  const lines = currentContent.split("\n");
 
   return (
     <div className="h-full flex overflow-hidden">
       <div className="w-48 shrink-0 border-r border-white/10 bg-[#0c0c12] overflow-y-auto p-2 space-y-0.5">
         {fileKeys.map((f) => (
-          <button key={f} onClick={() => { setActiveFile(f); setEditedContent(null); }}
+          <button key={f} onClick={() => { setActiveFile(f); setEditedContent(null); setMdPreview(false); }}
             className={`w-full text-left text-xs px-2 py-1.5 rounded truncate transition-colors ${activeFile === f ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}>
             {f.split("/").pop()}
           </button>
@@ -181,6 +210,11 @@ function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devM
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[#0c0c12] shrink-0">
           <span className="text-[10px] text-gray-500 font-mono truncate">{activeFile}</span>
           <div className="flex items-center gap-1 shrink-0 ml-2">
+            {isMd && (
+              <button onClick={() => setMdPreview(v => !v)} className={`text-[11px] px-2 py-0.5 rounded transition-colors ${mdPreview ? "bg-purple-500/20 text-purple-300" : "text-gray-500 hover:text-white hover:bg-white/10"}`}>
+                {mdPreview ? "Source" : "Preview"}
+              </button>
+            )}
             {devMode && isDirty && (
               <button onClick={saveEdits} className="text-[11px] bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-2 py-0.5 rounded hover:bg-fuchsia-500/30 transition-colors">
                 Save
@@ -192,7 +226,9 @@ function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devM
             </button>
           </div>
         </div>
-        {devMode ? (
+        {isMd && mdPreview ? (
+          <SimpleMarkdown content={currentContent} />
+        ) : devMode ? (
           <textarea
             value={currentContent}
             onChange={e => setEditedContent(e.target.value)}
@@ -200,9 +236,26 @@ function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devM
             className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] resize-none focus:outline-none w-full"
           />
         ) : (
-          <pre className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] whitespace-pre-wrap break-all">
-            {currentContent}
-          </pre>
+          <div className="flex-1 overflow-auto bg-[#0d0d14]">
+            <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 400 }}>
+              <tbody>
+                {lines.map((line, idx) => (
+                  <tr key={idx} className="group hover:bg-white/[0.02]">
+                    <td
+                      onClick={() => onLineRef?.(`${activeFile}:${idx + 1}`)}
+                      className="select-none text-right pr-3 pl-3 text-[10px] text-gray-700 group-hover:text-fuchsia-400 cursor-pointer w-10 shrink-0 align-top pt-0.5"
+                      style={{ userSelect: "none", verticalAlign: "top" }}
+                    >
+                      {idx + 1}
+                    </td>
+                    <td className="pl-1 pr-4 text-xs text-gray-300 font-mono leading-relaxed whitespace-pre-wrap break-all align-top">
+                      {line || " "}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
@@ -246,6 +299,13 @@ export default function ProjectWorkspace({
   const [showHistory, setShowHistory] = useState(false);
   const [versionList, setVersionList] = useState<Array<{ id: string; createdAt: string; modelUsed: string | null; bookmarked?: boolean; bookmarkNote?: string | null }>>([]);
   const [devModeEnabled, setDevModeEnabled] = useState(false);
+  const [queuedPrompt, setQueuedPrompt] = useState<string | null>(null);
+  const [publishedFilesHash, setPublishedFilesHash] = useState<string | null>(null);
+  const [refUrl, setRefUrl] = useState("");
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [lineRef, setLineRef] = useState<string | null>(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -305,6 +365,31 @@ export default function ProjectWorkspace({
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function hashFiles(f: ProjectFiles) {
+    const s = JSON.stringify(f);
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+    return String(h);
+  }
+
+  // Set initial published hash if project is already published
+  useEffect(() => {
+    if (initialPublishSlug && Object.keys(initialFiles).length > 0) {
+      setPublishedFilesHash(hashFiles(initialFiles));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fire queued prompt once loading finishes
+  useEffect(() => {
+    if (!loading && queuedPrompt) {
+      const p = queuedPrompt;
+      setQueuedPrompt(null);
+      runGenerate(p);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   useEffect(() => {
     if (initialPrompt && !autoFired.current && initialMessages.length === 0) {
@@ -715,6 +800,24 @@ export default function ProjectWorkspace({
     setFlow({ type: "idle" });
     setSuggestions([]);
     setShowUndo(false);
+
+    // Inject URL reference if set
+    let fullText = text;
+    if (refUrl.trim()) {
+      fullText += `\n\nReference this URL as a design/content reference: ${refUrl.trim()}`;
+      setRefUrl("");
+    }
+    // Inject line reference if set
+    if (lineRef) {
+      fullText += `\n\n(referring to ${lineRef})`;
+      setLineRef(null);
+    }
+    // PWA detection
+    const tl = text.toLowerCase();
+    if (/\b(pwa|installable|install(able)? app|offline|service.?worker|push notification|add to home)/i.test(tl)) {
+      fullText += "\n\nIMPORTANT: Make this app a PWA. Add a manifest.json file with name, icons, theme_color, display:standalone, start_url. Add a service worker (sw.js) that caches app shell. Add <link rel='manifest' href='/manifest.json'> and service worker registration to index.html.";
+    }
+
     if (!silent) {
       const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
       setMessages((prev) => [...prev, userMessage]);
@@ -734,7 +837,7 @@ export default function ProjectWorkspace({
       const res = await fetch(`/api/projects/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text, envVars: mergedEnv, forceModel, ...imgPayload }),
+        body: JSON.stringify({ prompt: fullText, envVars: mergedEnv, forceModel, ...imgPayload }),
       });
       if (!res.ok) throw new Error("Generation failed");
       if (!res.body) throw new Error("No response body");
@@ -892,9 +995,22 @@ export default function ProjectWorkspace({
   }
 
   async function handleSend() {
-    if (!prompt.trim() || loading) return;
-    const text = prompt;
+    if (!prompt.trim()) return;
+    const text = prompt.trim();
     setPrompt("");
+
+    // Detect publish intent
+    if (/^(publish|deploy|go live|make it live|launch)\s*[.!]?$/i.test(text)) {
+      setShowPublishDialog(true);
+      return;
+    }
+
+    // Queue if already loading
+    if (loading) {
+      setQueuedPrompt(text);
+      setMessages(prev => [...prev, { id: `q-${Date.now()}`, role: "user", content: text }]);
+      return;
+    }
     handlePromptSubmit(text);
   }
 
@@ -910,6 +1026,7 @@ export default function ProjectWorkspace({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Publish failed");
       setPublishSlug(data.url);
+      setPublishedFilesHash(hashFiles(files));
       setShowPublishDialog(false);
       if (data.customDomain && data.vercelCname) {
         setDnsInfo({ domain: data.customDomain, cname: data.vercelCname });
@@ -919,6 +1036,20 @@ export default function ProjectWorkspace({
     } finally {
       setPublishing(false);
     }
+  }
+
+  async function handleCreateShareLink() {
+    setShareLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/share`, { method: "POST" });
+      const data = await res.json();
+      if (data.token) {
+        const url = `${window.location.origin}/share/${data.token}`;
+        setShareLink(url);
+        navigator.clipboard.writeText(url).catch(() => {});
+      }
+    } catch { /* ignore */ }
+    setShareLoading(false);
   }
 
   async function handleUnpublish() {
@@ -1261,6 +1392,36 @@ export default function ProjectWorkspace({
         </div>
       )}
 
+      {/* Queue indicator */}
+      {loading && queuedPrompt && (
+        <div className="px-3 pt-1 shrink-0">
+          <div className="text-[10px] text-amber-400/80 flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+            Queued: {queuedPrompt.slice(0, 60)}{queuedPrompt.length > 60 ? "…" : ""}
+          </div>
+        </div>
+      )}
+
+      {/* URL reference */}
+      {refUrl && (
+        <div className="px-3 pt-1 shrink-0">
+          <div className="flex items-center gap-1.5 text-[10px] text-blue-400 bg-blue-500/10 border border-blue-400/20 rounded-lg px-2.5 py-1">
+            <span>🔗 {refUrl}</span>
+            <button onClick={() => setRefUrl("")} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+          </div>
+        </div>
+      )}
+
+      {/* Line reference */}
+      {lineRef && (
+        <div className="px-3 pt-1 shrink-0">
+          <div className="flex items-center gap-1.5 text-[10px] text-purple-400 bg-purple-500/10 border border-purple-400/20 rounded-lg px-2.5 py-1">
+            <span>📍 {lineRef}</span>
+            <button onClick={() => setLineRef(null)} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+          </div>
+        </div>
+      )}
+
       {/* Uploaded image preview */}
       {uploadImage && (
         <div className="px-3 pt-1 shrink-0">
@@ -1298,6 +1459,14 @@ export default function ProjectWorkspace({
               <button onClick={() => { setShowFigma(true); setFigmaError(null); }} title="Import from Figma"
                 className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
                 Fig
+              </button>
+              <button onClick={async () => {
+                const text = await navigator.clipboard.readText().catch(() => "");
+                if (text.startsWith("http")) setRefUrl(text);
+                else { const u = window.prompt("Paste a URL to use as reference:"); if (u?.startsWith("http")) setRefUrl(u); }
+              }} title="Add URL as reference (paste URL from clipboard)"
+                className="text-gray-500 hover:text-blue-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
+                🔗
               </button>
               <button onClick={handleEnhancePrompt} disabled={!prompt.trim() || enhancing} title="AI improves your prompt">
                 <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
@@ -1399,7 +1568,7 @@ export default function ProjectWorkspace({
         {hasFiles ? (
           activeTab === "preview"
             ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
-            : <CodeViewer files={files} devMode={devModeEnabled} onSaveFiles={(updated) => { setFiles(updated); }} />
+            : <CodeViewer files={files} devMode={devModeEnabled} onSaveFiles={(updated) => { setFiles(updated); }} onLineRef={(ref) => { setLineRef(ref); setActiveTab("preview"); setMobileTab("chat"); setTimeout(() => textareaRef.current?.focus(), 100); }} />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-600 text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
@@ -1445,11 +1614,20 @@ export default function ProjectWorkspace({
             ⏱ History
           </button>
 
+          {hasFiles && (
+            <button onClick={() => { setShowShareModal(true); setShareLink(null); }} title="Share preview link (7 days, public)"
+              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+              🔗 Share
+            </button>
+          )}
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
               <button onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
                 className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
-                {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Updating...</> : liveUpdated ? "Updated ✓" : "Update"}
+                {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Updating...</>
+                  : publishedFilesHash && hashFiles(files) !== publishedFilesHash
+                    ? <><span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />Update</>
+                    : liveUpdated ? "Updated ✓" : "Update"}
               </button>
               <a href={publishUrl} target="_blank" rel="noreferrer"
                 className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-300 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
@@ -1459,8 +1637,8 @@ export default function ProjectWorkspace({
             </div>
           ) : (
             <button onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
-              className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
-              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Publishing...</> : "Publish"}
+              className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5 relative">
+              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Publishing...</> : <>Publish {hasFiles && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}</>}
             </button>
           )}
           <button onClick={exportHtml} disabled={!hasFiles}
@@ -1530,6 +1708,33 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* Share modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowShareModal(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🔗 Share Preview</h2>
+              <button onClick={() => setShowShareModal(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Create a public view-only link to your current build. Valid for 7 days, no login required.</p>
+            {shareLink ? (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-xs text-green-300 font-mono break-all">{shareLink}</div>
+                <p className="text-[10px] text-green-500">✓ Copied to clipboard</p>
+                <button onClick={() => navigator.clipboard.writeText(shareLink)} className="w-full text-xs rounded-xl border border-white/10 bg-white/5 text-gray-300 py-2 hover:bg-white/10 transition-colors">
+                  Copy again
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleCreateShareLink} disabled={shareLoading}
+                className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+                {shareLoading ? "Creating link…" : "Create share link →"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Figma import modal */}
       {showFigma && (

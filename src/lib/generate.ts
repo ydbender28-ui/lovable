@@ -170,7 +170,7 @@ BUTTONS: Match the design theme exactly. NO gradient buttons unless the theme sp
 INPUTS: background matches card bg. border:'1px solid [border color]'. borderRadius matches theme. padding:'10px 14px'. outline:'none'. Focus: border-color = accent. Always styled, never browser default.
 CARDS: Follow the theme. Light themes = white bg + subtle border. Dark themes = slightly lighter than page bg + border. NO heavy glow shadows. Shadow max: '0 1px 4px rgba(0,0,0,0.1)' for light, '0 2px 8px rgba(0,0,0,0.3)' for dark.
 ICONS: Use text/Unicode symbols (→ ✓ × ↑ ↓ ‹ ›) or simple SVG. NO emoji as product/feature icons (🛒🚀⚡) — they look cheap. Exception: status indicators (✓ for success is fine).
-IMAGES/PRODUCTS: Use colored div placeholders with the product initials or category, NOT emoji. e.g. a gray #e5e7eb div with centered 2-letter abbreviation in muted color.
+IMAGES/PRODUCTS: Use a simple gray box placeholder (background:#f3f4f6 or similar muted color, no text, no abbreviations). For light themes use #f3f4f6, for dark themes use #2a2a2a. Never show text abbreviations like "WHP" or "IMG" inside product image boxes — they look broken. A clean empty box is better.
 TYPOGRAPHY: Clear hierarchy but natural — not every label needs to be UPPERCASE with letterSpacing. Reserve uppercase for nav items and table headers only.
 EMPTY STATES: Simple text message + one action button. No emoji circus.
 SPACING: Generous whitespace. Padding 16-24px on cards. 32-48px between sections. Don't cram everything together.

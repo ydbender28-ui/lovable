@@ -99,6 +99,15 @@ model Version {
   createdAt    DateTime @default(now())
 }
 
+model ShareLink {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  projectId String
+  filesJson String   // JSON: { [path]: content }
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model Message {
   id        String   @id @default(cuid())
   projectId String
