@@ -228,6 +228,17 @@ export default function ProjectWorkspace({
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const [knowledgeDraft, setKnowledgeDraft] = useState<KnowledgeItem | null>(null);
 
+  // Visual edit mode
+  const [visualEditMode, setVisualEditMode] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Figma import
+  const [showFigma, setShowFigma] = useState(false);
+  const [figmaUrl, setFigmaUrl] = useState("");
+  const [figmaToken, setFigmaToken] = useState("");
+  const [figmaLoading, setFigmaLoading] = useState(false);
+  const [figmaError, setFigmaError] = useState<string | null>(null);
+
   // Supabase built-in backend
   const [showSupabase, setShowSupabase] = useState(false);
   const [supabaseStatus, setSupabaseStatus] = useState<{ enabled: boolean; url?: string; anonKey?: string } | null>(null);
@@ -283,6 +294,27 @@ export default function ProjectWorkspace({
     loadSupabaseStatus();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  async function handleFigmaImport() {
+    if (!figmaUrl.trim() || !figmaToken.trim() || figmaLoading) return;
+    setFigmaLoading(true);
+    setFigmaError(null);
+    try {
+      const res = await fetch("/api/figma-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ figmaUrl: figmaUrl.trim(), figmaToken: figmaToken.trim() }),
+      });
+      const data = await res.json();
+      if (data.error) { setFigmaError(data.error); return; }
+      setShowFigma(false);
+      runGenerate(data.prompt);
+    } catch {
+      setFigmaError("Failed to import from Figma");
+    } finally {
+      setFigmaLoading(false);
+    }
+  }
 
   async function loadSupabaseStatus() {
     const res = await fetch(`/api/projects/${projectId}/supabase`).catch(() => null);
@@ -448,10 +480,29 @@ export default function ProjectWorkspace({
       if (e.data?.type === "TC_SAVE_STATE" && e.data?.state) {
         handleAdminSave(e.data.state as string);
       }
+      // Visual edit click
+      if (e.data?.type === "TC_VISUAL_CLICK") {
+        const { desc } = e.data as { desc: string };
+        setVisualEditMode(false);
+        // Send postMessage to disable in iframe
+        const iframes = document.querySelectorAll("iframe");
+        iframes.forEach(f => { try { f.contentWindow?.postMessage({ type: "TC_VISUAL_EDIT", enabled: false }, "*"); } catch { /**/ } });
+        setPrompt(`Edit the ${desc} — `);
+        setMobileTab("chat");
+        // Focus textarea
+        setTimeout(() => textareaRef.current?.focus(), 100);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [files]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggleVisualEdit() {
+    const next = !visualEditMode;
+    setVisualEditMode(next);
+    const iframes = document.querySelectorAll("iframe");
+    iframes.forEach(f => { try { f.contentWindow?.postMessage({ type: "TC_VISUAL_EDIT", enabled: next }, "*"); } catch { /**/ } });
+  }
 
   async function handleAdminSave(serializedState: string) {
     // Embed the saved admin data into the source code so published site reflects changes
@@ -1198,6 +1249,10 @@ export default function ProjectWorkspace({
                 className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
                 🎨
               </button>
+              <button onClick={() => { setShowFigma(true); setFigmaError(null); }} title="Import from Figma"
+                className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
+                Fig
+              </button>
               <button onClick={handleEnhancePrompt} disabled={!prompt.trim() || enhancing} title="AI improves your prompt">
                 <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
                   {enhancing ? "⏳" : "✨"}
@@ -1248,6 +1303,13 @@ export default function ProjectWorkspace({
           </div>
         )}
 
+        {hasFiles && activeTab === "preview" && (
+          <button onClick={toggleVisualEdit} title="Click any element to edit it"
+            className={`ml-2 text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${visualEditMode ? "border-fuchsia-400/50 bg-fuchsia-500/20 text-fuchsia-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300"}`}>
+            <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.249.249 0 0 0 .108-.064l6.286-6.286z"/></svg>
+            {visualEditMode ? "Click element…" : "Visual Edit"}
+          </button>
+        )}
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
             className="ml-auto text-xs text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors truncate">
@@ -1412,6 +1474,33 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* Figma import modal */}
+      {showFigma && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowFigma(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">Import from Figma</h2>
+              <button onClick={() => setShowFigma(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500">Paste a Figma file link and your personal access token to build from your design.</p>
+            <div className="space-y-2">
+              <input value={figmaUrl} onChange={e => setFigmaUrl(e.target.value)}
+                placeholder="https://www.figma.com/file/..."
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              <input type="password" value={figmaToken} onChange={e => setFigmaToken(e.target.value)}
+                placeholder="Figma personal access token (figd_...)"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono" />
+              <p className="text-[10px] text-gray-600">Get your token: figma.com → Account → Personal access tokens</p>
+            </div>
+            {figmaError && <p className="text-xs text-red-400">{figmaError}</p>}
+            <button onClick={handleFigmaImport} disabled={figmaLoading || !figmaUrl.trim() || !figmaToken.trim()}
+              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              {figmaLoading ? "Reading design…" : "Import & Build →"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Supabase database modal */}
       {showSupabase && (

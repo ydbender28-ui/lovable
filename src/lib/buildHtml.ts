@@ -164,6 +164,41 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
       showErr('App init error: '+e.message+'\\n\\n'+(e.stack||''));
     }
   </script>
+  <script>
+    // Visual edit mode — activated by parent via postMessage
+    var __visualEdit=false;
+    var __overlay=null;
+    function __removeOverlay(){if(__overlay){__overlay.remove();__overlay=null;}}
+    window.addEventListener('message',function(e){
+      if(e.data&&e.data.type==='TC_VISUAL_EDIT'){
+        __visualEdit=e.data.enabled;
+        document.body.style.cursor=__visualEdit?'crosshair':'';
+        __removeOverlay();
+      }
+    });
+    document.addEventListener('mouseover',function(e){
+      if(!__visualEdit)return;
+      __removeOverlay();
+      var el=e.target;
+      if(el===document.body||el===document.documentElement)return;
+      var r=el.getBoundingClientRect();
+      __overlay=document.createElement('div');
+      __overlay.style.cssText='position:fixed;pointer-events:none;z-index:99998;outline:2px solid #a855f7;background:rgba(168,85,247,0.08);border-radius:4px;';
+      __overlay.style.top=r.top+'px';__overlay.style.left=r.left+'px';
+      __overlay.style.width=r.width+'px';__overlay.style.height=r.height+'px';
+      document.body.appendChild(__overlay);
+    },true);
+    document.addEventListener('click',function(e){
+      if(!__visualEdit)return;
+      e.preventDefault();e.stopPropagation();
+      var el=e.target;
+      var tag=el.tagName.toLowerCase();
+      var text=(el.textContent||'').trim().slice(0,120);
+      var cls=el.className||'';
+      var desc=tag+(text?' containing "'+text+'"':'')+(cls?' (class: '+cls+')':'');
+      try{window.parent.postMessage({type:'TC_VISUAL_CLICK',desc:desc,tag:tag,text:text},'*');}catch(err){}
+    },true);
+  </script>
 </body>
 </html>`;
 }
