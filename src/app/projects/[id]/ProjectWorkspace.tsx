@@ -228,6 +228,12 @@ export default function ProjectWorkspace({
   const [knowledge, setKnowledge] = useState<KnowledgeItem[]>([]);
   const [knowledgeDraft, setKnowledgeDraft] = useState<KnowledgeItem | null>(null);
 
+  // Supabase built-in backend
+  const [showSupabase, setShowSupabase] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<{ enabled: boolean; url?: string; anonKey?: string } | null>(null);
+  const [supabaseProvisioning, setSupabaseProvisioning] = useState(false);
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
+
   // Image generation
   const [showImageGen, setShowImageGen] = useState(false);
   const [imageGenPrompt, setImageGenPrompt] = useState("");
@@ -274,7 +280,36 @@ export default function ProjectWorkspace({
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setKnowledge(d); })
       .catch(() => {});
+    loadSupabaseStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  async function loadSupabaseStatus() {
+    const res = await fetch(`/api/projects/${projectId}/supabase`).catch(() => null);
+    if (res?.ok) setSupabaseStatus(await res.json());
+  }
+
+  async function handleEnableSupabase() {
+    setSupabaseProvisioning(true);
+    setSupabaseError(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/supabase`, { method: "POST" });
+      const data = await res.json();
+      if (data.error) { setSupabaseError(data.error); return; }
+      setSupabaseStatus({ enabled: true, url: data.url, anonKey: data.anonKey });
+      // Inject Supabase credentials into the project env vars
+      await fetch(`/api/projects/${projectId}/envvars`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ SUPABASE_URL: data.url, SUPABASE_ANON_KEY: data.anonKey }),
+      });
+      setEnvVars(prev => ({ ...prev, SUPABASE_URL: data.url, SUPABASE_ANON_KEY: data.anonKey }));
+    } catch (e) {
+      setSupabaseError(e instanceof Error ? e.message : "Failed to enable database");
+    } finally {
+      setSupabaseProvisioning(false);
+    }
+  }
 
   async function handleGenerateImage() {
     if (!imageGenPrompt.trim() || imageGenLoading) return;
@@ -1278,6 +1313,12 @@ export default function ProjectWorkspace({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
+            onClick={() => { setShowSupabase(true); loadSupabaseStatus(); }}
+            title="Built-in database & auth"
+            className={`text-xs rounded-lg border px-2.5 py-1.5 transition-colors hidden sm:flex items-center gap-1.5 ${supabaseStatus?.enabled ? "border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/20" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>
+            🗄️ {supabaseStatus?.enabled ? "Database ✓" : "Database"}
+          </button>
+          <button
             onClick={() => setShowIntegrations(true)}
             title="Integrations"
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1.5">
@@ -1371,6 +1412,53 @@ export default function ProjectWorkspace({
 
       {/* DNS instructions after custom domain publish */}
       {dnsInfo && <DnsVerifyModal dnsInfo={dnsInfo} onClose={() => setDnsInfo(null)} />}
+
+      {/* Supabase database modal */}
+      {showSupabase && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowSupabase(false)}>
+          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">🗄️ Built-in Database</h2>
+              <button onClick={() => setShowSupabase(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {supabaseStatus?.enabled ? (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 px-4 py-3 text-sm">
+                  ✓ Database is active
+                </div>
+                <p className="text-xs text-gray-500">Your app has a real Postgres database with authentication. Credentials are already injected into your project — just ask the AI to use Supabase for data storage.</p>
+                <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-gray-500">URL</span>
+                    <button onClick={() => navigator.clipboard.writeText(supabaseStatus.url ?? "")} className="text-[10px] text-gray-500 hover:text-gray-300">Copy</button>
+                  </div>
+                  <p className="text-xs text-gray-300 font-mono truncate">{supabaseStatus.url}</p>
+                </div>
+                <button onClick={() => runGenerate("Add Supabase database integration. The SUPABASE_URL and SUPABASE_ANON_KEY are already available in window.ENV. Use the Supabase JS client (import from CDN: https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm) to replace localStorage with real database storage for all data. Add Supabase auth if the app has user accounts.")}
+                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2.5 hover:bg-fuchsia-500/30 transition-colors">
+                  Connect database to app →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-400 leading-relaxed">Enable a real Postgres database with authentication for your app. No setup required — we provision it automatically.</p>
+                <div className="space-y-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2">✓ <span>Real Postgres database</span></div>
+                  <div className="flex items-center gap-2">✓ <span>Built-in user authentication</span></div>
+                  <div className="flex items-center gap-2">✓ <span>File storage</span></div>
+                  <div className="flex items-center gap-2">✓ <span>Realtime subscriptions</span></div>
+                </div>
+                {supabaseError && <p className="text-xs text-red-400">{supabaseError}</p>}
+                <button onClick={handleEnableSupabase} disabled={supabaseProvisioning}
+                  className="w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+                  {supabaseProvisioning ? "Provisioning… (1-2 min)" : "Enable Database →"}
+                </button>
+                <p className="text-[10px] text-gray-600 text-center">Free tier • No credit card required</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Image generation modal */}
       {showImageGen && (

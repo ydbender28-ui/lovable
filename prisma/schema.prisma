@@ -54,6 +54,9 @@ model Project {
   publishPassword String?
   visitCount      Int       @default(0)
   knowledge       String    @default("[]") // JSON: { id, title, content }[]
+  supabaseProjectId String? // Supabase project ref
+  supabaseUrl       String? // https://xyz.supabase.co
+  supabaseAnonKey   String? // public anon key
 }
 
 model Message {
