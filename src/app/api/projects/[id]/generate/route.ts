@@ -17,7 +17,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const project = await prisma.project.findFirst({
     where: { id, ownerId: session.user.id },
-    include: { versions: { orderBy: { createdAt: "desc" }, take: 1 } },
+    include: {
+      versions: { orderBy: { createdAt: "desc" }, take: 1 },
+      messages: { orderBy: { createdAt: "desc" }, take: 20 },
+    },
   });
 
   if (!project) return new Response("Not found", { status: 404 });
@@ -29,6 +32,15 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   const knowledge: Array<{ title: string; content: string }> = JSON.parse(project.knowledge || "[]");
   const customKnowledge = knowledge.length > 0
     ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
+    : null;
+
+  // Build project history from recent messages (reverse to get chronological order)
+  const recentMsgs = (project.messages ?? []).reverse();
+  const projectHistory = recentMsgs.length > 2
+    ? recentMsgs
+        .map(m => `${m.role === "user" ? "User" : "AI"}: ${m.content.slice(0, 200)}`)
+        .join("\n")
+        .slice(0, 3000)
     : null;
 
   const encoder = new TextEncoder();
@@ -49,7 +61,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           imageBase64 ?? null,
           imageMimeType,
           forceModel ?? undefined,
-          customKnowledge
+          customKnowledge,
+          projectHistory
         );
 
         // Auto-republish if already live — build new HTML before sending done

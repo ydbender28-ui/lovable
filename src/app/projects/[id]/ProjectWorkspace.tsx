@@ -353,12 +353,19 @@ export default function ProjectWorkspace({
   const [githubResult, setGithubResult] = useState<{ repoUrl?: string; error?: string } | null>(null);
 
   type DesignDirection = { name: string; description: string; bg: string; accent: string; text: string; style: string };
+  type ArchitectPlan = { title: string; overview: string; components: string[]; dataModels: string[]; features: string[]; considerations: string[] };
+  type ProactiveSuggestion = { title: string; description: string; prompt: string };
   type FlowState =
     | { type: "idle" }
     | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
     | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
-    | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] };
+    | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] }
+    | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan };
   const [flow, setFlow] = useState<FlowState>({ type: "idle" });
+  const [architectMode, setArchitectMode] = useState(false);
+  const [proactiveSuggestions, setProactiveSuggestions] = useState<ProactiveSuggestion[]>([]);
+  const [proactiveAppType, setProactiveAppType] = useState<string | null>(null);
+  const [proactiveLoading, setProactiveLoading] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoFired = useRef(false);
@@ -793,6 +800,26 @@ export default function ProjectWorkspace({
         setLoading(false);
       }
     }
+    // Architect mode: show plan before building (only for first build or complex edits)
+    if (architectMode && messages.length === 0) {
+      setLoading(true);
+      setLoadingStatus("Creating implementation plan…");
+      try {
+        const res = await fetch(`/api/projects/${projectId}/architect`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: trimmed }),
+        });
+        const plan = await res.json();
+        if (plan.title && !plan.error) {
+          setLoading(false);
+          setFlow({ type: "architect", pendingPrompt: trimmed, plan });
+          return;
+        }
+      } catch { /* fall through */ }
+      setLoading(false);
+    }
+
     runGenerate(trimmed);
   }
 
@@ -894,6 +921,14 @@ export default function ProjectWorkspace({
               if (payload.liveUpdated) setLiveUpdated(true);
               setSuggestions(getSmartSuggestions(payload.files));
               setShowUndo(true);
+              // Load proactive AI suggestions asynchronously
+              setProactiveSuggestions([]);
+              setProactiveLoading(true);
+              fetch(`/api/projects/${projectId}/proactive-plan`, { method: "POST" })
+                .then(r => r.json())
+                .then(d => { if (d.suggestions?.length) { setProactiveSuggestions(d.suggestions); setProactiveAppType(d.appType ?? null); } })
+                .catch(() => {})
+                .finally(() => setProactiveLoading(false));
               if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
               undoTimerRef.current = setTimeout(() => setShowUndo(false), 60000);
               setMobileTab("preview");
@@ -1110,6 +1145,45 @@ export default function ProjectWorkspace({
     );
   }
 
+  function ArchitectCard() {
+    if (flow.type !== "architect") return null;
+    const { plan, pendingPrompt } = flow;
+    return (
+      <div className="rounded-xl border border-purple-400/20 bg-purple-500/5 p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm">🏗️</span>
+          <p className="text-sm font-medium text-white">{plan.title}</p>
+        </div>
+        <p className="text-xs text-gray-400 leading-relaxed">{plan.overview}</p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: "Components", items: plan.components },
+            { label: "Data models", items: plan.dataModels },
+            { label: "Features", items: plan.features },
+            { label: "Considerations", items: plan.considerations },
+          ].filter(s => s.items?.length > 0).map(section => (
+            <div key={section.label} className="rounded-lg bg-white/[0.03] border border-white/10 p-2.5 space-y-1">
+              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{section.label}</p>
+              {section.items.map((item, i) => (
+                <p key={i} className="text-[11px] text-gray-300">· {item}</p>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 pt-1">
+          <button onClick={() => { setFlow({ type: "idle" }); runGenerate(pendingPrompt); }}
+            className="flex-1 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold py-2 hover:opacity-90 transition-opacity">
+            Build this plan →
+          </button>
+          <button onClick={() => setFlow({ type: "idle" })}
+            className="text-xs text-gray-500 hover:text-gray-300 px-2 transition-colors">
+            Edit prompt
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   function ClarifyCard() {
     const [style, setStyle] = useState("");
     const [type, setType] = useState("");
@@ -1267,6 +1341,10 @@ export default function ProjectWorkspace({
             Chat
           </button>
         </div>
+        <button onClick={() => setArchitectMode(v => !v)} title="Architect mode: AI plans before building"
+          className={`text-xs rounded-lg border px-2 py-1 transition-colors ${architectMode ? "border-purple-400/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-purple-300 hover:border-purple-400/30"}`}>
+          🏗️
+        </button>
         <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
           className="ml-auto text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors">
           📚 {knowledge.length > 0 ? knowledge.length : ""}
@@ -1329,8 +1407,32 @@ export default function ProjectWorkspace({
         )}
 
         <DesignPickCard />
+        <ArchitectCard />
         <ClarifyCard />
         <ApiKeyCard />
+
+        {/* Proactive AI suggestions */}
+        {proactiveSuggestions.length > 0 && !loading && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-purple-400 font-medium">🧠 What you&apos;ll need next</span>
+              {proactiveAppType && <span className="text-[10px] text-gray-600">· {proactiveAppType}</span>}
+            </div>
+            {proactiveSuggestions.map((s, i) => (
+              <button key={i} onClick={() => { setProactiveSuggestions([]); runGenerate(s.prompt); }}
+                className="w-full text-left rounded-xl border border-purple-400/15 bg-purple-500/5 hover:border-purple-400/30 hover:bg-purple-500/10 p-3 transition-colors">
+                <p className="text-xs font-medium text-purple-200">{s.title}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{s.description}</p>
+              </button>
+            ))}
+          </div>
+        )}
+        {proactiveLoading && (
+          <div className="flex items-center gap-2 text-[10px] text-purple-500/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+            Analyzing what you&apos;ll need next…
+          </div>
+        )}
 
         {chatStreaming && (
           <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5 max-w-[92%]">

@@ -323,6 +323,16 @@ INSTEAD, build the SPECIFIC app requested with purpose-built UI:
 - An inventory system should look like a warehouse tool (stock levels, SKUs, alert badges)
 - Match the visual language of real professional software in that industry
 
+SECURITY — BAKED INTO EVERY BUILD (not optional):
+- All user inputs: trim + validate before use. Never dangerously render raw HTML from user input.
+- Passwords: never store in plaintext in state — hash or compare only on submit. Never console.log credentials.
+- API keys: always read from window.ENV, never hardcode in source.
+- Admin routes: always check password/session before rendering protected content. Don't just hide the UI — check the auth condition before any state mutation.
+- Forms: add novalidate attribute and handle validation in JS with clear inline error messages.
+- XSS: never use dangerouslySetInnerHTML with user-provided content. If you must render HTML, sanitize it first.
+- Rate limit patterns: add a simple cooldown (disabled button for 2s) on forms that call external APIs to prevent rapid-fire abuse.
+These are not extra features — they are the default baseline for every app.
+
 DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
 
@@ -607,7 +617,8 @@ export async function generateProject(
   imageBase64?: string | null,
   imageMimeType?: string,
   forceModel?: string,
-  customKnowledge?: string | null
+  customKnowledge?: string | null,
+  projectHistory?: string | null
 ): Promise<GenerateResult> {
   const { complexity, reasons: complexityReasons } = scoreComplexity(prompt, existingFiles);
   let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
@@ -649,9 +660,10 @@ Make the entire layout and structure match this design system. It should look DR
     if (serialized.length < 60000) existingSection = serialized;
   }
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
+  const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
 
   const userContent = isEdit
-    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
+    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
 - Make ONLY the minimal changes needed to address the edit request — add the feature, fix the bug, nothing more
 - PRESERVE 100% of the existing visual design: colors, fonts, spacing, layout, theme, background — DO NOT change any of these
 - PRESERVE all existing components, features, interactions, and data that are not part of the edit request
