@@ -137,27 +137,41 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
   );
 }
 
-function CodeViewer({ files }: { files: ProjectFiles }) {
+function CodeViewer({ files, devMode, onSaveFiles }: { files: ProjectFiles; devMode?: boolean; onSaveFiles?: (files: ProjectFiles) => void }) {
   const [activeFile, setActiveFile] = useState(() => Object.keys(files)[0] ?? "");
   const [copied, setCopied] = useState(false);
+  const [editedContent, setEditedContent] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const fileKeys = Object.keys(files);
 
   useEffect(() => {
     if (!files[activeFile] && fileKeys.length > 0) setActiveFile(fileKeys[0]);
+    setEditedContent(null);
   }, [files, activeFile, fileKeys]);
 
   function copyFile() {
-    navigator.clipboard.writeText(files[activeFile] ?? "").then(() => {
+    navigator.clipboard.writeText(editedContent ?? files[activeFile] ?? "").then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   }
 
+  function saveEdits() {
+    if (editedContent === null || !onSaveFiles) return;
+    onSaveFiles({ ...files, [activeFile]: editedContent });
+    setEditedContent(null);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  const currentContent = editedContent ?? (files[activeFile] ?? "");
+  const isDirty = editedContent !== null && editedContent !== files[activeFile];
+
   return (
     <div className="h-full flex overflow-hidden">
       <div className="w-48 shrink-0 border-r border-white/10 bg-[#0c0c12] overflow-y-auto p-2 space-y-0.5">
         {fileKeys.map((f) => (
-          <button key={f} onClick={() => setActiveFile(f)}
+          <button key={f} onClick={() => { setActiveFile(f); setEditedContent(null); }}
             className={`w-full text-left text-xs px-2 py-1.5 rounded truncate transition-colors ${activeFile === f ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}>
             {f.split("/").pop()}
           </button>
@@ -166,13 +180,30 @@ function CodeViewer({ files }: { files: ProjectFiles }) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[#0c0c12] shrink-0">
           <span className="text-[10px] text-gray-500 font-mono truncate">{activeFile}</span>
-          <button onClick={copyFile} className="text-[11px] text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10 shrink-0 ml-2">
-            {copied ? "✓ Copied" : "Copy"}
-          </button>
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            {devMode && isDirty && (
+              <button onClick={saveEdits} className="text-[11px] bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-2 py-0.5 rounded hover:bg-fuchsia-500/30 transition-colors">
+                Save
+              </button>
+            )}
+            {saved && <span className="text-[11px] text-green-400">✓ Saved</span>}
+            <button onClick={copyFile} className="text-[11px] text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10">
+              {copied ? "✓ Copied" : "Copy"}
+            </button>
+          </div>
         </div>
-        <pre className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] whitespace-pre-wrap break-all">
-          {files[activeFile] ?? ""}
-        </pre>
+        {devMode ? (
+          <textarea
+            value={currentContent}
+            onChange={e => setEditedContent(e.target.value)}
+            spellCheck={false}
+            className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] resize-none focus:outline-none w-full"
+          />
+        ) : (
+          <pre className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] whitespace-pre-wrap break-all">
+            {currentContent}
+          </pre>
+        )}
       </div>
     </div>
   );
@@ -213,7 +244,8 @@ export default function ProjectWorkspace({
   const [previousFiles, setPreviousFiles] = useState<ProjectFiles | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [versionList, setVersionList] = useState<Array<{ id: string; createdAt: string; modelUsed: string | null }>>([]);
+  const [versionList, setVersionList] = useState<Array<{ id: string; createdAt: string; modelUsed: string | null; bookmarked?: boolean; bookmarkNote?: string | null }>>([]);
+  const [devModeEnabled, setDevModeEnabled] = useState(false);
   const [loadingVersions, setLoadingVersions] = useState(false);
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -725,6 +757,11 @@ export default function ProjectWorkspace({
             if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
+              // Auto preview switching based on prompt keywords
+              const pl = text.toLowerCase();
+              if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
+              else if (/tablet|ipad/.test(pl)) setPreviewMode("tablet");
+              else if (/dashboard|admin panel|analytics|desktop/.test(pl)) setPreviewMode("desktop");
               const meta = payload.modelUsed
                 ? `\n\n_${payload.modelUsed} · ${payload.complexity ?? ""} · $${(payload.estimatedCostUsd ?? 0).toFixed(4)}_`
                 : "";
@@ -811,8 +848,8 @@ export default function ProjectWorkspace({
     reader.readAsDataURL(file);
   }
 
-  async function handleLoadVersions() {
-    if (loadingVersions || versionList.length > 0) return;
+  async function handleLoadVersions(force = false) {
+    if (loadingVersions || (versionList.length > 0 && !force)) return;
     setLoadingVersions(true);
     try {
       const res = await fetch(`/api/projects/${projectId}/versions`);
@@ -820,6 +857,15 @@ export default function ProjectWorkspace({
       setVersionList(data);
     } catch { /* ignore */ }
     setLoadingVersions(false);
+  }
+
+  async function toggleBookmark(versionId: string, bookmarked: boolean) {
+    await fetch(`/api/projects/${projectId}/versions/${versionId}/bookmark`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookmarked: !bookmarked }),
+    });
+    setVersionList(prev => prev.map(v => v.id === versionId ? { ...v, bookmarked: !bookmarked } : v));
   }
 
   async function handleRestoreVersion(versionId: string) {
@@ -1287,6 +1333,12 @@ export default function ProjectWorkspace({
             {tab === "preview" ? "Preview" : "Code"}
           </button>
         ))}
+        {activeTab === "code" && (
+          <button onClick={() => setDevModeEnabled(v => !v)} title="Dev Mode — edit code directly"
+            className={`ml-1 text-xs rounded-lg border px-2.5 py-1 transition-colors ${devModeEnabled ? "border-amber-400/40 bg-amber-500/10 text-amber-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300"}`}>
+            {devModeEnabled ? "✏️ Editing" : "✏️ Dev Mode"}
+          </button>
+        )}
 
         {activeTab === "preview" && (
           <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
@@ -1347,7 +1399,7 @@ export default function ProjectWorkspace({
         {hasFiles ? (
           activeTab === "preview"
             ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
-            : <CodeViewer files={files} />
+            : <CodeViewer files={files} devMode={devModeEnabled} onSaveFiles={(updated) => { setFiles(updated); }} />
         ) : (
           <div className="h-full flex items-center justify-center text-gray-600 text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
@@ -1387,7 +1439,7 @@ export default function ProjectWorkspace({
             🔌 Integrations
           </button>
           <button
-            onClick={() => { setShowHistory(true); handleLoadVersions(); }}
+            onClick={() => { setShowHistory(true); handleLoadVersions(true); }}
             title="Version history"
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
             ⏱ History
@@ -1425,6 +1477,10 @@ export default function ProjectWorkspace({
             className={`text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block ${!hasFiles ? "pointer-events-none opacity-40" : ""}`}>
             📱 Export App
           </a>
+          <Link href="/settings" title="Settings & Labs"
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
+            ⚙️
+          </Link>
         </div>
       </header>
 
@@ -1653,12 +1709,17 @@ export default function ProjectWorkspace({
                 <div className="text-xs text-gray-500 text-center py-8">No saved versions yet.</div>
               ) : (
                 versionList.map((v, i) => (
-                  <div key={v.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-2">
+                  <div key={v.id} className={`rounded-xl border p-3 space-y-2 ${v.bookmarked ? "border-amber-400/30 bg-amber-500/5" : "border-white/10 bg-white/[0.03]"}`}>
                     <div className="flex items-center gap-2">
                       {i === 0 && <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">Latest</span>}
+                      <button onClick={() => toggleBookmark(v.id, !!v.bookmarked)} title={v.bookmarked ? "Remove bookmark" : "Bookmark"}
+                        className={`text-sm leading-none transition-colors ${v.bookmarked ? "text-amber-400" : "text-gray-600 hover:text-amber-300"}`}>
+                        {v.bookmarked ? "★" : "☆"}
+                      </button>
                       <span className="text-[10px] text-gray-500 ml-auto">{new Date(v.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
                     <p className="text-[11px] text-gray-400">{v.modelUsed ?? "Unknown model"}</p>
+                    {v.bookmarkNote && <p className="text-[10px] text-amber-300/70 italic">{v.bookmarkNote}</p>}
                     {i > 0 && (
                       <button onClick={() => handleRestoreVersion(v.id)}
                         className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
@@ -1784,6 +1845,19 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
   const [password, setPassword] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [scanLoading, setScanLoading] = useState(false);
+  const [scanResult, setScanResult] = useState<{ issues: Array<{ severity: string; title: string; description: string; fix: string }>; score: number } | null>(null);
+
+  async function runScan() {
+    setScanLoading(true);
+    setScanResult(null);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/security-scan`, { method: "POST" });
+      const data = await res.json();
+      setScanResult(data);
+    } catch { /* ignore */ }
+    setScanLoading(false);
+  }
 
   function sanitize(v: string) {
     return v.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-").slice(0, 40);
@@ -1882,6 +1956,35 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
             </div>
           </div>
         )}
+
+        {/* Security scan */}
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-white">🔒 Security Scan</p>
+              <p className="text-[10px] text-gray-600">Check for vulnerabilities before going live</p>
+            </div>
+            <button onClick={runScan} disabled={scanLoading}
+              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1 hover:bg-white/10 transition-colors disabled:opacity-40">
+              {scanLoading ? "Scanning…" : scanResult ? "Re-scan" : "Scan"}
+            </button>
+          </div>
+          {scanResult && (
+            <div className="space-y-1.5">
+              <div className={`flex items-center gap-2 text-xs ${scanResult.score >= 80 ? "text-green-400" : scanResult.score >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                <span>Score: {scanResult.score}/100</span>
+                {scanResult.issues.length === 0 && <span className="text-green-400">✓ No issues found</span>}
+              </div>
+              {scanResult.issues.map((issue, i) => (
+                <div key={i} className={`rounded-lg p-2 text-[10px] space-y-0.5 ${issue.severity === "high" ? "bg-red-500/10 border border-red-500/20" : issue.severity === "medium" ? "bg-amber-500/10 border border-amber-500/20" : "bg-white/5 border border-white/10"}`}>
+                  <p className={`font-medium ${issue.severity === "high" ? "text-red-300" : issue.severity === "medium" ? "text-amber-300" : "text-gray-300"}`}>{issue.severity.toUpperCase()} — {issue.title}</p>
+                  <p className="text-gray-500">{issue.description}</p>
+                  <p className="text-gray-600">Fix: {issue.fix}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2 mt-5">
           <button onClick={() => onPublish(slug, customDomain || undefined, password || undefined)} disabled={!canPublish}

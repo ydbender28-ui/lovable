@@ -11,13 +11,38 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
+  id           String              @id @default(cuid())
+  name         String?
+  email        String              @unique
+  password     String
+  createdAt    DateTime            @default(now())
+  projects     Project[]
+  agents       Agent[]
+  memberships  WorkspaceMember[]
+  ownedWorkspaces Workspace[]
+  labsFlags    String              @default("[]") // JSON: string[] of enabled lab feature keys
+}
+
+model Workspace {
+  id        String            @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User              @relation(fields: [ownerId], references: [id])
+  members   WorkspaceMember[]
   projects  Project[]
-  agents    Agent[]
+  createdAt DateTime          @default(now())
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  role        String    @default("editor") // owner | admin | editor
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, userId])
 }
 
 model Agent {
@@ -42,6 +67,8 @@ model Project {
   name          String
   ownerId       String
   owner         User      @relation(fields: [ownerId], references: [id])
+  workspaceId   String?
+  workspace     Workspace? @relation(fields: [workspaceId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   messages      Message[]
@@ -54,21 +81,11 @@ model Project {
   publishPassword String?
   visitCount      Int       @default(0)
   knowledge       String    @default("[]") // JSON: { id, title, content }[]
-  supabaseProjectId String? // Supabase project ref
-  supabaseUrl       String? // https://xyz.supabase.co
-  supabaseAnonKey   String? // public anon key
+  supabaseProjectId String?
+  supabaseUrl       String?
+  supabaseAnonKey   String?
 }
 
-model Message {
-  id        String   @id @default(cuid())
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
-  role      String   // "user" | "assistant"
-  content   String
-  createdAt DateTime @default(now())
-}
-
-// Each Version stores a full snapshot of the generated project's files as JSON
 model Version {
   id           String   @id @default(cuid())
   projectId    String
@@ -77,5 +94,16 @@ model Version {
   modelUsed    String?
   inputTokens  Int?
   outputTokens Int?
+  bookmarked   Boolean  @default(false)
+  bookmarkNote String?
   createdAt    DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  role      String
+  content   String
+  createdAt DateTime @default(now())
 }

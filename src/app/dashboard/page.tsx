@@ -61,6 +61,7 @@ export default async function DashboardPage() {
             <span className="hidden text-xs sm:block" style={{ color: "#7a8099" }}>
               {session.user.email}
             </span>
+            <Link href="/settings" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Settings</Link>
             <SignOutButton />
           </div>
         </div>
