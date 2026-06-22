@@ -37,14 +37,23 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
 
   async function buy(packageId: string) {
     setLoading(packageId);
-    const res = await fetch("/api/billing/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ packageId }),
-    });
-    const { url, error } = await res.json();
-    if (error) { alert(error); setLoading(null); return; }
-    window.location.href = url;
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packageId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error || !data.url) {
+        alert(data.error ?? "Payment setup failed. Please check that Stripe is configured in Vercel env vars.");
+        setLoading(null);
+        return;
+      }
+      window.location.href = data.url;
+    } catch {
+      alert("Network error — please try again.");
+      setLoading(null);
+    }
   }
 
   return (

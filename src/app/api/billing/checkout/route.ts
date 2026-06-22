@@ -28,6 +28,11 @@ export async function POST(req: Request) {
 
   const origin = req.headers.get("origin") ?? "https://thatcode.dev";
 
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: "Stripe is not configured — add STRIPE_SECRET_KEY to Vercel env vars." }, { status: 503 });
+  }
+
+  try {
   const stripe = getStripe();
   const checkout = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -56,4 +61,8 @@ export async function POST(req: Request) {
   });
 
   return NextResponse.json({ url: checkout.url });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Stripe error";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
