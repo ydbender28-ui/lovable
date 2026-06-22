@@ -263,10 +263,11 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
 }
 
 export default function ProjectWorkspace({
-  projectId, projectName, initialMessages, initialFiles, initialPublishSlug, initialPrompt,
+  projectId, projectName, initialMessages, initialFiles, initialPublishSlug, initialPrompt, initialCredits,
 }: {
   projectId: string; projectName: string; initialMessages: Message[];
   initialFiles: ProjectFiles; initialPublishSlug?: string | null; initialPrompt?: string;
+  initialCredits?: number | null;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
@@ -409,9 +410,10 @@ export default function ProjectWorkspace({
   const [mergeGoal, setMergeGoal] = useState("");
   const [mergeLoading, setMergeLoading] = useState(false);
 
-  // Smart routing — shown immediately when generation starts
-  type RouteInfo = { intent: string; taskType: string; model: string; modelReason: string };
+  // Smart routing chip — appears immediately on generation start
+  type RouteInfo = { intent: string; taskType: string; creditsNeeded?: number; creditsRemaining?: number };
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
+  const [userCredits, setUserCredits] = useState<number | null>(initialCredits ?? null);
 
   // Self-verify (auto user test + fix after generation)
   const [selfVerify, setSelfVerify] = useState(false);
@@ -1098,6 +1100,19 @@ export default function ProjectWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: fullText, envVars: mergedEnv, forceModel, ...imgPayload }),
       });
+      if (res.status === 402) {
+        const body = await res.json().catch(() => ({}));
+        const needed = body.creditsNeeded ?? 1;
+        const remaining = body.creditsRemaining ?? 0;
+        setUserCredits(remaining);
+        setMessages(prev => [...prev, {
+          id: `msg-nocredits-${Date.now()}`,
+          role: "assistant",
+          content: `You're out of credits. This action needs ${needed} credit${needed !== 1 ? "s" : ""} but you have ${remaining}. Upgrade your plan to get more.`,
+        }]);
+        setLoading(false);
+        return;
+      }
       if (!res.ok) throw new Error("Generation failed");
       if (!res.body) throw new Error("No response body");
 
@@ -1116,7 +1131,10 @@ export default function ProjectWorkspace({
           if (!eventLine || !dataLine) continue;
           try {
             const payload = JSON.parse(dataLine);
-            if (eventLine === "route") setRouteInfo(payload as RouteInfo);
+            if (eventLine === "route") {
+                setRouteInfo(payload as RouteInfo);
+                if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
+              }
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
@@ -1125,13 +1143,14 @@ export default function ProjectWorkspace({
               if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
               else if (/tablet|ipad/.test(pl)) setPreviewMode("tablet");
               else if (/dashboard|admin panel|analytics|desktop/.test(pl)) setPreviewMode("desktop");
-              const meta = payload.modelUsed
-                ? `\n\n_${payload.modelUsed} · ${payload.complexity ?? ""} · $${(payload.estimatedCostUsd ?? 0).toFixed(4)}_`
+              const creditNote = payload.creditsUsed != null
+                ? `\n\n_Used ${payload.creditsUsed} credit${payload.creditsUsed !== 1 ? "s" : ""} · ${payload.creditsRemaining} remaining_`
                 : "";
+              if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
               const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
               const summary = silent
                 ? "✓ Error fixed automatically." + (payload.liveUpdated ? "\n\n✓ Live site updated." : "")
-                : (payload.summary ?? "Done! Check the preview.") + meta + liveNote;
+                : (payload.summary ?? "Done! Check the preview.") + creditNote + liveNote;
               setMessages((prev) => {
                 const msgs: typeof prev = [...prev, {
                   id: payload.tempMessageId ?? `msg-${Date.now()}`,
@@ -1774,15 +1793,12 @@ export default function ProjectWorkspace({
             {routeInfo && (
               <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03]">
                 <span className="text-xs text-gray-300">{routeInfo.intent}</span>
-                <span className="text-[10px] text-gray-600 mx-1">·</span>
-                <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${
-                  routeInfo.taskType === "style" || routeInfo.taskType === "content" ? "bg-green-500/10 text-green-400" :
-                  routeInfo.taskType === "bugfix" ? "bg-amber-500/10 text-amber-400" :
-                  routeInfo.taskType === "complex" || routeInfo.taskType === "new-build" ? "bg-fuchsia-500/10 text-fuchsia-400" :
-                  "bg-blue-500/10 text-blue-400"
-                }`}>{routeInfo.taskType}</span>
-                <span className="text-[10px] text-gray-600">→</span>
-                <span className="text-[10px] font-medium text-gray-400">{routeInfo.model}</span>
+                {routeInfo.creditsNeeded != null && (
+                  <>
+                    <span className="text-[10px] text-gray-600">·</span>
+                    <span className="text-[10px] font-medium text-amber-400">{routeInfo.creditsNeeded} credit{routeInfo.creditsNeeded !== 1 ? "s" : ""}</span>
+                  </>
+                )}
               </div>
             )}
             <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5">
@@ -1943,10 +1959,17 @@ export default function ProjectWorkspace({
               )}
               <span className="text-[10px] text-gray-700 pl-1 hidden sm:block">⌘K</span>
             </div>
-            <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : loading) || !prompt.trim()}
-              className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
-              {chatMode ? (chatStreaming ? "Thinking..." : "Send") : (loading ? "Generating..." : "Send")}
-            </button>
+            <div className="flex items-center gap-2">
+              {userCredits !== null && (
+                <span className={`text-[10px] font-medium tabular-nums ${userCredits <= 5 ? "text-red-400" : "text-gray-500"}`}>
+                  {userCredits} credit{userCredits !== 1 ? "s" : ""}
+                </span>
+              )}
+              <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : loading) || !prompt.trim()}
+                className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+                {chatMode ? (chatStreaming ? "Thinking..." : "Send") : (loading ? "Generating..." : "Send")}
+              </button>
+            </div>
           </div>
         </div>
       </div>

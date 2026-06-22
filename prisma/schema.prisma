@@ -21,6 +21,8 @@ model User {
   memberships  WorkspaceMember[]
   ownedWorkspaces Workspace[]
   labsFlags    String              @default("[]") // JSON: string[] of enabled lab feature keys
+  credits      Int                 @default(50)   // free tier starts with 50 credits
+  plan         String              @default("free") // free | pro | team
 }
 
 model Workspace {

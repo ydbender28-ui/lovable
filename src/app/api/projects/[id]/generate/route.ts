@@ -3,6 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { generateProject, smartRoute } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
+// Credits consumed per task type — complexity drives cost, not the underlying model
+const CREDITS_BY_TASK: Record<string, number> = {
+  style:      1,
+  content:    1,
+  bugfix:     2,
+  feature:    3,
+  "new-build": 5,
+  complex:    5,
+};
+
 export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/generate">) {
   const session = await auth();
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
@@ -15,24 +25,38 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     return new Response("Prompt is required", { status: 400 });
   }
 
-  // Fetch project first — we need to know if code exists before routing
-  const project = await prisma.project.findFirst({
-    where: { id, ownerId: session.user.id },
-    include: {
-      versions: { orderBy: { createdAt: "desc" }, take: 1 },
-      messages: { orderBy: { createdAt: "desc" }, take: 20 },
-    },
-  });
+  // Fetch project + user credits in parallel
+  const [project, user] = await Promise.all([
+    prisma.project.findFirst({
+      where: { id, ownerId: session.user.id },
+      include: {
+        versions: { orderBy: { createdAt: "desc" }, take: 1 },
+        messages: { orderBy: { createdAt: "desc" }, take: 20 },
+      },
+    }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true } }),
+  ]);
 
   if (!project) return new Response("Not found", { status: 404 });
 
   const hasExisting = !!project.versions[0];
 
-  // Smart route and message write in parallel — route uses hasExisting for accurate classification
+  // Smart route and message write in parallel
   const [finalRoute] = await Promise.all([
     smartRoute(prompt, hasExisting, forceModel ?? undefined),
     prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
   ]);
+
+  const creditsNeeded = CREDITS_BY_TASK[finalRoute.taskType] ?? 3;
+  const currentCredits = user?.credits ?? 0;
+
+  // Check credits (skip check on owner's own projects during testing — plan = "owner")
+  if (user?.plan !== "owner" && currentCredits < creditsNeeded) {
+    return new Response(
+      JSON.stringify({ error: "insufficient_credits", creditsNeeded, creditsRemaining: currentCredits }),
+      { status: 402, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   const existingFiles = project.versions[0] ? JSON.parse(project.versions[0].files) : null;
   const envVars = bodyEnvVars ?? (project.envVars ? JSON.parse(project.envVars) : null);
@@ -57,12 +81,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
-      // Stream routing decision immediately — frontend shows it before generation starts
+      // Stream routing decision — includes credits so frontend can show the cost upfront
       send("route", {
         intent: finalRoute.intent,
         taskType: finalRoute.taskType,
-        model: finalRoute.model.displayName,
-        modelReason: finalRoute.modelReason,
+        creditsNeeded,
+        creditsRemaining: currentCredits,
       });
 
       try {
@@ -74,29 +98,25 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           (text) => send("status", { text }),
           imageBase64 ?? null,
           imageMimeType,
-          finalRoute.model.model, // use smart-routed model
+          finalRoute.model.model,
           customKnowledge,
           projectHistory
         );
 
-        // Auto-republish if already live — build new HTML before sending done
         const wasPublished = !!project.publishSlug;
         const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name) : null;
+        const creditsAfter = Math.max(0, currentCredits - creditsNeeded);
 
-        // Send done immediately — don't wait for DB writes
-        const tempMessageId = `msg-${Date.now()}`;
         send("done", {
           files: result.files,
           summary: result.summary,
-          tempMessageId,
-          modelUsed: result.modelUsed,
-          complexity: result.complexity,
-          complexityReasons: result.complexityReasons,
-          estimatedCostUsd: result.estimatedCostUsd,
+          tempMessageId: `msg-${Date.now()}`,
           liveUpdated: wasPublished,
+          creditsUsed: creditsNeeded,
+          creditsRemaining: creditsAfter,
         });
 
-        // Write to DB in parallel after responding
+        // Deduct credits + write version/message/project in parallel
         await Promise.all([
           prisma.version.create({
             data: {
@@ -112,10 +132,13 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
             where: { id },
             data: {
               updatedAt: new Date(),
-              // Auto-update published HTML so live site reflects changes immediately
               ...(wasPublished && newHtml ? { publishedHtml: newHtml, publishedAt: new Date() } : {}),
             },
           }),
+          // Only deduct if not owner plan
+          user?.plan !== "owner"
+            ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: creditsNeeded } } })
+            : Promise.resolve(),
         ]);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Generation failed";

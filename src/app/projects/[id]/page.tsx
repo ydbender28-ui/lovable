@@ -16,13 +16,16 @@ export default async function ProjectPage({
   const { id } = await params;
   const { prompt } = await searchParams;
 
-  const project = await prisma.project.findFirst({
-    where: { id, ownerId: session.user.id },
-    include: {
-      messages: { orderBy: { createdAt: "asc" } },
-      versions: { orderBy: { createdAt: "desc" }, take: 1 },
-    },
-  });
+  const [project, user] = await Promise.all([
+    prisma.project.findFirst({
+      where: { id, ownerId: session.user.id },
+      include: {
+        messages: { orderBy: { createdAt: "asc" } },
+        versions: { orderBy: { createdAt: "desc" }, take: 1 },
+      },
+    }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true } }),
+  ]);
 
   if (!project) notFound();
 
@@ -40,6 +43,7 @@ export default async function ProjectPage({
       initialFiles={files}
       initialPublishSlug={project.publishSlug}
       initialPrompt={prompt && project.messages.length === 0 ? prompt : undefined}
+      initialCredits={user?.plan === "owner" ? null : (user?.credits ?? 50)}
     />
   );
 }
