@@ -7,7 +7,7 @@ export const revalidate = 60;
 
 export default async function ShowcasePage() {
   const published = await prisma.project.findMany({
-    where: { publishedAt: { not: null }, publishSlug: { not: null } },
+    where: { publishedAt: { not: null }, publishSlug: { not: null }, isPrivate: false },
     orderBy: { visitCount: "desc" },
     take: 30,
     select: {
