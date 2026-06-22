@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { auth } from "@/lib/auth";
 
 const TIERS = [
   {
@@ -9,7 +10,9 @@ const TIERS = [
     desc: "Perfect for experimenting and personal side projects.",
     features: ["5 apps", "Unlimited edits per app", "Live preview", "thatcode.dev subdomain", "Community support"],
     cta: "Get started free",
+    ctaLoggedIn: "Go to dashboard",
     href: "/signup",
+    hrefLoggedIn: "/dashboard",
     highlight: false,
   },
   {
@@ -19,6 +22,7 @@ const TIERS = [
     desc: "For builders who ship real products to real users.",
     features: [
       "Unlimited apps",
+      "Private projects",
       "Custom domains",
       "Password protection",
       "Visit analytics",
@@ -28,7 +32,9 @@ const TIERS = [
       "Email support",
     ],
     cta: "Start Pro →",
+    ctaLoggedIn: "Buy credits →",
     href: "/signup",
+    hrefLoggedIn: "/dashboard?buy=1",
     highlight: true,
   },
   {
@@ -44,7 +50,9 @@ const TIERS = [
       "Dedicated Slack support",
     ],
     cta: "Contact us",
+    ctaLoggedIn: "Contact us",
     href: "mailto:hi@thatcode.dev",
+    hrefLoggedIn: "mailto:hi@thatcode.dev",
     highlight: false,
   },
 ];
@@ -64,7 +72,7 @@ const FAQ = [
   },
   {
     q: "What AI models does ThatCode use?",
-    a: "We route between Claude Sonnet, Claude Haiku, GPT-4o, and Gemini 2.5 Flash based on task complexity. Pro users always get the best available model.",
+    a: "We route between Claude Sonnet, Claude Haiku, and Gemini 2.5 Flash based on task complexity. Pro users always get the best available model.",
   },
   {
     q: "Can I use my own domain?",
@@ -72,7 +80,10 @@ const FAQ = [
   },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const session = await auth();
+  const loggedIn = !!session?.user;
+
   return (
     <div style={{ background: "#0a0b0e", minHeight: "100vh" }}>
       {/* Nav */}
@@ -80,14 +91,20 @@ export default function PricingPage() {
         <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
           <Link href="/"><Logo size="md" /></Link>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="px-4 py-2 text-sm" style={{ color: "#7a8099" }}>Log in</Link>
-            <Link
-              href="/signup"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-              style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}
-            >
-              Start free
-            </Link>
+            {loggedIn ? (
+              <Link href="/dashboard" className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+                style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}>
+                Dashboard →
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="px-4 py-2 text-sm" style={{ color: "#7a8099" }}>Log in</Link>
+                <Link href="/signup" className="rounded-lg px-4 py-2 text-sm font-medium text-white"
+                  style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}>
+                  Start free
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -99,7 +116,7 @@ export default function PricingPage() {
             Simple, honest pricing
           </h1>
           <p className="mt-4 text-base" style={{ color: "#7a8099" }}>
-            Start for free. Upgrade when you&apos;re ready to ship.
+            {loggedIn ? "Add credits to your account — they never expire." : "Start for free. Upgrade when you're ready to ship."}
           </p>
         </div>
 
@@ -138,7 +155,7 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Link
-                href={t.href}
+                href={loggedIn ? t.hrefLoggedIn : t.href}
                 className="mt-7 block w-full rounded-xl py-2.5 text-center text-sm font-semibold transition-all hover:-translate-y-px"
                 style={
                   t.highlight
@@ -146,7 +163,7 @@ export default function PricingPage() {
                     : { background: "rgba(255,255,255,0.06)", color: "#eef0f6", border: "1px solid rgba(255,255,255,0.10)" }
                 }
               >
-                {t.cta}
+                {loggedIn ? t.ctaLoggedIn : t.cta}
               </Link>
             </div>
           ))}

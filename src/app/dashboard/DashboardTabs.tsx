@@ -122,6 +122,13 @@ export default function DashboardTabs({
   const [credits, setCredits] = useState(initialCredits);
 
   useEffect(() => {
+    if (searchParams.get("buy") === "1") {
+      setShowBuyCredits(true);
+      router.replace("/dashboard");
+    }
+  }, [searchParams, router]);
+
+  useEffect(() => {
     if (searchParams.get("credits") !== "purchased") return;
     router.replace("/dashboard");
 
