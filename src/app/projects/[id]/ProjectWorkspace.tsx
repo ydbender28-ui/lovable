@@ -2149,8 +2149,8 @@ export default function ProjectWorkspace({
   );
 
   return (
-    <div className="flex flex-col bg-[#0d0e18]" style={{ height: "100dvh" }}>
-      <header className="border-b border-white/[0.07] bg-[#0d0e18]/95 backdrop-blur px-3 py-2 flex items-center justify-between shrink-0 gap-2">
+    <div className="flex flex-col bg-white" style={{ height: "100dvh" }}>
+      <header className="border-b border-gray-100 bg-white px-3 py-2 flex items-center justify-between shrink-0 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
           <span className="text-gray-700 hidden sm:inline">/</span>

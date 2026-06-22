@@ -91,11 +91,6 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-1">
-          <p className="text-[11px] text-gray-500 font-medium">How credits work</p>
-          <p className="text-[11px] text-gray-600">Simple edits (color, text) = ~0.3–1 credit &nbsp;·&nbsp; New features = 2–4 credits &nbsp;·&nbsp; Full app build = 3–8 credits</p>
-        </div>
-
         <p className="text-[10px] text-gray-700 text-center">Secure payment via Stripe · No subscription · Credits never expire</p>
       </div>
     </div>

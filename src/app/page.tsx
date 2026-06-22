@@ -7,7 +7,7 @@ const FEATURES = [
   {
     icon: "⚡",
     title: "Built in seconds",
-    desc: "Describe it once. A working app with real code appears in under thirty seconds.",
+    desc: "Describe it once. A working app with real code appears in under a minute.",
     tint: "rgba(109,95,255,0.16)",
     ring: "rgba(109,95,255,0.32)",
   },
@@ -35,7 +35,7 @@ const FEATURES = [
   {
     icon: "🤖",
     title: "Multi-model AI",
-    desc: "Routes between Claude, GPT-4o and Gemini automatically based on task complexity.",
+    desc: "Routes between Claude Sonnet, Haiku, and Gemini automatically based on task complexity.",
     tint: "rgba(34,197,94,0.12)",
     ring: "rgba(34,197,94,0.26)",
   },
@@ -64,50 +64,52 @@ const FEATURES = [
 
 const PRICING = [
   {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    desc: "Perfect for experimenting and personal projects.",
+    name: "Plus",
+    price: "$9",
+    period: "/ month",
+    desc: "For individuals building side projects and personal apps.",
     features: [
-      "5 apps",
+      "15 apps",
       "Unlimited edits",
       "Live preview",
       "thatcode.dev subdomain",
-      "Community support",
+      "Visit analytics",
+      "Email support",
     ],
-    cta: "Start free",
+    cta: "Start Plus →",
     href: "/signup",
     highlight: false,
   },
   {
     name: "Pro",
-    price: "$12",
+    price: "$19",
     period: "/ month",
     desc: "For builders who ship real products.",
     features: [
       "Unlimited apps",
       "Custom domains",
       "Password protection",
-      "Visit analytics",
       "GitHub export",
       "Priority AI (Claude Sonnet)",
-      "Email support",
+      "Remove ThatCode badge",
+      "Priority email support",
     ],
     cta: "Start Pro →",
     href: "/signup",
     highlight: true,
   },
   {
-    name: "Team",
-    price: "$39",
+    name: "Business",
+    price: "$49",
     period: "/ month",
-    desc: "For agencies and small teams.",
+    desc: "For teams and agencies building client projects.",
     features: [
       "Everything in Pro",
-      "5 seats",
-      "Shared projects",
+      "5 seats included",
+      "Shared project library",
       "API access",
-      "Dedicated support",
+      "White-label publishing",
+      "Dedicated Slack support",
     ],
     cta: "Contact us",
     href: "mailto:hi@thatcode.dev",
@@ -190,7 +192,7 @@ export default async function Home() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: "#6d5fff", opacity: 0.7 }} />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "#6d5fff" }} />
             </span>
-            Multi-model AI · Claude · GPT-4o · Gemini
+            Multi-model AI · Claude · Gemini
           </div>
 
           {/* Headline */}
@@ -321,8 +323,8 @@ export default async function Home() {
           {/* Stat pills */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
             {[
-              { v: "10k+", l: "apps built" },
-              { v: "< 30 sec", l: "to first build" },
+              { v: "< 60 sec", l: "to first build" },
+              { v: "20+", l: "templates" },
               { v: "Free", l: "to start" },
             ].map((s) => (
               <div key={s.l} className="flex items-baseline gap-2 rounded-full px-4 py-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
