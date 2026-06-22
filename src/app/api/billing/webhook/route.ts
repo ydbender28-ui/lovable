@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-05-28.basil" });
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+import { prisma } from "@/lib/prisma";;
 
 export const config = { api: { bodyParser: false } };
 
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-05-27.dahlia" });
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
   if (!sig || !webhookSecret) {
     return NextResponse.json({ error: "Missing signature or secret" }, { status: 400 });

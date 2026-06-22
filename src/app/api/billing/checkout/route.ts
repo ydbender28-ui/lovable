@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-05-28.basil" });
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-05-27.dahlia" });
+}
 
 // Credit packages — price in cents, credits granted after payment
 // 1 credit = $0.25. AI cost per credit ~$0.10. Profit ~$0.15/credit.
@@ -26,6 +28,7 @@ export async function POST(req: Request) {
 
   const origin = req.headers.get("origin") ?? "https://thatcode.dev";
 
+  const stripe = getStripe();
   const checkout = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
