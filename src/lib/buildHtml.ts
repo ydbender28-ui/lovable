@@ -143,8 +143,33 @@ function thatcodeBadge(hideBadge: boolean): string {
   </script>`;
 }
 
+function storagePolyfill(slug: string): string {
+  // tcSave/tcLoad: synced key-value store for published apps.
+  // Falls back to localStorage when offline.
+  return `(function(){
+  var _slug='${slug}';
+  var _base='';
+  window.tcSave=function(key,value){
+    try{localStorage.setItem('tc_'+_slug+'_'+key,JSON.stringify(value));}catch(e){}
+    if(!_slug)return Promise.resolve();
+    return fetch(_base+'/api/app-data/'+_slug,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:value})}).catch(function(){});
+  };
+  window.tcLoad=function(key,fallback){
+    if(!_slug)return Promise.resolve(fallback??null);
+    return fetch(_base+'/api/app-data/'+_slug+'?key='+encodeURIComponent(key)).then(function(r){return r.json();}).then(function(d){
+      if(d.value!==null&&d.value!==undefined)return d.value;
+      try{var lv=localStorage.getItem('tc_'+_slug+'_'+key);if(lv!==null)return JSON.parse(lv);}catch(e){}
+      return fallback??null;
+    }).catch(function(){
+      try{var lv=localStorage.getItem('tc_'+_slug+'_'+key);if(lv!==null)return JSON.parse(lv);}catch(e){}
+      return fallback??null;
+    });
+  };
+})();`;
+}
+
 // Used for local export download — uses CDN (needs internet)
-export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string, hideBadge = false): string {
+export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string, hideBadge = false, publishSlug?: string): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
@@ -178,6 +203,8 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
   <script src="${REACT_CDN}" onerror="showErr('Failed to load React from CDN: ${REACT_CDN}')"></script>
   <script src="${REACT_DOM_CDN}" onerror="showErr('Failed to load ReactDOM from CDN: ${REACT_DOM_CDN}')"></script>
   <script>
+    // Cross-device storage
+    ${publishSlug ? storagePolyfill(publishSlug) : "window.tcSave=function(){return Promise.resolve()};window.tcLoad=function(k,fb){return Promise.resolve(fb??null)};"}
     // Polyfill: intercept file uploads — convert to base64 data URL since there's no backend
     (function(){
       var _fetch = window.fetch;

@@ -69,8 +69,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
 
   const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
   const files = JSON.parse(project.versions[0].files);
-  const html = buildStandaloneHtml(files, project.name, id, hideBadge);
 
+  // Determine slug first so we can embed it in the storage polyfill
   let slug = requestedSlug || project.publishSlug || toSlug(project.name);
   if (!slug || slug.length < 2) slug = `app-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -79,6 +79,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
     if (requestedSlug) return NextResponse.json({ error: `"${slug}" is already taken.` }, { status: 409 });
     slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
   }
+
+  const html = buildStandaloneHtml(files, project.name, id, hideBadge, slug);
 
   // Check custom domain uniqueness
   if (customDomain) {

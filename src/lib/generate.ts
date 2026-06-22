@@ -269,9 +269,14 @@ Image uploads (ALWAYS use /api/upload — built-in, no API keys needed):
   {imgUrl && <img src={imgUrl} style={{maxWidth:'100%'}}/>}
   // Store imgUrl in localStorage or state as needed. URL is permanent and publicly accessible.
 
-Data persistence:
-  const [items, setItems] = useState<T[]>(()=>JSON.parse(localStorage.getItem('key')||'[]'));
-  useEffect(()=>localStorage.setItem('key',JSON.stringify(items)),[items]);
+Data persistence (cross-device synced — ALWAYS use this pattern):
+  const [items, setItems] = useState<T[]>([]);
+  useEffect(()=>{window.tcLoad('items',[]).then(v=>setItems(v||[]));},[]);
+  // After any mutation, save:
+  async function saveItems(next) { setItems(next); await window.tcSave('items',next); }
+  // window.tcLoad(key, fallback) — returns Promise, loads from server storage (cross-device)
+  // window.tcSave(key, value) — saves to server storage (syncs across all devices)
+  // NEVER use localStorage directly for user data — always tcSave/tcLoad
 
 Admin/CRUD panels:
   const [view, setView] = useState<'public'|'admin'>('public');
@@ -308,6 +313,7 @@ When building admin panels with products, blog posts, or any content with images
 - Show a preview of the uploaded image immediately: {currentItem.imageUrl && <img src={currentItem.imageUrl} style={{width:80,height:80,objectFit:'cover',borderRadius:4}} />}
 - Store imageUrl in the item/product data and display it in the public view
 - The /api/upload endpoint is BUILT IN — no API key needed, always available
+- After saving an item with an imageUrl, persist the full items array with window.tcSave so it syncs across devices
 
 QUALITY BAR:
 - 15-20 realistic hardcoded items minimum for lists/products

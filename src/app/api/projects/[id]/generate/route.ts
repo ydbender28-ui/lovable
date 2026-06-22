@@ -121,7 +121,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
         const wasPublished = !!project.publishSlug;
         const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
-        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge) : null;
+        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
 
         // Calculate actual credits based on real token cost
         const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
