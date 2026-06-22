@@ -121,9 +121,11 @@ export default function DashboardTabs({
 
   useEffect(() => {
     if (searchParams.get("credits") === "purchased") {
+      // Refresh server data to get updated credit balance, then show toast
+      router.refresh();
+      router.replace("/dashboard");
       setPurchaseToast(true);
       setTimeout(() => setPurchaseToast(false), 5000);
-      router.replace("/dashboard");
     }
   }, [searchParams, router]);
 
