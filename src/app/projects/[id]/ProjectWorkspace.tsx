@@ -371,6 +371,8 @@ export default function ProjectWorkspace({
   // GitHub sync
   const [showGithub, setShowGithub] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showFeaturesMenu, setShowFeaturesMenu] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [githubToken, setGithubToken] = useState("");
   const [githubRepo, setGithubRepo] = useState("");
   const [githubPrivate, setGithubPrivate] = useState(false);
@@ -1664,66 +1666,67 @@ export default function ProjectWorkspace({
   const chatPanel = (
     <div className="flex flex-col h-full bg-[#10111a] relative">
       {knowledgePanel}
-      {/* Mode toggle */}
-      <div className="flex items-center gap-1 px-3 pt-2 pb-1 shrink-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px] shrink-0">
+      {/* Mode toggle + features */}
+      <div className="flex items-center gap-2 px-3 pt-2 pb-1.5 shrink-0 border-b border-white/[0.05]">
+        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px]">
           <button onClick={() => setChatMode(false)}
-            className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+            className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-white/10 text-white font-medium" : "text-gray-500 hover:text-gray-300"}`}>
             Build
           </button>
           <button onClick={() => setChatMode(true)}
-            className={`px-3 py-1 rounded-md transition-colors ${chatMode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+            className={`px-3 py-1 rounded-md transition-colors ${chatMode ? "bg-white/10 text-white font-medium" : "text-gray-500 hover:text-gray-300"}`}>
             Chat
           </button>
         </div>
-        <button onClick={() => setArchitectMode(v => !v)} title="Architect mode: AI plans before building"
-          className={`text-xs rounded-lg border px-2 py-1 transition-colors ${architectMode ? "border-purple-400/40 bg-purple-500/10 text-purple-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-purple-300 hover:border-purple-400/30"}`}>
-          🏗️
-        </button>
-        <button onClick={() => setSelfVerify(v => !v)} title="Self-verify: auto-test and fix after each build"
-          className={`text-xs rounded-lg border px-2 py-1 transition-colors ${selfVerify ? "border-green-400/40 bg-green-500/10 text-green-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-green-300 hover:border-green-400/30"}`}>
-          🔬
-        </button>
-        <button onClick={() => { setShowAnalytics(true); loadAnalytics(); }} title="Analytics — pageviews, rage-clicks, engagement"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-blue-300 hover:border-blue-400/30 px-2 py-1 transition-colors">
-          📊
-        </button>
-        <button onClick={() => { setShowCompliance(true); runCompliance(); }} title="Legal compliance — GDPR, HIPAA, CCPA"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-amber-300 hover:border-amber-400/30 px-2 py-1 transition-colors">
-          ⚖️
-        </button>
-        <button onClick={() => { setShowCloneUrl(true); setCloneError(null); }} title="Build inspired by a URL"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-cyan-300 hover:border-cyan-400/30 px-2 py-1 transition-colors">
-          🔍
-        </button>
-        <button onClick={() => setShowMerge(true)} title="Merge another project into this one"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-orange-300 hover:border-orange-400/30 px-2 py-1 transition-colors">
-          ⚡
-        </button>
-        <button onClick={() => { setShowLoadTest(true); runLoadTest(); }} title="AI load test — find performance bottlenecks"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-indigo-300 hover:border-indigo-400/30 px-2 py-1 transition-colors">
-          🏋️
-        </button>
-        <button onClick={() => { setShowRedTeam(true); runRedTeam(); }} title="Adversarial red team — AI security hacker"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-red-300 hover:border-red-400/30 px-2 py-1 transition-colors">
-          🔴
-        </button>
-        <button onClick={() => { setShowRevenue(true); runRevenueModel(); }} title="Revenue model — monetization strategy"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-emerald-300 hover:border-emerald-400/30 px-2 py-1 transition-colors">
-          💰
-        </button>
-        <button onClick={() => setShowBrandVoice(true)} title="Brand voice — consistent copy tone"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-pink-300 hover:border-pink-400/30 px-2 py-1 transition-colors">
-          🎭
-        </button>
-        <button onClick={() => { setShowSunset(true); runSunset(); }} title="App lifecycle — sunset analysis"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300 hover:border-gray-400/30 px-2 py-1 transition-colors">
-          🌅
-        </button>
-        <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
-          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors shrink-0">
-          📚 {knowledge.length > 0 ? knowledge.length : ""}
-        </button>
+        {/* Active mode badges */}
+        {architectMode && (
+          <button onClick={() => setArchitectMode(false)} className="text-[10px] border border-purple-400/40 bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+            🏗️ Architect <span className="opacity-60">×</span>
+          </button>
+        )}
+        {selfVerify && (
+          <button onClick={() => setSelfVerify(false)} className="text-[10px] border border-green-400/40 bg-green-500/10 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+            🔬 Verify <span className="opacity-60">×</span>
+          </button>
+        )}
+        <div className="ml-auto relative">
+          <button onClick={() => setShowFeaturesMenu(v => !v)}
+            className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white px-2.5 py-1 transition-colors flex items-center gap-1.5">
+            <span className="text-base leading-none font-light">+</span> Features
+          </button>
+          {showFeaturesMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowFeaturesMenu(false)} />
+              <div className="absolute left-0 top-full mt-1 w-56 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
+                <p className="text-[10px] text-gray-600 font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">AI Tools</p>
+                {([
+                  { icon: "🏗️", label: "Architect mode", desc: "Plan before building", action: () => { setArchitectMode(v => !v); setShowFeaturesMenu(false); }, active: architectMode },
+                  { icon: "🔬", label: "Self-verify", desc: "Auto-test after build", action: () => { setSelfVerify(v => !v); setShowFeaturesMenu(false); }, active: selfVerify },
+                  { icon: "📊", label: "Analytics", desc: "Pageviews & rage-clicks", action: () => { setShowAnalytics(true); loadAnalytics(); setShowFeaturesMenu(false); } },
+                  { icon: "⚖️", label: "Compliance", desc: "GDPR, HIPAA, CCPA", action: () => { setShowCompliance(true); runCompliance(); setShowFeaturesMenu(false); } },
+                  { icon: "🔍", label: "Clone from URL", desc: "Build inspired by a site", action: () => { setShowCloneUrl(true); setCloneError(null); setShowFeaturesMenu(false); } },
+                  { icon: "⚡", label: "Merge project", desc: "Combine two projects", action: () => { setShowMerge(true); setShowFeaturesMenu(false); } },
+                  { icon: "🏋️", label: "Load test", desc: "Find bottlenecks", action: () => { setShowLoadTest(true); runLoadTest(); setShowFeaturesMenu(false); } },
+                  { icon: "🔴", label: "Red team", desc: "AI security hacker", action: () => { setShowRedTeam(true); runRedTeam(); setShowFeaturesMenu(false); } },
+                  { icon: "💰", label: "Revenue model", desc: "Monetization strategy", action: () => { setShowRevenue(true); runRevenueModel(); setShowFeaturesMenu(false); } },
+                  { icon: "🎭", label: "Brand voice", desc: "Consistent copy tone", action: () => { setShowBrandVoice(true); setShowFeaturesMenu(false); } },
+                  { icon: "🌅", label: "Sunset analysis", desc: "App lifecycle review", action: () => { setShowSunset(true); runSunset(); setShowFeaturesMenu(false); } },
+                  { icon: "📚", label: `Knowledge${knowledge.length > 0 ? ` (${knowledge.length})` : ""}`, desc: "Custom context for AI", action: () => { setShowKnowledge(true); setShowFeaturesMenu(false); } },
+                ] as { icon: string; label: string; desc: string; action: () => void; active?: boolean }[]).map(({ icon, label, desc, action, active }) => (
+                  <button key={label} onClick={action}
+                    className={`w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04] ${active ? "bg-white/[0.03]" : ""}`}>
+                    <span className="text-base w-5 text-center shrink-0">{icon}</span>
+                    <div className="min-w-0">
+                      <p className={`text-xs font-medium ${active ? "text-fuchsia-300" : "text-gray-200"}`}>{label}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{desc}</p>
+                    </div>
+                    {active && <span className="ml-auto text-[9px] text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-400/20 rounded-full px-1.5 py-0.5">ON</span>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
       {chatMode && (
         <div className="px-3 pb-1 shrink-0">
@@ -1941,47 +1944,53 @@ export default function ProjectWorkspace({
             className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none"
           />
           <div className="flex items-center justify-between px-2.5 pb-2.5">
-            <div className="flex items-center gap-0.5">
-              <button onClick={() => csvInputRef.current?.click()} title="Import CSV data — AI builds around your real data"
-                className="text-gray-500 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
-                CSV
+            <div className="flex items-center gap-1 relative">
+              {/* + Attach/actions popover */}
+              <button onClick={() => setShowAttachMenu(v => !v)}
+                title="Attach or use tools"
+                className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white transition-colors text-base font-light leading-none">
+                +
               </button>
-              <button onClick={() => fileInputRef.current?.click()} title="Upload screenshot or image"
-                className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
-                📎
-              </button>
-              <button onClick={() => { setShowImageGen(true); setImageGenResult(null); setImageGenError(null); }} title="Generate an image with AI"
-                className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
-                🎨
-              </button>
-              <button onClick={() => { setShowFigma(true); setFigmaError(null); }} title="Import from Figma"
-                className="text-gray-500 hover:text-fuchsia-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
-                Fig
-              </button>
-              <button onClick={async () => {
-                const text = await navigator.clipboard.readText().catch(() => "");
-                if (text.startsWith("http")) setRefUrl(text);
-                else { const u = window.prompt("Paste a URL to use as reference:"); if (u?.startsWith("http")) setRefUrl(u); }
-              }} title="Add URL as reference (paste URL from clipboard)"
-                className="text-gray-500 hover:text-blue-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-xs font-medium">
-                🔗
-              </button>
-              <button onClick={handleEnhancePrompt} disabled={!prompt.trim() || enhancing} title="AI improves your prompt">
-                <span className={`text-sm p-1.5 rounded-lg block transition-colors ${!prompt.trim() || enhancing ? "text-gray-700" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
-                  {enhancing ? "⏳" : "✨"}
-                </span>
-              </button>
-              <button onClick={toggleVoice} title={voiceActive ? "Stop voice input" : "Voice input"}
-                className={`transition-colors p-1.5 rounded-lg text-sm ${voiceActive ? "text-red-400 bg-red-500/10 animate-pulse" : "text-gray-500 hover:text-fuchsia-300 hover:bg-white/5"}`}>
-                🎤
-              </button>
-              {lastPrompt && !loading && (
-                <button onClick={() => runGenerate(lastPrompt)} title="Regenerate last prompt"
-                  className="text-gray-500 hover:text-gray-300 transition-colors p-1.5 rounded-lg hover:bg-white/5 text-sm">
-                  ↺
-                </button>
+              {showAttachMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowAttachMenu(false)} />
+                  <div className="absolute bottom-full left-0 mb-2 w-52 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
+                    <p className="text-[10px] text-gray-600 font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">Attach</p>
+                    {([
+                      { icon: "📎", label: "Image / screenshot", desc: "Upload a photo or design", action: () => { fileInputRef.current?.click(); setShowAttachMenu(false); } },
+                      { icon: "📊", label: "CSV data", desc: "Build around real data", action: () => { csvInputRef.current?.click(); setShowAttachMenu(false); } },
+                      { icon: "🔗", label: "Reference URL", desc: "Use a site as inspiration", action: async () => { setShowAttachMenu(false); const text = await navigator.clipboard.readText().catch(() => ""); if (text.startsWith("http")) setRefUrl(text); else { const u = window.prompt("Paste a URL:"); if (u?.startsWith("http")) setRefUrl(u); } } },
+                      { icon: "🖼️", label: "Figma import", desc: "Import from Figma", action: () => { setShowFigma(true); setFigmaError(null); setShowAttachMenu(false); } },
+                    ] as { icon: string; label: string; desc: string; action: () => void }[]).map(({ icon, label, desc, action }) => (
+                      <button key={label} onClick={action} className="w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04]">
+                        <span className="text-base w-5 text-center shrink-0">{icon}</span>
+                        <div>
+                          <p className="text-xs font-medium text-gray-200">{label}</p>
+                          <p className="text-[10px] text-gray-500">{desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                    <div className="border-t border-white/[0.05] mt-1 pt-1">
+                      <p className="text-[10px] text-gray-600 font-medium px-3 pb-1.5 uppercase tracking-wider">Actions</p>
+                      {([
+                        { icon: "🎨", label: "Generate image", desc: "AI-generated art or assets", action: () => { setShowImageGen(true); setImageGenResult(null); setImageGenError(null); setShowAttachMenu(false); } },
+                        { icon: "✨", label: "Enhance prompt", desc: "AI rewrites your prompt", action: () => { handleEnhancePrompt(); setShowAttachMenu(false); }, disabled: !prompt.trim() || enhancing },
+                        { icon: voiceActive ? "🔴" : "🎤", label: voiceActive ? "Stop voice" : "Voice input", desc: "Speak your prompt", action: () => { toggleVoice(); setShowAttachMenu(false); } },
+                        ...(lastPrompt && !loading ? [{ icon: "↺", label: "Retry last prompt", desc: "Re-run previous generation", action: () => { runGenerate(lastPrompt); setShowAttachMenu(false); } }] : []),
+                      ] as { icon: string; label: string; desc: string; action: () => void; disabled?: boolean }[]).map(({ icon, label, desc, action, disabled }) => (
+                        <button key={label} onClick={disabled ? undefined : action} disabled={disabled}
+                          className="w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04] disabled:opacity-40">
+                          <span className="text-base w-5 text-center shrink-0">{icon}</span>
+                          <div>
+                            <p className="text-xs font-medium text-gray-200">{label}</p>
+                            <p className="text-[10px] text-gray-500">{desc}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
-              <span className="text-[10px] text-gray-700 pl-1 hidden sm:block">⌘K</span>
             </div>
             <div className="flex items-center gap-2">
               {userCredits !== null && (
@@ -2130,7 +2139,9 @@ export default function ProjectWorkspace({
                 ··· More
               </button>
               {showMoreMenu && (
-                <div onClick={() => setShowMoreMenu(false)} className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-white/10 bg-[#0e0f17] shadow-xl z-50 py-1 overflow-hidden">
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
                   {([
                     { icon: "🗄️", label: supabaseStatus?.enabled ? "Database ✓" : "Database", action: () => { setShowSupabase(true); loadSupabaseStatus(); } },
                     { icon: "🔌", label: "Integrations", action: () => setShowIntegrations(true) },
@@ -2146,6 +2157,7 @@ export default function ProjectWorkspace({
                     </button>
                   ))}
                 </div>
+                </>
               )}
             </div>
           )}
