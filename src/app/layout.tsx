@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
     url: "https://thatcode.dev",
     siteName: "ThatCode",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ThatCode — Build apps with AI" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ThatCode — Build apps with AI" }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "ThatCode — Build apps with AI",
     description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   icons: { icon: "/logo.svg", shortcut: "/logo.svg" },
 };

@@ -993,7 +993,7 @@ export default function ProjectWorkspace({
       const pw = trimmed.replace(/^[`'"]+|[`'"]+$/g, "").trim();
       setFlow({ type: "idle" });
       // Very targeted prompt — only touch the password constant, nothing else
-      runGenerate(`Find the hardcoded admin password string in the code and change ONLY that string value to "${pw}". Do NOT change anything else — not the layout, not the features, not any other code. Return every file unchanged except for the single line with the password.`);
+      runGenerate(`Search the code for a hardcoded password string used for admin authentication (e.g. const ADMIN_PASSWORD = "...", password === "...", pw === "..."). Change ONLY that literal string value to "${pw}". Do NOT modify any other code, logic, layout, or features. Every file must be returned as-is except the single character change to the password value.`);
       return;
     }
 
@@ -1645,7 +1645,7 @@ export default function ProjectWorkspace({
 
   // ── Chat panel ─────────────────────────────────────────────────────────────────
   const chatPanel = (
-    <div className="flex flex-col h-full bg-[#0c0c12] relative">
+    <div className="flex flex-col h-full bg-[#10111a] relative">
       {knowledgePanel}
       {/* Mode toggle */}
       <div className="flex items-center gap-1 px-3 pt-2 pb-1 shrink-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
@@ -1715,9 +1715,9 @@ export default function ProjectWorkspace({
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && !loading && flow.type === "idle" && (
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-sm text-gray-300 font-medium mb-1">Start building</p>
-            <p className="text-xs text-gray-500 leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>
+          <div className="rounded-xl border border-white/[0.07] bg-[#181a27] p-4">
+            <p className="text-sm text-gray-200 font-medium mb-1">Start building</p>
+            <p className="text-xs text-gray-400 leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>
             <div className="mt-3 space-y-1">
               {["A SaaS dashboard with charts and analytics", "An e-commerce store with product catalog", "A landing page for a startup"].map((ex) => (
                 <button key={ex} onClick={() => setPrompt(ex)}
@@ -1732,7 +1732,7 @@ export default function ProjectWorkspace({
             {m.role === "user" ? (
               <div className="rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3.5 py-2.5 leading-relaxed whitespace-pre-wrap">{m.content}</div>
             ) : (
-              <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 text-gray-200 px-3.5 py-2.5 leading-relaxed">
+              <div className="rounded-2xl rounded-bl-sm bg-[#191b28] border border-white/[0.08] text-gray-100 px-3.5 py-2.5 leading-relaxed">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
                   <span className="text-xs font-medium text-fuchsia-300">AI</span>
@@ -1803,13 +1803,12 @@ export default function ProjectWorkspace({
         )}
         {loading && (
           <div className="space-y-2 max-w-[92%]">
-            {/* Route chip — appears instantly, shows what AI understood and which model */}
             {routeInfo && (
-              <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03]">
-                <span className="text-xs text-gray-300">{routeInfo.intent}</span>
+              <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/8 bg-white/[0.02]">
+                <span className="text-xs text-gray-400">{routeInfo.intent}</span>
               </div>
             )}
-            <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5">
+            <div className="rounded-2xl rounded-bl-sm bg-[#191b28] border border-white/[0.08] px-3.5 py-2.5">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
                 <span className="text-xs font-medium text-fuchsia-300">AI</span>
@@ -1912,8 +1911,8 @@ export default function ProjectWorkspace({
       )}
 
       {/* Input */}
-      <div className="border-t border-white/10 p-3 shrink-0">
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] focus-within:border-fuchsia-400/40 transition-colors">
+      <div className="border-t border-white/[0.07] p-3 shrink-0">
+        <div className="rounded-xl border border-white/10 bg-[#1a1c27] focus-within:border-fuchsia-400/50 transition-colors shadow-sm">
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -1922,7 +1921,7 @@ export default function ProjectWorkspace({
             onPaste={handleImagePaste}
             placeholder="Describe what to build or change… paste a screenshot too"
             rows={3}
-            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none"
+            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none"
           />
           <div className="flex items-center justify-between px-2.5 pb-2.5">
             <div className="flex items-center gap-0.5">
@@ -2087,8 +2086,8 @@ export default function ProjectWorkspace({
   );
 
   return (
-    <div className="flex flex-col bg-[#0a0a0f]" style={{ height: "100dvh" }}>
-      <header className="border-b border-white/10 bg-[#0a0a0f]/90 backdrop-blur px-3 py-2 flex items-center justify-between shrink-0 gap-2">
+    <div className="flex flex-col bg-[#0d0e18]" style={{ height: "100dvh" }}>
+      <header className="border-b border-white/[0.07] bg-[#0d0e18]/95 backdrop-blur px-3 py-2 flex items-center justify-between shrink-0 gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
           <span className="text-gray-700 hidden sm:inline">/</span>
