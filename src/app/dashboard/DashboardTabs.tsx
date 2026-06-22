@@ -104,7 +104,7 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
 export default function DashboardTabs({
   projects,
   agents,
-  credits,
+  credits: initialCredits,
 }: {
   projects: Project[];
   agents: Agent[];
@@ -118,16 +118,28 @@ export default function DashboardTabs({
   const [loading, setLoading] = useState(false);
   const [showBuyCredits, setShowBuyCredits] = useState(false);
   const [purchaseToast, setPurchaseToast] = useState(false);
+  const [credits, setCredits] = useState(initialCredits);
 
   useEffect(() => {
-    if (searchParams.get("credits") === "purchased") {
-      // Refresh server data to get updated credit balance, then show toast
-      router.refresh();
-      router.replace("/dashboard");
-      setPurchaseToast(true);
-      setTimeout(() => setPurchaseToast(false), 5000);
-    }
-  }, [searchParams, router]);
+    if (searchParams.get("credits") !== "purchased") return;
+    router.replace("/dashboard");
+
+    // Webhook fires after redirect — poll until balance increases
+    const before = initialCredits ?? 0;
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      const res = await fetch("/api/user/credits");
+      const data = await res.json();
+      if (data.credits > before || attempts >= 15) {
+        clearInterval(poll);
+        setCredits(data.credits);
+        setPurchaseToast(true);
+        setTimeout(() => setPurchaseToast(false), 5000);
+      }
+    }, 1000);
+    return () => clearInterval(poll);
+  }, [searchParams, router, initialCredits]);
 
   async function build() {
     const trimmed = prompt.trim();
