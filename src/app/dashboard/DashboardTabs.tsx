@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProjectCard from "./ProjectCard";
 import NewAgentButton from "./NewAgentButton";
 
@@ -24,18 +24,98 @@ interface Agent {
   public: boolean;
 }
 
+const PACKAGES = [
+  { id: "starter",  credits: 100,  price: "$5",  label: "Starter",  per: "5¢ per credit" },
+  { id: "builder",  credits: 300,  price: "$12", label: "Builder",  per: "4¢ per credit", popular: true },
+  { id: "pro",      credits: 700,  price: "$25", label: "Pro",      per: "3.6¢ per credit" },
+  { id: "agency",   credits: 2000, price: "$60", label: "Agency",   per: "3¢ per credit" },
+] as const;
+
+function BuyCreditsModal({ onClose }: { onClose: () => void }) {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function buy(packageId: string) {
+    setLoading(packageId);
+    const res = await fetch("/api/billing/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ packageId }),
+    });
+    const { url, error } = await res.json();
+    if (error) { alert(error); setLoading(null); return; }
+    window.location.href = url;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }}>
+      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0e0f17] p-6 space-y-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Buy Credits</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Credits never expire. Use them on any generation.</p>
+          </div>
+          <button onClick={onClose} className="text-gray-600 hover:text-gray-300 text-xl leading-none">×</button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {PACKAGES.map(pkg => (
+            <button key={pkg.id} onClick={() => buy(pkg.id)} disabled={loading !== null}
+              className={`relative rounded-xl border p-4 text-left transition-all hover:border-fuchsia-400/50 hover:bg-fuchsia-500/5 disabled:opacity-60 ${
+                "popular" in pkg && pkg.popular
+                  ? "border-fuchsia-400/40 bg-fuchsia-500/[0.06]"
+                  : "border-white/10 bg-white/[0.02]"
+              }`}>
+              {"popular" in pkg && pkg.popular && (
+                <span className="absolute -top-2 left-3 text-[10px] font-semibold bg-fuchsia-500 text-white px-2 py-0.5 rounded-full">Most popular</span>
+              )}
+              <p className="text-xl font-bold text-white">{pkg.price}</p>
+              <p className="text-sm font-semibold text-white mt-0.5">{pkg.credits.toLocaleString()} credits</p>
+              <p className="text-[10px] text-gray-500 mt-1">{pkg.per}</p>
+              {loading === pkg.id && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+                  <span className="text-xs text-gray-300">Redirecting…</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-1">
+          <p className="text-[11px] text-gray-500 font-medium">How credits work</p>
+          <p className="text-[11px] text-gray-600">Simple edits (color, text) = ~0.3–1 credit &nbsp;·&nbsp; New features = 2–4 credits &nbsp;·&nbsp; Full app build = 3–8 credits</p>
+        </div>
+
+        <p className="text-[10px] text-gray-700 text-center">Secure payment via Stripe · No subscription · Credits never expire</p>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardTabs({
   projects,
   agents,
+  credits,
 }: {
   projects: Project[];
   agents: Agent[];
+  credits: number | null;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<"apps" | "agents">("apps");
   const [prompt, setPrompt] = useState("");
   const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showBuyCredits, setShowBuyCredits] = useState(false);
+  const [purchaseToast, setPurchaseToast] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("credits") === "purchased") {
+      setPurchaseToast(true);
+      setTimeout(() => setPurchaseToast(false), 5000);
+      router.replace("/dashboard");
+    }
+  }, [searchParams, router]);
 
   async function build() {
     const trimmed = prompt.trim();
@@ -52,6 +132,33 @@ export default function DashboardTabs({
 
   return (
     <div>
+      {/* Purchase success toast */}
+      {purchaseToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-green-400/30 bg-green-950/90 px-4 py-3 text-sm text-green-200 shadow-xl backdrop-blur">
+          ✓ Credits added to your account!
+        </div>
+      )}
+
+      {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
+
+      {/* Credits bar */}
+      {credits !== null && (
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-sm font-semibold text-white">{credits < 0 ? 0 : credits.toFixed(1)} credits</span>
+            {credits < 10 && (
+              <span className="text-[10px] font-medium text-amber-400 bg-amber-500/10 border border-amber-400/20 rounded-full px-2 py-0.5">
+                {credits <= 0 ? "Out of credits" : "Running low"}
+              </span>
+            )}
+          </div>
+          <button onClick={() => setShowBuyCredits(true)}
+            className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-xs font-semibold hover:opacity-90 transition-opacity">
+            Buy credits
+          </button>
+        </div>
+      )}
+
       {/* ---------- Tab bar ---------- */}
       <div
         className="mb-8 flex items-center gap-1"
@@ -161,54 +268,23 @@ export default function DashboardTabs({
                   key={agent.id}
                   href={`/agents/${agent.id}`}
                   className="group flex items-start gap-4 rounded-2xl p-5 transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: "#111318",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.borderColor = "rgba(109,95,255,0.35)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")
-                  }
+                  style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(109,95,255,0.35)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
                 >
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
-                    style={{
-                      background: "rgba(109,95,255,0.12)",
-                      border: "1px solid rgba(109,95,255,0.22)",
-                    }}
-                  >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-2xl"
+                    style={{ background: "rgba(109,95,255,0.12)", border: "1px solid rgba(109,95,255,0.22)" }}>
                     {agent.avatar}
                   </div>
                   <div className="min-w-0">
-                    <p
-                      className="truncate text-sm font-semibold"
-                      style={{ color: "#eef0f6" }}
-                    >
-                      {agent.name}
-                    </p>
+                    <p className="truncate text-sm font-semibold" style={{ color: "#eef0f6" }}>{agent.name}</p>
                     {agent.description && (
-                      <p className="mt-0.5 truncate text-xs" style={{ color: "#7a8099" }}>
-                        {agent.description}
-                      </p>
+                      <p className="mt-0.5 truncate text-xs" style={{ color: "#7a8099" }}>{agent.description}</p>
                     )}
-                    <span
-                      className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
-                      style={
-                        agent.public
-                          ? {
-                              background: "rgba(34,197,94,0.10)",
-                              border: "1px solid rgba(34,197,94,0.28)",
-                              color: "#4ade80",
-                            }
-                          : {
-                              background: "rgba(255,255,255,0.04)",
-                              border: "1px solid rgba(255,255,255,0.10)",
-                              color: "#7a8099",
-                            }
-                      }
-                    >
+                    <span className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium"
+                      style={agent.public
+                        ? { background: "rgba(34,197,94,0.10)", border: "1px solid rgba(34,197,94,0.28)", color: "#4ade80" }
+                        : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#7a8099" }}>
                       {agent.public ? "Public" : "Private"}
                     </span>
                   </div>
@@ -216,16 +292,9 @@ export default function DashboardTabs({
               ))}
             </div>
           ) : (
-            <div
-              className="mt-6 rounded-2xl p-16 text-center"
-              style={{
-                border: "1px dashed rgba(255,255,255,0.09)",
-                background: "rgba(255,255,255,0.01)",
-              }}
-            >
-              <p className="text-sm" style={{ color: "#7a8099" }}>
-                No agents yet — create one above.
-              </p>
+            <div className="mt-6 rounded-2xl p-16 text-center"
+              style={{ border: "1px dashed rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.01)" }}>
+              <p className="text-sm" style={{ color: "#7a8099" }}>No agents yet — create one above.</p>
             </div>
           )}
         </div>

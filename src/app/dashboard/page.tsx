@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [projects, agents] = await Promise.all([
+  const [projects, agents, user] = await Promise.all([
     prisma.project.findMany({
       where: { ownerId: session.user.id, deletedAt: null },
       orderBy: { updatedAt: "desc" },
@@ -27,6 +27,7 @@ export default async function DashboardPage() {
       where: { ownerId: session.user.id },
       orderBy: { updatedAt: "desc" },
     }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true } }),
   ]);
 
   const projectsWithVersion = projects.map((p) => ({
@@ -68,7 +69,11 @@ export default async function DashboardPage() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        <DashboardTabs projects={projectsWithVersion} agents={agents} />
+        <DashboardTabs
+          projects={projectsWithVersion}
+          agents={agents}
+          credits={user?.plan === "owner" ? null : (user?.credits ?? 100)}
+        />
       </main>
     </div>
   );

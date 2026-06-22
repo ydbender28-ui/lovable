@@ -1966,9 +1966,15 @@ export default function ProjectWorkspace({
             </div>
             <div className="flex items-center gap-2">
               {userCredits !== null && (
-                <span className={`text-[10px] font-medium tabular-nums ${userCredits <= 5 ? "text-red-400" : "text-gray-500"}`}>
-                  {userCredits} credit{userCredits !== 1 ? "s" : ""}
-                </span>
+                userCredits <= 10 ? (
+                  <a href="/dashboard" className="text-[10px] font-medium text-amber-400 hover:text-amber-300 transition-colors tabular-nums">
+                    {userCredits <= 0 ? "No credits · Buy more" : `${userCredits.toFixed(1)} credits · Buy more`}
+                  </a>
+                ) : (
+                  <span className="text-[10px] font-medium text-gray-500 tabular-nums">
+                    {userCredits.toFixed(1)} credits
+                  </span>
+                )
               )}
               <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : loading) || !prompt.trim()}
                 className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
