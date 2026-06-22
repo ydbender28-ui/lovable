@@ -2151,12 +2151,12 @@ export default function ProjectWorkspace({
           )}
           {/* Privacy toggle */}
           <button
-            onClick={isPaidPlan ? handleTogglePrivacy : undefined}
+            onClick={isPaidPlan ? handleTogglePrivacy : () => window.location.href = "/pricing"}
             disabled={privacyLoading}
-            title={isPaidPlan ? (isPrivate ? "Private — only you can see this" : "Public — anyone with the link can see this") : "Upgrade to Pro to make projects private"}
+            title={isPaidPlan ? (isPrivate ? "Private — only you can see this" : "Public — anyone with the link can see this") : "Upgrade to make projects private"}
             className={`text-xs rounded-lg border px-2.5 py-1.5 transition-colors flex items-center gap-1.5 ${
               !isPaidPlan
-                ? "border-white/5 bg-white/[0.02] text-gray-600 cursor-default"
+                ? "border-fuchsia-400/20 bg-fuchsia-500/5 text-fuchsia-400/70 hover:bg-fuchsia-500/10 hover:text-fuchsia-300 cursor-pointer"
                 : isPrivate
                   ? "border-amber-400/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
                   : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"
