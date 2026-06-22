@@ -117,6 +117,7 @@ export function buildPublishHtml(
     }
     window.addEventListener('error',function(e){__reportErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
     window.addEventListener('unhandledrejection',function(e){__reportErr('Unhandled rejection: '+(e.reason&&e.reason.message||String(e.reason)));});
+    (function(){var _f=window.fetch;window.fetch=function(input,init){var body=init&&init.body;if(body&&typeof FormData!=='undefined'&&body instanceof FormData){var fe=null;body.forEach(function(v){if(v instanceof File)fe=v;});if(fe){return new Promise(function(res){var r=new FileReader();r.onload=function(e){var d=e.target.result;res(new Response(JSON.stringify({url:d,name:fe.name,size:fe.size,type:fe.type}),{status:200,headers:{'Content-Type':'application/json'}}));};r.readAsDataURL(fe);});}}return _f.apply(window,arguments);};})();
     ${fullCode}
   </script>
 </body>
@@ -177,6 +178,32 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
   <script src="${REACT_CDN}" onerror="showErr('Failed to load React from CDN: ${REACT_CDN}')"></script>
   <script src="${REACT_DOM_CDN}" onerror="showErr('Failed to load ReactDOM from CDN: ${REACT_DOM_CDN}')"></script>
   <script>
+    // Polyfill: intercept file uploads — convert to base64 data URL since there's no backend
+    (function(){
+      var _fetch = window.fetch;
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        var body = init && init.body;
+        // Detect multipart/FormData upload requests
+        if (body && typeof FormData !== 'undefined' && body instanceof FormData) {
+          var fileEntry = null;
+          body.forEach(function(val, key) { if (val instanceof File) fileEntry = val; });
+          if (fileEntry) {
+            return new Promise(function(resolve) {
+              var reader = new FileReader();
+              reader.onload = function(e) {
+                var dataUrl = e.target.result;
+                var filename = fileEntry.name;
+                var mockBody = JSON.stringify({ url: dataUrl, name: filename, size: fileEntry.size, type: fileEntry.type });
+                resolve(new Response(mockBody, { status: 200, headers: { 'Content-Type': 'application/json', 'x-upload-polyfill': '1' } }));
+              };
+              reader.readAsDataURL(fileEntry);
+            });
+          }
+        }
+        return _fetch.apply(window, arguments);
+      };
+    })();
     try {
       ${fullCode}
     } catch(e) {
