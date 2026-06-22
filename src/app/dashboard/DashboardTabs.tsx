@@ -24,11 +24,12 @@ interface Agent {
   public: boolean;
 }
 
+// 1 credit = $0.25 at base rate. Bulk packs discount down to ~17.5¢/credit.
 const PACKAGES = [
-  { id: "starter",  credits: 100,  price: "$5",  label: "Starter",  per: "5¢ per credit" },
-  { id: "builder",  credits: 300,  price: "$12", label: "Builder",  per: "4¢ per credit", popular: true },
-  { id: "pro",      credits: 700,  price: "$25", label: "Pro",      per: "3.6¢ per credit" },
-  { id: "agency",   credits: 2000, price: "$60", label: "Agency",   per: "3¢ per credit" },
+  { id: "starter",  credits: 100,  price: "$25",  label: "Starter",  per: "25¢ per credit" },
+  { id: "builder",  credits: 300,  price: "$65",  label: "Builder",  per: "21.7¢ per credit — save 13%", popular: true },
+  { id: "pro",      credits: 700,  price: "$140", label: "Pro",      per: "20¢ per credit — save 20%" },
+  { id: "agency",   credits: 2000, price: "$350", label: "Agency",   per: "17.5¢ per credit — save 30%" },
 ] as const;
 
 function BuyCreditsModal({ onClose }: { onClose: () => void }) {

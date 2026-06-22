@@ -5,11 +5,13 @@ import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-05-28.basil" });
 
 // Credit packages — price in cents, credits granted after payment
+// 1 credit = $0.25. AI cost per credit ~$0.10. Profit ~$0.15/credit.
+// Bulk packs give ~13–30% discount on the per-credit price.
 export const CREDIT_PACKAGES = [
-  { id: "starter",  credits: 100,  priceUsd: 500,  label: "Starter",  description: "100 credits" },
-  { id: "builder",  credits: 300,  priceUsd: 1200, label: "Builder",  description: "300 credits" },
-  { id: "pro",      credits: 700,  priceUsd: 2500, label: "Pro",      description: "700 credits" },
-  { id: "agency",   credits: 2000, priceUsd: 6000, label: "Agency",   description: "2,000 credits" },
+  { id: "starter",  credits: 100,  priceUsd: 2500,  label: "Starter",  description: "100 credits" },
+  { id: "builder",  credits: 300,  priceUsd: 6500,  label: "Builder",  description: "300 credits — save 13%" },
+  { id: "pro",      credits: 700,  priceUsd: 14000, label: "Pro",      description: "700 credits — save 20%" },
+  { id: "agency",   credits: 2000, priceUsd: 35000, label: "Agency",   description: "2,000 credits — save 30%" },
 ] as const;
 
 export type PackageId = typeof CREDIT_PACKAGES[number]["id"];
