@@ -485,6 +485,43 @@ export default function ProjectWorkspace({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cross-device sync — poll for newer versions every 10s when idle and tab is visible
+  const lastKnownVersionAt = useRef<string | null>(null);
+  useEffect(() => {
+    const poll = async () => {
+      if (loading || document.hidden) return;
+      try {
+        const res = await fetch(`/api/projects/${projectId}/latest-version`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.updatedAt || !data.files) return;
+        if (lastKnownVersionAt.current === null) {
+          // seed on first poll — don't apply, just remember
+          lastKnownVersionAt.current = data.updatedAt;
+          return;
+        }
+        if (data.updatedAt !== lastKnownVersionAt.current) {
+          lastKnownVersionAt.current = data.updatedAt;
+          setFiles(data.files);
+          if (data.summary) {
+            setMessages(prev => {
+              // avoid duplicate if we already have this message
+              const last = prev[prev.length - 1];
+              if (last?.role === "assistant" && last.content === data.summary) return prev;
+              return [...prev, { id: `sync-${data.updatedAt}`, role: "assistant", content: "↻ Synced from another device." }];
+            });
+          }
+        }
+      } catch { /* network error — silent */ }
+    };
+    poll(); // immediate first run to seed lastKnownVersionAt
+    const interval = setInterval(poll, 10_000);
+    const onVisible = () => { if (!document.hidden) poll(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(interval); document.removeEventListener("visibilitychange", onVisible); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, loading]);
+
   // Fire queued prompt once loading finishes
   useEffect(() => {
     if (!loading && queuedPrompt) {
