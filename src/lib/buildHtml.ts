@@ -123,8 +123,27 @@ export function buildPublishHtml(
 </html>`;
 }
 
+function thatcodeBadge(hideBadge: boolean): string {
+  if (hideBadge) return "";
+  return `
+  <a id="__tc_badge" href="https://thatcode.dev" target="_blank" rel="noopener"
+    title="Built with ThatCode — press T to visit"
+    style="position:fixed;bottom:16px;right:16px;z-index:99999;display:flex;align-items:center;gap:6px;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);border:1px solid rgba(168,85,247,0.35);border-radius:999px;padding:5px 11px 5px 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11px;font-weight:600;color:#d8b4fe;text-decoration:none;box-shadow:0 2px 12px rgba(0,0,0,0.4);transition:opacity .15s">
+    <svg width="14" height="14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="url(#bg)"/><path d="M14 16L22 24L14 32" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 30L34 30" stroke="white" stroke-width="3" stroke-linecap="round"/><defs><linearGradient id="bg" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs></svg>
+    Built with ThatCode
+  </a>
+  <script>
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 't' || e.key === 'T') {
+        var badge = document.getElementById('__tc_badge');
+        if (badge && e.target === document.body) { window.open('https://thatcode.dev', '_blank'); }
+      }
+    });
+  </script>`;
+}
+
 // Used for local export download — uses CDN (needs internet)
-export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string): string {
+export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string, hideBadge = false): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
@@ -226,6 +245,7 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
       try{window.parent.postMessage({type:'TC_VISUAL_CLICK',desc:desc,tag:tag,text:text},'*');}catch(err){}
     },true);
   </script>
+  ${thatcodeBadge(hideBadge)}
 </body>
 </html>`;
 }

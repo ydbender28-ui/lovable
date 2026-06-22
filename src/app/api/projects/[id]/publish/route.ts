@@ -56,16 +56,20 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
   const customDomain: string | null = body.customDomain?.trim().toLowerCase().replace(/^https?:\/\//, "") || null;
   const publishPassword: string | null = body.password?.trim() || null;
 
-  const project = await prisma.project.findFirst({
-    where: { id, ownerId: session.user.id },
-    include: { versions: { orderBy: { createdAt: "desc" }, take: 1 } },
-  });
+  const [project, user] = await Promise.all([
+    prisma.project.findFirst({
+      where: { id, ownerId: session.user.id },
+      include: { versions: { orderBy: { createdAt: "desc" }, take: 1 } },
+    }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } }),
+  ]);
 
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!project.versions[0]) return NextResponse.json({ error: "No generated version yet" }, { status: 400 });
 
+  const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
   const files = JSON.parse(project.versions[0].files);
-  const html = buildStandaloneHtml(files, project.name);
+  const html = buildStandaloneHtml(files, project.name, id, hideBadge);
 
   let slug = requestedSlug || project.publishSlug || toSlug(project.name);
   if (!slug || slug.length < 2) slug = `app-${Math.random().toString(36).slice(2, 8)}`;

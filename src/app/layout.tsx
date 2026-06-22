@@ -16,6 +16,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ThatCode — Build apps with AI",
   description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+  metadataBase: new URL("https://thatcode.dev"),
+  openGraph: {
+    title: "ThatCode — Build apps with AI",
+    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+    url: "https://thatcode.dev",
+    siteName: "ThatCode",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ThatCode — Build apps with AI" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ThatCode — Build apps with AI",
+    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+    images: ["/og-image.png"],
+  },
+  icons: { icon: "/logo.svg", shortcut: "/logo.svg" },
 };
 
 export default function RootLayout({

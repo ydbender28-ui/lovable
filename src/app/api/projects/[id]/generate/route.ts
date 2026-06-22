@@ -4,9 +4,19 @@ import { generateProject, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
 // Each credit costs user $0.25. AI cost per credit = $0.10. Profit = $0.15/credit.
-// credits = actualCostUsd / 0.10, rounded to 1 decimal, minimum 1.
-function costToCredits(costUsd: number): number {
-  return Math.max(1, Math.round((costUsd / 0.10) * 10) / 10);
+// Task-type minimums ensure big builds always cost a meaningful amount.
+const CREDIT_MINIMUMS: Record<string, number> = {
+  "new-build": 5,
+  "complex":   5,
+  "feature":   2,
+  "bugfix":    1,
+  "style":     1,
+  "content":   1,
+};
+function costToCredits(costUsd: number, taskType?: string): number {
+  const raw = Math.round((costUsd / 0.10) * 10) / 10;
+  const min = (taskType ? (CREDIT_MINIMUMS[taskType] ?? 1) : 1);
+  return Math.max(min, raw);
 }
 
 // Estimated credits before generation (for the route chip) — based on typical cost per task
@@ -110,11 +120,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         );
 
         const wasPublished = !!project.publishSlug;
-        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name) : null;
+        const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
+        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge) : null;
 
         // Calculate actual credits based on real token cost
         const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
-        const actualCredits = costToCredits(actualCost);
+        const actualCredits = costToCredits(actualCost, finalRoute.taskType);
         const creditsAfter = Math.max(0, currentCredits - actualCredits);
 
         send("done", {

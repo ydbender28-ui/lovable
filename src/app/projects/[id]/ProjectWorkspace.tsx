@@ -12,14 +12,14 @@ type EnvVars = Record<string, string>;
 type PreviewMode = "desktop" | "tablet" | "mobile";
 
 const API_DETECTORS = [
-  { keywords: ["stripe", "payment", "checkout", "subscription", "billing", "accept card", "credit card"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "stripe.com → Developers → API Keys", placeholder: "pk_live_..." },
-  { keywords: ["supabase", "postgres", "realtime database", "supabase auth"], name: "Supabase", key: "SUPABASE_URL", hint: "app.supabase.com → Project Settings → API", placeholder: "https://xyz.supabase.co" },
-  { keywords: ["openai", "gpt", "chatgpt", "dall-e", "ai chat", "ai completion"], name: "OpenAI", key: "OPENAI_API_KEY", hint: "platform.openai.com → API Keys", placeholder: "sk-..." },
-  { keywords: ["google maps", "maps api", "directions", "geocod", "show map", "embed map"], name: "Google Maps", key: "GOOGLE_MAPS_API_KEY", hint: "console.cloud.google.com → Maps JavaScript API", placeholder: "AIza..." },
-  { keywords: ["mapbox", "mapbox map"], name: "Mapbox", key: "MAPBOX_TOKEN", hint: "account.mapbox.com → Access Tokens", placeholder: "pk.ey..." },
-  { keywords: ["twilio", "sms", "text message", "send sms"], name: "Twilio", key: "TWILIO_ACCOUNT_SID", hint: "console.twilio.com → Account Info", placeholder: "AC..." },
-  { keywords: ["firebase", "firestore"], name: "Firebase", key: "FIREBASE_API_KEY", hint: "Firebase Console → Project Settings → Your apps", placeholder: "AIza..." },
-  { keywords: ["airtable", "airtable base", "airtable database"], name: "Airtable", key: "AIRTABLE_API_KEY", hint: "airtable.com → Account → API", placeholder: "pat..." },
+  { keywords: ["stripe", "payment", "checkout", "subscription", "billing", "accept card", "credit card"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "stripe.com → Developers → API Keys", placeholder: "pk_live_...", description: "needed to process real payments and card charges" },
+  { keywords: ["supabase", "postgres", "realtime database", "supabase auth"], name: "Supabase", key: "SUPABASE_URL", hint: "app.supabase.com → Project Settings → API", placeholder: "https://xyz.supabase.co", description: "needed to connect to your Postgres database and auth" },
+  { keywords: ["openai", "gpt", "chatgpt", "dall-e", "ai chat", "ai completion"], name: "OpenAI", key: "OPENAI_API_KEY", hint: "platform.openai.com → API Keys", placeholder: "sk-...", description: "needed to call GPT-4 and other OpenAI models" },
+  { keywords: ["google maps", "maps api", "directions", "geocod", "show map", "embed map"], name: "Google Maps", key: "GOOGLE_MAPS_API_KEY", hint: "console.cloud.google.com → Maps JavaScript API", placeholder: "AIza...", description: "needed to show interactive maps and get directions" },
+  { keywords: ["mapbox", "mapbox map"], name: "Mapbox", key: "MAPBOX_TOKEN", hint: "account.mapbox.com → Access Tokens", placeholder: "pk.ey...", description: "needed to render Mapbox maps in your app" },
+  { keywords: ["twilio", "sms", "text message", "send sms"], name: "Twilio", key: "TWILIO_ACCOUNT_SID", hint: "console.twilio.com → Account Info", placeholder: "AC...", description: "needed to send SMS and WhatsApp messages" },
+  { keywords: ["firebase", "firestore"], name: "Firebase", key: "FIREBASE_API_KEY", hint: "Firebase Console → Project Settings → Your apps", placeholder: "AIza...", description: "needed to connect to Firebase / Firestore" },
+  { keywords: ["airtable", "airtable base", "airtable database"], name: "Airtable", key: "AIRTABLE_API_KEY", hint: "airtable.com → Account → API", placeholder: "pat...", description: "needed to read and write your Airtable base" },
   { keywords: ["resend", "send email", "email form", "contact form email"], name: "Resend", key: "RESEND_API_KEY", hint: "resend.com → API Keys", placeholder: "re_..." },
   { keywords: ["clerk", "user auth", "user login", "authentication"], name: "Clerk", key: "CLERK_PUBLISHABLE_KEY", hint: "dashboard.clerk.com → API Keys", placeholder: "pk_live_..." },
   { keywords: ["pusher", "realtime", "live update", "websocket"], name: "Pusher", key: "PUSHER_APP_KEY", hint: "dashboard.pusher.com → App → Keys", placeholder: "abc..." },
@@ -366,6 +366,7 @@ export default function ProjectWorkspace({
 
   // GitHub sync
   const [showGithub, setShowGithub] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [githubToken, setGithubToken] = useState("");
   const [githubRepo, setGithubRepo] = useState("");
   const [githubPrivate, setGithubPrivate] = useState(false);
@@ -380,7 +381,8 @@ export default function ProjectWorkspace({
     | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
     | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
     | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] }
-    | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan };
+    | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan }
+    | { type: "awaitingPassword" };
   const [flow, setFlow] = useState<FlowState>({ type: "idle" });
   const [architectMode, setArchitectMode] = useState(false);
   const [proactiveSuggestions, setProactiveSuggestions] = useState<ProactiveSuggestion[]>([]);
@@ -986,18 +988,18 @@ export default function ProjectWorkspace({
       return;
     }
 
-    // If last assistant message was asking for admin password, treat reply as password setting
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg?.role === "assistant" && lastMsg.content.includes("admin panel") && lastMsg.content.includes("password")) {
+    // If awaiting admin password, treat ANY reply as the password (not a new build prompt)
+    if (flow.type === "awaitingPassword") {
       const pw = trimmed.replace(/^[`'"]+|[`'"]+$/g, "").trim();
-      if (pw && !pw.includes(" ")) {
-        runGenerate(`Set the admin panel password to "${pw}". Update only the password check in the code, keep everything else exactly the same.`);
-        return;
-      }
+      setFlow({ type: "idle" });
+      // Very targeted prompt — only touch the password constant, nothing else
+      runGenerate(`Find the hardcoded admin password string in the code and change ONLY that string value to "${pw}". Do NOT change anything else — not the layout, not the features, not any other code. Return every file unchanged except for the single line with the password.`);
+      return;
     }
 
+    // Only ask for API keys when editing an existing app (not on first build — build first, ask after)
     const needed = detectNeededApis(trimmed, envVars);
-    if (needed.length > 0) {
+    if (needed.length > 0 && messages.length > 0) {
       setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
       return;
     }
@@ -1138,7 +1140,6 @@ export default function ProjectWorkspace({
             const payload = JSON.parse(dataLine);
             if (eventLine === "route") {
                 setRouteInfo(payload as RouteInfo);
-                if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
               }
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
@@ -1172,6 +1173,7 @@ export default function ProjectWorkspace({
                     role: "assistant",
                     content: "🔑 Your app has an admin panel. What password do you want to use? (Reply with just the password, e.g. `MySecret123`)",
                   });
+                  setFlow({ type: "awaitingPassword" });
                 }
                 return msgs;
               });
@@ -1556,10 +1558,17 @@ export default function ProjectWorkspace({
     }
     return (
       <div className="rounded-xl border border-blue-400/20 bg-blue-500/5 p-4 max-w-[92%] space-y-3">
-        <p className="text-xs font-medium text-blue-300">This app needs API keys. Add them now to make it work:</p>
+        <div>
+          <p className="text-xs font-medium text-blue-300 mb-0.5">Optional: add API keys before building</p>
+          <p className="text-[10px] text-gray-500 leading-relaxed">Your prompt uses {flow.needed.map(a => a.name).join(" and ")}. Add your key{flow.needed.length > 1 ? "s" : ""} now so the feature works in the live app — or skip and build first.</p>
+        </div>
         {flow.needed.map(api => (
           <div key={api.key}>
-            <label className="text-[10px] text-gray-400 mb-1 block">{api.name} — <span className="text-gray-500">{api.hint}</span></label>
+            <label className="text-[10px] text-gray-400 mb-1 block">
+              <span className="font-medium text-gray-300">{api.name}</span>
+              {(api as { description?: string }).description && <span className="text-gray-600"> — {(api as { description?: string }).description}</span>}
+            </label>
+            <label className="text-[10px] text-gray-600 mb-1 block">{api.hint}</label>
             <input
               value={values[api.key] ?? ""}
               onChange={e => setValues(v => ({ ...v, [api.key]: e.target.value }))}
@@ -1570,7 +1579,7 @@ export default function ProjectWorkspace({
         ))}
         <div className="flex gap-2">
           <button onClick={() => submit()} className="rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 px-3 py-1.5 text-xs hover:bg-blue-500/30 transition-colors">Save & Build →</button>
-          <button onClick={() => submit(true)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Build without keys</button>
+          <button onClick={() => submit(true)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Skip, build without keys</button>
         </div>
       </div>
     );
@@ -1639,8 +1648,8 @@ export default function ProjectWorkspace({
     <div className="flex flex-col h-full bg-[#0c0c12] relative">
       {knowledgePanel}
       {/* Mode toggle */}
-      <div className="flex items-center gap-1 px-3 pt-2 pb-1 shrink-0">
-        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px]">
+      <div className="flex items-center gap-1 px-3 pt-2 pb-1 shrink-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px] shrink-0">
           <button onClick={() => setChatMode(false)}
             className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
             Build
@@ -1695,7 +1704,7 @@ export default function ProjectWorkspace({
           🌅
         </button>
         <button onClick={() => setShowKnowledge(true)} title="Custom knowledge"
-          className="ml-auto text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors">
+          className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-500 hover:text-fuchsia-300 hover:border-fuchsia-400/30 px-2 py-1 transition-colors shrink-0">
           📚 {knowledge.length > 0 ? knowledge.length : ""}
         </button>
       </div>
@@ -1798,12 +1807,6 @@ export default function ProjectWorkspace({
             {routeInfo && (
               <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03]">
                 <span className="text-xs text-gray-300">{routeInfo.intent}</span>
-                {routeInfo.creditsNeeded != null && (
-                  <>
-                    <span className="text-[10px] text-gray-600">·</span>
-                    <span className="text-[10px] font-medium text-amber-400">{routeInfo.creditsNeeded} credit{routeInfo.creditsNeeded !== 1 ? "s" : ""}</span>
-                  </>
-                )}
               </div>
             )}
             <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5">
@@ -2085,49 +2088,50 @@ export default function ProjectWorkspace({
 
   return (
     <div className="flex flex-col bg-[#0a0a0f]" style={{ height: "100dvh" }}>
-      <header className="border-b border-white/10 bg-[#0a0a0f]/90 backdrop-blur px-4 py-2.5 flex items-center justify-between shrink-0 gap-3">
-        <div className="flex items-center gap-3 min-w-0">
+      <header className="border-b border-white/10 bg-[#0a0a0f]/90 backdrop-blur px-3 py-2 flex items-center justify-between shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
           <span className="text-gray-700 hidden sm:inline">/</span>
-          <h1 className="text-sm font-medium text-white truncate hidden sm:block">{projectName}</h1>
+          <h1 className="text-sm font-medium text-white truncate hidden sm:block max-w-[160px]">{projectName}</h1>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => { setShowSupabase(true); loadSupabaseStatus(); }}
-            title="Built-in database & auth"
-            className={`text-xs rounded-lg border px-2.5 py-1.5 transition-colors hidden sm:flex items-center gap-1.5 ${supabaseStatus?.enabled ? "border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/20" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>
-            🗄️ {supabaseStatus?.enabled ? "Database ✓" : "Database"}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Always-visible core actions */}
+          <button onClick={() => { setShowHistory(true); handleLoadVersions(true); }} title="Version history"
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
+            ⏱
           </button>
-          <button
-            onClick={() => setShowIntegrations(true)}
-            title="Integrations"
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1.5">
-            🔌 Integrations
-          </button>
-          <button
-            onClick={() => { setShowHistory(true); handleLoadVersions(true); }}
-            title="Version history"
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
-            ⏱ History
-          </button>
-
           {hasFiles && (
-            <button onClick={() => { setShowUserTest(true); setUserTestResult(null); }} title="Run synthetic user testing"
-              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
-              🧪 Test
+            <button onClick={() => { setShowShareModal(true); setShareLink(null); }} title="Share"
+              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+              🔗
             </button>
           )}
+          {/* More dropdown */}
           {hasFiles && (
-            <button onClick={() => { setShowMonetize(true); setMonetizePlan(null); }} title="One-prompt monetization"
-              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
-              💰 Monetize
-            </button>
-          )}
-          {hasFiles && (
-            <button onClick={() => { setShowShareModal(true); setShareLink(null); }} title="Share preview link (7 days, public)"
-              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
-              🔗 Share
-            </button>
+            <div className="relative">
+              <button onClick={() => setShowMoreMenu(v => !v)}
+                className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
+                ··· More
+              </button>
+              {showMoreMenu && (
+                <div onClick={() => setShowMoreMenu(false)} className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-white/10 bg-[#0e0f17] shadow-xl z-50 py-1 overflow-hidden">
+                  {([
+                    { icon: "🗄️", label: supabaseStatus?.enabled ? "Database ✓" : "Database", action: () => { setShowSupabase(true); loadSupabaseStatus(); } },
+                    { icon: "🔌", label: "Integrations", action: () => setShowIntegrations(true) },
+                    { icon: "🧪", label: "Test UX", action: () => { setShowUserTest(true); setUserTestResult(null); } },
+                    { icon: "💰", label: "Monetize", action: () => { setShowMonetize(true); setMonetizePlan(null); } },
+                    { icon: "📤", label: "Export HTML", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export`; a.download = ""; a.click(); } },
+                    { icon: "📱", label: "Export App", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export-app`; a.download = ""; a.click(); showToast("Downloading app package", "info"); } },
+                    { icon: "⬆️", label: "GitHub", action: () => { setShowGithub(true); setGithubResult(null); } },
+                  ] as { icon: string; label: string; action: () => void }[]).map(({ icon, label, action }) => (
+                    <button key={label} onClick={action}
+                      className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2 transition-colors">
+                      <span>{icon}</span>{label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
@@ -2150,27 +2154,8 @@ export default function ProjectWorkspace({
               {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Publishing...</> : <>Publish {hasFiles && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}</>}
             </button>
           )}
-          <button onClick={exportHtml} disabled={!hasFiles}
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10 transition-colors disabled:opacity-40 hidden sm:block">
-            HTML
-          </button>
-          <button onClick={() => { setShowGithub(true); setGithubResult(null); }} disabled={!hasFiles}
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10 transition-colors disabled:opacity-40 hidden sm:flex items-center gap-1.5">
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub
-          </button>
-          <button disabled={!hasFiles} onClick={() => {
-            const a = document.createElement("a");
-            a.href = `/api/projects/${projectId}/export-app`;
-            a.download = "";
-            a.click();
-            showToast("Downloading app package — check your downloads folder", "info");
-          }}
-            className="text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block disabled:opacity-40">
-            📱 Export App
-          </button>
-          <Link href="/settings" title="Settings & Labs"
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
+          <Link href="/settings" title="Settings"
+            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
             ⚙️
           </Link>
         </div>
