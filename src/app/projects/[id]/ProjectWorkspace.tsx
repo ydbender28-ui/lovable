@@ -287,6 +287,11 @@ export default function ProjectWorkspace({
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [liveUpdated, setLiveUpdated] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; type?: "success" | "info" } | null>(null);
+  const showToast = (msg: string, type: "success" | "info" = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 4000);
+  };
   const [dnsInfo, setDnsInfo] = useState<{ domain: string; cname: string } | null>(null);
   const [envVars, setEnvVars] = useState<EnvVars>({});
 
@@ -2148,11 +2153,16 @@ export default function ProjectWorkspace({
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
             GitHub
           </button>
-          <a href={hasFiles ? `/api/projects/${projectId}/export-app` : undefined}
-            download
-            className={`text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block ${!hasFiles ? "pointer-events-none opacity-40" : ""}`}>
+          <button disabled={!hasFiles} onClick={() => {
+            const a = document.createElement("a");
+            a.href = `/api/projects/${projectId}/export-app`;
+            a.download = "";
+            a.click();
+            showToast("Downloading app package — check your downloads folder", "info");
+          }}
+            className="text-xs rounded-lg border border-indigo-400/30 bg-indigo-500/10 text-indigo-300 px-3 py-1.5 hover:bg-indigo-500/20 transition-colors hidden sm:block disabled:opacity-40">
             📱 Export App
-          </a>
+          </button>
           <Link href="/settings" title="Settings & Labs"
             className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
             ⚙️
@@ -2886,6 +2896,18 @@ export default function ProjectWorkspace({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Toast notifications */}
+      {toast && (
+        <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur transition-all ${
+          toast.type === "info"
+            ? "border-indigo-400/30 bg-indigo-950/90 text-indigo-200"
+            : "border-green-400/30 bg-green-950/90 text-green-200"
+        }`}>
+          <span>{toast.type === "info" ? "⬇️" : "✓"}</span>
+          {toast.msg}
         </div>
       )}
     </div>

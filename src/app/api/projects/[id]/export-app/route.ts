@@ -212,11 +212,33 @@ Then run \`npm run sync\` and rebuild.
 
 ---
 
+## App Store Screenshots (required for submission)
+
+Both stores require screenshots of your running app. You cannot submit without them.
+
+### Easiest method — browser screenshots
+1. Open your published ThatCode app at its public URL
+2. In Chrome DevTools (F12) → Toggle device toolbar → pick iPhone 15 Pro Max (430px wide)
+3. Take a screenshot — repeat for iPad if submitting to App Store
+4. Required sizes:
+   - **Google Play**: 1080×1920px minimum (any phone screenshot works)
+   - **App Store iPhone**: 1320×2868px (6.9" iPhone 16 Pro Max)
+   - **App Store iPad**: 2064×2752px (if you're supporting iPad)
+
+### Free resize tool
+Upload your screenshots to: **www.appscreens.com** or just use Figma/Canva to resize to exact pixel dimensions.
+
+### How many do you need?
+- Google Play: at least 2, up to 8
+- App Store: at least 3 per device size
+
+---
+
 ## Need help?
 
 - Capacitor docs: capacitorjs.com/docs
 - EAS Build docs: docs.expo.dev/build/introduction
-- ThatCode: thatcode.dev
+- ThatCode support: support@thatcode.dev
 `);
 
   const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
