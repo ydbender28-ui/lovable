@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import DeleteProjectButton from "./DeleteProjectButton";
 
 interface Props {
@@ -14,14 +15,22 @@ interface Props {
   };
 }
 
+function formatDate(d: Date) {
+  return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+function timeAgo(d: Date) {
+  const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
 export default function ProjectCard({ project }: Props) {
-  const timeAgo = (d: Date) => {
-    const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
-    if (s < 60) return "just now";
-    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-    return `${Math.floor(s / 86400)}d ago`;
-  };
+  // Avoid hydration mismatch — Date.now() differs between server and client
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div
@@ -103,7 +112,7 @@ export default function ProjectCard({ project }: Props) {
               {project.name}
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
-              {timeAgo(project.updatedAt)}
+              {mounted ? timeAgo(project.updatedAt) : formatDate(project.updatedAt)}
             </p>
           </div>
           {project.publishedAt && (

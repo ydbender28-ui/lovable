@@ -1,16 +1,22 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateProject, smartRoute } from "@/lib/generate";
+import { generateProject, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
-// Credits consumed per task type — complexity drives cost, not the underlying model
-const CREDITS_BY_TASK: Record<string, number> = {
-  style:      1,
-  content:    1,
-  bugfix:     2,
-  feature:    3,
+// Each credit costs user $0.25. AI cost per credit = $0.10. Profit = $0.15/credit.
+// credits = actualCostUsd / 0.10, rounded to 1 decimal, minimum 1.
+function costToCredits(costUsd: number): number {
+  return Math.max(1, Math.round((costUsd / 0.10) * 10) / 10);
+}
+
+// Estimated credits before generation (for the route chip) — based on typical cost per task
+const ESTIMATED_CREDITS: Record<string, number> = {
+  style:       0.5,
+  content:     0.5,
+  bugfix:      1,
+  feature:     2,
   "new-build": 5,
-  complex:    5,
+  complex:     5,
 };
 
 export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/generate">) {
@@ -47,13 +53,13 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
   ]);
 
-  const creditsNeeded = CREDITS_BY_TASK[finalRoute.taskType] ?? 3;
+  const estimatedCredits = ESTIMATED_CREDITS[finalRoute.taskType] ?? 2;
   const currentCredits = user?.credits ?? 0;
 
-  // Check credits (skip check on owner's own projects during testing — plan = "owner")
-  if (user?.plan !== "owner" && currentCredits < creditsNeeded) {
+  // Check credits (skip check for owner plan)
+  if (user?.plan !== "owner" && currentCredits < estimatedCredits) {
     return new Response(
-      JSON.stringify({ error: "insufficient_credits", creditsNeeded, creditsRemaining: currentCredits }),
+      JSON.stringify({ error: "insufficient_credits", creditsNeeded: estimatedCredits, creditsRemaining: currentCredits }),
       { status: 402, headers: { "Content-Type": "application/json" } }
     );
   }
@@ -81,11 +87,11 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
-      // Stream routing decision — includes credits so frontend can show the cost upfront
+      // Stream routing decision with estimated credits
       send("route", {
         intent: finalRoute.intent,
         taskType: finalRoute.taskType,
-        creditsNeeded,
+        creditsNeeded: estimatedCredits,
         creditsRemaining: currentCredits,
       });
 
@@ -105,14 +111,18 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
         const wasPublished = !!project.publishSlug;
         const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name) : null;
-        const creditsAfter = Math.max(0, currentCredits - creditsNeeded);
+
+        // Calculate actual credits based on real token cost
+        const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
+        const actualCredits = costToCredits(actualCost);
+        const creditsAfter = Math.max(0, currentCredits - actualCredits);
 
         send("done", {
           files: result.files,
           summary: result.summary,
           tempMessageId: `msg-${Date.now()}`,
           liveUpdated: wasPublished,
-          creditsUsed: creditsNeeded,
+          creditsUsed: actualCredits,
           creditsRemaining: creditsAfter,
         });
 
@@ -137,7 +147,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           }),
           // Only deduct if not owner plan
           user?.plan !== "owner"
-            ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: creditsNeeded } } })
+            ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: actualCredits } } })
             : Promise.resolve(),
         ]);
       } catch (err) {

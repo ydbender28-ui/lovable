@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import Logo from "@/components/Logo";
 
 type LabsFeature = { key: string; name: string; description: string };
 type WorkspaceMember = { id: string; role: string; user: { id: string; name: string | null; email: string } };
 type Workspace = { id: string; name: string; members: WorkspaceMember[]; _count: { projects: number } };
+type UserProfile = { name: string | null; email: string; credits: number; plan: string; createdAt: string };
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<"labs" | "workspace" | "account">("labs");
@@ -24,6 +26,14 @@ export default function SettingsPage() {
   const [inviteRole, setInviteRole] = useState("editor");
   const [workspaceMsg, setWorkspaceMsg] = useState("");
 
+  // Account
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [editName, setEditName] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [profileMsg, setProfileMsg] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+
   useEffect(() => {
     fetch("/api/user/labs").then(r => r.json()).then(d => {
       setLabsEnabled(d.enabled ?? []);
@@ -32,7 +42,26 @@ export default function SettingsPage() {
     fetch("/api/workspaces").then(r => r.json()).then(d => {
       if (Array.isArray(d)) setWorkspaces(d);
     });
+    fetch("/api/user/profile").then(r => r.json()).then(d => {
+      setProfile(d);
+      setEditName(d.name ?? "");
+    });
   }, []);
+
+  async function saveProfile() {
+    setProfileSaving(true);
+    setProfileMsg("");
+    const body: Record<string, string> = { name: editName };
+    if (newPw) { body.currentPassword = currentPw; body.newPassword = newPw; }
+    const res = await fetch("/api/user/profile", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const d = await res.json();
+    if (d.error) { setProfileMsg(`Error: ${d.error}`); }
+    else { setProfileMsg("Saved!"); setCurrentPw(""); setNewPw(""); }
+    setProfileSaving(false);
+  }
 
   async function saveLabs(enabled: string[]) {
     setLabsEnabled(enabled);
@@ -187,9 +216,65 @@ export default function SettingsPage() {
 
         {/* Account */}
         {tab === "account" && (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Plan + credits */}
+            {profile && (
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Plan</p>
+                    <p className="text-sm font-semibold capitalize text-white">{profile.plan === "owner" ? "Owner" : profile.plan === "pro" ? "Pro" : "Free"}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Credits</p>
+                    <p className="text-sm font-semibold text-white">{typeof profile.credits === "number" ? profile.credits.toFixed(1) : "—"}</p>
+                  </div>
+                </div>
+                {profile.plan === "free" && (
+                  <Link href="/pricing" className="block text-center text-xs font-medium text-fuchsia-400 border border-fuchsia-400/30 rounded-lg py-2 hover:bg-fuchsia-500/10 transition-colors">
+                    Upgrade to Pro →
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Profile */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-white">Profile</h2>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Display name</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              </div>
+              {profile && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Email</label>
+                  <p className="text-sm text-gray-400 px-3 py-2">{profile.email}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-white">Change password</h2>
+              <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
+                placeholder="Current password"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
+                placeholder="New password (min 8 chars)"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+            </div>
+
+            <button onClick={saveProfile} disabled={profileSaving}
+              className="w-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 rounded-lg py-2 text-sm hover:bg-fuchsia-500/30 transition-colors disabled:opacity-50">
+              {profileSaving ? "Saving…" : "Save changes"}
+            </button>
+            {profileMsg && <p className={`text-xs ${profileMsg.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>{profileMsg}</p>}
+
+            {/* Support */}
             <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
-              <p className="text-xs text-gray-500">Need help or want to report an issue?</p>
+              <p className="text-xs text-gray-500">Need help?</p>
               <a href="https://feedback.thatcode.dev" target="_blank" rel="noreferrer"
                 className="block text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
                 📣 Feedback & feature requests →
@@ -199,6 +284,12 @@ export default function SettingsPage() {
                 ✉️ support@thatcode.dev →
               </a>
             </div>
+
+            {/* Sign out */}
+            <button onClick={() => signOut({ callbackUrl: "/login" })}
+              className="w-full text-left text-sm text-red-400/70 hover:text-red-400 transition-colors py-1">
+              Sign out →
+            </button>
           </div>
         )}
       </div>

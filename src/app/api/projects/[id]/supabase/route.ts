@@ -80,7 +80,12 @@ export async function POST(_req: Request, ctx: RouteContext<"/api/projects/[id]/
 
     return NextResponse.json({ url, anonKey, ref });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to provision database" }, { status: 500 });
+    const raw = e instanceof Error ? e.message : "";
+    // Sanitize: don't leak internal Supabase org/username details
+    const safe = raw.includes("maximum limits") || raw.includes("free project")
+      ? "Database provisioning is temporarily unavailable. Please try again later or contact support@thatcode.dev."
+      : "Failed to create database. Please try again.";
+    return NextResponse.json({ error: safe }, { status: 500 });
   }
 }
 
