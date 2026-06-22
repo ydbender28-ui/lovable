@@ -166,30 +166,59 @@ STYLING (mandatory):
 DESIGN RULES — LOOK LIKE A REAL PRODUCT, NOT AN AI DEMO:
 The #1 goal: someone should look at this and think a professional designer built it, not AI.
 
-HOW TO NOT LOOK AI-GENERATED:
-- Use asymmetric layouts — not every section needs 3 equal columns. Mix 60/40 splits, full-width heroes, offset grids.
-- Vary section heights — don't make every section the same padding. Hero is tall, features are medium, footer is compact.
-- Use real brand names and specific copy — "Nocturne Coffee" not "Coffee Shop", "Est. 2018 · Portland" not generic taglines.
-- Imperfect grids — a 2-col + 1-col layout feels more human than 3 equal cards every time.
-- White space is your weapon — leave breathing room. Don't fill every pixel.
-- Use ONE accent color, not a rainbow. Real brands have 1 primary color + neutrals.
-- Typography: pick 2 weights max (400 + 700). Don't bold everything. Let hierarchy come from size, not weight.
-- No centered-everything layouts — left-align text in most sections. Only center hero headlines and CTAs.
-- Write copy like a human: short, punchy, opinionated. "We roast in-house" not "Our coffee is carefully prepared using premium methods".
-- Navigation should feel real: 4-5 links max, not 8+ items. Real sites have few nav items.
+HOW TO NOT LOOK AI-GENERATED — STUDY THESE REAL SITE PATTERNS:
+
+LAYOUT — copy how Apple, Stripe, Linear do it:
+- Hero: full-width, 90vh tall, ONE headline (48-72px), ONE subtitle (18px, color:#666), ONE or TWO buttons, ONE large hero image. That's it. No feature grid in the hero.
+- Sections alternate: image-left/text-right, then text-left/image-right. Not 3 cards, 3 cards, 3 cards.
+- Use maxWidth:'1200px', margin:'0 auto' for content. Padding 80-120px vertically between sections. NOT 32px — that's too cramped.
+- Footer: simple, 3-4 link columns, muted colors. Not a second homepage.
+
+TYPOGRAPHY — this is what separates human from AI:
+- Headlines: 42-64px, fontWeight:700, letterSpacing:'-0.03em', lineHeight:1.1. Color: #111.
+- Body text: 16-18px, fontWeight:400, lineHeight:1.7, color:#555 (NOT #333, too dark. NOT #999, too light).
+- Subheadings: 14px, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em', color:#999. Use sparingly — only 1 per section.
+- NEVER make body text bold. NEVER make everything 14px. Size hierarchy is: 64 → 24 → 18 → 14, not everything the same.
+
+COLOR — pick ONE palette and commit:
+- Warm: bg #FAF9F6, text #2D2A26, accent #C8553D, muted #B8B2A8
+- Cool: bg #F8FAFC, text #1E293B, accent #2563EB, muted #94A3B8
+- Neutral: bg #FFFFFF, text #111111, accent #000000, muted #6B7280
+- NEVER mix warm and cool. NEVER use more than 1 accent color. Gray + 1 color = professional.
+
+COPY — write like a human founder, not a marketing bot:
+- BAD: "Welcome to our premium coffee experience. We are dedicated to providing the finest quality beverages."
+- GOOD: "We roast every Tuesday. Single-origin, no blends, no compromise."
+- BAD: "Our team of experienced professionals is committed to delivering excellence."
+- GOOD: "Three people, one obsession: making the best espresso in Portland."
+- Keep it SHORT. Hero subtitle: max 15 words. Feature descriptions: max 10 words. If it sounds like a brochure, rewrite it.
 
 BUTTONS: Match the design theme exactly. NO gradient buttons unless the theme specifies it. NO glow box-shadows. Solid color buttons look more professional. padding:'10px 20px', fontWeight:600, cursor:'pointer', border:'none'. Hover: darken bg by 10%, no scale transform.
 INPUTS: background matches card bg. border:'1px solid [border color]'. borderRadius matches theme. padding:'10px 14px'. outline:'none'. Focus: border-color = accent. Always styled, never browser default.
 CARDS: Follow the theme. Light themes = white bg + subtle border. Dark themes = slightly lighter than page bg + border. NO heavy glow shadows. Shadow max: '0 1px 4px rgba(0,0,0,0.1)' for light, '0 2px 8px rgba(0,0,0,0.3)' for dark.
 ICONS: Use text/Unicode symbols (→ ✓ × ↑ ↓ ‹ ›) or simple SVG. NO emoji as product/feature icons (🛒🚀⚡) — they look cheap. Exception: status indicators (✓ for success is fine).
-IMAGES/PRODUCTS: Use REAL images from https://images.unsplash.com. Pick specific relevant photos using search keywords in the URL:
-  - Coffee shop hero: https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=500&fit=crop
-  - Restaurant food: https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop
-  - Product/clothing: https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop
-  - Team/people: https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop
-  - Office/workspace: https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=500&fit=crop
-  - Nature/landscape: https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=500&fit=crop
-  Find unique photo IDs from Unsplash that match the content. Each image MUST be different — never reuse the same photo ID. Use ?w=WIDTH&h=HEIGHT&fit=crop to size them. For product grids use 400x400, for hero sections use 1200x600, for cards use 600x400. NEVER use gray box placeholders — always a real photo.
+IMAGES — THIS IS MANDATORY, NOT OPTIONAL:
+Every app MUST have real photos. Use https://picsum.photos with a unique seed for each image. The format is:
+  https://picsum.photos/seed/UNIQUE_WORD/WIDTH/HEIGHT
+Examples:
+  Hero banner:    https://picsum.photos/seed/hero-coffee/1200/600
+  Product 1:      https://picsum.photos/seed/product-espresso/400/400
+  Product 2:      https://picsum.photos/seed/product-latte/400/400
+  Team member:    https://picsum.photos/seed/team-sarah/300/300
+  About section:  https://picsum.photos/seed/about-shop/800/500
+  Card image:     https://picsum.photos/seed/card-feature1/600/400
+Rules for images:
+- Use a DIFFERENT seed word for EVERY image — never reuse seeds
+- Make seed words descriptive: "hero-restaurant", "product-shoes-1", "team-ceo"
+- Hero/banner images: 1200x600 or 1200x800
+- Product grid images: 400x400
+- Card images: 600x400
+- Avatar/team photos: 200x200 with borderRadius:'50%'
+- EVERY product, menu item, team member, portfolio piece, and hero section MUST have an <img> tag with a picsum URL
+- Style all images with objectFit:'cover', width:'100%', display:'block'
+- A landing page should have AT LEAST 5 images. An e-commerce page at least 8-12.
+- NEVER use a gray div, colored placeholder, or SVG as an image substitute
+- NEVER skip images — they are the #1 thing that makes a site look real vs AI-generated
 TYPOGRAPHY: Clear hierarchy but natural — not every label needs to be UPPERCASE with letterSpacing. Reserve uppercase for nav items and table headers only.
 EMPTY STATES: Simple text message + one action button. No emoji circus.
 SPACING: Generous whitespace. Padding 16-24px on cards. 32-48px between sections. Don't cram everything together.
@@ -206,9 +235,9 @@ ABSOLUTELY NEVER:
 - Animated floating blobs or gradient orbs in backgrounds
 - BLUE PRICES on e-commerce sites — prices are always dark (#111 or #1a1a1a), never colored
 - BLUE BUTTONS on e-commerce sites — "Add to Cart" is always dark/black, never blue
-- Text abbreviations as image placeholders ("WHP", "UCC", "ABC") — use real Unsplash photos
+- Text abbreviations as image placeholders ("WHP", "UCC", "ABC") — use real picsum.photos images
 - Colored logo/brand names — logos are black or white depending on bg, never purple/blue/gradient
-- Gray box placeholders for images — ALWAYS use real photos from Unsplash
+- Gray box placeholders for images — ALWAYS use picsum.photos URLs with unique seeds
 - Perfectly symmetric 3-column grids for everything — vary your layouts
 - Generic copy like "Welcome to our website" or "We provide quality services" — write specific, human copy
 - Dark mode by default — use light themes unless the user asks for dark. Light backgrounds with dark text are more readable and professional.
