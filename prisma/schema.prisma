@@ -87,6 +87,7 @@ model Project {
   supabaseUrl       String?
   supabaseAnonKey   String?
   deletedAt         DateTime? // soft-delete — preserves version/cost history in admin
+  isPrivate         Boolean   @default(false) // paid plans only; free always public
 }
 
 model Version {

@@ -44,6 +44,8 @@ export default async function ProjectPage({
       initialPublishSlug={project.publishSlug}
       initialPrompt={prompt && project.messages.length === 0 ? prompt : undefined}
       initialCredits={user?.plan === "owner" ? null : (user?.credits ?? 50)}
+      userPlan={user?.plan ?? "free"}
+      initialIsPrivate={project.isPrivate}
     />
   );
 }

@@ -13,6 +13,7 @@ interface Project {
   publishedAt: Date | null;
   visitCount: number;
   hasVersion: boolean;
+  isPrivate: boolean;
 }
 
 interface Agent {

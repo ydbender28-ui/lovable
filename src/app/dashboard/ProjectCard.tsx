@@ -12,6 +12,7 @@ interface Props {
     publishedAt: Date | null;
     visitCount: number;
     hasVersion: boolean;
+    isPrivate: boolean;
   };
 }
 
@@ -115,23 +116,23 @@ export default function ProjectCard({ project }: Props) {
               {mounted ? timeAgo(project.updatedAt) : formatDate(project.updatedAt)}
             </p>
           </div>
-          {project.publishedAt && (
-            <div
-              className="flex shrink-0 items-center gap-1.5 text-xs font-medium"
-              style={{ color: "#4ade80" }}
-            >
-              <span
-                className="animate-dot-pulse h-1.5 w-1.5 rounded-full"
-                style={{ background: "#22c55e" }}
-              />
-              Live
-              {project.visitCount > 0 && (
-                <span className="ml-1" style={{ color: "#7a8099" }}>
-                  · {project.visitCount}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="flex shrink-0 items-center gap-2">
+            {project.isPrivate && (
+              <span className="text-[10px] font-medium text-amber-400/80" title="Private project">🔒</span>
+            )}
+            {project.publishedAt && (
+              <div
+                className="flex items-center gap-1.5 text-xs font-medium"
+                style={{ color: "#4ade80" }}
+              >
+                <span className="animate-dot-pulse h-1.5 w-1.5 rounded-full" style={{ background: "#22c55e" }} />
+                Live
+                {project.visitCount > 0 && (
+                  <span className="ml-1" style={{ color: "#7a8099" }}>· {project.visitCount}</span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </Link>
     </div>

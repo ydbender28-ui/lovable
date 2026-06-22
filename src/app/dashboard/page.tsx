@@ -20,6 +20,7 @@ export default async function DashboardPage() {
         updatedAt: true,
         publishedAt: true,
         visitCount: true,
+        isPrivate: true,
         versions: { select: { id: true }, take: 1 },
       },
     }),

@@ -264,10 +264,11 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
 
 export default function ProjectWorkspace({
   projectId, projectName, initialMessages, initialFiles, initialPublishSlug, initialPrompt, initialCredits,
+  userPlan, initialIsPrivate,
 }: {
   projectId: string; projectName: string; initialMessages: Message[];
   initialFiles: ProjectFiles; initialPublishSlug?: string | null; initialPrompt?: string;
-  initialCredits?: number | null;
+  initialCredits?: number | null; userPlan?: string; initialIsPrivate?: boolean;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
@@ -283,6 +284,9 @@ export default function ProjectWorkspace({
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
+  const [isPrivate, setIsPrivate] = useState(initialIsPrivate ?? false);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
+  const isPaidPlan = ["pro", "team", "owner"].includes(userPlan ?? "");
   const [publishing, setPublishing] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
@@ -1320,6 +1324,19 @@ export default function ProjectWorkspace({
     handlePromptSubmit(text);
   }
 
+  async function handleTogglePrivacy() {
+    if (!isPaidPlan) return;
+    setPrivacyLoading(true);
+    const next = !isPrivate;
+    const res = await fetch(`/api/projects/${projectId}/privacy`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isPrivate: next }),
+    });
+    if (res.ok) setIsPrivate(next);
+    setPrivacyLoading(false);
+  }
+
   async function handlePublish(slug?: string, customDomain?: string, password?: string) {
     setPublishing(true);
     setError(null);
@@ -2132,6 +2149,22 @@ export default function ProjectWorkspace({
               )}
             </div>
           )}
+          {/* Privacy toggle */}
+          <button
+            onClick={isPaidPlan ? handleTogglePrivacy : undefined}
+            disabled={privacyLoading}
+            title={isPaidPlan ? (isPrivate ? "Private — only you can see this" : "Public — anyone with the link can see this") : "Upgrade to Pro to make projects private"}
+            className={`text-xs rounded-lg border px-2.5 py-1.5 transition-colors flex items-center gap-1.5 ${
+              !isPaidPlan
+                ? "border-white/5 bg-white/[0.02] text-gray-600 cursor-default"
+                : isPrivate
+                  ? "border-amber-400/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+                  : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"
+            }`}
+          >
+            {isPrivate ? "🔒" : "🌐"}
+            <span className="hidden sm:inline">{isPrivate ? "Private" : "Public"}</span>
+          </button>
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
               <button onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
