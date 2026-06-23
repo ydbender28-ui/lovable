@@ -1010,38 +1010,7 @@ export default function ProjectWorkspace({
       setLoading(true);
       setLoadingStatus("Analyzing your request…");
 
-      // Run vague-check AND design-directions in parallel — no sequential blocking
-      const visualKeywords = ["landing page", "portfolio", "marketing", "homepage", "website", "blog", "agency"];
-      const isVisual = visualKeywords.some(kw => trimmed.toLowerCase().includes(kw));
-
-      const checks = await Promise.allSettled([
-        fetch("/api/check-vague", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: trimmed }),
-        }).then(r => r.json()).catch(() => ({ vague: false })),
-        isVisual
-          ? fetch(`/api/projects/${projectId}/design-directions`, {
-              method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt: trimmed }),
-            }).then(r => r.json()).catch(() => ({ directions: [] }))
-          : Promise.resolve({ directions: [] }),
-      ]);
-
-      const vagueResult = checks[0].status === "fulfilled" ? checks[0].value : { vague: false };
-      const designResult = checks[1].status === "fulfilled" ? checks[1].value : { directions: [] };
-
-      if (vagueResult.vague) {
-        setLoading(false);
-        setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
-        return;
-      }
-      if (isVisual && designResult.directions?.length > 0) {
-        setLoading(false);
-        setFlow({ type: "designpick", pendingPrompt: trimmed, directions: designResult.directions });
-        return;
-      }
-
-      // Architect mode — only extra sequential call (user opted in)
+      // Architect mode — only extra call (user opted in)
       if (architectMode) {
         setLoading(true);
         setLoadingStatus("Creating implementation plan…");

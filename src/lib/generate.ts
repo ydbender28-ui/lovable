@@ -240,130 +240,7 @@ ABSOLUTELY NEVER:
 - Every section having a colored background — most sections should be white/off-white with content differentiated by spacing, not color blocks
 - Putting icons next to EVERY feature bullet — sometimes plain text is cleaner
 
-INTEGRATIONS — EXACT PATTERNS TO USE:
-
-When env vars are provided (window.ENV object injected at top of App.tsx), use these exact patterns:
-
-Stripe payments (STRIPE_PUBLISHABLE_KEY available):
-  // In index.html <head>: <script src="https://js.stripe.com/v3/"></script>
-  // In App.tsx:
-  const stripe = (window as any).Stripe(window.ENV.STRIPE_PUBLISHABLE_KEY);
-  const elements = stripe.elements();
-  const card = elements.create('card', { style: { base: { color: '#fff', fontSize: '16px' } } });
-  card.mount('#card-element');
-  // On submit: const {paymentMethod, error} = await stripe.createPaymentMethod({type:'card',card});
-  // NEVER use server-side Stripe SDK — only Stripe.js frontend methods with publishable key
-
-Supabase (SUPABASE_URL + SUPABASE_ANON_KEY available):
-  // In index.html <head>: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  // In App.tsx:
-  const supabase = (window as any).supabase.createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
-  const { data, error } = await supabase.from('table_name').select('*');
-  // For auth: await supabase.auth.signInWithPassword({email, password})
-  // NEVER import from npm — always use the CDN UMD build via window.supabase
-
-Firebase (FIREBASE_API_KEY + FIREBASE_PROJECT_ID available):
-  // In index.html <head>: add firebase-app-compat and firebase-firestore-compat scripts from gstatic.com
-  // In App.tsx:
-  const app = (window as any).firebase.initializeApp({ apiKey: window.ENV.FIREBASE_API_KEY, projectId: window.ENV.FIREBASE_PROJECT_ID, authDomain: window.ENV.FIREBASE_PROJECT_ID+'.firebaseapp.com' });
-  const db = (window as any).firebase.firestore();
-  const snap = await db.collection('items').get();
-
-OpenAI (OPENAI_API_KEY available):
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.ENV.OPENAI_API_KEY},
-    body: JSON.stringify({model:'gpt-4o-mini', messages:[{role:'user',content:prompt}]})
-  });
-
-Image uploads (built-in, no API key needed):
-  // POST to /api/upload — works for all users, stores to CDN, returns a permanent URL
-  async function uploadImage(file: File): Promise<string> {
-    const form = new FormData(); form.append('file', file);
-    const res = await fetch('/api/upload', {method:'POST', body:form});
-    const {url} = await res.json();
-    return url; // permanent CDN URL or base64 fallback
-  }
-
-Google Maps (GOOGLE_MAPS_API_KEY available):
-  // In index.html <head>: <script src="https://maps.googleapis.com/maps/api/js?key=REPLACE_KEY&callback=__initMap" async defer></script>
-  // CRITICAL: window.google.maps is NOT available synchronously — always defer initialization.
-  // In index.html before </body>: <script>window.__initMap = function(){/* maps ready */};</script>
-  // In App.tsx, use a useEffect with polling to wait for the API:
-  useEffect(()=>{
-    const interval = setInterval(()=>{
-      if((window as any).google?.maps){
-        clearInterval(interval);
-        const map = new (window as any).google.maps.Map(document.getElementById('map'),{center:{lat:40.7,lng:-74},zoom:12});
-        // add markers etc here
-      }
-    },100);
-    return ()=>clearInterval(interval);
-  },[]);
-
-ENV INJECTION RULE: When envVars are provided, inject them at the top of App.tsx:
-  const ENV = window.ENV || {};  // always declare this — window.ENV is set by index.html
-In index.html, before </body>: <script>window.ENV = {KEY1:"val1",KEY2:"val2"};</script>
-NEVER hardcode secret keys in App.tsx source. Always read from window.ENV.
-
-HANDLING COMPLEX FEATURES:
-
-Image uploads (ALWAYS use /api/upload — built-in, no API keys needed):
-  const [imgUrl, setImgUrl] = useState('');
-  async function handleImageUpload(file: File) {
-    const form = new FormData(); form.append('file', file);
-    const res = await fetch('/api/upload', {method:'POST', body:form});
-    const {url} = await res.json();
-    setImgUrl(url);
-  }
-  <input type="file" accept="image/*" onChange={e=>{const f=e.target.files[0];if(f)handleImageUpload(f)}}/>
-  {imgUrl && <img src={imgUrl} style={{maxWidth:'100%'}}/>}
-  // Store imgUrl in localStorage or state as needed. URL is permanent and publicly accessible.
-
-Data persistence (cross-device synced — ALWAYS use this pattern):
-  const [items, setItems] = useState<T[]>([]);
-  useEffect(()=>{window.tcLoad('items',[]).then(v=>setItems(v||[]));},[]);
-  // After any mutation, save:
-  async function saveItems(next) { setItems(next); await window.tcSave('items',next); }
-  // window.tcLoad(key, fallback) — returns Promise, loads from server storage (cross-device)
-  // window.tcSave(key, value) — saves to server storage (syncs across all devices)
-  // NEVER use localStorage directly for user data — always tcSave/tcLoad
-
-Admin/CRUD panels:
-  const [view, setView] = useState<'public'|'admin'>('public');
-  const [editing, setEditing] = useState<Item|null>(null);
-  // Admin view: form + list with edit/delete buttons
-  // Public view: read-only display
-
-SVG charts (never use external chart libraries):
-  <svg viewBox="0 0 400 200" style={{width:'100%'}}>
-    {data.map((v,i)=><rect key={i} x={i*40} y={200-v*2} width={30} height={v*2} fill="#8b5cf6"/>)}
-  </svg>
-
-Drag and drop:
-  onDragStart={e=>e.dataTransfer.setData('id',item.id)}
-  onDragOver={e=>e.preventDefault()}
-  onDrop={e=>{const id=e.dataTransfer.getData('id'); /* reorder */}}
-
-EDITING EXISTING CODE — CRITICAL RULES:
-When the user asks to change something in an existing app:
-1. Apply the change EXACTLY as requested — "change background to black" means change the background color to black NOW
-2. Return ALL files in the output, not just the changed ones
-3. For SIMPLE style changes (color, font size, padding, border, layout tweak):
-   - Find the EXACT property in the code and change it
-   - Do NOT rebuild the app — just modify what was asked
-   - "change background color to X" → find body/root/container background and set it to X
-   - "change the button color to X" → find every button style and update background/color
-   - "make the header dark" → set the nav/header background to a dark color (#111 or #1a1a1a)
-4. NEVER ignore a style change request. If the user says change something, change it.
-
-IMAGE UPLOADS IN ADMIN PANELS:
-When building admin panels with products, blog posts, or any content with images:
-- ALWAYS include an image upload input using the /api/upload endpoint
-- Every product/item form MUST have: <input type="file" accept="image/*" onChange={async e => { const f=e.target.files[0]; if(!f) return; const form=new FormData(); form.append('file',f); const r=await fetch('/api/upload',{method:'POST',body:form}); const {url}=await r.json(); setCurrentItem(p=>({...p,imageUrl:url})); }} />
-- Show a preview of the uploaded image immediately: {currentItem.imageUrl && <img src={currentItem.imageUrl} style={{width:80,height:80,objectFit:'cover',borderRadius:4}} />}
-- Store imageUrl in the item/product data and display it in the public view
-- The /api/upload endpoint is BUILT IN — no API key needed, always available
-- After saving an item with an imageUrl, persist the full items array with window.tcSave so it syncs across devices
+{{INTEGRATIONS_INJECTION}}
 
 QUALITY BAR:
 - 15-20 realistic hardcoded items minimum for lists/products
@@ -432,6 +309,10 @@ edit — change only what the request requires and nothing else.
   modify (the server keeps the originals). Each returned file must be its COMPLETE new content.
 - A COLOR / theme / palette change is the ONE exception that is intentionally global: restyle the
   whole scheme cohesively via CSS variables in /styles.css. Even then, do not alter copy, layout, or images.
+- When updating contact info, FORMAT values properly:
+  * Phone numbers: use dashes (908-783-4220, not 9087834220)
+  * Email: display the full address as visible text in the link
+  * Addresses: use proper line breaks and formatting
 
 ## Output format
 Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
@@ -952,10 +833,16 @@ COLORS (use exactly):
 - border-radius: ${pickedDesign!.radius}
 Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`;
 
+  const hasEnvVars = envVars && Object.keys(envVars).length > 0;
+  const integrationsBlock = hasEnvVars
+    ? `When env vars are provided via window.ENV, read keys from there. Use /api/upload for image uploads. Use window.tcSave/tcLoad for data persistence.`
+    : "Use window.tcSave(key, value) and window.tcLoad(key, fallback) for data persistence. Use /api/upload for image uploads.";
+
   const SYSTEM_PROMPT = isEdit
     ? SYSTEM_EDIT
     : SYSTEM_BUILD
-        .replace("{{DESIGN_INJECTION}}", designInjection);
+        .replace("{{DESIGN_INJECTION}}", designInjection)
+        .replace("{{INTEGRATIONS_INJECTION}}", integrationsBlock);
 
   onStatus?.("Starting generation…");
 
