@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
+import { decrypt, isEncrypted } from "@/lib/crypto";
 
 // Pricing: 2.5x AI cost ($0.15 profit per $0.10 spent)
 function costToCredits(aiCostUsd: number): number {
@@ -64,7 +65,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   }
 
   const existingFiles = project.versions[0] ? JSON.parse(project.versions[0].files) : null;
-  const envVars = bodyEnvVars ?? (project.envVars ? JSON.parse(project.envVars) : null);
+  let storedEnv = null;
+  if (project.envVars) {
+    const raw = project.envVars;
+    storedEnv = JSON.parse(isEncrypted(raw) ? decrypt(raw) : raw);
+  }
+  const envVars = bodyEnvVars ?? storedEnv;
   const knowledge: Array<{ title: string; content: string }> = JSON.parse(project.knowledge || "[]");
   const customKnowledge = knowledge.length > 0
     ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
