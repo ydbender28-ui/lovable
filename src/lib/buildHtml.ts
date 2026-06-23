@@ -48,9 +48,37 @@ function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName
     src[p.replace(/^\//, "")] = c;
   }
 
+  // New Sandpack format: /App.js + /styles.css
+  if (src["App.js"]) {
+    const rawApp = src["App.js"] ?? "";
+    const styles = src["styles.css"] ?? "body{font-family:system-ui,sans-serif}";
+    const exportDefaultMatch =
+      rawApp.match(/^export\s+default\s+(?:function|class)\s+(\w+)/m) ||
+      rawApp.match(/^export\s+default\s+(\w+)\s*;/m);
+    const componentName = exportDefaultMatch?.[1] ?? "App";
+
+    const reactGlobals = `var { useState, useEffect, useRef, useCallback, useMemo, useContext, useReducer, useLayoutEffect, useId, useTransition, useDeferredValue } = React;`;
+
+    // Collect all JS/JSX files (App.js + any component files)
+    const jsFiles = Object.keys(src)
+      .filter((p) => p.match(/\.jsx?$/) && !p.match(/^(index|main)\./))
+      .sort((a, b) => (a.includes("App") ? 1 : 0) - (b.includes("App") ? 1 : 0));
+
+    const strippedCode = jsFiles
+      .map((p) => stripModuleSyntax(src[p]))
+      .join("\n\n");
+
+    const jsxSource = reactGlobals + "\n" + strippedCode;
+    let code: string;
+    try { code = transpileTSX(jsxSource); } catch { code = jsxSource; }
+
+    return { code, componentName, styles, title: "App" };
+  }
+
+  // Legacy format: src/App.tsx + index.html + src/main.tsx
   const rawHtml = src["index.html"] ?? "";
   const styleMatch = rawHtml.match(/<style>([\s\S]*?)<\/style>/i);
-  const styles = styleMatch ? styleMatch[1] : "body{background:#0a0a0f;color:#f4f4f5}";
+  const styles = styleMatch ? styleMatch[1] : "body{background:#fff;color:#111}";
   const title = rawHtml.match(/<title>(.*?)<\/title>/i)?.[1] ?? "App";
 
   const tsxFiles = Object.keys(src)
@@ -72,11 +100,7 @@ function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName
   const tsxSource = reactGlobals + "\n" + strippedCode;
 
   let code: string;
-  try {
-    code = transpileTSX(tsxSource);
-  } catch {
-    code = tsxSource;
-  }
+  try { code = transpileTSX(tsxSource); } catch { code = tsxSource; }
 
   return { code, componentName, styles, title };
 }

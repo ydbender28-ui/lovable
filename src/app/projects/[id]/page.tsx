@@ -30,7 +30,20 @@ export default async function ProjectPage({
 
   if (!project) notFound();
 
-  const files = JSON.parse(project.versions[0]?.files ?? "{}");
+  const rawFiles = JSON.parse(project.versions[0]?.files ?? "{}");
+
+  // Migrate old format (src/App.tsx + index.html + src/main.tsx) → Sandpack (/App.js + /styles.css)
+  let files = rawFiles;
+  if (rawFiles["src/App.tsx"] && !rawFiles["/App.js"]) {
+    const appCode = rawFiles["src/App.tsx"] || "";
+    // Extract inline styles from the old format into a basic styles.css
+    files = {
+      "/App.js": `import './styles.css';\n\n${appCode
+        .replace(/^import\s.*;\s*$/gm, "")
+        .replace(/export default/, "export default")}`,
+      "/styles.css": `* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }`,
+    };
+  }
 
   return (
     <ProjectWorkspace
