@@ -1105,6 +1105,62 @@ export default function ProjectWorkspace({
       }
     }
 
+    // ── Fast path: instant text/color replacements without AI ──
+    const isEdit = Object.keys(files).length > 0;
+    if (isEdit) {
+      // "change/rename X to Y", "change the name to Y", "rename company to Y"
+      const renameMatch = trimmed.match(
+        /^(?:change|rename|update|set)\s+(?:the\s+)?(?:company\s+)?(?:name|title|heading|brand|text)\s+(?:from\s+.+?\s+)?to\s+["']?(.+?)["']?\s*$/i
+      );
+      // "change background to #xxx" or "change background to red"
+      const bgMatch = trimmed.match(
+        /^(?:change|set|make)\s+(?:the\s+)?(?:background|bg)\s+(?:color\s+)?to\s+["']?(.+?)["']?\s*$/i
+      );
+
+      if (renameMatch) {
+        const newName = renameMatch[1].trim();
+        const appCode = files["src/App.tsx"] || "";
+        // Find the most prominent brand/title string — usually the first h1 or brand name in the nav
+        const brandRegex = /(<(?:h1|h2|a|span|div)[^>]*>)([^<]{2,40})(<\/(?:h1|h2|a|span|div)>)/;
+        const match = appCode.match(brandRegex);
+        if (match) {
+          const oldName = match[2].trim();
+          const updated = { ...files, "src/App.tsx": appCode.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), newName) };
+          setMessages(prev => {
+            const alreadyShown = prev.some(m => m.role === "user" && m.content === trimmed);
+            if (alreadyShown) return prev;
+            return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
+          });
+          setFiles(updated);
+          setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: `Renamed "${oldName}" to "${newName}" across the app.` }]);
+          // Save version silently
+          fetch(`/api/projects/${projectId}/save-version`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ files: updated, summary: `Renamed to ${newName}` }),
+          }).catch(() => {});
+          return;
+        }
+      }
+
+      if (bgMatch) {
+        const newColor = bgMatch[1].trim();
+        const appCode = files["src/App.tsx"] || "";
+        const updated = { ...files, "src/App.tsx": appCode.replace(/background\s*:\s*['"]?(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)['"]?/g, `background:'${newColor}'`) };
+        setMessages(prev => {
+          const alreadyShown = prev.some(m => m.role === "user" && m.content === trimmed);
+          if (alreadyShown) return prev;
+          return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
+        });
+        setFiles(updated);
+        setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: `Changed background color to ${newColor}.` }]);
+        fetch(`/api/projects/${projectId}/save-version`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files: updated, summary: `Background → ${newColor}` }),
+        }).catch(() => {});
+        return;
+      }
+    }
+
     runGenerate(trimmed);
   }
 
