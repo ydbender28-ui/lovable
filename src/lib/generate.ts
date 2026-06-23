@@ -125,122 +125,44 @@ function pickDesign(prompt: string) {
   return DESIGN_THEMES[idx];
 }
 
-// ─── System prompt ────────────────────────────────────────────────────────────
+// ─── System prompts (ported from codezip builder) ────────────────────────────
 
-const BASE_SYSTEM_PROMPT = `You are an expert React developer. Build exactly what the user asks — full, complete, production-quality apps with real data and working interactions.
+const SYSTEM_BUILD = `You are a senior product designer and React engineer powering an AI website builder.
+You receive a user request and return a COMPLETE set of files for a single-page React app.
 
-BUILD EXACTLY WHAT IS REQUESTED — CRITICAL:
-Read every word of the request and build THOSE specific features. Never substitute with a generic alternative.
-- "salesforce app" → CRM with Accounts, Contacts, Leads, Opportunities, pipeline stages
-- "salesforce with products and salesman" → CRM with product catalog + salesperson assignments + deal tracking
-- "e-commerce store" → storefront with product grid, cart, checkout flow
-- "inventory system" → stock levels, product SKUs, reorder alerts
-- "booking app" → calendar, time slots, appointments
-- "restaurant menu" → food categories, items with prices, ordering
-If the user names specific entities (products, salesmen, customers, orders) → those MUST be the core data models with full CRUD.
-NEVER replace a specific request with a generic "projects" or "tasks" dashboard.
+## File rules
+- The app runs in the Sandpack "react" template. The root component MUST be the default
+  export of /App.js. An /index.js is provided automatically — do not write one.
+- Put all CSS in /styles.css and import it at the top of /App.js with: import './styles.css';
+- You may add extra component files (e.g. /components/Hero.js) and import them with relative paths.
+- Use ONLY React plus plain CSS. Do NOT import any npm packages. You MAY load fonts and images
+  from the network by URL — that is not a package.
+- Always return the FULL file set needed to run. Include /App.js every time.
+- Single page only — no routing libraries.
+- GOOGLE FONTS: import a characterful Google Font pairing at the VERY TOP of /styles.css, e.g.
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;700&display=swap');
+  Pick fonts that fit the brand's mood. Never leave typography on system-ui/Arial.
 
-CRITICAL OUTPUT FORMAT — use EXACTLY this delimiter format, nothing else, no markdown fences:
+## Make it look REAL and ALIVE — this is the most important rule
+Flat single-color pages with system fonts look like a robot made them. Every build must feel
+like a real, professionally designed product:
 
-SUMMARY: <2-3 sentences describing what you built>
+- REAL PHOTOS: never use empty colored blocks where imagery belongs. For every image, use a themed
+  placeholder token of the EXACT form {{unsplash:<search query>|<width>x<height>}} as the URL.
+- COLOR: design a cohesive palette — a primary, a contrasting accent, and warm neutrals, not one
+  flat color. Use tasteful gradients, layered backgrounds, and strong contrast.
+- DEPTH & MOTION: soft shadows, rounded corners, generous whitespace, hover transitions, and a
+  couple of subtle CSS entrance animations (@keyframes). Add micro-interactions to buttons.
+- LAYOUT: a strong hero (often a photo background with a gradient overlay and a bold headline),
+  then well-structured sections (features / menu / gallery / testimonials / CTA) and a real footer.
+- MOBILE-RESPONSIVE (REQUIRED): every site MUST look great on a phone. Use fluid layouts, @media
+  queries at 768px and 480px, clamp() for fluid type, max-width:100% on images. Test at ~375px.
+- CONTENT: write real, specific, believable copy. Never "Item 1" or lorem ipsum.
 
-===FILE: index.html===
-<full file content>
-===FILE: src/main.tsx===
-<full file content>
-===FILE: src/App.tsx===
-<full file content>
-===END===
+## Avoid AI slop
+Never use generic AI aesthetics: overused fonts alone, purple gradients on white, cookie-cutter layouts,
+or flat single-color pages with no imagery.
 
-Rules: no JSON, no code fences, no commentary outside the format above.
-
-FILE RULES:
-- index.html: minimal shell with a <style> tag that includes:
-  * Reset: *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  * Body: body{background:{{THEME_BG}};color:{{THEME_TEXT}};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
-  * Root: #root{min-height:100vh}
-  * Put @keyframes animations here (fadeIn, slideUp, etc.) — they CANNOT go in inline styles
-  * Put hover/focus pseudo-class styles here using CSS classes — inline styles can't do :hover
-  * Put @media responsive queries here — inline styles can't do breakpoints
-  * GOOGLE FONTS: add a <link> to Google Fonts in <head> for a distinctive heading + body font pair
-- src/main.tsx: just ReactDOM.createRoot + App mount
-- src/App.tsx: THE ENTIRE APPLICATION in one file — every component, hook, util, and data
-
-STYLING (mandatory):
-- Use inline style={{}} for most styling
-- Use CSS classes in the index.html <style> tag for: hover effects, animations, responsive breakpoints
-  Example in index.html: .btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
-  Example in index.html: @media(max-width:768px){.hero-grid{grid-template-columns:1fr !important}}
-  Then in App.tsx: <button className="btn" style={{...}}>
-- Transitions: transition:'all 0.2s' on EVERY interactive element
-
-DESIGN RULES — MODERN, PREMIUM, 2025 AESTHETIC:
-The #1 goal: this should look like a site built by a top design agency in 2025 — clean, bold,
-spacious, with real photography and distinctive typography. NOT a 2018 Bootstrap template.
-
-MODERN DESIGN PRINCIPLES (study Stripe, Linear, Vercel, Arc, Framer sites):
-
-LAYOUT — copy how Apple, Stripe, Linear do it:
-- Hero: TWO options, pick ONE:
-  OPTION A (image background): A div with position:'relative', minHeight:'90vh', backgroundImage with
-  an {{unsplash:...}} token, backgroundSize:'cover', backgroundPosition:'center'. ALWAYS add a dark
-  gradient overlay div (position:'absolute', inset:0, background:'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7))')
-  on top, then place text OVER the overlay (position:'relative', zIndex:1, color:'#fff'). Text MUST be
-  white on dark overlay — never dark text on a busy photo background.
-  OPTION B (split layout): flexbox row, text on one side (50%), image on the other (50%) as a simple
-  <img> tag with objectFit:'cover', height:'100%'. Clean and simple. No circular cutouts, no fancy shapes.
-- NEVER place text directly on a background image without a gradient overlay — it will be unreadable.
-- NEVER use circular image cutouts, diamond shapes, or clip-path on hero images — just rectangles.
-- Sections alternate: image-left/text-right, then text-left/image-right. Not 3 cards, 3 cards, 3 cards.
-- Product/menu GRIDS: always use display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',
-  gap:'24px'. NEVER show a single product card floating alone — always at least 3-4 items in a grid.
-- Use maxWidth:'1200px', margin:'0 auto' for content. Padding 80-120px vertically between sections. NOT 32px — that's too cramped.
-- Every section must have clear top/bottom padding (60-100px) to separate from adjacent sections.
-- Footer: simple, 3-4 link columns, muted colors. Not a second homepage.
-- NEVER let elements overlap the nav bar or extend behind it. The nav should have a solid background color
-  and zIndex:100 so content scrolls cleanly under it.
-
-TYPOGRAPHY — this is what separates human from AI:
-- GOOGLE FONTS (REQUIRED for new builds): Import a characterful Google Font pairing. Add a <link> tag
-  in index.html <head> for a distinctive display/heading font + a clean body font. Examples:
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
-  Pick fonts that match the brand mood: a serif or display font for headings, a sans-serif for body.
-  Never leave typography on just system-ui/Arial — that instantly looks generic.
-  Apply heading font: fontFamily:"'Fraunces', serif" and body: fontFamily:"'Inter', sans-serif"
-- Headlines: 42-64px, fontWeight:700, letterSpacing:'-0.03em', lineHeight:1.1. Color: #111.
-- Body text: 16-18px, fontWeight:400, lineHeight:1.7, color:#555 (NOT #333, too dark. NOT #999, too light).
-- Subheadings: 14px, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em', color:#999. Use sparingly — only 1 per section.
-- NEVER make body text bold. NEVER make everything 14px. Size hierarchy is: 64 → 24 → 18 → 14, not everything the same.
-
-COLOR — pick ONE palette and commit:
-- Warm: bg #FAF9F6, text #2D2A26, accent #C8553D, muted #B8B2A8
-- Cool: bg #F8FAFC, text #1E293B, accent #2563EB, muted #94A3B8
-- Neutral: bg #FFFFFF, text #111111, accent #000000, muted #6B7280
-- Dark premium: bg #0A0A0A, text #FAFAFA, accent #E5E5E5, muted #666666
-- NEVER mix warm and cool. NEVER use more than 1 accent color. Gray + 1 color = professional.
-
-MODERN TOUCHES (2025 design trends):
-- Large bold headlines (56-80px) with tight letter-spacing (-0.04em) and heavy weight (800-900)
-- Generous whitespace — sections should breathe. 100-140px vertical padding between major sections.
-- Subtle entrance animations — elements fade in and slide up slightly as you scroll (use CSS @keyframes in index.html)
-- Soft, natural shadows — box-shadow:'0 2px 8px rgba(0,0,0,0.08)' not harsh dark shadows
-- Border-radius: 12-16px on cards (not 4px — that looks dated), 50px on buttons for a pill shape
-- Micro-interactions: buttons scale slightly on hover (transform:'scale(1.02)'), cards lift (translateY(-4px))
-- Use CSS backdrop-filter for nav: background:'rgba(255,255,255,0.8)', backdropFilter:'blur(12px)'
-- Sticky nav with blur background — feels modern and polished
-- Feature sections: large icon or image + short punchy text, not walls of copy
-
-COPY — write like a human founder, not a marketing bot:
-- BAD: "Welcome to our premium coffee experience. We are dedicated to providing the finest quality beverages."
-- GOOD: "We roast every Tuesday. Single-origin, no blends, no compromise."
-- BAD: "Our team of experienced professionals is committed to delivering excellence."
-- GOOD: "Three people, one obsession: making the best espresso in Portland."
-- Keep it SHORT. Hero subtitle: max 15 words. Feature descriptions: max 10 words. If it sounds like a brochure, rewrite it.
-
-BUTTONS: Match the design theme exactly. NO gradient buttons unless the theme specifies it. NO glow box-shadows. Solid color buttons look more professional. padding:'10px 20px', fontWeight:600, cursor:'pointer', border:'none'. Hover: darken bg by 10%, no scale transform.
-INPUTS: background matches card bg. border:'1px solid [border color]'. borderRadius matches theme. padding:'10px 14px'. outline:'none'. Focus: border-color = accent. Always styled, never browser default.
-CARDS: Follow the theme. Light themes = white bg + subtle border. Dark themes = slightly lighter than page bg + border. NO heavy glow shadows. Shadow max: '0 1px 4px rgba(0,0,0,0.1)' for light, '0 2px 8px rgba(0,0,0,0.3)' for dark.
-ICONS: Use text/Unicode symbols (→ ✓ × ↑ ↓ ‹ ›) or simple SVG. NO emoji as product/feature icons (🛒🚀⚡) — they look cheap. Exception: status indicators (✓ for success is fine).
 IMAGES — THIS IS MANDATORY, NOT OPTIONAL:
 Every app MUST have real, topically-matched photos. Use the {{unsplash:...}} token system — these tokens
 are automatically replaced with real photographs BEFORE your code runs.
@@ -487,8 +409,33 @@ SECURITY — BAKED INTO EVERY BUILD (not optional):
 - Rate limit patterns: add a simple cooldown (disabled button for 2s) on forms that call external APIs to prevent rapid-fire abuse.
 These are not extra features — they are the default baseline for every app.
 
+## Output format
+Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
+{ "files": [ { "path": "/App.js", "content": "..." }, { "path": "/styles.css", "content": "..." } ], "summary": "one sentence" }
+
 DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
+
+// Separate edit prompt — surgical, preservation-first
+const SYSTEM_EDIT = `You are editing an existing single-page React app (Sandpack "react" template,
+root component is the default export of /App.js, CSS in /styles.css).
+
+You are given the app's current files and ONE change request. Apply that change as a SURGICAL
+edit — change only what the request requires and nothing else.
+
+## Absolute rules
+- PRESERVE EVERYTHING ELSE EXACTLY. Do not touch copy, layout, structure, class names, component
+  files, or styling that the request didn't ask about. Do not reword text, do not "improve" design.
+- NEVER change existing image URLs. Leave every existing <img src> / background URL byte-for-byte
+  unless the user explicitly asked to change that image.
+- RETURN ONLY THE FILES YOU ACTUALLY CHANGED — usually just one. Omit every file you didn't
+  modify (the server keeps the originals). Each returned file must be its COMPLETE new content.
+- A COLOR / theme / palette change is the ONE exception that is intentionally global: restyle the
+  whole scheme cohesively via CSS variables in /styles.css. Even then, do not alter copy, layout, or images.
+
+## Output format
+Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
+{ "files": [ { "path": "/App.js", "content": "..." } ], "summary": "one sentence" }`;
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
@@ -890,23 +837,6 @@ async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
 // Bypasses the full system prompt — sends only the existing code and a short
 // instruction. Uses the cheapest available model. ~5-10x faster than full gen.
 
-const QUICK_EDIT_SYSTEM = `You are editing an existing React app. Make ONLY the exact change requested.
-EVERYTHING else must be BYTE-FOR-BYTE identical — same images, same colors, same layout, same data,
-same fonts, same spacing. Do NOT "improve" or "clean up" anything. Do NOT swap image URLs.
-Find the specific lines that need to change, change ONLY those, copy-paste everything else unchanged.
-
-Return the complete updated files in this exact delimiter format:
-
-SUMMARY: <one sentence describing the change>
-
-===FILE: index.html===
-<full file>
-===FILE: src/main.tsx===
-<full file>
-===FILE: src/App.tsx===
-<full file>
-===END===`;
-
 export async function generateQuickEdit(
   prompt: string,
   existingFiles: ProjectFiles,
@@ -915,11 +845,7 @@ export async function generateQuickEdit(
 ): Promise<GenerateResult> {
   onStatus?.("Applying quick edit…");
 
-  const serialized = Object.entries(existingFiles)
-    .map(([path, content]) => `===FILE: ${path}===\n${content}`)
-    .join("\n");
-
-  const userContent = `CURRENT CODE:\n${serialized}\n\nEDIT: ${prompt}`;
+  const userContent = `Current files:\n${JSON.stringify(existingFiles, null, 2)}\n\nRequest: ${prompt}`;
 
   // Use a fast but capable model — needs enough power to output the full app
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
@@ -932,18 +858,21 @@ export async function generateQuickEdit(
   const tokenCallback = (token: string) => { text += token; onToken?.(token); };
 
   if (modelOpt.provider === "openai") {
-    ({ inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
+    ({ inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   } else {
-    ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
+    ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   }
 
-  const parsed = parseDelimitedOutput(text);
-  if (!parsed || !parsed.files["src/App.tsx"]) {
+  const parsed = parseJsonOutput(text);
+  if (!parsed || Object.keys(parsed.files).length === 0) {
     throw new Error("Quick edit failed — try again or use a more detailed prompt.");
   }
 
+  // Merge: AI only returns changed files
+  const mergedFiles = { ...existingFiles, ...parsed.files };
+
   return {
-    files: parsed.files,
+    files: mergedFiles,
     summary: parsed.summary,
     modelUsed: modelOpt.displayName,
     complexity: "simple",
@@ -954,30 +883,28 @@ export async function generateQuickEdit(
   };
 }
 
-// ─── Delimiter format parser ──────────────────────────────────────────────────
+// ─── JSON output parser ──────────────────────────────────────────────────────
 
-function parseDelimitedOutput(text: string): { summary: string; files: ProjectFiles } | null {
-  const files: ProjectFiles = {};
+function parseJsonOutput(text: string): { summary: string; files: ProjectFiles } | null {
+  // Find JSON in the response (may have markdown fences or prose around it)
+  const jsonMatch = text.match(/\{[\s\S]*"files"[\s\S]*\}/);
+  if (!jsonMatch) return null;
 
-  // Extract summary (text between SUMMARY: and first ===FILE:)
-  const summaryStart = text.indexOf("SUMMARY:");
-  const firstFile = text.indexOf("===FILE:");
-  const summaryRaw = summaryStart !== -1
-    ? text.slice(summaryStart + 8, firstFile !== -1 ? firstFile : undefined).trim()
-    : "";
-  const summary = summaryRaw || "Done! Check the preview.";
+  try {
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      files?: { path: string; content: string }[];
+      summary?: string;
+    };
+    if (!parsed.files || !Array.isArray(parsed.files) || parsed.files.length === 0) return null;
 
-  // Extract each file block ([\s\S] matches any char including newlines, works without 's' flag)
-  const fileRegex = /===FILE:\s*([^\n=]+?)===\n([\s\S]*?)(?====FILE:|===END===|$)/g;
-  let match;
-  while ((match = fileRegex.exec(text)) !== null) {
-    const path = match[1].trim();
-    const content = match[2].trimEnd();
-    if (path && content) files[path] = content;
+    const files: ProjectFiles = {};
+    for (const f of parsed.files) {
+      if (f.path && f.content) files[f.path] = f.content;
+    }
+    return { summary: parsed.summary || "Done! Check the preview.", files };
+  } catch {
+    return null;
   }
-
-  if (Object.keys(files).length === 0) return null;
-  return { summary, files };
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
@@ -1025,10 +952,10 @@ COLORS (use exactly):
 - border-radius: ${pickedDesign!.radius}
 Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`;
 
-  const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT
-    .replace("{{DESIGN_INJECTION}}", designInjection)
-    .replace("{{THEME_BG}}", pickedDesign?.bg ?? "#ffffff")
-    .replace("{{THEME_TEXT}}", pickedDesign?.text ?? "#111111");
+  const SYSTEM_PROMPT = isEdit
+    ? SYSTEM_EDIT
+    : SYSTEM_BUILD
+        .replace("{{DESIGN_INJECTION}}", designInjection);
 
   onStatus?.("Starting generation…");
 
@@ -1036,50 +963,17 @@ Make the entire layout and structure match this design system. It should look DR
     ? `\n\nEnvironment variables available (inject as const at top of App.tsx):\n${JSON.stringify(envVars)}`
     : "";
 
-  // Serialize existing files as delimited blocks so the model can read them without JSON confusion
   let existingSection = "";
   if (existingFiles && Object.keys(existingFiles).length > 0) {
-    const serialized = Object.entries(existingFiles)
-      .map(([path, content]) => `===FILE: ${path}===\n${content}`)
-      .join("\n");
+    const serialized = JSON.stringify(existingFiles, null, 2);
     if (serialized.length < 60000) existingSection = serialized;
   }
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
   const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
 
   const userContent = isEdit
-    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES — FOLLOW EXACTLY OR THE OUTPUT IS REJECTED:
-
-ZERO COLLATERAL DAMAGE — this is the #1 rule for ALL edits:
-The user asked for ONE thing. Change ONLY that one thing. Everything else must be BYTE-FOR-BYTE identical.
-
-DO NOT TOUCH (unless the user explicitly asked):
-- Image URLs — copy every src="..." and backgroundImage URL exactly as-is, character for character
-- Colors, fonts, font sizes, spacing, padding, margins, border-radius
-- Layout structure, flexbox/grid settings, section order
-- Component names, variable names, function names
-- Data arrays (products, menu items, team members, testimonials)
-- Copy/text content in any section not mentioned in the request
-- Hover styles, transitions, animations
-- Nav structure, footer content
-- Any import statements or script tags
-
-HOW TO EDIT SAFELY:
-1. Find the EXACT lines of code that need to change for the requested edit
-2. Change ONLY those lines
-3. Copy-paste everything else unchanged — do not retype or reformat it
-4. If you're unsure whether something should change, DON'T change it
-
-ADDING NEW FEATURES (admin panel, search, cart, etc.):
-- ADD new code — do not modify existing code unless the feature requires it
-- New sections/views go AFTER existing ones
-- Reuse the existing design language (same colors, same card style, same button style)
-- ADMIN PANELS: add a password-protected route/view. Default password "admin" unless user specified one.
-- DATA PERSISTENCE WITH ADMIN: include a "💾 Save to Site" button that calls: window.parent?.postMessage({type:'TC_SAVE_STATE',state:JSON.stringify({products: allProducts})}, '*')
-- On load, initialize from window.TC_INITIAL_DATA if it exists
-
-You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
-    : `BUILD REQUEST: ${prompt}${envSection}${knowledgeSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
+    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
+    : `Build this app: ${prompt}${envSection}${knowledgeSection}`;
 
   let text = "";
   let stopped = false;
@@ -1147,16 +1041,16 @@ You MUST return the complete updated files in the delimiter format — NEVER res
     );
   }
 
-  const parsed = parseDelimitedOutput(text);
+  const parsed = parseJsonOutput(text);
 
   if (!parsed) {
     throw new Error("Model did not return files in the expected format. Please try again.");
   }
 
-  if (!parsed.files["src/App.tsx"]) {
+  if (!parsed.files["/App.js"]) {
     throw new Error("Model response was incomplete — missing App.tsx. Please try again.");
   }
-  if (parsed.files["src/App.tsx"].length < 200) {
+  if (parsed.files["/App.js"].length < 200) {
     throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
   }
 
@@ -1179,8 +1073,13 @@ You MUST return the complete updated files in the delimiter format — NEVER res
     }
   }
 
+  // For edits: merge returned files with existing (AI only returns changed files)
+  const finalFiles = isEdit && existingFiles
+    ? { ...existingFiles, ...resolvedFiles }
+    : resolvedFiles;
+
   return {
-    files: resolvedFiles,
+    files: finalFiles,
     summary: parsed.summary,
     modelUsed: modelOpt.displayName,
     complexity,
@@ -1193,8 +1092,7 @@ You MUST return the complete updated files in the delimiter format — NEVER res
 
 export function defaultProjectFiles(): ProjectFiles {
   return {
-    "index.html": `<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>App</title><style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0f;color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}</style></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>`,
-    "src/main.tsx": `import React from "react";import ReactDOM from "react-dom/client";import App from "./App";ReactDOM.createRoot(document.getElementById("root")!).render(<React.StrictMode><App/></React.StrictMode>);`,
-    "src/App.tsx": `export default function App(){return(<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#0a0a0f"}}><div style={{textAlign:"center"}}><h1 style={{fontSize:32,fontWeight:700,color:"#fff",marginBottom:12}}>Start building</h1><p style={{color:"#71717a",fontSize:16}}>Describe what you want to build in the chat.</p></div></div>);}`,
+    "/App.js": `import './styles.css';\n\nexport default function App() {\n  return (\n    <div className="placeholder">\n      <h1>Your app will appear here</h1>\n      <p>Describe what you want to build in the chat.</p>\n    </div>\n  );\n}`,
+    "/styles.css": `.placeholder {\n  font-family: system-ui, sans-serif;\n  min-height: 100vh;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #555;\n  padding: 48px;\n}\n.placeholder h1 {\n  font-size: 24px;\n  font-weight: 700;\n  color: #111;\n  margin-bottom: 8px;\n}\n.placeholder p {\n  font-size: 16px;\n}`,
   };
 }

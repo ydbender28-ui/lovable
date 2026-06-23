@@ -1,10 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import Logo from "@/components/Logo";
 import IntegrationsPanel from "./IntegrationsPanel";
+import type { SandpackErr } from "@/components/SandpackPreview";
+
+const SandpackPreview = dynamic(() => import("@/components/SandpackPreview"), {
+  ssr: false,
+  loading: () => <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#71717f", fontSize: 13 }}>Loading preview…</div>,
+});
 
 type Message = { id: string; role: "user" | "assistant"; content: string };
 type ProjectFiles = Record<string, string>;
@@ -67,77 +74,7 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
   return pool.filter(([show]) => show).slice(0, 3).map(([, t]) => t as string);
 }
 
-function IframePreview({ files, projectName, mode }: { files: ProjectFiles; projectName: string; mode: PreviewMode }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [iframeReady, setIframeReady] = useState(false);
-  const blobUrlRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    setPreviewHtml(null);
-    setIframeReady(false);
-    fetch(`/api/preview`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ files, projectName }),
-    })
-      .then((r) => r.text())
-      .then(setPreviewHtml)
-      .catch(() => {});
-  }, [files, projectName]);
-
-  useEffect(() => {
-    if (!previewHtml || !iframeRef.current) return;
-    if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-    const blob = new Blob([previewHtml], { type: "text/html" });
-    blobUrlRef.current = URL.createObjectURL(blob);
-    setIframeReady(false);
-    iframeRef.current.src = blobUrlRef.current;
-    // Fallback: if onLoad never fires, show the iframe after 5s
-    const timeout = setTimeout(() => setIframeReady(true), 5000);
-    return () => { clearTimeout(timeout); if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current); };
-  }, [previewHtml]);
-
-  const isDevice = mode !== "desktop";
-  const frameWidth = mode === "mobile" ? "390px" : mode === "tablet" ? "768px" : "100%";
-  const frameHeight = mode === "mobile" ? "844px" : "100%";
-  const isMobile = mode === "mobile";
-
-  return (
-    <div style={{
-      flex: 1, minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start",
-      background: isDevice ? "#e8e8ee" : "transparent",
-      padding: isDevice ? "24px 16px" : "0",
-      overflowY: isDevice ? "auto" : "hidden",
-    }}>
-      <div style={{
-        width: frameWidth, height: frameHeight, flexShrink: 0, position: "relative",
-        overflow: "hidden",
-        borderRadius: isMobile ? "2.5rem" : isDevice ? "12px" : "0",
-        border: isMobile ? "6px solid #2a2a35" : isDevice ? "1px solid #ececf1" : "none",
-        boxShadow: isDevice ? "0 24px 60px rgba(0,0,0,0.6)" : "none",
-        background: "#f6f6f8",
-      }}>
-        {isMobile && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 28, background: "#2a2a35", borderRadius: "0 0 20px 20px", zIndex: 10 }} />}
-        {/* Loading skeleton shown until iframe fires onLoad */}
-        {!iframeReady && (
-          <div style={{ position: "absolute", inset: 0, background: "#f6f6f8", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 28, height: 28, border: "2px solid rgba(106,31,247,0.3)", borderTopColor: "#6a1ff7", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ fontSize: 12, color: "#71717f" }}>Loading preview…</span>
-            </div>
-          </div>
-        )}
-        <iframe
-          ref={iframeRef}
-          onLoad={() => setIframeReady(true)}
-          style={{ width: "100%", height: "100%", border: "none", background: "#f6f6f8", display: "block", opacity: iframeReady ? 1 : 0, transition: "opacity 0.2s" }}
-          sandbox="allow-scripts allow-same-origin"
-        />
-      </div>
-    </div>
-  );
-}
+// IframePreview replaced by SandpackPreview — no server round-trip needed
 
 function SimpleMarkdown({ content }: { content: string }) {
   const lines = content.split("\n");
@@ -281,6 +218,9 @@ export default function ProjectWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
+  const handleSandpackError = useCallback((err: SandpackErr | null) => {
+    setIframeError(err?.message ?? null);
+  }, []);
   const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
   const autoFixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoFixCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -2285,9 +2225,7 @@ export default function ProjectWorkspace({
           </div>
         )}
         {hasFiles ? (
-          activeTab === "preview"
-            ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
-            : <CodeViewer files={files} devMode={devModeEnabled} onSaveFiles={(updated) => { setFiles(updated); }} onLineRef={(ref) => { setLineRef(ref); setActiveTab("preview"); setMobileTab("chat"); setTimeout(() => textareaRef.current?.focus(), 100); }} />
+          <SandpackPreview files={files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
