@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
@@ -29,7 +30,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     return new Response("Prompt is required", { status: 400 });
   }
 
-  // Fetch project + user credits in parallel
   const [project, user] = await Promise.all([
     prisma.project.findFirst({
       where: { id, ownerId: session.user.id },
@@ -45,7 +45,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  // Smart route and message write in parallel
   const [finalRoute] = await Promise.all([
     smartRoute(prompt, hasExisting, forceModel ?? undefined),
     prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
@@ -54,7 +53,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   const estimatedCredits = ESTIMATED_CREDITS[finalRoute.taskType] ?? 2;
   const currentCredits = user?.credits ?? 0;
 
-  // Check credits (skip check for owner plan)
   if (user?.plan !== "owner" && currentCredits < estimatedCredits) {
     return new Response(
       JSON.stringify({ error: "insufficient_credits", creditsNeeded: estimatedCredits, creditsRemaining: currentCredits }),
@@ -77,35 +75,19 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         .slice(0, 3000)
     : null;
 
-  const encoder = new TextEncoder();
-  let streamOpen = true;
-
-  // Fire generation as an independent background task — survives client disconnect
   const useQuickEdit = existingFiles &&
     (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
     !imageBase64;
 
-  const statusUpdates: string[] = [];
+  // Run generation in after() — survives client disconnect on Vercel
   const genPromise = (async () => {
     try {
       const result = useQuickEdit
-        ? await generateQuickEdit(
-            prompt,
-            existingFiles,
-            undefined,
-            (text) => { statusUpdates.push(text); },
-          )
+        ? await generateQuickEdit(prompt, existingFiles, undefined, undefined)
         : await generateProject(
-            prompt,
-            existingFiles,
-            envVars,
-            undefined,
-            (text) => { statusUpdates.push(text); },
-            imageBase64 ?? null,
-            imageMimeType,
-            finalRoute.model.model,
-            customKnowledge,
-            projectHistory
+            prompt, existingFiles, envVars, undefined, undefined,
+            imageBase64 ?? null, imageMimeType,
+            finalRoute.model.model, customKnowledge, projectHistory
           );
 
       const wasPublished = !!project.publishSlug;
@@ -114,9 +96,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
       const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
       const actualCredits = costToCredits(actualCost);
-      const creditsAfter = Math.max(0, currentCredits - actualCredits);
 
-      // Save to DB regardless of whether client is still connected
       await Promise.all([
         prisma.version.create({
           data: {
@@ -140,13 +120,20 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           : Promise.resolve(),
       ]);
 
-      return { result, actualCredits, creditsAfter, wasPublished };
+      return { result, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
       await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });
       return { error: message };
     }
   })();
+
+  // Register with after() so Vercel keeps the function alive even if client disconnects
+  after(async () => { await genPromise; });
+
+  // Stream progress to client while connected
+  const encoder = new TextEncoder();
+  let streamOpen = true;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -162,15 +149,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         creditsRemaining: currentCredits,
       });
 
-      // Poll for status updates while generation runs
-      const statusInterval = setInterval(() => {
-        while (statusUpdates.length > 0) {
-          send("status", { text: statusUpdates.shift() });
-        }
-      }, 500);
-
       const outcome = await genPromise;
-      clearInterval(statusInterval);
 
       if ("error" in outcome) {
         send("error", { error: outcome.error });
