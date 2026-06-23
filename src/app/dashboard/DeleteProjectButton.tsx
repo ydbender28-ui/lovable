@@ -38,9 +38,9 @@ export default function DeleteProjectButton({ projectId }: { projectId: string }
               opacity: 1,
             }
           : {
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "#7a8099",
+              background: "rgba(0,0,0,0.04)",
+              border: "1px solid #ececf1",
+              color: "#71717f",
             }
       }
     >

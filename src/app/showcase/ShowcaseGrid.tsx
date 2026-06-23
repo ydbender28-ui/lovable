@@ -13,9 +13,9 @@ export default function ShowcaseGrid({ projects }: { projects: Project[] }) {
     return (
       <div className="py-20 text-center">
         <p className="text-5xl mb-4">🚀</p>
-        <p className="text-lg font-semibold mb-2" style={{ color: "#eef0f6" }}>Be the first to publish</p>
-        <p className="text-sm mb-6" style={{ color: "#7a8099" }}>Build something amazing and publish it to get featured here.</p>
-        <a href="/signup" className="rounded-xl px-6 py-3 text-sm font-semibold text-white inline-block" style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 8px 24px rgba(109,95,255,0.35)" }}>
+        <p className="text-lg font-semibold mb-2" style={{ color: "#17171c" }}>Be the first to publish</p>
+        <p className="text-sm mb-6" style={{ color: "#71717f" }}>Build something amazing and publish it to get featured here.</p>
+        <a href="/signup" className="rounded-xl px-6 py-3 text-sm font-semibold text-white inline-block" style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 8px 24px rgba(106,31,247,0.35)" }}>
           Start building →
         </a>
       </div>
@@ -31,13 +31,13 @@ export default function ShowcaseGrid({ projects }: { projects: Project[] }) {
           target="_blank"
           rel="noreferrer"
           className="group overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 block"
-          style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}
+          style={{ background: "#ffffff", border: "1px solid #ececf1" }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(109,95,255,0.4)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(106,31,247,0.4)";
             (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.45)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+            (e.currentTarget as HTMLElement).style.borderColor = "#ececf1";
             (e.currentTarget as HTMLElement).style.boxShadow = "none";
           }}
         >
@@ -58,10 +58,10 @@ export default function ShowcaseGrid({ projects }: { projects: Project[] }) {
               Live
             </div>
           </div>
-          <div className="flex items-center justify-between gap-2 px-4 py-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex items-center justify-between gap-2 px-4 py-3" style={{ borderTop: "1px solid #ececf1" }}>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold" style={{ color: "#eef0f6" }}>{p.name}</p>
-              <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
+              <p className="truncate text-sm font-semibold" style={{ color: "#17171c" }}>{p.name}</p>
+              <p className="mt-0.5 text-xs" style={{ color: "#71717f" }}>
                 by {p.owner.name ?? "Anonymous"}
                 {p.visitCount > 0 && <span className="ml-2">· {p.visitCount} visits</span>}
               </p>

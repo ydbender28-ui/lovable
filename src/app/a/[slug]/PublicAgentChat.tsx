@@ -60,14 +60,14 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
   return (
     <div className="h-screen flex flex-col bg-[#f6f6f8]">
       <div className="border-b border-[#ececf1] px-4 py-3 flex items-center gap-3 bg-[#ffffff]">
-        <div className="h-9 w-9 rounded-full bg-white/5 border border-[#ececf1] flex items-center justify-center text-lg">{agent.avatar}</div>
+        <div className="h-9 w-9 rounded-full bg-[#f0f0f5] border border-[#ececf1] flex items-center justify-center text-lg">{agent.avatar}</div>
         <div>
-          <p className="text-sm font-medium text-white">{agent.name}</p>
-          {agent.description && <p className="text-xs text-gray-500">{agent.description}</p>}
+          <p className="text-sm font-medium text-[#17171c]">{agent.name}</p>
+          {agent.description && <p className="text-xs text-[#71717f]">{agent.description}</p>}
         </div>
         <div className="ml-auto flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-gray-500">Online</span>
+          <span className="text-xs text-[#71717f]">Online</span>
         </div>
       </div>
 
@@ -75,20 +75,20 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
             <div className="text-5xl">{agent.avatar}</div>
-            <p className="text-base font-semibold text-white">{agent.name}</p>
-            {agent.description && <p className="text-sm text-gray-500 max-w-xs">{agent.description}</p>}
+            <p className="text-base font-semibold text-[#17171c]">{agent.name}</p>
+            {agent.description && <p className="text-sm text-[#71717f] max-w-xs">{agent.description}</p>}
             <p className="text-xs text-gray-600">Send a message to start</p>
           </div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" && (
-              <div className="h-7 w-7 rounded-full bg-white/5 border border-[#ececf1] flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
+              <div className="h-7 w-7 rounded-full bg-[#f0f0f5] border border-[#ececf1] flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
             )}
             <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
               m.role === "user"
-                ? "bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white rounded-br-sm"
-                : "bg-white/5 border border-[#ececf1] text-gray-200 rounded-bl-sm"
+                ? "bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white rounded-br-sm"
+                : "bg-[#f0f0f5] border border-[#ececf1] text-[#17171c] rounded-bl-sm"
             }`}>
               {m.content || (responding && i === messages.length - 1 ? (
                 <span className="flex gap-1 items-center">
@@ -101,13 +101,13 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
       </div>
 
       <div className="border-t border-[#ececf1] p-3 bg-[#ffffff]">
-        <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
+        <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-[#6a1ff7]/40 transition-colors flex items-end gap-2 px-3 py-2">
           <textarea value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={`Message ${agent.name}…`} rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-white placeholder:text-gray-600 focus:outline-none max-h-32" />
+            className="flex-1 resize-none bg-transparent text-sm text-[#17171c] placeholder:text-[#71717f] focus:outline-none max-h-32" />
           <button onClick={send} disabled={responding || !input.trim()}
-            className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 shrink-0">
+            className="rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 shrink-0">
             {responding ? "…" : "↑"}
           </button>
         </div>

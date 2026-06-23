@@ -130,7 +130,7 @@ export default function NewAgentButton() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-[#71717f] mb-1.5 block">Description <span className="text-gray-600">(shown on public page)</span></label>
+                  <label className="text-xs text-[#71717f] mb-1.5 block">Description <span className="text-[#a0a0ab]">(shown on public page)</span></label>
                   <input value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this agent help with?"
                     className="w-full rounded-xl border border-[#ececf1] bg-[#f6f6f8] px-3 py-2.5 text-sm text-[#17171c] placeholder:text-[#a0a0ab] focus:outline-none focus:border-[#6a1ff7]/40" />
                 </div>
@@ -140,7 +140,7 @@ export default function NewAgentButton() {
                   <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} rows={6}
                     placeholder={`You are a helpful assistant that...\n\nYou should:\n- Answer questions about X\n- Always be polite\n- Never discuss Y`}
                     className="w-full rounded-xl border border-[#ececf1] bg-[#f6f6f8] px-3 py-2.5 text-sm text-[#17171c] placeholder:text-[#a0a0ab] focus:outline-none focus:border-[#6a1ff7]/40 resize-none font-mono leading-relaxed" />
-                  <p className="text-[10px] text-gray-600 mt-1">Plain English. What does the agent know? How should it talk? What should it avoid?</p>
+                  <p className="text-[10px] text-[#a0a0ab] mt-1">Plain English. What does the agent know? How should it talk? What should it avoid?</p>
                 </div>
 
                 {error && <p className="text-xs text-red-400">{error}</p>}

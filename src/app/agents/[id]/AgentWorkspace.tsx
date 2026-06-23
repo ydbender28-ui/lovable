@@ -222,7 +222,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
                   <input value={p.description} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, description: e.target.value }; onChange({ ...tool, parameters: ps }); }}
                     placeholder="Description for AI" className="flex-1 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-[#17171c] focus:outline-none" />
                   <button onClick={() => { const ps = [...tool.parameters]; ps[pi] = { ...p, required: !p.required }; onChange({ ...tool, parameters: ps }); }}
-                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-[#6a1ff7]/30 text-[#6a1ff7] bg-fuchsia-500/10" : "border-[#ececf1] text-gray-600"}`}>req</button>
+                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-[#6a1ff7]/30 text-[#6a1ff7] bg-[#eef2ff]" : "border-[#ececf1] text-gray-600"}`}>req</button>
                   <button onClick={() => { const ps = tool.parameters.filter((_, i) => i !== pi); onChange({ ...tool, parameters: ps }); }}
                     className="text-gray-600 hover:text-red-400 px-1 text-xs">×</button>
                 </div>
@@ -455,7 +455,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {saveMsg && <span className="text-xs text-green-400">{saveMsg}</span>}
           {(panel === "teach" || panel === "tools") && (
             <button onClick={saveAll} disabled={saving}
-              className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-fuchsia-500/10 text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40">
+              className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-[#eef2ff] text-[#6a1ff7] px-3 py-1.5 hover:bg-[#eef2ff] transition-colors disabled:opacity-40">
               {saving ? "Saving…" : "Save"}
             </button>
           )}
@@ -550,7 +550,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 1: Identity */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">1</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#eef2ff] text-[10px] font-bold text-[#6a1ff7]">1</span>
               <h3 className="text-sm font-medium text-[#17171c]">Who is this agent?</h3>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -571,7 +571,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex flex-wrap gap-2">
                 {AVATAR_OPTIONS.map(a => (
                   <button key={a} onClick={() => setDraft(d => ({ ...d, avatar: a }))}
-                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-[#f0f0f5] hover:bg-[#e8e8ed]"}`}>
+                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-[#eef2ff] ring-1 ring-fuchsia-400/50" : "bg-[#f0f0f5] hover:bg-[#e8e8ed]"}`}>
                     {a}
                   </button>
                 ))}
@@ -582,7 +582,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 2: Instructions */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">2</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#eef2ff] text-[10px] font-bold text-[#6a1ff7]">2</span>
               <h3 className="text-sm font-medium text-[#17171c]">How should it behave?</h3>
             </div>
 
@@ -616,7 +616,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex gap-2">
                 {MODELS.map(m => (
                   <button key={m.id} onClick={() => setDraft(d => ({ ...d, model: m.id }))}
-                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-[#6a1ff7]/40 bg-fuchsia-500/10 text-[#6a1ff7]" : "border-[#ececf1] bg-[#f0f0f5] text-[#71717f] hover:bg-[#e8e8ed]"}`}>
+                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-[#6a1ff7]/40 bg-[#eef2ff] text-[#6a1ff7]" : "border-[#ececf1] bg-[#f0f0f5] text-[#71717f] hover:bg-[#e8e8ed]"}`}>
                     {m.label}
                   </button>
                 ))}
@@ -638,7 +638,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 3: Knowledge base */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">3</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#eef2ff] text-[10px] font-bold text-[#6a1ff7]">3</span>
               <h3 className="text-sm font-medium text-[#17171c]">What does it know?</h3>
               <button onClick={addKnowledge} className="ml-auto text-xs text-[#6a1ff7] hover:text-[#6a1ff7]">+ Add</button>
             </div>

@@ -354,21 +354,21 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
         <div className="flex items-center justify-between border-b border-[#ececf1] px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Integrations</h2>
-            <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
+            <p className="mt-0.5 text-xs" style={{ color: "#71717f" }}>
               Connect services — keys are stored securely per project
             </p>
           </div>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-colors hover:bg-white/10"
-            style={{ color: "#7a8099" }}
+            style={{ color: "#71717f" }}
           >
             ✕
           </button>
         </div>
 
         {/* Category filter */}
-        <div className="flex gap-1.5 overflow-x-auto px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex gap-1.5 overflow-x-auto px-5 py-3" style={{ borderBottom: "1px solid #ececf1" }}>
           {CATEGORIES.map((c) => (
             <button
               key={c}
@@ -376,8 +376,8 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
               className="shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-all"
               style={
                 category === c
-                  ? { background: "rgba(109,95,255,0.22)", color: "#a78bfa", border: "1px solid rgba(109,95,255,0.35)" }
-                  : { background: "rgba(255,255,255,0.04)", color: "#7a8099", border: "1px solid rgba(255,255,255,0.08)" }
+                  ? { background: "rgba(106,31,247,0.22)", color: "#a78bfa", border: "1px solid rgba(106,31,247,0.35)" }
+                  : { background: "rgba(0,0,0,0.03)", color: "#71717f", border: "1px solid #ececf1" }
               }
             >
               {c}
@@ -400,8 +400,8 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                   border: connected
                     ? "1px solid rgba(34,197,94,0.30)"
                     : open
-                    ? "1px solid rgba(109,95,255,0.35)"
-                    : "1px solid rgba(255,255,255,0.07)",
+                    ? "1px solid rgba(106,31,247,0.35)"
+                    : "1px solid #ececf1",
                 }}
               >
                 {/* Row */}
@@ -415,12 +415,12 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                       <span className="text-sm font-semibold text-white">{integration.name}</span>
                       <span
                         className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold"
-                        style={{ background: "rgba(255,255,255,0.06)", color: "#7a8099" }}
+                        style={{ background: "#ececf1", color: "#71717f" }}
                       >
                         {integration.category}
                       </span>
                     </div>
-                    <p className="mt-0.5 truncate text-xs" style={{ color: "#7a8099" }}>
+                    <p className="mt-0.5 truncate text-xs" style={{ color: "#71717f" }}>
                       {integration.desc}
                     </p>
                   </div>
@@ -450,7 +450,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
 
                 {/* Expanded form */}
                 {open && (
-                  <div className="px-4 pb-4 space-y-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="px-4 pb-4 space-y-4" style={{ borderTop: "1px solid #ececf1" }}>
                     <div className="pt-3 space-y-3">
                       {integration.keys.map((k) => (
                         <div key={k.key}>
@@ -475,11 +475,11 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                             placeholder={k.placeholder}
                             className="w-full rounded-lg px-3 py-2 text-xs font-mono text-white placeholder:text-gray-600 focus:outline-none"
                             style={{
-                              background: "rgba(255,255,255,0.04)",
-                              border: "1px solid rgba(255,255,255,0.10)",
+                              background: "rgba(0,0,0,0.03)",
+                              border: "1px solid #ececf1",
                             }}
-                            onFocus={(e) => (e.target.style.borderColor = "rgba(109,95,255,0.5)")}
-                            onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.10)")}
+                            onFocus={(e) => (e.target.style.borderColor = "rgba(106,31,247,0.5)")}
+                            onBlur={(e) => (e.target.style.borderColor = "#ececf1")}
                           />
                         </div>
                       ))}
@@ -492,7 +492,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                         className="flex-1 rounded-lg py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px disabled:opacity-50"
                         style={{
                           background: "linear-gradient(135deg,#6d5fff,#5b4ee0)",
-                          boxShadow: "0 4px 16px rgba(109,95,255,0.30)",
+                          boxShadow: "0 4px 16px rgba(106,31,247,0.30)",
                         }}
                       >
                         {saved === integration.id ? "Saved ✓" : "Save & Add to App →"}
@@ -509,7 +509,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                         <button
                           onClick={() => handleDisconnect(integration)}
                           className="rounded-lg px-2.5 py-2 text-[11px] transition-colors hover:bg-red-500/10"
-                          style={{ color: "#7a8099" }}
+                          style={{ color: "#71717f" }}
                         >
                           Remove
                         </button>
@@ -525,7 +525,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
         {/* Footer */}
         <div
           className="px-5 py-3 text-xs"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.07)", color: "#4b5263" }}
+          style={{ borderTop: "1px solid #ececf1", color: "#4b5263" }}
         >
           Keys are encrypted and stored per project. They are injected into your app at build time — never exposed publicly.
         </div>

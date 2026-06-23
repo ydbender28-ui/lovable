@@ -261,8 +261,8 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search templates…"
           className="flex-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
-          style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.09)", color: "#eef0f6" }}
-          onFocus={(e) => (e.target.style.borderColor = "rgba(109,95,255,0.5)")}
+          style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.09)", color: "#17171c" }}
+          onFocus={(e) => (e.target.style.borderColor = "rgba(106,31,247,0.5)")}
           onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.09)")}
         />
         <div className="flex flex-wrap gap-1.5">
@@ -273,8 +273,8 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
               className="rounded-full px-3 py-1.5 text-xs font-medium transition-all"
               style={
                 category === c
-                  ? { background: "rgba(109,95,255,0.22)", color: "#a78bfa", border: "1px solid rgba(109,95,255,0.35)" }
-                  : { background: "rgba(255,255,255,0.04)", color: "#7a8099", border: "1px solid rgba(255,255,255,0.08)" }
+                  ? { background: "rgba(106,31,247,0.22)", color: "#a78bfa", border: "1px solid rgba(106,31,247,0.35)" }
+                  : { background: "rgba(0,0,0,0.03)", color: "#71717f", border: "1px solid #ececf1" }
               }
             >
               {c}
@@ -289,13 +289,13 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div
             key={t.id}
             className="group relative overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1"
-            style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{ background: "#ffffff", border: "1px solid #ececf1" }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = `${t.accent}55`;
               e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${t.accent}22`;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)";
+              e.currentTarget.style.borderColor = "#ececf1";
               e.currentTarget.style.boxShadow = "none";
             }}
           >
@@ -322,14 +322,14 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
 
             {/* Content */}
             <div className="p-4">
-              <h3 className="mb-1 text-sm font-semibold" style={{ color: "#eef0f6" }}>{t.name}</h3>
-              <p className="mb-3 text-xs leading-relaxed" style={{ color: "#7a8099" }}>{t.desc}</p>
+              <h3 className="mb-1 text-sm font-semibold" style={{ color: "#17171c" }}>{t.name}</h3>
+              <p className="mb-3 text-xs leading-relaxed" style={{ color: "#71717f" }}>{t.desc}</p>
               <div className="mb-4 flex flex-wrap gap-1">
                 {t.tags.map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full px-2 py-0.5 text-[10px]"
-                    style={{ background: "rgba(255,255,255,0.05)", color: "#5b6070", border: "1px solid rgba(255,255,255,0.07)" }}
+                    style={{ background: "rgba(255,255,255,0.05)", color: "#5b6070", border: "1px solid #ececf1" }}
                   >
                     {tag}
                   </span>
@@ -349,7 +349,7 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
       </div>
 
       {filtered.length === 0 && (
-        <div className="py-20 text-center" style={{ color: "#7a8099" }}>
+        <div className="py-20 text-center" style={{ color: "#71717f" }}>
           <p className="text-4xl mb-3">🔍</p>
           <p className="text-sm">No templates match &quot;{search}&quot;</p>
         </div>

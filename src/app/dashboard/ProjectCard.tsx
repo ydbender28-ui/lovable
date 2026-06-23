@@ -29,30 +29,28 @@ function timeAgo(d: Date) {
 }
 
 export default function ProjectCard({ project }: Props) {
-  // Avoid hydration mismatch — Date.now() differs between server and client
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   return (
     <div
       className="group relative overflow-hidden rounded-2xl transition-all duration-200"
-      style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "#ffffff", border: "1px solid #ececf1", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "rgba(109,95,255,0.45)";
+        e.currentTarget.style.borderColor = "rgba(106,31,247,0.4)";
         e.currentTarget.style.transform = "translateY(-3px)";
-        e.currentTarget.style.boxShadow = "0 18px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(109,95,255,0.12)";
+        e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.1), 0 0 0 1px rgba(106,31,247,0.12)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+        e.currentTarget.style.borderColor = "#ececf1";
         e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)";
       }}
     >
       <DeleteProjectButton projectId={project.id} />
 
       <Link href={`/projects/${project.id}`} className="block">
-        {/* Preview area */}
-        <div className="relative overflow-hidden" style={{ height: 160, background: "#0d0e12" }}>
+        <div className="relative overflow-hidden" style={{ height: 160, background: "#f6f6f8" }}>
           {project.hasVersion ? (
             <>
               <iframe
@@ -73,7 +71,7 @@ export default function ProjectCard({ project }: Props) {
               />
               <div
                 className="absolute inset-x-0 bottom-0 h-12"
-                style={{ background: "linear-gradient(to bottom, transparent, #0d0e12)" }}
+                style={{ background: "linear-gradient(to bottom, transparent, #f6f6f8)" }}
               />
             </>
           ) : (
@@ -81,13 +79,13 @@ export default function ProjectCard({ project }: Props) {
               className="flex h-full flex-col items-center justify-center gap-1"
               style={{
                 background:
-                  "radial-gradient(ellipse 80% 80% at 50% 30%, rgba(109,95,255,0.10) 0%, transparent 70%)",
+                  "radial-gradient(ellipse 80% 80% at 50% 30%, rgba(106,31,247,0.08) 0%, transparent 70%)",
               }}
             >
               <span
                 className="text-6xl font-bold"
                 style={{
-                  backgroundImage: "linear-gradient(135deg, rgba(167,139,250,0.35), rgba(109,95,255,0.10))",
+                  backgroundImage: "linear-gradient(135deg, rgba(106,31,247,0.3), rgba(10,143,240,0.15))",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
@@ -96,39 +94,38 @@ export default function ProjectCard({ project }: Props) {
               >
                 {project.name[0]?.toUpperCase()}
               </span>
-              <span className="text-xs" style={{ color: "#5b6070" }}>
+              <span className="text-xs" style={{ color: "#71717f" }}>
                 Generate your first build
               </span>
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div
           className="flex items-center justify-between gap-2 px-4 py-3"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+          style={{ borderTop: "1px solid #ececf1" }}
         >
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold" style={{ color: "#eef0f6" }}>
+            <p className="truncate text-sm font-semibold" style={{ color: "#17171c" }}>
               {project.name}
             </p>
-            <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
+            <p className="mt-0.5 text-xs" style={{ color: "#71717f" }}>
               {mounted ? timeAgo(project.updatedAt) : formatDate(project.updatedAt)}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {project.isPrivate && (
-              <span className="text-[10px] font-medium text-amber-400/80" title="Private project">🔒</span>
+              <span className="text-[10px] font-medium text-amber-500/80" title="Private project">🔒</span>
             )}
             {project.publishedAt && (
               <div
                 className="flex items-center gap-1.5 text-xs font-medium"
-                style={{ color: "#4ade80" }}
+                style={{ color: "#16a34a" }}
               >
                 <span className="animate-dot-pulse h-1.5 w-1.5 rounded-full" style={{ background: "#22c55e" }} />
                 Live
                 {project.visitCount > 0 && (
-                  <span className="ml-1" style={{ color: "#7a8099" }}>· {project.visitCount}</span>
+                  <span className="ml-1" style={{ color: "#71717f" }}>· {project.visitCount}</span>
                 )}
               </div>
             )}

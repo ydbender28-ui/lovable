@@ -65,7 +65,7 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
             <h2 className="text-lg font-semibold text-[#17171c]">Buy Credits</h2>
             <p className="text-xs text-[#71717f] mt-0.5">Credits never expire. Use them on any generation.</p>
           </div>
-          <button onClick={onClose} className="text-gray-600 hover:text-gray-300 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-[#71717f] hover:text-[#17171c] text-xl leading-none">×</button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -91,7 +91,7 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        <p className="text-[10px] text-gray-700 text-center">Secure payment via Stripe · No subscription · Credits never expire</p>
+        <p className="text-[10px] text-[#a0a0ab] text-center">Secure payment via Stripe · No subscription · Credits never expire</p>
       </div>
     </div>
   );

@@ -8,8 +8,8 @@ const FEATURES = [
     icon: "⚡",
     title: "Built in seconds",
     desc: "Describe it once. A working app with real code appears in under a minute.",
-    tint: "rgba(109,95,255,0.16)",
-    ring: "rgba(109,95,255,0.32)",
+    tint: "rgba(106,31,247,0.16)",
+    ring: "rgba(106,31,247,0.32)",
   },
   {
     icon: "🖥",
@@ -232,7 +232,7 @@ export default async function Home() {
               style={{
                 background: "#ffffff",
                 border: "1px solid #ececf1",
-                boxShadow: "0 40px 120px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
+                boxShadow: "0 40px 120px rgba(0,0,0,0.08), inset 0 1px 0 #ececf1",
               }}
             >
               {/* Window chrome */}
@@ -312,7 +312,7 @@ export default async function Home() {
             <div className="rounded-2xl p-6 text-center" style={{ background: "#ffffff", border: "1px solid #ececf1" }}>
               <div className="mb-4 flex justify-center gap-3">
                 {["⚡", "🖥", "🚀"].map(e => (
-                  <span key={e} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: "rgba(109,95,255,0.14)", border: "1px solid rgba(109,95,255,0.26)" }}>{e}</span>
+                  <span key={e} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: "rgba(106,31,247,0.14)", border: "1px solid rgba(106,31,247,0.26)" }}>{e}</span>
                 ))}
               </div>
               <p className="text-sm font-semibold" style={{ color: "#17171c" }}>From prompt to live app in seconds</p>
