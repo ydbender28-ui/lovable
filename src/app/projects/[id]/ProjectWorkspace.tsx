@@ -1771,7 +1771,7 @@ export default function ProjectWorkspace({
         </div>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 && !loading && flow.type === "idle" && (
+        {messages.length === 0 && !loading && flow.type === "idle" && !initialPrompt && (
           <div className="rounded-xl border border-white/[0.07] bg-[#181a27] p-4">
             <p className="text-sm text-gray-200 font-medium mb-1">Start building</p>
             <p className="text-xs text-gray-400 leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>

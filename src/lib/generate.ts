@@ -175,6 +175,12 @@ LAYOUT — copy how Apple, Stripe, Linear do it:
 - Footer: simple, 3-4 link columns, muted colors. Not a second homepage.
 
 TYPOGRAPHY — this is what separates human from AI:
+- GOOGLE FONTS (REQUIRED for new builds): Import a characterful Google Font pairing. Add a <link> tag
+  in index.html <head> for a distinctive display/heading font + a clean body font. Examples:
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
+  Pick fonts that match the brand mood: a serif or display font for headings, a sans-serif for body.
+  Never leave typography on just system-ui/Arial — that instantly looks generic.
+  Apply heading font: fontFamily:"'Fraunces', serif" and body: fontFamily:"'Inter', sans-serif"
 - Headlines: 42-64px, fontWeight:700, letterSpacing:'-0.03em', lineHeight:1.1. Color: #111.
 - Body text: 16-18px, fontWeight:400, lineHeight:1.7, color:#555 (NOT #333, too dark. NOT #999, too light).
 - Subheadings: 14px, fontWeight:500, textTransform:'uppercase', letterSpacing:'0.08em', color:#999. Use sparingly — only 1 per section.
@@ -198,27 +204,57 @@ INPUTS: background matches card bg. border:'1px solid [border color]'. borderRad
 CARDS: Follow the theme. Light themes = white bg + subtle border. Dark themes = slightly lighter than page bg + border. NO heavy glow shadows. Shadow max: '0 1px 4px rgba(0,0,0,0.1)' for light, '0 2px 8px rgba(0,0,0,0.3)' for dark.
 ICONS: Use text/Unicode symbols (→ ✓ × ↑ ↓ ‹ ›) or simple SVG. NO emoji as product/feature icons (🛒🚀⚡) — they look cheap. Exception: status indicators (✓ for success is fine).
 IMAGES — THIS IS MANDATORY, NOT OPTIONAL:
-Every app MUST have real photos. Use https://picsum.photos with a unique seed for each image. The format is:
-  https://picsum.photos/seed/UNIQUE_WORD/WIDTH/HEIGHT
-Examples:
-  Hero banner:    https://picsum.photos/seed/hero-coffee/1200/600
-  Product 1:      https://picsum.photos/seed/product-espresso/400/400
-  Product 2:      https://picsum.photos/seed/product-latte/400/400
-  Team member:    https://picsum.photos/seed/team-sarah/300/300
-  About section:  https://picsum.photos/seed/about-shop/800/500
-  Card image:     https://picsum.photos/seed/card-feature1/600/400
+Every app MUST have real, topically-matched photos. Use the {{unsplash:...}} token system — these tokens
+are automatically replaced with real photographs BEFORE your code runs.
+
+Format: {{unsplash:<descriptive search query>|<width>x<height>}}
+The query is the MOST IMPORTANT part — it determines which photo appears. Write it like you're
+searching a stock photo site for exactly the image you need for THIS specific app.
+
+Examples for a COFFEE SHOP app:
+  Hero banner:    <img src="{{unsplash:espresso shot crema closeup dark wood|1200x600}}" />
+  Product 1:      <img src="{{unsplash:latte art heart milk foam ceramic cup|400x400}}" />
+  Product 2:      <img src="{{unsplash:iced cold brew coffee glass condensation|400x400}}" />
+  Product 3:      <img src="{{unsplash:pour over coffee filter dripper brewing|400x400}}" />
+  Team member:    <img src="{{unsplash:barista apron coffee shop portrait|200x200}}" />
+  About section:  <img src="{{unsplash:coffee beans roasting machine process|800x500}}" />
+  Background:     style={{backgroundImage:"url('{{unsplash:cozy cafe interior warm lighting|1600x900}}')"}}
+
+Examples for a FITNESS app:
+  Hero:           <img src="{{unsplash:woman lifting weights gym workout|1200x600}}" />
+  Card:           <img src="{{unsplash:running trail outdoor exercise morning|600x400}}" />
+
+Every query must directly relate to the app's topic. A coffee shop should NEVER have landscape,
+cityscape, technology, or abstract images — only coffee, cafe, barista, beans, brewing imagery.
+
 Rules for images:
-- Use a DIFFERENT seed word for EVERY image — never reuse seeds
-- Make seed words descriptive: "hero-restaurant", "product-shoes-1", "team-ceo"
-- Hero/banner images: 1200x600 or 1200x800
+- Queries MUST be topically relevant to the app being built. A coffee shop MUST use coffee-related
+  queries: "espresso shot crema closeup", "latte art wooden table", "coffee beans roasting process",
+  "barista pouring milk steaming". NEVER use generic queries like "food", "product", "hero image".
+  A restaurant app needs food photos. A fitness app needs gym/workout photos. Match the INDUSTRY.
+- Use SPECIFIC, DESCRIPTIVE queries — "latte art on wooden table" not just "coffee"
+- Give each image a DISTINCT query so they show different photos
+- Hero/banner images: 1200x600 or 1200x800 or 1600x900
 - Product grid images: 400x400
 - Card images: 600x400
 - Avatar/team photos: 200x200 with borderRadius:'50%'
-- EVERY product, menu item, team member, portfolio piece, and hero section MUST have an <img> tag with a picsum URL
+- EVERY product, menu item, team member, portfolio piece, and hero section MUST have an image
 - Style all images with objectFit:'cover', width:'100%', display:'block'
 - A landing page should have AT LEAST 5 images. An e-commerce page at least 8-12.
 - NEVER use a gray div, colored placeholder, or SVG as an image substitute
 - NEVER skip images — they are the #1 thing that makes a site look real vs AI-generated
+
+CRITICAL — LITERAL TOKENS ONLY: every {{unsplash:...}} token must appear in your code as one
+COMPLETE, LITERAL string. The tokens are swapped for real URLs by a plain text search that runs
+BEFORE your code executes, so a token assembled at runtime from variables or template literals is
+NEVER replaced and that image WILL break. When rendering images from an array or .map(), store the
+WHOLE token as a literal string in the data — never split it into query/size pieces.
+  WRONG: const items=[{q:'latte art',size:'400x400'}]; <img src={"{{unsplash:"+i.q+"|"+i.size+"}}"} />
+  RIGHT: const items=[{img:'{{unsplash:latte art|400x400}}'}]; <img src={i.img} />
+The same applies to inline style backgrounds: use style={{ backgroundImage:
+"url('{{unsplash:cozy cafe|1200x800}}')" }} with the full literal token, not interpolated parts.
+WHEN EDITING: the current files may already contain resolved image URLs. If the user wants different
+imagery, REPLACE that URL with a fresh {{unsplash:<query>}} token using a precise query.
 TYPOGRAPHY: Clear hierarchy but natural — not every label needs to be UPPERCASE with letterSpacing. Reserve uppercase for nav items and table headers only.
 EMPTY STATES: Simple text message + one action button. No emoji circus.
 SPACING: Generous whitespace. Padding 16-24px on cards. 32-48px between sections. Don't cram everything together.
@@ -429,32 +465,42 @@ export interface ModelOption {
   costPer1kOutput: number;  // USD
 }
 
-// All known models with pricing
+// All known models with pricing (updated June 2026)
 export const MODELS: Record<string, ModelOption> = {
   "claude-haiku-4-5-20251001": {
     provider: "anthropic", model: "claude-haiku-4-5-20251001",
     displayName: "Claude Haiku", maxTokens: 32000,
-    costPer1kInput: 0.0008, costPer1kOutput: 0.004,
+    costPer1kInput: 0.001, costPer1kOutput: 0.005,
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
     displayName: "Claude Sonnet", maxTokens: 32000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
-  "gpt-4o-mini": {
-    provider: "openai", model: "gpt-4o-mini",
-    displayName: "GPT-4o mini", maxTokens: 16384,
-    costPer1kInput: 0.00015, costPer1kOutput: 0.0006,
+  "gpt-5.4-mini": {
+    provider: "openai", model: "gpt-5.4-mini",
+    displayName: "GPT-5.4 mini", maxTokens: 16384,
+    costPer1kInput: 0.00075, costPer1kOutput: 0.0045,
   },
-  "gpt-4o": {
-    provider: "openai", model: "gpt-4o",
-    displayName: "GPT-4o", maxTokens: 16384,
-    costPer1kInput: 0.005, costPer1kOutput: 0.015,
+  "gpt-5.4": {
+    provider: "openai", model: "gpt-5.4",
+    displayName: "GPT-5.4", maxTokens: 16384,
+    costPer1kInput: 0.0025, costPer1kOutput: 0.015,
+  },
+  "gpt-5.4-nano": {
+    provider: "openai", model: "gpt-5.4-nano",
+    displayName: "GPT-5.4 nano", maxTokens: 16384,
+    costPer1kInput: 0.0002, costPer1kOutput: 0.00125,
   },
   "gemini-2.5-flash": {
     provider: "google", model: "gemini-2.5-flash",
     displayName: "Gemini 2.5 Flash", maxTokens: 32000,
     costPer1kInput: 0.00015, costPer1kOutput: 0.00060,
+  },
+  "gemini-2.5-flash-lite": {
+    provider: "google", model: "gemini-2.5-flash-lite",
+    displayName: "Gemini Flash Lite", maxTokens: 16384,
+    costPer1kInput: 0.0001, costPer1kOutput: 0.0004,
   },
 };
 
@@ -517,18 +563,18 @@ function buildRouting(): Record<Complexity, string[]> {
 
   return {
     simple: [
-      ...(hasGemini ? ["gemini-2.5-flash"] : []),
-      ...(hasOpenAI ? ["gpt-4o-mini"] : []),
+      ...(hasGemini ? ["gemini-2.5-flash-lite"] : []),
+      ...(hasOpenAI ? ["gpt-5.4-nano"] : []),
       "claude-haiku-4-5-20251001",
     ],
     medium: [
-      ...(hasOpenAI ? ["gpt-4o-mini"] : []),
+      ...(hasOpenAI ? ["gpt-5.4-mini"] : []),
       ...(hasGemini ? ["gemini-2.5-flash"] : []),
       "claude-haiku-4-5-20251001",
     ],
     complex: [
       "claude-sonnet-4-6",
-      ...(hasOpenAI ? ["gpt-4o"] : []),
+      ...(hasOpenAI ? ["gpt-5.4"] : []),
       "claude-haiku-4-5-20251001",
     ],
   };
@@ -595,13 +641,10 @@ export async function smartRoute(
     };
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
   try {
-    const res = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 150,
-      system: `Classify a user's app-building request in one JSON object. Be concise.
+    // Use Gemini Flash Lite for classification — 10x cheaper than Haiku
+    const classifierPrompt = `${hasExistingCode ? "[Editing existing app] " : "[New app] "}${prompt.slice(0, 500)}`;
+    const classifierSystem = `Classify a user's app-building request in one JSON object. Be concise.
 
 taskType options:
 - "style"     — color, font, spacing, layout tweak, background, border, size change
@@ -612,11 +655,29 @@ taskType options:
 - "complex"   — auth systems, payments, multi-page apps, real-time, 3rd-party APIs, data models
 
 Return ONLY JSON, no markdown:
-{"intent":"<10-15 word plain English description of exactly what will be built/changed>","taskType":"<one of the 6 types above>"}`,
-      messages: [{ role: "user", content: `${hasExistingCode ? "[Editing existing app] " : "[New app] "}${prompt.slice(0, 500)}` }],
-    });
+{"intent":"<10-15 word plain English description of exactly what will be built/changed>","taskType":"<one of the 6 types above>"}`;
 
-    const text = (res.content[0] as { type: string; text: string }).text.trim();
+    let text: string;
+    if (process.env.GOOGLE_AI_API_KEY) {
+      const { GoogleGenAI } = await import("@google/genai");
+      const genai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+      const r = await genai.models.generateContent({
+        model: "gemini-2.5-flash-lite",
+        contents: classifierPrompt,
+        config: { systemInstruction: classifierSystem, responseMimeType: "text/plain", maxOutputTokens: 100 },
+      });
+      text = (r.text ?? "").trim();
+    } else {
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const res = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 150,
+        system: classifierSystem,
+        messages: [{ role: "user", content: classifierPrompt }],
+      });
+      text = (res.content[0] as { type: string; text: string }).text.trim();
+    }
+
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("no json");
     const parsed = JSON.parse(match[0]) as { intent: string; taskType: RouteDecision["taskType"] };
@@ -761,6 +822,91 @@ async function generateWithGoogle(
     }
   }
   return { text, stopped, inputTokens, outputTokens };
+}
+
+// ─── Unsplash image resolution ────────────────────────────────────────────────
+// Resolves {{unsplash:<query>|<w>x<h>}} tokens in generated code with real photos.
+// Three-tier fallback: Unsplash API → LoremFlickr → picsum.photos (always loads).
+
+const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;
+const UNSPLASH_TOKEN = /\{\{unsplash:([^}|]+?)(?:\|(\d+)x(\d+))?\}\}/g;
+
+async function fetchUnsplashPool(query: string): Promise<string[]> {
+  if (!UNSPLASH_KEY) return [];
+  try {
+    const url =
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}` +
+      `&per_page=8&content_filter=high`;
+    const r = await fetch(url, { headers: { Authorization: `Client-ID ${UNSPLASH_KEY}` }, signal: AbortSignal.timeout(4000) });
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.results ?? [])
+      .map((p: { urls?: { raw?: string } }) => p.urls?.raw)
+      .filter((u: string | undefined): u is string => Boolean(u));
+  } catch {
+    return [];
+  }
+}
+
+function flickrTags(query: string): string {
+  return query.trim().split(/\s+/).slice(0, 2)
+    .map(t => t.replace(/[^a-z0-9]/gi, "")).filter(Boolean).join(",") || "abstract";
+}
+
+function flickrUrl(query: string, w: number, h: number, index: number): string {
+  return `https://loremflickr.com/${w}/${h}/${encodeURIComponent(flickrTags(query))}?lock=${index + 1}`;
+}
+
+function picsumUrl(query: string, w: number, h: number): string {
+  const seed = encodeURIComponent(query.trim()).replace(/%20/g, "-");
+  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+}
+
+async function returnsImage(url: string): Promise<boolean> {
+  try {
+    const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(3000) });
+    return r.ok && (r.headers.get("content-type") ?? "").startsWith("image/");
+  } catch {
+    return false;
+  }
+}
+
+async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
+  const queries = new Set<string>();
+  for (const content of Object.values(files)) {
+    for (const m of content.matchAll(UNSPLASH_TOKEN)) queries.add(m[1].trim());
+  }
+  if (queries.size === 0) return files;
+
+  const pools = new Map<string, string[]>();
+  const flickrOk = new Map<string, boolean>();
+  await Promise.all(
+    [...queries].map(async (q) => {
+      const pool = await fetchUnsplashPool(q);
+      pools.set(q, pool);
+      if (pool.length === 0) flickrOk.set(q, await returnsImage(flickrUrl(q, 600, 400, 0)));
+    }),
+  );
+
+  const counters = new Map<string, number>();
+  const resolved: ProjectFiles = {};
+  for (const [path, content] of Object.entries(files)) {
+    resolved[path] = content.replace(UNSPLASH_TOKEN, (_full, qRaw: string, ws?: string, hs?: string) => {
+      const q = qRaw.trim();
+      const w = ws ? parseInt(ws, 10) : 1200;
+      const h = hs ? parseInt(hs, 10) : 800;
+      const pool = pools.get(q) ?? [];
+      const i = counters.get(q) ?? 0;
+      counters.set(q, i + 1);
+      if (pool.length === 0) {
+        return flickrOk.get(q) ? flickrUrl(q, w, h, i) : picsumUrl(q, w, h);
+      }
+      const base = pool[i % pool.length];
+      const sep = base.includes("?") ? "&" : "?";
+      return `${base}${sep}w=${w}&h=${h}&fit=crop&crop=entropy&q=80&auto=format`;
+    });
+  }
+  return resolved;
 }
 
 // ─── Delimiter format parser ──────────────────────────────────────────────────
@@ -952,8 +1098,27 @@ Make the entire layout and structure match this design system. It should look DR
     throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
   }
 
+  // Resolve {{unsplash:...}} tokens → real photo URLs (max 8s, falls back to picsum)
+  let resolvedFiles: ProjectFiles;
+  try {
+    resolvedFiles = await Promise.race([
+      resolveImages(parsed.files),
+      new Promise<ProjectFiles>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+    ]);
+  } catch {
+    // Timeout or error — fall back to picsum for any remaining tokens
+    resolvedFiles = {} as ProjectFiles;
+    for (const [path, content] of Object.entries(parsed.files)) {
+      resolvedFiles[path] = content.replace(UNSPLASH_TOKEN, (_full, qRaw: string, ws?: string, hs?: string) => {
+        const w = ws ? parseInt(ws, 10) : 1200;
+        const h = hs ? parseInt(hs, 10) : 800;
+        return picsumUrl(qRaw.trim(), w, h);
+      });
+    }
+  }
+
   return {
-    files: parsed.files,
+    files: resolvedFiles,
     summary: parsed.summary,
     modelUsed: modelOpt.displayName,
     complexity,
