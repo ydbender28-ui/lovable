@@ -335,32 +335,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* ---------- Features ---------- */}
-        <section id="features" className="mt-32 scroll-mt-20">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold" style={{ color: "#17171c", letterSpacing: "-0.04em" }}>
-              Everything you need to ship
-            </h2>
-            <p className="mt-3 text-sm" style={{ color: "#71717f" }}>
-              From first prompt to live URL — no code required.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-2xl p-6 transition-all hover:-translate-y-1"
-                style={{ background: "#ffffff", border: "1px solid #ececf1" }}
-              >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: f.tint, border: `1px solid ${f.ring}` }}>
-                  {f.icon}
-                </div>
-                <h3 className="mb-1.5 text-sm font-semibold" style={{ color: "#17171c" }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#71717f" }}>{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Features section removed */}
 
         {/* ---------- Pricing ---------- */}
         <section id="pricing" className="mt-32 scroll-mt-20">
