@@ -275,6 +275,7 @@ export default function ProjectWorkspace({
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("Thinking...");
+  const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
@@ -1212,10 +1213,13 @@ export default function ProjectWorkspace({
     setUploadImage(null);
 
     try {
+      const controller = new AbortController();
+      abortRef.current = controller;
       const res = await fetch(`/api/projects/${projectId}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: fullText, envVars: mergedEnv, forceModel, ...imgPayload }),
+        signal: controller.signal,
       });
       if (res.status === 402) {
         const body = await res.json().catch(() => ({}));
@@ -1254,6 +1258,8 @@ export default function ProjectWorkspace({
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
+              // Mark this version as ours so the sync poller doesn't show "Synced from another device"
+              lastKnownVersionAt.current = new Date().toISOString();
               // Auto preview switching based on prompt keywords
               const pl = text.toLowerCase();
               if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
@@ -1275,7 +1281,7 @@ export default function ProjectWorkspace({
                 }];
                 // If the app has an admin panel and no password was specified, ask inline
                 const htmlContent = Object.values(payload.files as Record<string, string>).join("\n");
-                const hasAdmin = /admin\s*(login|panel|view|password|auth)|password.*===|===.*password|checkPass|verifyPass|adminPw|adminPass|isAdmin.*state|setIsAdmin|Admin Login/i.test(htmlContent);
+                const hasAdmin = /ADMIN_PASSWORD\s*=|adminPassword\s*=|checkPass|verifyPass|adminPw\s*=|isAdmin.*useState|setIsAdmin|Admin Login/i.test(htmlContent);
                 const userSpecifiedPassword = /password[:\s"']+\w{3,}|pass(word)?[:\s"']+\w{3,}/i.test(text);
                 if (hasAdmin && !userSpecifiedPassword && !silent) {
                   msgs.push({
@@ -1318,10 +1324,19 @@ export default function ProjectWorkspace({
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setMessages(prev => [...prev, { id: `msg-stop-${Date.now()}`, role: "assistant", content: "Generation stopped." }]);
+      } else {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      }
     } finally {
+      abortRef.current = null;
       setLoading(false);
     }
+  }
+
+  function stopGenerating() {
+    abortRef.current?.abort();
   }
 
   async function handleEnhancePrompt() {
@@ -2108,10 +2123,17 @@ export default function ProjectWorkspace({
                   </span>
                 )
               )}
-              <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : loading) || !prompt.trim()}
-                className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
-                {chatMode ? (chatStreaming ? "Thinking..." : "Send") : (loading ? "Generating..." : "Send")}
-              </button>
+              {loading && !chatMode ? (
+                <button onClick={stopGenerating}
+                  className="rounded-lg bg-red-500/80 hover:bg-red-500 text-white px-4 py-1.5 text-sm font-medium transition-colors">
+                  Stop
+                </button>
+              ) : (
+                <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : false) || !prompt.trim()}
+                  className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+                  {chatMode ? (chatStreaming ? "Thinking..." : "Send") : "Send"}
+                </button>
+              )}
             </div>
           </div>
         </div>
