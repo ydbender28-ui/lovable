@@ -389,12 +389,12 @@ export interface ModelOption {
 export const MODELS: Record<string, ModelOption> = {
   "claude-haiku-4-5-20251001": {
     provider: "anthropic", model: "claude-haiku-4-5-20251001",
-    displayName: "Claude Haiku", maxTokens: 32000,
+    displayName: "Claude Haiku", maxTokens: 12000,
     costPer1kInput: 0.001, costPer1kOutput: 0.005,
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 32000,
+    displayName: "Claude Sonnet", maxTokens: 16000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
