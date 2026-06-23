@@ -377,7 +377,7 @@ Return ONLY a JSON object of exactly this shape — no markdown, no prose around
 export type Complexity = "simple" | "medium" | "complex";
 
 export interface ModelOption {
-  provider: "anthropic" | "openai";
+  provider: "anthropic" | "openai" | "google";
   model: string;
   displayName: string;
   maxTokens: number;
@@ -411,6 +411,11 @@ export const MODELS: Record<string, ModelOption> = {
     provider: "openai", model: "gpt-5.4-nano",
     displayName: "GPT-5.4 nano", maxTokens: 16384,
     costPer1kInput: 0.0002, costPer1kOutput: 0.00125,
+  },
+  "gemini-2.5-flash": {
+    provider: "google", model: "gemini-2.5-flash",
+    displayName: "Gemini 2.5 Flash", maxTokens: 16000,
+    costPer1kInput: 0.00015, costPer1kOutput: 0.0035,
   },
 };
 
@@ -490,6 +495,7 @@ const ROUTING = buildRouting();
 function hasKey(provider: ModelOption["provider"]) {
   if (provider === "anthropic") return !!process.env.ANTHROPIC_API_KEY;
   if (provider === "openai")    return !!process.env.OPENAI_API_KEY;
+  if (provider === "google")    return !!process.env.GOOGLE_AI_API_KEY;
   return false;
 }
 
@@ -682,6 +688,36 @@ async function generateWithOpenAI(
   return { text, stopped, inputTokens, outputTokens };
 }
 
+async function generateWithGoogle(
+  model: string,
+  maxTokens: number,
+  userContent: string,
+  systemPrompt: string,
+  onToken: (t: string) => void
+): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
+  const { GoogleGenAI } = await import("@google/genai");
+  const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+
+  const stream = await client.models.generateContentStream({
+    model,
+    config: { maxOutputTokens: maxTokens, systemInstruction: systemPrompt },
+    contents: [{ role: "user", parts: [{ text: userContent }] }],
+  });
+
+  let text = "";
+  let inputTokens = 0, outputTokens = 0;
+  for await (const chunk of stream) {
+    const delta = chunk.text ?? "";
+    if (delta) { text += delta; onToken(delta); }
+    if (chunk.usageMetadata) {
+      inputTokens = chunk.usageMetadata.promptTokenCount ?? 0;
+      outputTokens = chunk.usageMetadata.candidatesTokenCount ?? 0;
+    }
+  }
+  const stopped = outputTokens >= maxTokens - 100;
+  return { text, stopped, inputTokens, outputTokens };
+}
+
 
 // ─── Unsplash image resolution ────────────────────────────────────────────────
 // Resolves {{unsplash:<query>|<w>x<h>}} tokens in generated code with real photos.
@@ -794,6 +830,8 @@ export async function generateQuickEdit(
 
   if (modelOpt.provider === "openai") {
     ({ inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
+  } else if (modelOpt.provider === "google") {
+    ({ inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   } else {
     ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   }
@@ -960,6 +998,8 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
       ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
     } else if (modelOpt.provider === "openai") {
       ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+    } else if (modelOpt.provider === "google") {
+      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
   } catch {
     // Provider failed — silently fall back to Claude Sonnet
