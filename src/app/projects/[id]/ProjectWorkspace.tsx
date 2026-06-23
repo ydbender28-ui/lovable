@@ -389,7 +389,8 @@ export default function ProjectWorkspace({
     | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
     | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] }
     | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan }
-    | { type: "awaitingPassword" };
+    | { type: "awaitingPassword" }
+    | { type: "colorpick"; pendingPrompt: string };
   const [flow, setFlow] = useState<FlowState>({ type: "idle" });
   const [architectMode, setArchitectMode] = useState(false);
   const [proactiveSuggestions, setProactiveSuggestions] = useState<ProactiveSuggestion[]>([]);
@@ -1113,10 +1114,8 @@ export default function ProjectWorkspace({
       const renameMatch = trimmed.match(
         /^(?:change|rename|update|set)\s+(?:the\s+)?(?:company\s+)?(?:name|title|heading|brand|text)\s+(?:from\s+.+?\s+)?to\s+["']?(.+?)["']?\s*$/i
       );
-      // "change background to #xxx" or "change background to red"
-      const bgMatch = trimmed.match(
-        /^(?:change|set|make)\s+(?:the\s+)?(?:background|bg)\s+(?:color\s+)?to\s+["']?(.+?)["']?\s*$/i
-      );
+      // Detect color/theme change requests → show palette picker
+      const isColorChange = /\b(change|make|set|switch|update)\b.*\b(color|background|theme|dark|light|blue|red|green|purple|pink|orange|teal|warm|cool|palette|scheme)\b/i.test(trimmed);
 
       if (renameMatch) {
         const newName = renameMatch[1].trim();
@@ -1143,21 +1142,13 @@ export default function ProjectWorkspace({
         }
       }
 
-      if (bgMatch) {
-        const newColor = bgMatch[1].trim();
-        const appCode = files["src/App.tsx"] || "";
-        const updated = { ...files, "src/App.tsx": appCode.replace(/background\s*:\s*['"]?(#[0-9a-fA-F]{3,8}|[a-zA-Z]+)['"]?/g, `background:'${newColor}'`) };
+      if (isColorChange) {
         setMessages(prev => {
           const alreadyShown = prev.some(m => m.role === "user" && m.content === trimmed);
           if (alreadyShown) return prev;
           return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
         });
-        setFiles(updated);
-        setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: `Changed background color to ${newColor}.` }]);
-        fetch(`/api/projects/${projectId}/save-version`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ files: updated, summary: `Background → ${newColor}` }),
-        }).catch(() => {});
+        setFlow({ type: "colorpick", pendingPrompt: trimmed });
         return;
       }
     }
@@ -1594,6 +1585,45 @@ export default function ProjectWorkspace({
     );
   }
 
+  const COLOR_PALETTES = [
+    { name: "Ocean Blue", bg: "#EFF6FF", card: "#FFFFFF", accent: "#2563EB", text: "#1E293B", muted: "#64748B", swatch: ["#EFF6FF", "#2563EB", "#1E293B"] },
+    { name: "Midnight Dark", bg: "#0A0A0A", card: "#141414", accent: "#FAFAFA", text: "#F5F5F5", muted: "#737373", swatch: ["#0A0A0A", "#FAFAFA", "#737373"] },
+    { name: "Forest Green", bg: "#F0FDF4", card: "#FFFFFF", accent: "#16A34A", text: "#14532D", muted: "#6B7280", swatch: ["#F0FDF4", "#16A34A", "#14532D"] },
+    { name: "Warm Ember", bg: "#FEF7F0", card: "#FFFFFF", accent: "#C2410C", text: "#1C1109", muted: "#78716C", swatch: ["#FEF7F0", "#C2410C", "#1C1109"] },
+    { name: "Royal Purple", bg: "#FAF5FF", card: "#FFFFFF", accent: "#7C3AED", text: "#1E1B4B", muted: "#6B7280", swatch: ["#FAF5FF", "#7C3AED", "#1E1B4B"] },
+    { name: "Soft Rose", bg: "#FFF1F2", card: "#FFFFFF", accent: "#E11D48", text: "#1C1917", muted: "#9CA3AF", swatch: ["#FFF1F2", "#E11D48", "#1C1917"] },
+  ];
+
+  function ColorPickCard() {
+    if (flow.type !== "colorpick") return null;
+    const f = flow;
+    return (
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+        <p className="text-xs font-medium text-white">Choose a color palette</p>
+        <div className="grid grid-cols-2 gap-2">
+          {COLOR_PALETTES.map((p) => (
+            <button key={p.name} onClick={() => {
+              setFlow({ type: "idle" });
+              runGenerate(`${f.pendingPrompt}\n\nApply this EXACT color palette to the ENTIRE app — every section, every component, every background, every card, every border. Leave no element with the old colors.\nBackground: ${p.bg}\nCard/surface: ${p.card}\nAccent/buttons: ${p.accent}\nText: ${p.text}\nMuted/secondary text: ${p.muted}\nChange ALL background colors, ALL card colors, ALL text colors, ALL border colors. Check every single style prop in the code.`);
+            }}
+              className="text-left rounded-lg border border-white/10 hover:border-fuchsia-400/30 bg-white/[0.02] hover:bg-fuchsia-500/5 p-2.5 transition-all">
+              <div className="flex gap-1 mb-1.5">
+                {p.swatch.map((c, j) => (
+                  <div key={j} className="h-5 w-5 rounded-full border border-white/10" style={{ background: c }} />
+                ))}
+              </div>
+              <p className="text-[11px] font-medium text-white">{p.name}</p>
+            </button>
+          ))}
+        </div>
+        <button onClick={() => { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); }}
+          className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          Skip — let AI decide →
+        </button>
+      </div>
+    );
+  }
+
   function ArchitectCard() {
     if (flow.type !== "architect") return null;
     const { plan, pendingPrompt } = flow;
@@ -1904,6 +1934,7 @@ export default function ProjectWorkspace({
         )}
 
         <DesignPickCard />
+        <ColorPickCard />
         <ArchitectCard />
         <ClarifyCard />
         <ApiKeyCard />
