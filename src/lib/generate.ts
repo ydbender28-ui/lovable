@@ -169,10 +169,24 @@ The #1 goal: someone should look at this and think a professional designer built
 HOW TO NOT LOOK AI-GENERATED — STUDY THESE REAL SITE PATTERNS:
 
 LAYOUT — copy how Apple, Stripe, Linear do it:
-- Hero: full-width, 90vh tall, ONE headline (48-72px), ONE subtitle (18px, color:#666), ONE or TWO buttons, ONE large hero image. That's it. No feature grid in the hero.
+- Hero: TWO options, pick ONE:
+  OPTION A (image background): A div with position:'relative', minHeight:'90vh', backgroundImage with
+  an {{unsplash:...}} token, backgroundSize:'cover', backgroundPosition:'center'. ALWAYS add a dark
+  gradient overlay div (position:'absolute', inset:0, background:'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7))')
+  on top, then place text OVER the overlay (position:'relative', zIndex:1, color:'#fff'). Text MUST be
+  white on dark overlay — never dark text on a busy photo background.
+  OPTION B (split layout): flexbox row, text on one side (50%), image on the other (50%) as a simple
+  <img> tag with objectFit:'cover', height:'100%'. Clean and simple. No circular cutouts, no fancy shapes.
+- NEVER place text directly on a background image without a gradient overlay — it will be unreadable.
+- NEVER use circular image cutouts, diamond shapes, or clip-path on hero images — just rectangles.
 - Sections alternate: image-left/text-right, then text-left/image-right. Not 3 cards, 3 cards, 3 cards.
+- Product/menu GRIDS: always use display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))',
+  gap:'24px'. NEVER show a single product card floating alone — always at least 3-4 items in a grid.
 - Use maxWidth:'1200px', margin:'0 auto' for content. Padding 80-120px vertically between sections. NOT 32px — that's too cramped.
+- Every section must have clear top/bottom padding (60-100px) to separate from adjacent sections.
 - Footer: simple, 3-4 link columns, muted colors. Not a second homepage.
+- NEVER let elements overlap the nav bar or extend behind it. The nav should have a solid background color
+  and zIndex:100 so content scrolls cleanly under it.
 
 TYPOGRAPHY — this is what separates human from AI:
 - GOOGLE FONTS (REQUIRED for new builds): Import a characterful Google Font pairing. Add a <link> tag
