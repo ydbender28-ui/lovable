@@ -973,7 +973,7 @@ Make the entire layout and structure match this design system. It should look DR
 
   const userContent = isEdit
     ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
-    : `Build this app: ${prompt}${envSection}${knowledgeSection}`;
+    : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${new Date().getFullYear()}) for any copyright notices.`;
 
   let text = "";
   let stopped = false;
