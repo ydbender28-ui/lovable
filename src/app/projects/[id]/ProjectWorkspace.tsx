@@ -491,6 +491,7 @@ export default function ProjectWorkspace({
 
   // Cross-device sync — poll for newer versions every 10s when idle and tab is visible
   const lastKnownVersionAt = useRef<string | null>(null);
+  const justSaved = useRef(false);
   useEffect(() => {
     const poll = async () => {
       if (loading || document.hidden) return;
@@ -506,10 +507,13 @@ export default function ProjectWorkspace({
         }
         if (data.updatedAt !== lastKnownVersionAt.current) {
           lastKnownVersionAt.current = data.updatedAt;
+          if (justSaved.current) {
+            justSaved.current = false;
+            return;
+          }
           setFiles(data.files);
           if (data.summary) {
             setMessages(prev => {
-              // avoid duplicate if we already have this message
               const last = prev[prev.length - 1];
               if (last?.role === "assistant" && last.content === data.summary) return prev;
               return [...prev, { id: `sync-${data.updatedAt}`, role: "assistant", content: "↻ Synced from another device." }];
@@ -1135,7 +1139,7 @@ export default function ProjectWorkspace({
           });
           setFiles(updated);
           setMessages(prev => [...prev, { id: `msg-${Date.now()}`, role: "assistant", content: `Renamed "${oldName}" to "${newName}" across the app.` }]);
-          // Save version silently
+          justSaved.current = true;
           fetch(`/api/projects/${projectId}/save-version`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ files: updated, summary: `Renamed to ${newName}` }),
@@ -1251,8 +1255,7 @@ export default function ProjectWorkspace({
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
               setFiles(payload.files);
-              // Mark this version as ours so the sync poller doesn't show "Synced from another device"
-              lastKnownVersionAt.current = new Date().toISOString();
+              justSaved.current = true;
               // Auto preview switching based on prompt keywords
               const pl = text.toLowerCase();
               if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
@@ -1596,18 +1599,21 @@ export default function ProjectWorkspace({
     { name: "Soft Rose", bg: "#FFF1F2", card: "#FFFFFF", accent: "#E11D48", text: "#1C1917", muted: "#9CA3AF", swatch: ["#FFF1F2", "#E11D48", "#1C1917"] },
   ];
 
+  const [customColors, setCustomColors] = useState({ bg: "#F6F6F8", card: "#FFFFFF", accent: "#6A1FF7", text: "#17171C", muted: "#71717F" });
+
   function ColorPickCard() {
     if (flow.type !== "colorpick") return null;
     const f = flow;
+    const applyPalette = (bg: string, card: string, accent: string, text: string, muted: string) => {
+      setFlow({ type: "idle" });
+      runGenerate(`${f.pendingPrompt}\n\nApply this EXACT color palette to the ENTIRE app — every section, every component, every background, every card, every border. Leave no element with the old colors.\nBackground: ${bg}\nCard/surface: ${card}\nAccent/buttons: ${accent}\nText: ${text}\nMuted/secondary text: ${muted}\nChange ALL background colors, ALL card colors, ALL text colors, ALL border colors. Check every single style prop in the code.`);
+    };
     return (
       <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-3">
         <p className="text-xs font-medium text-[#17171c]">Choose a color palette</p>
         <div className="grid grid-cols-2 gap-2">
           {COLOR_PALETTES.map((p) => (
-            <button key={p.name} onClick={() => {
-              setFlow({ type: "idle" });
-              runGenerate(`${f.pendingPrompt}\n\nApply this EXACT color palette to the ENTIRE app — every section, every component, every background, every card, every border. Leave no element with the old colors.\nBackground: ${p.bg}\nCard/surface: ${p.card}\nAccent/buttons: ${p.accent}\nText: ${p.text}\nMuted/secondary text: ${p.muted}\nChange ALL background colors, ALL card colors, ALL text colors, ALL border colors. Check every single style prop in the code.`);
-            }}
+            <button key={p.name} onClick={() => applyPalette(p.bg, p.card, p.accent, p.text, p.muted)}
               className="text-left rounded-lg border border-[#ececf1] hover:border-[#6a1ff7]/30 bg-[#fbfbfc] hover:bg-[#f0f0ff] p-2.5 transition-all">
               <div className="flex gap-1 mb-1.5">
                 {p.swatch.map((c, j) => (
@@ -1617,6 +1623,31 @@ export default function ProjectWorkspace({
               <p className="text-[11px] font-medium text-[#17171c]">{p.name}</p>
             </button>
           ))}
+        </div>
+        <div className="border-t border-[#ececf1] pt-3 space-y-2">
+          <p className="text-[11px] font-medium text-[#17171c]">Custom palette</p>
+          <div className="grid grid-cols-5 gap-1.5">
+            {([
+              ["bg", "BG"],
+              ["card", "Card"],
+              ["accent", "Accent"],
+              ["text", "Text"],
+              ["muted", "Muted"],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex flex-col items-center gap-1">
+                <div className="relative h-7 w-7 rounded-full border border-[#ececf1] overflow-hidden cursor-pointer" style={{ background: customColors[key] }}>
+                  <input type="color" value={customColors[key]}
+                    onChange={e => setCustomColors(prev => ({ ...prev, [key]: e.target.value }))}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                </div>
+                <span className="text-[9px] text-[#9090a0]">{label}</span>
+              </label>
+            ))}
+          </div>
+          <button onClick={() => applyPalette(customColors.bg, customColors.card, customColors.accent, customColors.text, customColors.muted)}
+            className="w-full rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-xs font-medium py-1.5 hover:opacity-90 transition-opacity">
+            Apply custom colors
+          </button>
         </div>
         <button onClick={() => { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); }}
           className="text-xs text-[#9090a0] hover:text-[#17171c] transition-colors">

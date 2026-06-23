@@ -86,15 +86,15 @@ export default function DocsPage() {
   return (
     <div style={{ background: "#f6f6f8", minHeight: "100vh" }}>
       {/* Nav */}
-      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <header style={{ borderBottom: "1px solid #ececf1" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link href="/"><Logo size="md" /></Link>
           <div className="flex items-center gap-3">
-            <Link href="/login" className="px-4 py-2 text-sm" style={{ color: "#7a8099" }}>Log in</Link>
+            <Link href="/login" className="px-4 py-2 text-sm" style={{ color: "#71717f" }}>Log in</Link>
             <Link
               href="/signup"
               className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-              style={{ background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}
+              style={{ background: "linear-gradient(135deg,#6a1ff7,#0a8ff0)", boxShadow: "0 6px 22px rgba(106,31,247,0.25)" }}
             >
               Start free
             </Link>
@@ -110,8 +110,8 @@ export default function DocsPage() {
               <div key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="block rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors hover:text-white"
-                  style={{ color: "#4b5263", letterSpacing: "0.08em" }}
+                  className="block rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors hover:text-[#17171c]"
+                  style={{ color: "#71717f", letterSpacing: "0.08em" }}
                 >
                   {s.title}
                 </a>
@@ -119,8 +119,8 @@ export default function DocsPage() {
                   <a
                     key={item.title}
                     href={`#${s.id}`}
-                    className="block rounded-lg px-3 py-1 text-sm transition-colors hover:bg-white/5"
-                    style={{ color: "#7a8099" }}
+                    className="block rounded-lg px-3 py-1 text-sm transition-colors hover:bg-[#f0f0f5]"
+                    style={{ color: "#71717f" }}
                   >
                     {item.title}
                   </a>
@@ -133,10 +133,10 @@ export default function DocsPage() {
         {/* Content */}
         <main className="flex-1 min-w-0">
           <div className="mb-10">
-            <h1 className="text-3xl font-bold" style={{ color: "#eef0f6", letterSpacing: "-0.04em" }}>
+            <h1 className="text-3xl font-bold" style={{ color: "#17171c", letterSpacing: "-0.04em" }}>
               Documentation
             </h1>
-            <p className="mt-2 text-sm" style={{ color: "#7a8099" }}>
+            <p className="mt-2 text-sm" style={{ color: "#71717f" }}>
               Everything you need to know to build and ship apps with ThatCode.
             </p>
           </div>
@@ -146,19 +146,19 @@ export default function DocsPage() {
               <section key={s.id} id={s.id} className="scroll-mt-8">
                 <h2
                   className="mb-6 text-xl font-bold"
-                  style={{ color: "#eef0f6", letterSpacing: "-0.03em", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 12 }}
+                  style={{ color: "#17171c", letterSpacing: "-0.03em", borderBottom: "1px solid #ececf1", paddingBottom: 12 }}
                 >
                   {s.title}
                 </h2>
                 <div className="space-y-8">
                   {s.items.map((item) => (
                     <div key={item.title}>
-                      <h3 className="mb-3 text-base font-semibold" style={{ color: "#c4cad6" }}>
+                      <h3 className="mb-3 text-base font-semibold" style={{ color: "#51515c" }}>
                         {item.title}
                       </h3>
-                      <div className="rounded-xl p-5" style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="rounded-xl p-5" style={{ background: "#ffffff", border: "1px solid #ececf1" }}>
                         {item.content.split("\n\n").map((para, i) => (
-                          <p key={i} className={`text-sm leading-relaxed ${i > 0 ? "mt-3" : ""}`} style={{ color: "#7a8099", whiteSpace: "pre-line" }}>
+                          <p key={i} className={`text-sm leading-relaxed ${i > 0 ? "mt-3" : ""}`} style={{ color: "#71717f", whiteSpace: "pre-line" }}>
                             {para}
                           </p>
                         ))}

@@ -133,16 +133,16 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => saveLabs(labsEnabled.includes(f.key) ? labsEnabled.filter(k => k !== f.key) : [...labsEnabled, f.key])}
-                  className={`shrink-0 w-10 h-6 rounded-full transition-colors relative ${labsEnabled.includes(f.key) ? "bg-fuchsia-500" : "bg-white/10"}`}>
+                  className={`shrink-0 w-10 h-6 rounded-full transition-colors relative ${labsEnabled.includes(f.key) ? "bg-[#6a1ff7]" : "bg-[#d4d4dc]"}`}>
                   <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${labsEnabled.includes(f.key) ? "left-5" : "left-1"}`} />
                 </button>
               </div>
             ))}
-            {labsSaving && <p className="text-xs text-gray-600">Saving…</p>}
+            {labsSaving && <p className="text-xs text-[#9a9aaa]">Saving…</p>}
             <div className="mt-6 rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4">
-              <p className="text-sm text-gray-300">Have feedback or a feature request?</p>
+              <p className="text-sm text-[#51515c]">Have feedback or a feature request?</p>
               <a href="https://feedback.thatcode.dev" target="_blank" rel="noreferrer"
-                className="inline-block mt-2 text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
+                className="inline-block mt-2 text-xs text-[#6a1ff7] hover:text-[#6a1ff7] transition-colors">
                 Submit feedback or vote on ideas →
               </a>
             </div>
@@ -156,7 +156,7 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-[#17171c] mb-1">Your Workspaces</h2>
               <p className="text-xs text-[#71717f] mb-4">Collaborate with others. Pro users can invite unlimited collaborators — they use your credits.</p>
               {workspaces.length === 0 ? (
-                <p className="text-xs text-gray-600">No workspaces yet.</p>
+                <p className="text-xs text-[#9a9aaa]">No workspaces yet.</p>
               ) : workspaces.map(w => (
                 <div key={w.id} className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 mb-3 space-y-3">
                   <div className="flex items-center justify-between">
@@ -165,15 +165,15 @@ export default function SettingsPage() {
                       <p className="text-xs text-[#71717f]">{w._count.projects} projects · {w.members.length} members</p>
                     </div>
                     <button onClick={() => { setInviteWorkspaceId(w.id); }}
-                      className="text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
+                      className="text-xs text-[#6a1ff7] hover:text-[#6a1ff7] transition-colors">
                       Invite member
                     </button>
                   </div>
                   <div className="space-y-1.5">
                     {w.members.map(m => (
                       <div key={m.id} className="flex items-center justify-between text-xs">
-                        <span className="text-gray-300">{m.user.name ?? m.user.email}</span>
-                        <span className="text-gray-600 capitalize">{m.role}</span>
+                        <span className="text-[#51515c]">{m.user.name ?? m.user.email}</span>
+                        <span className="text-[#9a9aaa] capitalize">{m.role}</span>
                       </div>
                     ))}
                   </div>
@@ -181,15 +181,15 @@ export default function SettingsPage() {
                     <div className="space-y-2 pt-2 border-t border-[#ececf1]">
                       <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                         placeholder="Email address"
-                        className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                        className="w-full bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] placeholder:text-[#9a9aa8] focus:outline-none focus:border-[#6a1ff7]/40" />
                       <div className="flex gap-2">
                         <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
-                          className="bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] focus:outline-none">
+                          className="bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] focus:outline-none">
                           <option value="editor">Editor</option>
                           <option value="admin">Admin</option>
                         </select>
                         <button onClick={inviteMember}
-                          className="flex-1 bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 rounded-lg text-xs py-2 hover:bg-fuchsia-500/30 transition-colors">
+                          className="flex-1 bg-[#eef2ff] border border-[#6a1ff7]/20 text-[#6a1ff7] rounded-lg text-xs py-2 hover:bg-[#e0e4ff] transition-colors">
                           Send invite
                         </button>
                       </div>
@@ -204,9 +204,9 @@ export default function SettingsPage() {
               <div className="flex gap-2">
                 <input value={newWorkspaceName} onChange={e => setNewWorkspaceName(e.target.value)}
                   placeholder="Workspace name"
-                  className="flex-1 bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="flex-1 bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-[#9a9aa8] focus:outline-none focus:border-[#6a1ff7]/40" />
                 <button onClick={createWorkspace}
-                  className="bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 rounded-lg px-4 py-2 text-sm hover:bg-fuchsia-500/30 transition-colors">
+                  className="bg-[#eef2ff] border border-[#6a1ff7]/20 text-[#6a1ff7] rounded-lg px-4 py-2 text-sm hover:bg-[#e0e4ff] transition-colors">
                   Create
                 </button>
               </div>
@@ -231,7 +231,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 {profile.plan === "free" && (
-                  <Link href="/pricing" className="block text-center text-xs font-medium text-fuchsia-400 border border-fuchsia-400/30 rounded-lg py-2 hover:bg-fuchsia-500/10 transition-colors">
+                  <Link href="/pricing" className="block text-center text-xs font-medium text-[#6a1ff7] border border-[#6a1ff7]/20 rounded-lg py-2 hover:bg-[#eef2ff] transition-colors">
                     Upgrade to Pro →
                   </Link>
                 )}
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                 <label className="block text-xs text-[#71717f] mb-1">Display name</label>
                 <input value={editName} onChange={e => setEditName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-[#9a9aa8] focus:outline-none focus:border-[#6a1ff7]/40" />
               </div>
               {profile && (
                 <div>
@@ -260,14 +260,14 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-[#17171c]">Change password</h2>
               <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
                 placeholder="Current password"
-                className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-[#9a9aa8] focus:outline-none focus:border-[#6a1ff7]/40" />
               <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
                 placeholder="New password (min 8 chars)"
-                className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-[#9a9aa8] focus:outline-none focus:border-[#6a1ff7]/40" />
             </div>
 
             <button onClick={saveProfile} disabled={profileSaving}
-              className="w-full bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 rounded-lg py-2 text-sm hover:bg-fuchsia-500/30 transition-colors disabled:opacity-50">
+              className="w-full bg-[#eef2ff] border border-[#6a1ff7]/20 text-[#6a1ff7] rounded-lg py-2 text-sm hover:bg-[#e0e4ff] transition-colors disabled:opacity-50">
               {profileSaving ? "Saving…" : "Save changes"}
             </button>
             {profileMsg && <p className={`text-xs ${profileMsg.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>{profileMsg}</p>}
@@ -276,11 +276,11 @@ export default function SettingsPage() {
             <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 space-y-2">
               <p className="text-xs text-[#71717f]">Need help?</p>
               <a href="https://feedback.thatcode.dev" target="_blank" rel="noreferrer"
-                className="block text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
+                className="block text-xs text-[#6a1ff7] hover:text-[#6a1ff7] transition-colors">
                 📣 Feedback & feature requests →
               </a>
               <a href="mailto:support@thatcode.dev"
-                className="block text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
+                className="block text-xs text-[#6a1ff7] hover:text-[#6a1ff7] transition-colors">
                 ✉️ support@thatcode.dev →
               </a>
             </div>

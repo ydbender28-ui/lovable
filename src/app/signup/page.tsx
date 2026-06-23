@@ -41,22 +41,22 @@ export default function SignupPage() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.10)",
+    background: "#ffffff",
+    border: "1px solid #ececf1",
     borderRadius: 10,
     padding: "11px 14px",
-    color: "#eef0f6",
+    color: "#17171c",
     fontSize: 14,
     outline: "none",
     transition: "border-color 0.15s, box-shadow 0.15s",
   };
 
   const focus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = "rgba(109,95,255,0.6)";
-    e.target.style.boxShadow = "0 0 0 4px rgba(109,95,255,0.12)";
+    e.target.style.borderColor = "rgba(106,31,247,0.5)";
+    e.target.style.boxShadow = "0 0 0 4px rgba(106,31,247,0.08)";
   };
   const blur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = "rgba(255,255,255,0.10)";
+    e.target.style.borderColor = "#ececf1";
     e.target.style.boxShadow = "none";
   };
 
@@ -65,13 +65,13 @@ export default function SignupPage() {
       {/* Left panel */}
       <div
         className="relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden px-12 py-12 lg:flex"
-        style={{ borderRight: "1px solid rgba(255,255,255,0.07)", background: "#0c0d11" }}
+        style={{ borderRight: "1px solid #ececf1", background: "#ffffff" }}
       >
         <div
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 20% 0%, rgba(109,95,255,0.18) 0%, transparent 60%)",
+              "radial-gradient(ellipse 80% 60% at 20% 0%, rgba(106,31,247,0.06) 0%, transparent 60%)",
           }}
         />
         <Link href="/" className="relative z-10">
@@ -81,7 +81,7 @@ export default function SignupPage() {
         <div className="relative z-10 space-y-7">
           <h2
             className="text-3xl font-bold"
-            style={{ color: "#eef0f6", letterSpacing: "-0.035em", lineHeight: 1.1 }}
+            style={{ color: "#17171c", letterSpacing: "-0.035em", lineHeight: 1.1 }}
           >
             From a sentence
             <br />
@@ -103,10 +103,10 @@ export default function SignupPage() {
                 {f.icon}
               </span>
               <div>
-                <p className="text-sm font-semibold" style={{ color: "#eef0f6" }}>
+                <p className="text-sm font-semibold" style={{ color: "#17171c" }}>
                   {f.t}
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
+                <p className="mt-0.5 text-xs" style={{ color: "#71717f" }}>
                   {f.d}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export default function SignupPage() {
           ))}
         </div>
 
-        <p className="relative z-10 text-xs" style={{ color: "#4b5263" }}>
+        <p className="relative z-10 text-xs" style={{ color: "#71717f" }}>
           © 2025 ThatCode · thatcode.dev
         </p>
       </div>
@@ -130,11 +130,11 @@ export default function SignupPage() {
 
           <h1
             className="mb-1 text-2xl font-bold"
-            style={{ color: "#eef0f6", letterSpacing: "-0.03em" }}
+            style={{ color: "#17171c", letterSpacing: "-0.03em" }}
           >
             Create your account
           </h1>
-          <p className="mb-8 text-sm" style={{ color: "#7a8099" }}>
+          <p className="mb-8 text-sm" style={{ color: "#71717f" }}>
             Start building apps for free.
           </p>
 
@@ -147,7 +147,7 @@ export default function SignupPage() {
               <div key={f.label}>
                 <label
                   className="mb-1.5 block text-xs font-medium"
-                  style={{ color: "#7a8099", textTransform: "uppercase", letterSpacing: "0.08em" }}
+                  style={{ color: "#71717f", textTransform: "uppercase", letterSpacing: "0.08em" }}
                 >
                   {f.label}
                 </label>
@@ -183,17 +183,17 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all hover:-translate-y-px disabled:opacity-50"
               style={{
-                background: "linear-gradient(135deg, #6d5fff, #5b4ee0)",
-                boxShadow: "0 6px 24px rgba(109,95,255,0.35)",
+                background: "linear-gradient(135deg, #6a1ff7, #0a8ff0)",
+                boxShadow: "0 6px 24px rgba(106,31,247,0.25)",
               }}
             >
               {loading ? "Creating account…" : "Get started free →"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm" style={{ color: "#7a8099" }}>
+          <p className="mt-6 text-center text-sm" style={{ color: "#71717f" }}>
             Already have an account?{" "}
-            <Link href="/login" className="font-medium transition-opacity hover:opacity-80" style={{ color: "#a78bfa" }}>
+            <Link href="/login" className="font-medium transition-opacity hover:opacity-80" style={{ color: "#6a1ff7" }}>
               Log in
             </Link>
           </p>

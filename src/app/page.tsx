@@ -434,7 +434,7 @@ export default async function Home() {
         {/* ---------- Footer ---------- */}
         <footer
           className="mt-28 flex flex-col items-center justify-between gap-4 py-10 text-xs sm:flex-row"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "#71717f" }}
+          style={{ borderTop: "1px solid #ececf1", color: "#71717f" }}
         >
           <Logo size="sm" />
           <div className="flex items-center gap-6">

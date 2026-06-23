@@ -15,10 +15,10 @@ export default function Logo({ size = "md" }: LogoProps) {
           width: dim,
           height: dim,
           borderRadius: Math.round(dim * 0.30),
-          background: "linear-gradient(145deg, #17152a 0%, #0e0c1a 100%)",
-          border: "1px solid rgba(139,113,255,0.40)",
+          background: "linear-gradient(145deg, #f0edff 0%, #e8e4ff 100%)",
+          border: "1px solid rgba(106,31,247,0.25)",
           boxShadow:
-            "0 0 0 1px rgba(109,95,255,0.08), 0 4px 16px rgba(109,95,255,0.22), inset 0 1px 0 rgba(255,255,255,0.09)",
+            "0 0 0 1px rgba(106,31,247,0.06), 0 4px 16px rgba(106,31,247,0.10), inset 0 1px 0 rgba(255,255,255,0.60)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -53,7 +53,7 @@ export default function Logo({ size = "md" }: LogoProps) {
           userSelect: "none",
         }}
       >
-        <span style={{ color: "#eef0f6" }}>That</span>
+        <span style={{ color: "#17171c" }}>That</span>
         <span
           style={{
             background: "linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #60a5fa 100%)",

@@ -78,12 +78,12 @@ function ToolBadge({ block, onToggle }: { block: ToolStartBlock | ToolResultBloc
       <button onClick={onToggle} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#f0f0f5] transition-colors text-left">
         {isStart && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse shrink-0" />}
         {isResult && <span className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />}
-        <span className="font-mono text-fuchsia-300">{block.name}</span>
-        <span className="text-gray-500">{isStart ? (block as ToolStartBlock).description : "→ result"}</span>
+        <span className="font-mono text-[#6a1ff7]">{block.name}</span>
+        <span className="text-[#71717f]">{isStart ? (block as ToolStartBlock).description : "→ result"}</span>
         {isResult && <span className="ml-auto text-gray-600">{collapsed ? "▸" : "▾"}</span>}
       </button>
       {isResult && !collapsed && (
-        <pre className="px-3 pb-2 text-[10px] text-gray-400 whitespace-pre-wrap break-all max-h-40 overflow-y-auto border-t border-white/5">
+        <pre className="px-3 pb-2 text-[10px] text-[#71717f] whitespace-pre-wrap break-all max-h-40 overflow-y-auto border-t border-[#ececf1]">
           {(block as ToolResultBlock).result}
         </pre>
       )}
@@ -109,7 +109,7 @@ function MessageBubble({ msg, onToggleTool }: { msg: Message; onToggleTool: (blo
         {msg.blocks.map((block, i) => {
           if (block.type === "text") {
             return block.text ? (
-              <div key={i} className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">{block.text}</div>
+              <div key={i} className="text-sm text-[#17171c] leading-relaxed whitespace-pre-wrap">{block.text}</div>
             ) : null;
           }
           return (
@@ -133,12 +133,12 @@ function ToolEditor({ tool, onChange, onDelete }: {
   return (
     <div className="rounded-xl border border-[#ececf1] bg-white overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-[#f0f0f5] transition-colors" onClick={() => setOpen(o => !o)}>
-        <span className="text-xs font-mono text-fuchsia-300 flex-1 truncate">{tool.name}</span>
+        <span className="text-xs font-mono text-[#6a1ff7] flex-1 truncate">{tool.name}</span>
         <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
           tool.type === "webhook" ? "border-orange-500/30 text-orange-400 bg-orange-500/10" :
           tool.type === "browse_web" ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
           tool.type === "send_email" ? "border-green-500/30 text-green-400 bg-green-500/10" :
-          "border-[#ececf1] text-gray-500"
+          "border-[#ececf1] text-[#71717f]"
         }`}>{tool.type}</span>
         <span className="text-gray-600 text-xs">{open ? "▾" : "▸"}</span>
       </div>
@@ -146,14 +146,14 @@ function ToolEditor({ tool, onChange, onDelete }: {
         <div className="border-t border-[#ececf1] p-3 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">Function name (no spaces)</label>
+              <label className="text-[10px] text-[#71717f] mb-1 block">Function name (no spaces)</label>
               <input value={tool.name} onChange={e => onChange({ ...tool, name: e.target.value.replace(/\s/g, "_").toLowerCase() })}
-                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-[#17171c] font-mono focus:outline-none focus:border-[#6a1ff7]/40" />
             </div>
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">Type</label>
+              <label className="text-[10px] text-[#71717f] mb-1 block">Type</label>
               <select value={tool.type} onChange={e => onChange({ ...tool, type: e.target.value as AgentTool["type"] })}
-                className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40">
+                className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-[#17171c] focus:outline-none focus:border-[#6a1ff7]/40">
                 <option value="webhook">Webhook (call your API)</option>
                 <option value="fetch_url">Fetch URL</option>
                 <option value="browse_web">Browse Web</option>
@@ -163,66 +163,66 @@ function ToolEditor({ tool, onChange, onDelete }: {
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-500 mb-1 block">Description — tell the AI when to use this</label>
+            <label className="text-[10px] text-[#71717f] mb-1 block">Description — tell the AI when to use this</label>
             <textarea value={tool.description} onChange={e => onChange({ ...tool, description: e.target.value })}
-              rows={2} className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white resize-none focus:outline-none focus:border-fuchsia-400/40" />
+              rows={2} className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-[#17171c] resize-none focus:outline-none focus:border-[#6a1ff7]/40" />
           </div>
 
           {(tool.type === "webhook" || tool.type === "fetch_url") && (
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Method</label>
+                <label className="text-[10px] text-[#71717f] mb-1 block">Method</label>
                 <select value={tool.method || "POST"} onChange={e => onChange({ ...tool, method: e.target.value as AgentTool["method"] })}
-                  className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-white focus:outline-none">
+                  className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-[#17171c] focus:outline-none">
                   {["GET","POST","PUT","PATCH","DELETE"].map(m => <option key={m}>{m}</option>)}
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="text-[10px] text-gray-500 mb-1 block">Endpoint URL</label>
+                <label className="text-[10px] text-[#71717f] mb-1 block">Endpoint URL</label>
                 <input value={tool.url || ""} onChange={e => onChange({ ...tool, url: e.target.value })}
                   placeholder="https://your-api.com/endpoint"
-                  className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-[#17171c] font-mono focus:outline-none focus:border-[#6a1ff7]/40" />
               </div>
             </div>
           )}
 
           {tool.type === "send_email" && (
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">Send to email</label>
+              <label className="text-[10px] text-[#71717f] mb-1 block">Send to email</label>
               <input value={tool.toEmail || ""} onChange={e => onChange({ ...tool, toEmail: e.target.value })}
                 placeholder="you@example.com"
-                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-[#17171c] focus:outline-none focus:border-[#6a1ff7]/40" />
             </div>
           )}
 
           <div>
-            <label className="text-[10px] text-gray-500 mb-1.5 block">Authorization header (optional)</label>
+            <label className="text-[10px] text-[#71717f] mb-1.5 block">Authorization header (optional)</label>
             <input value={tool.headers?.Authorization || ""} onChange={e => onChange({ ...tool, headers: { ...tool.headers, Authorization: e.target.value } })}
               placeholder="Bearer your_api_key_here"
-              className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+              className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-[#17171c] font-mono focus:outline-none focus:border-[#6a1ff7]/40" />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[10px] text-gray-500">Parameters</label>
+              <label className="text-[10px] text-[#71717f]">Parameters</label>
               <button onClick={() => onChange({ ...tool, parameters: [...tool.parameters, { name: "param", type: "string", description: "", required: false }] })}
-                className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300">+ Add param</button>
+                className="text-[10px] text-[#6a1ff7] hover:text-[#6a1ff7]">+ Add param</button>
             </div>
             <div className="space-y-1.5">
               {tool.parameters.map((p, pi) => (
                 <div key={pi} className="flex gap-1.5 items-start">
                   <input value={p.name} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, name: e.target.value }; onChange({ ...tool, parameters: ps }); }}
-                    placeholder="name" className="w-24 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-white font-mono focus:outline-none" />
+                    placeholder="name" className="w-24 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-[#17171c] font-mono focus:outline-none" />
                   <select value={p.type} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, type: e.target.value as ToolParam["type"] }; onChange({ ...tool, parameters: ps }); }}
-                    className="w-20 rounded-lg border border-[#ececf1] bg-white px-1 py-1 text-[10px] text-white focus:outline-none">
+                    className="w-20 rounded-lg border border-[#ececf1] bg-white px-1 py-1 text-[10px] text-[#17171c] focus:outline-none">
                     <option value="string">string</option>
                     <option value="number">number</option>
                     <option value="boolean">bool</option>
                   </select>
                   <input value={p.description} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, description: e.target.value }; onChange({ ...tool, parameters: ps }); }}
-                    placeholder="Description for AI" className="flex-1 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-white focus:outline-none" />
+                    placeholder="Description for AI" className="flex-1 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-[#17171c] focus:outline-none" />
                   <button onClick={() => { const ps = [...tool.parameters]; ps[pi] = { ...p, required: !p.required }; onChange({ ...tool, parameters: ps }); }}
-                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-fuchsia-400/30 text-fuchsia-300 bg-fuchsia-500/10" : "border-[#ececf1] text-gray-600"}`}>req</button>
+                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-[#6a1ff7]/30 text-[#6a1ff7] bg-fuchsia-500/10" : "border-[#ececf1] text-gray-600"}`}>req</button>
                   <button onClick={() => { const ps = tool.parameters.filter((_, i) => i !== pi); onChange({ ...tool, parameters: ps }); }}
                     className="text-gray-600 hover:text-red-400 px-1 text-xs">×</button>
                 </div>
@@ -450,12 +450,12 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
       <header className="border-b border-[#ececf1] bg-[#f6f6f8]/90 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
         <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
         <span className="text-gray-700">/</span>
-        <span className="text-sm font-medium text-white truncate hidden sm:block">{agent.avatar} {agent.name}</span>
+        <span className="text-sm font-medium text-[#17171c] truncate hidden sm:block">{agent.avatar} {agent.name}</span>
         <div className="ml-auto flex items-center gap-2 shrink-0">
           {saveMsg && <span className="text-xs text-green-400">{saveMsg}</span>}
           {(panel === "teach" || panel === "tools") && (
             <button onClick={saveAll} disabled={saving}
-              className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40">
+              className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-fuchsia-500/10 text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40">
               {saving ? "Saving…" : "Save"}
             </button>
           )}
@@ -471,7 +471,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setPanel(tab.id)}
             className={`px-4 py-2.5 text-xs font-medium transition-colors border-b-2 -mb-px ${
-              panel === tab.id ? "border-fuchsia-400 text-fuchsia-300" : "border-transparent text-gray-500 hover:text-gray-300"
+              panel === tab.id ? "border-[#6a1ff7] text-[#6a1ff7]" : "border-transparent text-[#71717f] hover:text-[#71717f]"
             }`}>
             {tab.label}
           </button>
@@ -485,12 +485,12 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
                 <div className="text-5xl">{agent.avatar}</div>
-                <p className="text-base font-medium text-white">{agent.name}</p>
-                {agent.description && <p className="text-sm text-gray-500 max-w-sm">{agent.description}</p>}
+                <p className="text-base font-medium text-[#17171c]">{agent.name}</p>
+                {agent.description && <p className="text-sm text-[#71717f] max-w-sm">{agent.description}</p>}
                 {tools.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 justify-center max-w-sm">
                     {tools.map(t => (
-                      <span key={t.id} className="text-[10px] px-2 py-0.5 rounded-full border border-fuchsia-400/20 text-fuchsia-400/70 bg-fuchsia-500/5">
+                      <span key={t.id} className="text-[10px] px-2 py-0.5 rounded-full border border-[#6a1ff7]/20 text-[#6a1ff7]/70 bg-fuchsia-500/5">
                         {t.name}
                       </span>
                     ))}
@@ -513,7 +513,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                     <div className="flex-1 min-w-0 space-y-1">
                       {msg.blocks.map((block, bi) => {
                         if (block.type === "text") return block.text ? (
-                          <div key={bi} className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">{block.text}</div>
+                          <div key={bi} className="text-sm text-[#17171c] leading-relaxed whitespace-pre-wrap">{block.text}</div>
                         ) : null;
                         return <ToolBadge key={bi} block={block} onToggle={() => toggleToolResult(mi, bi)} />;
                       })}
@@ -529,11 +529,11 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
             ))}
           </div>
           <div className="border-t border-[#ececf1] p-3 shrink-0">
-            <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
+            <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-[#6a1ff7]/40 transition-colors flex items-end gap-2 px-3 py-2">
               <textarea value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                 placeholder={`Message ${agent.name}…`} rows={2}
-                className="flex-1 resize-none bg-transparent text-sm text-white placeholder:text-gray-600 focus:outline-none max-h-40" />
+                className="flex-1 resize-none bg-transparent text-sm text-[#17171c] placeholder:text-[#71717f] focus:outline-none max-h-40" />
               <button onClick={sendMessage} disabled={responding || !input.trim()}
                 className="rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 shrink-0">
                 {responding ? "…" : "↑"}
@@ -550,28 +550,28 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 1: Identity */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">1</span>
-              <h3 className="text-sm font-medium text-white">Who is this agent?</h3>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">1</span>
+              <h3 className="text-sm font-medium text-[#17171c]">Who is this agent?</h3>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">Name</label>
+                <label className="text-[10px] text-[#71717f] mb-1 block">Name</label>
                 <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-[#17171c] focus:outline-none focus:border-[#6a1ff7]/40" />
               </div>
               <div>
-                <label className="text-[10px] text-gray-500 mb-1 block">One-line description</label>
+                <label className="text-[10px] text-[#71717f] mb-1 block">One-line description</label>
                 <input value={draft.description ?? ""} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
                   placeholder="e.g. Sales assistant for ACME Corp"
-                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-[#17171c] placeholder:text-[#71717f] focus:outline-none focus:border-[#6a1ff7]/40" />
               </div>
             </div>
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">Avatar</label>
+              <label className="text-[10px] text-[#71717f] mb-1 block">Avatar</label>
               <div className="flex flex-wrap gap-2">
                 {AVATAR_OPTIONS.map(a => (
                   <button key={a} onClick={() => setDraft(d => ({ ...d, avatar: a }))}
-                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-[#f0f0f5] hover:bg-white/10"}`}>
+                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-[#f0f0f5] hover:bg-[#e8e8ed]"}`}>
                     {a}
                   </button>
                 ))}
@@ -582,18 +582,18 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 2: Instructions */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">2</span>
-              <h3 className="text-sm font-medium text-white">How should it behave?</h3>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">2</span>
+              <h3 className="text-sm font-medium text-[#17171c]">How should it behave?</h3>
             </div>
 
             {/* AI prompt generator */}
             <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-3">
               <p className="text-xs font-medium text-indigo-300">✨ Generate instructions with AI</p>
-              <p className="text-[10px] text-gray-500">Describe what you want in plain English — AI will write professional instructions for you.</p>
+              <p className="text-[10px] text-[#71717f]">Describe what you want in plain English — AI will write professional instructions for you.</p>
               <textarea value={promptDescription} onChange={e => setPromptDescription(e.target.value)}
                 placeholder={`e.g. "A sales assistant for my software company. It should qualify leads, explain our pricing plans (Basic $29/mo, Pro $99/mo, Enterprise custom), handle objections, and book demos. Should be friendly but professional. Never give discounts without manager approval."`}
                 rows={4}
-                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-400/40 resize-none leading-relaxed" />
+                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-[#17171c] placeholder:text-[#71717f] focus:outline-none focus:border-indigo-400/40 resize-none leading-relaxed" />
               <button onClick={generatePrompt} disabled={generatingPrompt || !promptDescription.trim()}
                 className="rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 px-4 py-2 text-xs font-medium hover:bg-indigo-500/30 transition-colors disabled:opacity-40 flex items-center gap-2">
                 {generatingPrompt ? <><span className="h-3 w-3 rounded-full border border-indigo-400 border-t-transparent animate-spin" />Generating…</> : "✨ Generate instructions"}
@@ -602,21 +602,21 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-gray-500">Instructions (edit directly)</label>
+                <label className="text-[10px] text-[#71717f]">Instructions (edit directly)</label>
                 <span className="text-[10px] text-gray-600">{draft.systemPrompt.length} chars</span>
               </div>
               <textarea value={draft.systemPrompt} onChange={e => setDraft(d => ({ ...d, systemPrompt: e.target.value }))}
                 rows={12}
                 placeholder={"You are a sales assistant for [Company].\n\nYou should:\n- Help customers understand our products\n- Answer pricing questions\n- Book demos when appropriate\n\nYou should NOT:\n- Give unauthorized discounts\n- Make promises you can't keep"}
-                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none font-mono leading-relaxed" />
+                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2.5 text-sm text-[#17171c] placeholder:text-[#71717f] focus:outline-none focus:border-[#6a1ff7]/40 resize-none font-mono leading-relaxed" />
             </div>
 
             <div>
-              <label className="text-[10px] text-gray-500 mb-1.5 block">AI model</label>
+              <label className="text-[10px] text-[#71717f] mb-1.5 block">AI model</label>
               <div className="flex gap-2">
                 {MODELS.map(m => (
                   <button key={m.id} onClick={() => setDraft(d => ({ ...d, model: m.id }))}
-                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" : "border-[#ececf1] bg-[#f0f0f5] text-gray-400 hover:bg-white/10"}`}>
+                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-[#6a1ff7]/40 bg-fuchsia-500/10 text-[#6a1ff7]" : "border-[#ececf1] bg-[#f0f0f5] text-[#71717f] hover:bg-[#e8e8ed]"}`}>
                     {m.label}
                   </button>
                 ))}
@@ -625,11 +625,11 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
             <div className="flex items-center justify-between rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2.5">
               <div>
-                <p className="text-sm text-white">Public link</p>
-                <p className="text-xs text-gray-500">{draft.public ? "Anyone with the link can chat" : "Only you"}</p>
+                <p className="text-sm text-[#17171c]">Public link</p>
+                <p className="text-xs text-[#71717f]">{draft.public ? "Anyone with the link can chat" : "Only you"}</p>
               </div>
               <button onClick={() => setDraft(d => ({ ...d, public: !d.public }))}
-                className={`relative inline-flex h-5 w-9 rounded-full transition-colors shrink-0 ${draft.public ? "bg-fuchsia-500" : "bg-white/10"}`}>
+                className={`relative inline-flex h-5 w-9 rounded-full transition-colors shrink-0 ${draft.public ? "bg-fuchsia-500" : "bg-[#e0e0e5]"}`}>
                 <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${draft.public ? "translate-x-4" : "translate-x-0.5"}`} />
               </button>
             </div>
@@ -638,12 +638,12 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Section 3: Knowledge base */}
           <section className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-fuchsia-300">3</span>
-              <h3 className="text-sm font-medium text-white">What does it know?</h3>
-              <button onClick={addKnowledge} className="ml-auto text-xs text-fuchsia-400 hover:text-fuchsia-300">+ Add</button>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-fuchsia-500/20 text-[10px] font-bold text-[#6a1ff7]">3</span>
+              <h3 className="text-sm font-medium text-[#17171c]">What does it know?</h3>
+              <button onClick={addKnowledge} className="ml-auto text-xs text-[#6a1ff7] hover:text-[#6a1ff7]">+ Add</button>
             </div>
 
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-[#71717f] leading-relaxed">
               Paste anything — your product catalog, pricing table, FAQ, return policy, company info.
               The agent reads this every time it answers and uses it to give accurate responses.
             </p>
@@ -659,7 +659,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                     { title: "Company info", content: "Company name:\nFounded:\nWhat we do:\nContact: support@yourcompany.com" },
                   ].map(template => (
                     <button key={template.title} onClick={() => setKnowledge(prev => [...prev, { id: `k_${Math.random().toString(36).slice(2,8)}`, title: template.title, content: template.content }])}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-[#71717f] hover:border-[#6a1ff7]/30 hover:text-[#6a1ff7] transition-colors">
                       + {template.title}
                     </button>
                   ))}
@@ -673,7 +673,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                   <div className="flex items-center gap-2 px-3 pt-3 pb-2">
                     <input value={item.title}
                       onChange={e => setKnowledge(prev => prev.map((k, ki) => ki === i ? { ...k, title: e.target.value } : k))}
-                      className="flex-1 bg-transparent text-sm font-medium text-white focus:outline-none placeholder:text-gray-600"
+                      className="flex-1 bg-transparent text-sm font-medium text-[#17171c] focus:outline-none placeholder:text-[#71717f]"
                       placeholder="Document title (e.g. Pricing, FAQ, Products)" />
                     <button onClick={() => setKnowledge(prev => prev.filter((_, ki) => ki !== i))}
                       className="text-gray-600 hover:text-red-400 text-sm px-1">×</button>
@@ -681,14 +681,14 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                   <textarea value={item.content}
                     onChange={e => setKnowledge(prev => prev.map((k, ki) => ki === i ? { ...k, content: e.target.value } : k))}
                     rows={8} placeholder={`Paste anything here — product details, pricing, policies, FAQs, company info...\n\nNo special formatting needed. Just write it naturally.`}
-                    className="w-full bg-transparent px-3 pb-3 text-xs text-gray-300 placeholder:text-gray-700 focus:outline-none resize-none leading-relaxed border-t border-white/5" />
+                    className="w-full bg-transparent px-3 pb-3 text-xs text-[#71717f] placeholder:text-[#a0a0ab] focus:outline-none resize-none leading-relaxed border-t border-[#ececf1]" />
                   <div className="px-3 pb-2 text-[10px] text-gray-700">{item.content.length} characters · ~{Math.ceil(item.content.length / 4)} tokens</div>
                 </div>
               ))}
             </div>
 
             {knowledge.length > 0 && (
-              <button onClick={addKnowledge} className="w-full rounded-xl border border-dashed border-[#ececf1] text-gray-600 py-3 text-xs hover:text-gray-400 hover:border-white/20 transition-colors">
+              <button onClick={addKnowledge} className="w-full rounded-xl border border-dashed border-[#ececf1] text-gray-600 py-3 text-xs hover:text-[#71717f] hover:border-white/20 transition-colors">
                 + Add another document
               </button>
             )}
@@ -707,8 +707,8 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
       {panel === "tools" && (
         <div className="flex-1 overflow-y-auto p-5 max-w-2xl space-y-4">
           <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-1.5">
-            <p className="text-sm font-medium text-white">What are tools?</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-sm font-medium text-[#17171c]">What are tools?</p>
+            <p className="text-xs text-[#71717f] leading-relaxed">
               Tools let your agent take real actions — call your APIs, read inventory systems, place orders, browse websites, send emails.
               The AI decides when to use each tool based on its description.
             </p>
@@ -716,15 +716,15 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
           {/* Built-in tools */}
           <div>
-            <p className="text-xs text-gray-500 mb-2 font-medium">Built-in (always available)</p>
+            <p className="text-xs text-[#71717f] mb-2 font-medium">Built-in (always available)</p>
             <div className="space-y-1.5">
               {[
                 { name: "fetch_url", desc: "Call any HTTP API or endpoint", color: "blue" },
                 { name: "browse_web", desc: "Read any webpage's content", color: "cyan" },
               ].map(t => (
                 <div key={t.name} className="flex items-center gap-2 rounded-lg border border-[#ececf1] bg-white px-3 py-2">
-                  <span className="text-xs font-mono text-fuchsia-300">{t.name}</span>
-                  <span className="text-xs text-gray-500 flex-1">{t.desc}</span>
+                  <span className="text-xs font-mono text-[#6a1ff7]">{t.name}</span>
+                  <span className="text-xs text-[#71717f] flex-1">{t.desc}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-green-500/30 text-green-400 bg-green-500/10">active</span>
                 </div>
               ))}
@@ -734,8 +734,8 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Custom tools */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-500 font-medium">Your tools</p>
-              <button onClick={() => addTool()} className="text-xs text-fuchsia-400 hover:text-fuchsia-300">+ Add tool</button>
+              <p className="text-xs text-[#71717f] font-medium">Your tools</p>
+              <button onClick={() => addTool()} className="text-xs text-[#6a1ff7] hover:text-[#6a1ff7]">+ Add tool</button>
             </div>
             {tools.length === 0 && (
               <div className="rounded-xl border border-dashed border-[#ececf1] p-6 text-center">
@@ -743,7 +743,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                 <div className="flex flex-wrap gap-2 justify-center">
                   {TOOL_TEMPLATES.map(t => (
                     <button key={t.name} onClick={() => addTool(t)}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-[#71717f] hover:border-[#6a1ff7]/30 hover:text-[#6a1ff7] transition-colors">
                       + {t.name}
                     </button>
                   ))}
@@ -761,7 +761,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex flex-wrap gap-2 mt-3">
                 {TOOL_TEMPLATES.filter(t => !tools.find(x => x.name === t.name)).map(t => (
                   <button key={t.name} onClick={() => addTool(t)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-[#ececf1] text-gray-500 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                    className="text-xs px-2.5 py-1 rounded-lg border border-[#ececf1] text-[#71717f] hover:border-[#6a1ff7]/30 hover:text-[#6a1ff7] transition-colors">
                     + {t.name}
                   </button>
                 ))}
@@ -772,9 +772,9 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           {/* Computer use info */}
           <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4 space-y-2">
             <p className="text-xs font-medium text-indigo-300">🖥️ Computer use (clicking, typing on websites)</p>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-[#71717f] leading-relaxed">
               To actually navigate websites and fill forms, you need a cloud browser service.
-              The easiest option is <strong className="text-gray-300">Browserbase</strong> or <strong className="text-gray-300">Steel.dev</strong>.
+              The easiest option is <strong className="text-[#71717f]">Browserbase</strong> or <strong className="text-[#71717f]">Steel.dev</strong>.
             </p>
             <p className="text-xs text-gray-600">
               Add your Browserbase API key to the environment and the agent gains the ability to browse, click, and interact with any website.
@@ -788,23 +788,23 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
       {panel === "share" && (
         <div className="flex-1 overflow-y-auto p-5 max-w-lg space-y-5">
           <div>
-            <p className="text-xs font-medium text-white mb-1.5">Public link</p>
+            <p className="text-xs font-medium text-[#17171c] mb-1.5">Public link</p>
             <div className="flex gap-2">
-              <input readOnly value={publicUrl} className="flex-1 rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-gray-300 focus:outline-none" />
+              <input readOnly value={publicUrl} className="flex-1 rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-[#71717f] focus:outline-none" />
               <button onClick={() => navigator.clipboard.writeText(publicUrl)}
-                className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-gray-300 px-3 py-2 text-xs hover:bg-white/10">Copy</button>
+                className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-3 py-2 text-xs hover:bg-[#e8e8ed]">Copy</button>
             </div>
           </div>
           <div>
-            <p className="text-xs font-medium text-white mb-1.5">Embed on any website</p>
-            <pre className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] p-3 text-[10px] text-gray-400 whitespace-pre-wrap break-all">{embedCode}</pre>
+            <p className="text-xs font-medium text-[#17171c] mb-1.5">Embed on any website</p>
+            <pre className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] p-3 text-[10px] text-[#71717f] whitespace-pre-wrap break-all">{embedCode}</pre>
             <button onClick={() => navigator.clipboard.writeText(embedCode)}
-              className="mt-2 text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-gray-300 px-3 py-1.5 hover:bg-white/10">Copy embed</button>
+              className="mt-2 text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-3 py-1.5 hover:bg-[#e8e8ed]">Copy embed</button>
           </div>
           <div className="rounded-xl border border-[#ececf1] bg-white p-4">
-            <p className="text-xs font-medium text-white mb-1">API</p>
-            <p className="text-[10px] text-gray-500 mb-1.5">POST <code className="text-gray-400">/api/agents/{agent.id}/chat</code></p>
-            <pre className="text-[10px] text-gray-500">{`{ "messages": [
+            <p className="text-xs font-medium text-[#17171c] mb-1">API</p>
+            <p className="text-[10px] text-[#71717f] mb-1.5">POST <code className="text-[#71717f]">/api/agents/{agent.id}/chat</code></p>
+            <pre className="text-[10px] text-[#71717f]">{`{ "messages": [
   { "role": "user", "content": "Check inventory and reorder anything below 10 units" }
 ]}`}</pre>
           </div>
