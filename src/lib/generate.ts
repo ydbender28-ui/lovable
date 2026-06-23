@@ -468,21 +468,24 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
   return { complexity, score, reasons };
 }
 
-// Priority order per complexity.
-// Claude + GPT only. No Gemini — unreliable under load.
+// Priority order per complexity — Gemini Flash as primary for speed
 function buildRouting(): Record<Complexity, string[]> {
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const hasGoogle = !!process.env.GOOGLE_AI_API_KEY;
 
   return {
     simple: [
+      ...(hasGoogle ? ["gemini-2.5-flash"] : []),
       ...(hasOpenAI ? ["gpt-5.4-nano"] : []),
       "claude-haiku-4-5-20251001",
     ],
     medium: [
+      ...(hasGoogle ? ["gemini-2.5-flash"] : []),
       ...(hasOpenAI ? ["gpt-5.4-mini"] : []),
       "claude-haiku-4-5-20251001",
     ],
     complex: [
+      ...(hasGoogle ? ["gemini-2.5-flash"] : []),
       "claude-sonnet-4-6",
       ...(hasOpenAI ? ["gpt-5.4"] : []),
       "claude-haiku-4-5-20251001",
