@@ -83,9 +83,9 @@ export default async function AdminPage() {
               }[tier];
               // Find which model would be picked for this tier
               const models = {
-                simple: ["Gemini 2.5 Flash", "GPT-4o mini", "Claude Haiku"],
-                medium: ["GPT-4o mini", "Gemini 2.5 Flash", "Claude Haiku"],
-                complex: ["Claude Haiku", "GPT-4o mini", "Claude Sonnet"],
+                simple: ["GPT-5.4 nano", "Claude Haiku"],
+                medium: ["GPT-5.4 mini", "Claude Haiku"],
+                complex: ["Claude Sonnet", "GPT-5.4", "Claude Haiku"],
               }[tier];
               return (
                 <div key={tier} className={`rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3`}>
@@ -121,10 +121,11 @@ export default async function AdminPage() {
               <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Project</th>
+                  <th className="text-left px-4 py-3">User</th>
                   <th className="text-left px-4 py-3">Model used</th>
-                  <th className="text-right px-4 py-3">Input</th>
-                  <th className="text-right px-4 py-3">Output</th>
+                  <th className="text-right px-4 py-3">Tokens</th>
                   <th className="text-right px-4 py-3">Cost</th>
+                  <th className="text-right px-4 py-3">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -137,13 +138,16 @@ export default async function AdminPage() {
                   return (
                     <tr key={v.id} className="hover:bg-white/[0.02]">
                       <td className="px-4 py-3 font-medium truncate max-w-[200px]">
-                        {v.project.name}
+                        <a href={`/projects/${v.projectId}`} className="hover:text-fuchsia-300 transition-colors" title="Open project">
+                          {v.project.name}
+                        </a>
                         {v.project.deletedAt && <span className="ml-1 text-[10px] text-red-400/70">(deleted)</span>}
                       </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-[160px]">{v.project.owner?.email ?? "—"}</td>
                       <td className={`px-4 py-3 font-medium ${modelColor}`}>{v.modelUsed ?? "—"}</td>
-                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.inputTokens ?? 0).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{(v.outputTokens ?? 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right font-mono text-xs">{cost < 0.0001 ? "<$0.0001" : `$${cost.toFixed(4)}`}</td>
+                      <td className="px-4 py-3 text-right text-gray-500 text-xs">{new Date(v.createdAt).toLocaleDateString()}</td>
                     </tr>
                   );
                 })}
