@@ -850,7 +850,8 @@ Make the entire layout and structure match this design system. It should look DR
   // generates complete, working features instead of minimal surgical stubs
   const isFeatureEdit = isEdit && /\b(add|create|build|implement|make|need)\b.*\b(cart|checkout|search|filter|admin|login|auth|payment|form|modal|page|section|nav|footer|header|sidebar|dashboard|gallery|slider|carousel|notification|chat|comment|review|rating|booking|calendar|upload|download|share|export|import|drag|drop|sort|pagina)\b/i.test(prompt);
 
-  const SYSTEM_PROMPT = isEdit && !isFeatureEdit
+  // All edits use short EDIT prompt for speed. Only new builds use full BUILD prompt.
+  const SYSTEM_PROMPT = isEdit
     ? SYSTEM_EDIT
     : SYSTEM_BUILD
         .replace("{{DESIGN_INJECTION}}", designInjection)
@@ -859,12 +860,12 @@ Make the entire layout and structure match this design system. It should look DR
   onStatus?.("Starting generation…");
 
   const envSection = envVars && Object.keys(envVars).length > 0
-    ? `\n\nEnvironment variables available (inject as const at top of App.tsx):\n${JSON.stringify(envVars)}`
+    ? `\n\nEnv vars: ${JSON.stringify(envVars)}`
     : "";
 
   let existingSection = "";
   if (existingFiles && Object.keys(existingFiles).length > 0) {
-    const serialized = JSON.stringify(existingFiles, null, 2);
+    const serialized = JSON.stringify(existingFiles);
     if (serialized.length < 60000) existingSection = serialized;
   }
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
@@ -873,22 +874,12 @@ Make the entire layout and structure match this design system. It should look DR
   const year = new Date().getFullYear();
   const userContent = isEdit
     ? isFeatureEdit
-      ? `Here is an existing app. You must ADD a complete, fully working feature to it.
+      ? `Current files:\n${existingSection}${envSection}
 
-WHAT "COMPLETE" MEANS — build ALL of these parts:
-- "add to cart" / "add cart" = (1) a cart state array with useState, (2) find EVERY existing product/menu item card in the code and ADD an "Add to Cart" button INSIDE each card — do NOT just create new cards, MODIFY the existing ones by adding a button after the price/description, (3) a cart icon in the nav bar showing item count badge, (4) a cart drawer/panel that slides open showing all added items with name, price, quantity, +/- buttons, remove button, (5) a subtotal and "Checkout" button. ALL FIVE PARTS ARE REQUIRED. The "Add to Cart" buttons MUST appear visually on the product cards in the preview.
-- "add search" = (1) a search input, (2) filter logic that searches through items, (3) filtered results display, (4) "no results" state
-- "add admin" = (1) password login form, (2) admin dashboard with CRUD for all data, (3) logout button
+ADD THIS FEATURE: ${prompt}
 
-Return the COMPLETE updated /App.js and /styles.css files with ALL existing content preserved plus the new feature fully implemented.
-
-Current files:
-${existingSection}${envSection}${knowledgeSection}
-
-Feature to add: ${prompt}
-
-CRITICAL: Keep every existing section, image, menu item, text, and style EXACTLY as-is. Add the new feature ON TOP of what exists. Return ALL files.`
-      : `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
+Build the COMPLETE feature with working state, UI, and interactions. "Add to cart" = cart state + buttons on every product + cart drawer + totals. "Add search" = input + filter + results. Keep ALL existing content intact. Return complete updated files.`
+      : `Current files:\n${existingSection}${envSection}\n\nRequest: ${prompt}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
