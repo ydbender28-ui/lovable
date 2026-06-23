@@ -77,22 +77,53 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
 // Inject a visual edit script into Sandpack files for click-to-edit text
 function injectVisualEditHelper(files: ProjectFiles): ProjectFiles {
   const helperScript = `
-// Side-effect: attach click-to-edit handlers to all text elements
+// Side-effect: attach click-to-edit handlers to all elements
 (function() {
+  var lastHighlight = null;
   function handler(e) {
     e.preventDefault();
     e.stopPropagation();
     var el = e.target;
-    var text = el.textContent?.trim();
-    if (text && text.length > 0 && text.length < 200 && el.children.length === 0) {
-      window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: text }, '*');
-      el.style.outline = '2px solid #6a1ff7';
-      el.style.outlineOffset = '2px';
-      setTimeout(function() { el.style.outline = ''; el.style.outlineOffset = ''; }, 1500);
+    // Walk up to find the nearest element with direct text content
+    var target = el;
+    for (var i = 0; i < 3 && target; i++) {
+      // Get only the direct text of this element (not children's text)
+      var directText = '';
+      for (var n = 0; n < target.childNodes.length; n++) {
+        if (target.childNodes[n].nodeType === 3) directText += target.childNodes[n].textContent;
+      }
+      directText = directText.trim();
+      // If this element has meaningful direct text, use it
+      if (directText.length > 0 && directText.length < 300) {
+        if (lastHighlight) { lastHighlight.style.outline = ''; lastHighlight.style.outlineOffset = ''; }
+        window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: directText }, '*');
+        target.style.outline = '2px solid #6a1ff7';
+        target.style.outlineOffset = '2px';
+        lastHighlight = target;
+        return;
+      }
+      // Also try full textContent for leaf-like elements
+      var full = target.textContent?.trim();
+      if (full && full.length > 0 && full.length < 150 && target.children.length <= 2) {
+        if (lastHighlight) { lastHighlight.style.outline = ''; lastHighlight.style.outlineOffset = ''; }
+        window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: full }, '*');
+        target.style.outline = '2px solid #6a1ff7';
+        target.style.outlineOffset = '2px';
+        lastHighlight = target;
+        return;
+      }
+      target = target.parentElement;
     }
   }
   document.addEventListener('click', handler, true);
   document.body.style.cursor = 'crosshair';
+  // Hover highlight
+  document.addEventListener('mouseover', function(e) {
+    e.target.style.outline = '1px dashed rgba(106,31,247,0.3)';
+  }, true);
+  document.addEventListener('mouseout', function(e) {
+    if (e.target !== lastHighlight) e.target.style.outline = '';
+  }, true);
 })();
 `;
   const appCode = files["/App.js"] ?? "";
@@ -758,16 +789,38 @@ export default function ProjectWorkspace({
 
   function applyTextEdit() {
     if (!editingText || editingText.oldText === editingText.newText) { setEditingText(null); return; }
-    const appCode = files["/App.js"] ?? "";
-    const escaped = editingText.oldText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const updated = appCode.replace(new RegExp(escaped, "g"), editingText.newText);
-    if (updated !== appCode) {
-      const newFiles = { ...files, "/App.js": updated };
+    const oldText = editingText.oldText;
+    const newText = editingText.newText;
+    const escaped = oldText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Search all files for the text
+    const newFiles = { ...files };
+    let found = false;
+    for (const [path, content] of Object.entries(newFiles)) {
+      // Try exact match first
+      if (content.includes(oldText)) {
+        newFiles[path] = content.replace(new RegExp(escaped, "g"), newText);
+        found = true;
+      }
+      // Try matching inside JSX strings: "text" or 'text' or {`text`}
+      if (!found) {
+        const quotedPatterns = [`"${escaped}"`, `'${escaped}'`, `\`${escaped}\``];
+        for (const qp of quotedPatterns) {
+          if (content.includes(oldText)) {
+            newFiles[path] = content.split(oldText).join(newText);
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (found) {
       setFiles(newFiles);
       justSaved.current = true;
       fetch(`/api/projects/${projectId}/save-version`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files: newFiles, summary: `Changed "${editingText.oldText.slice(0, 30)}" to "${editingText.newText.slice(0, 30)}"` }),
+        body: JSON.stringify({ files: newFiles, summary: `Changed "${oldText.slice(0, 30)}" to "${newText.slice(0, 30)}"` }),
       }).catch(() => {});
     }
     setEditingText(null);
