@@ -37,33 +37,33 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0b0e" }}>
+    <div className="min-h-screen" style={{ background: "#f6f6f8" }}>
       {/* ambient glow */}
       <div
         className="pointer-events-none fixed inset-x-0 top-0 h-80"
         style={{
           background:
-            "radial-gradient(ellipse 60% 100% at 50% -30%, rgba(109,95,255,0.12) 0%, transparent 65%)",
+            "radial-gradient(ellipse 60% 100% at 50% -30%, rgba(106,31,247,0.06) 0%, transparent 65%)",
         }}
       />
 
       {/* Header */}
       <header
         className="glass sticky top-0 z-30"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ borderBottom: "1px solid #ececf1" }}
       >
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link href="/">
             <Logo size="md" />
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/templates" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Templates</Link>
-            <Link href="/showcase" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Showcase</Link>
-            <span className="hidden text-xs sm:block" style={{ color: "rgba(255,255,255,0.12)" }}>|</span>
-            <span className="hidden text-xs sm:block" style={{ color: "#7a8099" }}>
+            <Link href="/templates" className="hidden text-xs transition-colors hover:text-[#17171c] sm:block" style={{ color: "#71717f" }}>Templates</Link>
+            <Link href="/showcase" className="hidden text-xs transition-colors hover:text-[#17171c] sm:block" style={{ color: "#71717f" }}>Showcase</Link>
+            <span className="hidden text-xs sm:block" style={{ color: "#ececf1" }}>|</span>
+            <span className="hidden text-xs sm:block" style={{ color: "#71717f" }}>
               {session.user.email}
             </span>
-            <Link href="/settings" className="hidden text-xs transition-colors hover:text-white sm:block" style={{ color: "#7a8099" }}>Settings</Link>
+            <Link href="/settings" className="hidden text-xs transition-colors hover:text-[#17171c] sm:block" style={{ color: "#71717f" }}>Settings</Link>
             <SignOutButton />
           </div>
         </div>

@@ -85,7 +85,7 @@ export default function DemoModal({ onClose }: { onClose: () => void }) {
       <div
         className="relative w-full overflow-hidden rounded-t-2xl sm:max-w-5xl sm:rounded-2xl"
         style={{
-          background: "#111318",
+          background: "#ffffff",
           border: "1px solid rgba(255,255,255,0.10)",
           boxShadow: "0 40px 120px rgba(0,0,0,0.7)",
           maxHeight: "92dvh",

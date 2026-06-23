@@ -58,9 +58,9 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0f]">
-      <div className="border-b border-white/10 px-4 py-3 flex items-center gap-3 bg-[#0c0c12]">
-        <div className="h-9 w-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-lg">{agent.avatar}</div>
+    <div className="h-screen flex flex-col bg-[#f6f6f8]">
+      <div className="border-b border-[#ececf1] px-4 py-3 flex items-center gap-3 bg-[#ffffff]">
+        <div className="h-9 w-9 rounded-full bg-white/5 border border-[#ececf1] flex items-center justify-center text-lg">{agent.avatar}</div>
         <div>
           <p className="text-sm font-medium text-white">{agent.name}</p>
           {agent.description && <p className="text-xs text-gray-500">{agent.description}</p>}
@@ -83,12 +83,12 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-3 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" && (
-              <div className="h-7 w-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
+              <div className="h-7 w-7 rounded-full bg-white/5 border border-[#ececf1] flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
             )}
             <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
               m.role === "user"
                 ? "bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white rounded-br-sm"
-                : "bg-white/5 border border-white/10 text-gray-200 rounded-bl-sm"
+                : "bg-white/5 border border-[#ececf1] text-gray-200 rounded-bl-sm"
             }`}>
               {m.content || (responding && i === messages.length - 1 ? (
                 <span className="flex gap-1 items-center">
@@ -100,8 +100,8 @@ export default function PublicAgentChat({ agent }: { agent: Agent }) {
         ))}
       </div>
 
-      <div className="border-t border-white/10 p-3 bg-[#0c0c12]">
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
+      <div className="border-t border-[#ececf1] p-3 bg-[#ffffff]">
+        <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
           <textarea value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={`Message ${agent.name}…`} rows={1}

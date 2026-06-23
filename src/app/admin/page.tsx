@@ -42,11 +42,11 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white p-8">
+    <div className="min-h-screen bg-[#f6f6f8] text-[#17171c] p-8">
       <div className="max-w-5xl mx-auto space-y-10">
         <div>
           <h1 className="text-2xl font-bold mb-1">ThatCode Admin</h1>
-          <p className="text-gray-400 text-sm">Usage and cost overview</p>
+          <p className="text-[#71717f] text-sm">Usage and cost overview</p>
         </div>
 
         {/* Summary cards */}
@@ -57,8 +57,8 @@ export default async function AdminPage() {
             { label: "Total cost", value: fmt(totalCost) },
             { label: "Avg cost/gen", value: versions.length ? fmt(totalCost / versions.length) : "$0" },
           ].map(({ label, value }) => (
-            <div key={label} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
+            <div key={label} className="rounded-xl border border-[#ececf1] bg-white p-4">
+              <p className="text-xs text-[#71717f] mb-1">{label}</p>
               <p className="text-xl font-semibold">{value}</p>
             </div>
           ))}
@@ -66,7 +66,7 @@ export default async function AdminPage() {
 
         {/* Routing logic explainer */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-300 mb-3">Model routing logic</h2>
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Model routing logic</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(["simple", "medium", "complex"] as const).map(tier => {
               const colors = { simple: "green", medium: "yellow", complex: "fuchsia" };
@@ -88,17 +88,17 @@ export default async function AdminPage() {
                 complex: ["Claude Sonnet", "GPT-5.4", "Claude Haiku"],
               }[tier];
               return (
-                <div key={tier} className={`rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3`}>
+                <div key={tier} className={`rounded-xl border border-[#ececf1] bg-white p-4 space-y-3`}>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${c === "green" ? "text-green-400" : c === "yellow" ? "text-yellow-400" : "text-fuchsia-400"}`}>{tier}</span>
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${c === "green" ? "text-green-400" : c === "yellow" ? "text-yellow-400" : "text-[#6a1ff7]"}`}>{tier}</span>
                     <span className="text-[10px] text-gray-600 font-mono ml-auto">{thresholds}</span>
                   </div>
-                  <p className="text-[10px] text-gray-500 leading-relaxed">{example}</p>
+                  <p className="text-[10px] text-[#71717f] leading-relaxed">{example}</p>
                   <div className="space-y-1">
                     {models.map((m, i) => (
                       <div key={m} className="flex items-center gap-2">
                         <span className="text-[10px] text-gray-600 w-3">{i + 1}.</span>
-                        <span className={`text-xs ${i === 0 ? "text-white font-medium" : "text-gray-500"}`}>{m}</span>
+                        <span className={`text-xs ${i === 0 ? "text-[#17171c] font-medium" : "text-[#71717f]"}`}>{m}</span>
                         {i === 0 && <span className="text-[10px] text-green-400 ml-auto">primary</span>}
                         {i > 0 && <span className="text-[10px] text-gray-700 ml-auto">fallback</span>}
                       </div>
@@ -115,10 +115,10 @@ export default async function AdminPage() {
 
         {/* Live scoring demo */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-300 mb-3">How recent prompts were scored</h2>
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">How recent prompts were scored</h2>
+          <div className="rounded-xl border border-[#ececf1] overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
+              <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Project</th>
                   <th className="text-left px-4 py-3">User</th>
@@ -128,26 +128,26 @@ export default async function AdminPage() {
                   <th className="text-right px-4 py-3">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[#ececf1]">
                 {versions.slice(0, 20).map((v) => {
                   const cost = calcCost(v.modelUsed ?? "", v.inputTokens ?? 0, v.outputTokens ?? 0);
                   const modelColor = (v.modelUsed ?? "").includes("Haiku") ? "text-green-400"
-                    : (v.modelUsed ?? "").includes("Sonnet") ? "text-fuchsia-400"
+                    : (v.modelUsed ?? "").includes("Sonnet") ? "text-[#6a1ff7]"
                     : (v.modelUsed ?? "").includes("GPT") ? "text-blue-400"
                     : "text-yellow-400";
                   return (
-                    <tr key={v.id} className="hover:bg-white/[0.02]">
+                    <tr key={v.id} className="hover:bg-[#fbfbfc]">
                       <td className="px-4 py-3 font-medium truncate max-w-[200px]">
-                        <a href={`/projects/${v.projectId}`} className="hover:text-fuchsia-300 transition-colors" title="Open project">
+                        <a href={`/projects/${v.projectId}`} className="hover:text-[#6a1ff7] transition-colors" title="Open project">
                           {v.project.name}
                         </a>
                         {v.project.deletedAt && <span className="ml-1 text-[10px] text-red-400/70">(deleted)</span>}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs truncate max-w-[160px]">{v.project.owner?.email ?? "—"}</td>
+                      <td className="px-4 py-3 text-[#71717f] text-xs truncate max-w-[160px]">{v.project.owner?.email ?? "—"}</td>
                       <td className={`px-4 py-3 font-medium ${modelColor}`}>{v.modelUsed ?? "—"}</td>
-                      <td className="px-4 py-3 text-right text-gray-400 font-mono text-xs">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-[#71717f] font-mono text-xs">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>
                       <td className="px-4 py-3 text-right font-mono text-xs">{cost < 0.0001 ? "<$0.0001" : `$${cost.toFixed(4)}`}</td>
-                      <td className="px-4 py-3 text-right text-gray-500 text-xs">{new Date(v.createdAt).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-right text-[#71717f] text-xs">{new Date(v.createdAt).toLocaleDateString()}</td>
                     </tr>
                   );
                 })}
@@ -158,10 +158,10 @@ export default async function AdminPage() {
 
         {/* By model */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-300 mb-3">Usage by model</h2>
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Usage by model</h2>
+          <div className="rounded-xl border border-[#ececf1] overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
+              <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Model</th>
                   <th className="text-right px-4 py-3">Generations</th>
@@ -170,24 +170,24 @@ export default async function AdminPage() {
                   <th className="text-right px-4 py-3">Cost</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[#ececf1]">
                 {Object.entries(byModel).sort((a, b) => b[1].cost - a[1].cost).map(([model, stats]) => (
-                  <tr key={model} className="hover:bg-white/[0.02]">
+                  <tr key={model} className="hover:bg-[#fbfbfc]">
                     <td className="px-4 py-3 font-medium">{model}</td>
-                    <td className="px-4 py-3 text-right text-gray-300">{stats.count}</td>
-                    <td className="px-4 py-3 text-right text-gray-300">{stats.inputTokens.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-gray-300">{stats.outputTokens.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-fuchsia-400 font-mono">{fmt(stats.cost)}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{stats.count}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{stats.inputTokens.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{stats.outputTokens.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-[#6a1ff7] font-mono">{fmt(stats.cost)}</td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-white/[0.04] font-semibold">
+              <tfoot className="bg-[#fbfbfc] font-semibold">
                 <tr>
                   <td className="px-4 py-3">Total</td>
                   <td className="px-4 py-3 text-right">{versions.length}</td>
                   <td className="px-4 py-3 text-right">{Object.values(byModel).reduce((s, m) => s + m.inputTokens, 0).toLocaleString()}</td>
                   <td className="px-4 py-3 text-right">{Object.values(byModel).reduce((s, m) => s + m.outputTokens, 0).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-fuchsia-400 font-mono">{fmt(totalCost)}</td>
+                  <td className="px-4 py-3 text-right text-[#6a1ff7] font-mono">{fmt(totalCost)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -196,20 +196,20 @@ export default async function AdminPage() {
 
         {/* Users */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-300 mb-3">Users ({users.length})</h2>
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Users ({users.length})</h2>
+          <div className="rounded-xl border border-[#ececf1] overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
+              <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Email</th>
                   <th className="text-right px-4 py-3">Signed up</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[#ececf1]">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/[0.02]">
+                  <tr key={u.id} className="hover:bg-[#fbfbfc]">
                     <td className="px-4 py-3">{u.email}</td>
-                    <td className="px-4 py-3 text-right text-gray-400">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{new Date(u.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,10 +219,10 @@ export default async function AdminPage() {
 
         {/* Recent generations */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-300 mb-3">Recent generations</h2>
-          <div className="rounded-xl border border-white/10 overflow-hidden">
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Recent generations</h2>
+          <div className="rounded-xl border border-[#ececf1] overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-gray-400 text-xs uppercase">
+              <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Project</th>
                   <th className="text-left px-4 py-3">User</th>
@@ -232,18 +232,18 @@ export default async function AdminPage() {
                   <th className="text-right px-4 py-3">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[#ececf1]">
                 {versions.slice(0, 50).map((v) => (
-                  <tr key={v.id} className="hover:bg-white/[0.02]">
+                  <tr key={v.id} className="hover:bg-[#fbfbfc]">
                     <td className="px-4 py-3 font-medium truncate max-w-[150px]">
                       {v.project.name}
                       {v.project.deletedAt && <span className="ml-1 text-[10px] text-red-400/70">(deleted)</span>}
                     </td>
-                    <td className="px-4 py-3 text-gray-400 truncate max-w-[150px]">{v.project.owner.email}</td>
+                    <td className="px-4 py-3 text-[#71717f] truncate max-w-[150px]">{v.project.owner.email}</td>
                     <td className="px-4 py-3">{v.modelUsed ?? "—"}</td>
-                    <td className="px-4 py-3 text-right text-gray-300">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-fuchsia-400 font-mono">{fmt(calcCost(v.modelUsed ?? "", v.inputTokens ?? 0, v.outputTokens ?? 0))}</td>
-                    <td className="px-4 py-3 text-right text-gray-400">{new Date(v.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{((v.inputTokens ?? 0) + (v.outputTokens ?? 0)).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-[#6a1ff7] font-mono">{fmt(calcCost(v.modelUsed ?? "", v.inputTokens ?? 0, v.outputTokens ?? 0))}</td>
+                    <td className="px-4 py-3 text-right text-[#71717f]">{new Date(v.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>

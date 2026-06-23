@@ -31,7 +31,7 @@ export default function ShowcaseGrid({ projects }: { projects: Project[] }) {
           target="_blank"
           rel="noreferrer"
           className="group overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1 block"
-          style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}
+          style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.borderColor = "rgba(109,95,255,0.4)";
             (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.45)";

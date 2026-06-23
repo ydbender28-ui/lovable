@@ -122,13 +122,13 @@ export default async function Home() {
   const startHref = session?.user ? "/dashboard" : "/signup";
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "#0a0b0e" }}>
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "#f6f6f8" }}>
       {/* Ambient top glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[640px]"
         style={{
           background:
-            "radial-gradient(ellipse 70% 100% at 50% -20%, rgba(109,95,255,0.18) 0%, rgba(10,11,14,0) 60%)",
+            "radial-gradient(ellipse 70% 100% at 50% -20%, rgba(106,31,247,0.08) 0%, rgba(246,246,248,0) 60%)",
         }}
       />
       {/* Faint grid */}
@@ -136,7 +136,7 @@ export default async function Home() {
         className="pointer-events-none absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
+            "linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
           maskImage: "radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 80%)",
@@ -147,30 +147,30 @@ export default async function Home() {
       <header className="relative z-20">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Logo size="md" />
-          <div className="hidden items-center gap-8 text-sm md:flex" style={{ color: "#7a8099" }}>
-            <Link href="/templates" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Templates</Link>
-            <Link href="/showcase" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Showcase</Link>
-            <a href="#pricing" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Pricing</a>
-            <Link href="/docs" className="transition-colors hover:text-white" style={{ color: "#7a8099" }}>Docs</Link>
+          <div className="hidden items-center gap-8 text-sm md:flex" style={{ color: "#71717f" }}>
+            <Link href="/templates" className="transition-colors hover:text-[#17171c]" style={{ color: "#71717f" }}>Templates</Link>
+            <Link href="/showcase" className="transition-colors hover:text-[#17171c]" style={{ color: "#71717f" }}>Showcase</Link>
+            <a href="#pricing" className="transition-colors hover:text-[#17171c]" style={{ color: "#71717f" }}>Pricing</a>
+            <Link href="/docs" className="transition-colors hover:text-[#17171c]" style={{ color: "#71717f" }}>Docs</Link>
           </div>
           <div className="flex items-center gap-2">
             {session?.user ? (
               <Link
                 href="/dashboard"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:-translate-y-px"
-                style={{ background: "linear-gradient(135deg, #6d5fff, #5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}
+                style={{ background: "linear-gradient(135deg, #6a1ff7, #0a8ff0)", boxShadow: "0 6px 22px rgba(106,31,247,0.25)" }}
               >
                 Dashboard →
               </Link>
             ) : (
               <>
-                <Link href="/login" className="px-4 py-2 text-sm transition-colors" style={{ color: "#c4cad6" }}>
+                <Link href="/login" className="px-4 py-2 text-sm transition-colors" style={{ color: "#71717f" }}>
                   Log in
                 </Link>
                 <Link
                   href="/signup"
                   className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-all hover:-translate-y-px"
-                  style={{ background: "linear-gradient(135deg, #6d5fff, #5b4ee0)", boxShadow: "0 6px 22px rgba(109,95,255,0.35)" }}
+                  style={{ background: "linear-gradient(135deg, #6a1ff7, #0a8ff0)", boxShadow: "0 6px 22px rgba(106,31,247,0.25)" }}
                 >
                   Start free
                 </Link>
@@ -186,11 +186,11 @@ export default async function Home() {
           {/* Pill badge */}
           <div
             className="animate-fade-slide-up mb-9 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#c4cad6" }}
+            style={{ background: "#eef2ff", border: "1px solid #ececf1", color: "#71717f" }}
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: "#6d5fff", opacity: 0.7 }} />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "#6d5fff" }} />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full" style={{ background: "#6a1ff7", opacity: 0.7 }} />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full" style={{ background: "#6a1ff7" }} />
             </span>
             Multi-model AI · Claude · Gemini
           </div>
@@ -198,7 +198,7 @@ export default async function Home() {
           {/* Headline */}
           <h1
             className="animate-fade-slide-up max-w-3xl text-[36px] font-bold sm:text-5xl lg:text-[72px]"
-            style={{ letterSpacing: "-0.04em", lineHeight: 1.05, color: "#eef0f6", animationDelay: "0.05s" }}
+            style={{ letterSpacing: "-0.04em", lineHeight: 1.05, color: "#17171c", animationDelay: "0.05s" }}
           >
             Build apps that
             <br />
@@ -208,7 +208,7 @@ export default async function Home() {
           {/* Subheadline */}
           <p
             className="animate-fade-slide-up mt-7 max-w-xl text-lg leading-relaxed"
-            style={{ color: "#7a8099", animationDelay: "0.1s" }}
+            style={{ color: "#71717f", animationDelay: "0.1s" }}
           >
             Describe what you want in plain English. ThatCode writes it, renders a
             live preview, and ships a real working app you can publish in one click.
@@ -223,26 +223,26 @@ export default async function Home() {
             <div
               className="animate-glow-pulse pointer-events-none absolute -inset-x-10 bottom-[-40px] top-10 -z-10"
               style={{
-                background: "radial-gradient(ellipse 60% 55% at 50% 60%, rgba(109,95,255,0.45) 0%, transparent 70%)",
+                background: "radial-gradient(ellipse 60% 55% at 50% 60%, rgba(106,31,247,0.12) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }}
             />
             <div
               className="animate-float overflow-hidden rounded-2xl text-left"
               style={{
-                background: "#111318",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 40px 120px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
+                background: "#ffffff",
+                border: "1px solid #ececf1",
+                boxShadow: "0 40px 120px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
             >
               {/* Window chrome */}
-              <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid #ececf1" }}>
                 <div className="flex gap-2">
                   <span className="h-3 w-3 rounded-full" style={{ background: "#ff5f57" }} />
                   <span className="h-3 w-3 rounded-full" style={{ background: "#febc2e" }} />
                   <span className="h-3 w-3 rounded-full" style={{ background: "#28c840" }} />
                 </div>
-                <div className="ml-2 flex h-7 flex-1 items-center gap-2 rounded-md px-3 text-xs" style={{ background: "rgba(255,255,255,0.04)", color: "#7a8099" }}>
+                <div className="ml-2 flex h-7 flex-1 items-center gap-2 rounded-md px-3 text-xs" style={{ background: "#f0f0f5", color: "#71717f" }}>
                   <span style={{ color: "#22c55e" }}>●</span>
                   mystore.thatcode.dev
                 </div>
@@ -309,14 +309,14 @@ export default async function Home() {
 
           {/* Mobile-only: simple feature highlight instead of mockup */}
           <div className="mt-10 block w-full sm:hidden">
-            <div className="rounded-2xl p-6 text-center" style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="rounded-2xl p-6 text-center" style={{ background: "#ffffff", border: "1px solid #ececf1" }}>
               <div className="mb-4 flex justify-center gap-3">
                 {["⚡", "🖥", "🚀"].map(e => (
                   <span key={e} className="flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: "rgba(109,95,255,0.14)", border: "1px solid rgba(109,95,255,0.26)" }}>{e}</span>
                 ))}
               </div>
-              <p className="text-sm font-semibold" style={{ color: "#eef0f6" }}>From prompt to live app in seconds</p>
-              <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#7a8099" }}>No code. No setup. Just describe it and watch it build.</p>
+              <p className="text-sm font-semibold" style={{ color: "#17171c" }}>From prompt to live app in seconds</p>
+              <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#71717f" }}>No code. No setup. Just describe it and watch it build.</p>
             </div>
           </div>
 
@@ -327,9 +327,9 @@ export default async function Home() {
               { v: "20+", l: "templates" },
               { v: "Free", l: "to start" },
             ].map((s) => (
-              <div key={s.l} className="flex items-baseline gap-2 rounded-full px-4 py-2" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <span className="text-sm font-semibold" style={{ color: "#eef0f6" }}>{s.v}</span>
-                <span className="text-xs" style={{ color: "#7a8099" }}>{s.l}</span>
+              <div key={s.l} className="flex items-baseline gap-2 rounded-full px-4 py-2" style={{ background: "#eef2ff", border: "1px solid #ececf1" }}>
+                <span className="text-sm font-semibold" style={{ color: "#17171c" }}>{s.v}</span>
+                <span className="text-xs" style={{ color: "#71717f" }}>{s.l}</span>
               </div>
             ))}
           </div>
@@ -338,10 +338,10 @@ export default async function Home() {
         {/* ---------- Features ---------- */}
         <section id="features" className="mt-32 scroll-mt-20">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold" style={{ color: "#eef0f6", letterSpacing: "-0.04em" }}>
+            <h2 className="text-3xl font-bold" style={{ color: "#17171c", letterSpacing: "-0.04em" }}>
               Everything you need to ship
             </h2>
-            <p className="mt-3 text-sm" style={{ color: "#7a8099" }}>
+            <p className="mt-3 text-sm" style={{ color: "#71717f" }}>
               From first prompt to live URL — no code required.
             </p>
           </div>
@@ -350,13 +350,13 @@ export default async function Home() {
               <div
                 key={f.title}
                 className="group rounded-2xl p-6 transition-all hover:-translate-y-1"
-                style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}
+                style={{ background: "#ffffff", border: "1px solid #ececf1" }}
               >
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl text-xl" style={{ background: f.tint, border: `1px solid ${f.ring}` }}>
                   {f.icon}
                 </div>
-                <h3 className="mb-1.5 text-sm font-semibold" style={{ color: "#eef0f6" }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#7a8099" }}>{f.desc}</p>
+                <h3 className="mb-1.5 text-sm font-semibold" style={{ color: "#17171c" }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#71717f" }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -365,10 +365,10 @@ export default async function Home() {
         {/* ---------- Pricing ---------- */}
         <section id="pricing" className="mt-32 scroll-mt-20">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold" style={{ color: "#eef0f6", letterSpacing: "-0.04em" }}>
+            <h2 className="text-3xl font-bold" style={{ color: "#17171c", letterSpacing: "-0.04em" }}>
               Simple, honest pricing
             </h2>
-            <p className="mt-3 text-sm" style={{ color: "#7a8099" }}>
+            <p className="mt-3 text-sm" style={{ color: "#71717f" }}>
               Start for free. Upgrade when you need more.
             </p>
           </div>
@@ -380,36 +380,36 @@ export default async function Home() {
                 style={
                   p.highlight
                     ? {
-                        background: "linear-gradient(145deg,#1a1730,#141220)",
-                        border: "1px solid rgba(109,95,255,0.45)",
-                        boxShadow: "0 0 60px rgba(109,95,255,0.15)",
+                        background: "linear-gradient(145deg,#f5f0ff,#eef2ff)",
+                        border: "1px solid rgba(106,31,247,0.25)",
+                        boxShadow: "0 0 60px rgba(106,31,247,0.08)",
                       }
-                    : { background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }
+                    : { background: "#ffffff", border: "1px solid #ececf1" }
                 }
               >
                 {p.highlight && (
                   <div
                     className="pointer-events-none absolute inset-x-0 top-0 h-px"
-                    style={{ background: "linear-gradient(90deg,transparent,rgba(109,95,255,0.7),transparent)" }}
+                    style={{ background: "linear-gradient(90deg,transparent,rgba(106,31,247,0.3),transparent)" }}
                   />
                 )}
                 {p.highlight && (
                   <div
                     className="mb-4 inline-block rounded-full px-2.5 py-1 text-[10px] font-semibold"
-                    style={{ background: "rgba(109,95,255,0.2)", color: "#a78bfa", border: "1px solid rgba(109,95,255,0.35)" }}
+                    style={{ background: "rgba(106,31,247,0.1)", color: "#6a1ff7", border: "1px solid rgba(106,31,247,0.2)" }}
                   >
                     Most popular
                   </div>
                 )}
-                <h3 className="text-sm font-semibold" style={{ color: "#eef0f6" }}>{p.name}</h3>
+                <h3 className="text-sm font-semibold" style={{ color: "#17171c" }}>{p.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold" style={{ color: "#eef0f6", letterSpacing: "-0.04em" }}>{p.price}</span>
-                  <span className="text-sm" style={{ color: "#7a8099" }}>{p.period}</span>
+                  <span className="text-4xl font-bold" style={{ color: "#17171c", letterSpacing: "-0.04em" }}>{p.price}</span>
+                  <span className="text-sm" style={{ color: "#71717f" }}>{p.period}</span>
                 </div>
-                <p className="mt-2 text-xs leading-relaxed" style={{ color: "#7a8099" }}>{p.desc}</p>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: "#71717f" }}>{p.desc}</p>
                 <ul className="mt-5 space-y-2.5">
                   {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#c4cad6" }}>
+                    <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#51515c" }}>
                       <span className="text-[10px]" style={{ color: "#4ade80" }}>✓</span>
                       {f}
                     </li>
@@ -420,8 +420,8 @@ export default async function Home() {
                   className="mt-7 block w-full rounded-xl py-2.5 text-center text-sm font-semibold transition-all hover:-translate-y-px"
                   style={
                     p.highlight
-                      ? { background: "linear-gradient(135deg,#6d5fff,#5b4ee0)", color: "#fff", boxShadow: "0 8px 24px rgba(109,95,255,0.35)" }
-                      : { background: "rgba(255,255,255,0.06)", color: "#eef0f6", border: "1px solid rgba(255,255,255,0.10)" }
+                      ? { background: "linear-gradient(135deg,#6a1ff7,#0a8ff0)", color: "#fff", boxShadow: "0 8px 24px rgba(106,31,247,0.25)" }
+                      : { background: "#f0f0f5", color: "#17171c", border: "1px solid #ececf1" }
                   }
                 >
                   {p.cta}
@@ -434,14 +434,14 @@ export default async function Home() {
         {/* ---------- Footer ---------- */}
         <footer
           className="mt-28 flex flex-col items-center justify-between gap-4 py-10 text-xs sm:flex-row"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "#7a8099" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)", color: "#71717f" }}
         >
           <Logo size="sm" />
           <div className="flex items-center gap-6">
-            <a href="#features" className="transition-colors hover:text-white">Features</a>
-            <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>
-            <Link href="/docs" className="transition-colors hover:text-white">Docs</Link>
-            <a href="mailto:hi@thatcode.dev" className="transition-colors hover:text-white">Contact</a>
+            <a href="#features" className="transition-colors hover:text-[#17171c]">Features</a>
+            <a href="#pricing" className="transition-colors hover:text-[#17171c]">Pricing</a>
+            <Link href="/docs" className="transition-colors hover:text-[#17171c]">Docs</Link>
+            <a href="mailto:hi@thatcode.dev" className="transition-colors hover:text-[#17171c]">Contact</a>
           </div>
           <span>© 2025 ThatCode · thatcode.dev</span>
         </footer>

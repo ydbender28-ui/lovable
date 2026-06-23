@@ -26,8 +26,8 @@ export default function ShareViewer({ filesJson, expiresAt }: { filesJson: strin
   const daysLeft = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#0a0a0f" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#0d0d14", flexShrink: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100dvh", background: "#f6f6f8" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#fbfbfc", flexShrink: 0 }}>
         <span style={{ fontSize: 13, color: "#f5f5f5", fontWeight: 600 }}>ThatCode — Shared Preview</span>
         <span style={{ fontSize: 11, color: "#6b7280" }}>View only · expires in {daysLeft} day{daysLeft !== 1 ? "s" : ""}</span>
       </div>

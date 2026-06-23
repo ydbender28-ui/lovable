@@ -98,21 +98,21 @@ export default function SettingsPage() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[#0a0b0e] text-white">
-      <header className="border-b border-white/7 bg-[#0a0b0e]/90 backdrop-blur px-6 py-3 flex items-center gap-4">
+    <div className="min-h-screen bg-[#f6f6f8] text-[#17171c]">
+      <header className="border-b border-[#ececf1] bg-[#f6f6f8]/90 backdrop-blur px-6 py-3 flex items-center gap-4">
         <Link href="/dashboard"><Logo size="sm" /></Link>
-        <span className="text-gray-600">/</span>
-        <span className="text-sm text-gray-300">Settings</span>
+        <span className="text-[#71717f]">/</span>
+        <span className="text-sm text-[#71717f]">Settings</span>
       </header>
 
       <div className="max-w-3xl mx-auto px-6 py-10">
         <h1 className="text-xl font-semibold mb-6">Settings</h1>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-white/10 mb-8">
+        <div className="flex gap-1 border-b border-[#ececf1] mb-8">
           {tabs.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`px-4 py-2 text-sm transition-colors border-b-2 -mb-px ${tab === t.key ? "border-fuchsia-400 text-white" : "border-transparent text-gray-500 hover:text-gray-300"}`}>
+              className={`px-4 py-2 text-sm transition-colors border-b-2 -mb-px ${tab === t.key ? "border-[#6a1ff7] text-[#17171c]" : "border-transparent text-[#71717f] hover:text-[#17171c]"}`}>
               {t.label}
             </button>
           ))}
@@ -122,14 +122,14 @@ export default function SettingsPage() {
         {tab === "labs" && (
           <div className="space-y-4">
             <div className="mb-6">
-              <h2 className="text-sm font-semibold text-white mb-1">Experimental Features</h2>
-              <p className="text-xs text-gray-500">Try features before they&apos;re fully shipped. These may change or be removed.</p>
+              <h2 className="text-sm font-semibold text-[#17171c] mb-1">Experimental Features</h2>
+              <p className="text-xs text-[#71717f]">Try features before they&apos;re fully shipped. These may change or be removed.</p>
             </div>
             {labsFeatures.map(f => (
-              <div key={f.key} className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <div key={f.key} className="flex items-start justify-between gap-4 rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4">
                 <div>
-                  <p className="text-sm font-medium text-white">{f.name}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>
+                  <p className="text-sm font-medium text-[#17171c]">{f.name}</p>
+                  <p className="text-xs text-[#71717f] mt-0.5">{f.description}</p>
                 </div>
                 <button
                   onClick={() => saveLabs(labsEnabled.includes(f.key) ? labsEnabled.filter(k => k !== f.key) : [...labsEnabled, f.key])}
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               </div>
             ))}
             {labsSaving && <p className="text-xs text-gray-600">Saving…</p>}
-            <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+            <div className="mt-6 rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4">
               <p className="text-sm text-gray-300">Have feedback or a feature request?</p>
               <a href="https://feedback.thatcode.dev" target="_blank" rel="noreferrer"
                 className="inline-block mt-2 text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
@@ -153,16 +153,16 @@ export default function SettingsPage() {
         {tab === "workspace" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-sm font-semibold text-white mb-1">Your Workspaces</h2>
-              <p className="text-xs text-gray-500 mb-4">Collaborate with others. Pro users can invite unlimited collaborators — they use your credits.</p>
+              <h2 className="text-sm font-semibold text-[#17171c] mb-1">Your Workspaces</h2>
+              <p className="text-xs text-[#71717f] mb-4">Collaborate with others. Pro users can invite unlimited collaborators — they use your credits.</p>
               {workspaces.length === 0 ? (
                 <p className="text-xs text-gray-600">No workspaces yet.</p>
               ) : workspaces.map(w => (
-                <div key={w.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-3 space-y-3">
+                <div key={w.id} className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 mb-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-white">{w.name}</p>
-                      <p className="text-xs text-gray-500">{w._count.projects} projects · {w.members.length} members</p>
+                      <p className="text-sm font-medium text-[#17171c]">{w.name}</p>
+                      <p className="text-xs text-[#71717f]">{w._count.projects} projects · {w.members.length} members</p>
                     </div>
                     <button onClick={() => { setInviteWorkspaceId(w.id); }}
                       className="text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
@@ -178,13 +178,13 @@ export default function SettingsPage() {
                     ))}
                   </div>
                   {inviteWorkspaceId === w.id && (
-                    <div className="space-y-2 pt-2 border-t border-white/10">
+                    <div className="space-y-2 pt-2 border-t border-[#ececf1]">
                       <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                         placeholder="Email address"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                        className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
                       <div className="flex gap-2">
                         <select value={inviteRole} onChange={e => setInviteRole(e.target.value)}
-                          className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none">
+                          className="bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-xs text-[#17171c] focus:outline-none">
                           <option value="editor">Editor</option>
                           <option value="admin">Admin</option>
                         </select>
@@ -200,11 +200,11 @@ export default function SettingsPage() {
               ))}
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400">Create workspace</p>
+              <p className="text-xs font-medium text-[#71717f]">Create workspace</p>
               <div className="flex gap-2">
                 <input value={newWorkspaceName} onChange={e => setNewWorkspaceName(e.target.value)}
                   placeholder="Workspace name"
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="flex-1 bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
                 <button onClick={createWorkspace}
                   className="bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 rounded-lg px-4 py-2 text-sm hover:bg-fuchsia-500/30 transition-colors">
                   Create
@@ -219,15 +219,15 @@ export default function SettingsPage() {
           <div className="space-y-6">
             {/* Plan + credits */}
             {profile && (
-              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+              <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Plan</p>
-                    <p className="text-sm font-semibold capitalize text-white">{profile.plan === "owner" ? "Owner" : profile.plan === "pro" ? "Pro" : "Free"}</p>
+                    <p className="text-xs text-[#71717f] uppercase tracking-wide mb-1">Plan</p>
+                    <p className="text-sm font-semibold capitalize text-[#17171c]">{profile.plan === "owner" ? "Owner" : profile.plan === "pro" ? "Pro" : "Free"}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Credits</p>
-                    <p className="text-sm font-semibold text-white">{typeof profile.credits === "number" ? profile.credits.toFixed(1) : "—"}</p>
+                    <p className="text-xs text-[#71717f] uppercase tracking-wide mb-1">Credits</p>
+                    <p className="text-sm font-semibold text-[#17171c]">{typeof profile.credits === "number" ? profile.credits.toFixed(1) : "—"}</p>
                   </div>
                 </div>
                 {profile.plan === "free" && (
@@ -240,30 +240,30 @@ export default function SettingsPage() {
 
             {/* Profile */}
             <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-white">Profile</h2>
+              <h2 className="text-sm font-semibold text-[#17171c]">Profile</h2>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Display name</label>
+                <label className="block text-xs text-[#71717f] mb-1">Display name</label>
                 <input value={editName} onChange={e => setEditName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
               </div>
               {profile && (
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Email</label>
-                  <p className="text-sm text-gray-400 px-3 py-2">{profile.email}</p>
+                  <label className="block text-xs text-[#71717f] mb-1">Email</label>
+                  <p className="text-sm text-[#71717f] px-3 py-2">{profile.email}</p>
                 </div>
               )}
             </div>
 
             {/* Password */}
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-white">Change password</h2>
+              <h2 className="text-sm font-semibold text-[#17171c]">Change password</h2>
               <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)}
                 placeholder="Current password"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
               <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)}
                 placeholder="New password (min 8 chars)"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-white/5 border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
             </div>
 
             <button onClick={saveProfile} disabled={profileSaving}
@@ -273,8 +273,8 @@ export default function SettingsPage() {
             {profileMsg && <p className={`text-xs ${profileMsg.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>{profileMsg}</p>}
 
             {/* Support */}
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
-              <p className="text-xs text-gray-500">Need help?</p>
+            <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 space-y-2">
+              <p className="text-xs text-[#71717f]">Need help?</p>
               <a href="https://feedback.thatcode.dev" target="_blank" rel="noreferrer"
                 className="block text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-colors">
                 📣 Feedback & feature requests →

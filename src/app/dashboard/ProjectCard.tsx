@@ -36,7 +36,7 @@ export default function ProjectCard({ project }: Props) {
   return (
     <div
       className="group relative overflow-hidden rounded-2xl transition-all duration-200"
-      style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.08)" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = "rgba(109,95,255,0.45)";
         e.currentTarget.style.transform = "translateY(-3px)";

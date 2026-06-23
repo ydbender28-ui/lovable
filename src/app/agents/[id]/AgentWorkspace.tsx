@@ -74,8 +74,8 @@ function ToolBadge({ block, onToggle }: { block: ToolStartBlock | ToolResultBloc
   const collapsed = isResult && (block as ToolResultBlock).collapsed;
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden text-xs my-1">
-      <button onClick={onToggle} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-white/5 transition-colors text-left">
+    <div className="rounded-lg border border-[#ececf1] bg-white overflow-hidden text-xs my-1">
+      <button onClick={onToggle} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[#f0f0f5] transition-colors text-left">
         {isStart && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400 animate-pulse shrink-0" />}
         {isResult && <span className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />}
         <span className="font-mono text-fuchsia-300">{block.name}</span>
@@ -96,13 +96,13 @@ function MessageBubble({ msg, onToggleTool }: { msg: Message; onToggleTool: (blo
     const text = msg.blocks.map(b => b.type === "text" ? b.text : "").join("");
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{text}</div>
+        <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{text}</div>
       </div>
     );
   }
   return (
     <div className="flex gap-3">
-      <div className="h-7 w-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm shrink-0 mt-0.5">
+      <div className="h-7 w-7 rounded-full bg-[#f0f0f5] border border-[#ececf1] flex items-center justify-center text-sm shrink-0 mt-0.5">
         {/* avatar rendered by parent */}
       </div>
       <div className="flex-1 min-w-0">
@@ -131,29 +131,29 @@ function ToolEditor({ tool, onChange, onDelete }: {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => setOpen(o => !o)}>
+    <div className="rounded-xl border border-[#ececf1] bg-white overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2.5 cursor-pointer hover:bg-[#f0f0f5] transition-colors" onClick={() => setOpen(o => !o)}>
         <span className="text-xs font-mono text-fuchsia-300 flex-1 truncate">{tool.name}</span>
         <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
           tool.type === "webhook" ? "border-orange-500/30 text-orange-400 bg-orange-500/10" :
           tool.type === "browse_web" ? "border-blue-500/30 text-blue-400 bg-blue-500/10" :
           tool.type === "send_email" ? "border-green-500/30 text-green-400 bg-green-500/10" :
-          "border-white/10 text-gray-500"
+          "border-[#ececf1] text-gray-500"
         }`}>{tool.type}</span>
         <span className="text-gray-600 text-xs">{open ? "▾" : "▸"}</span>
       </div>
       {open && (
-        <div className="border-t border-white/10 p-3 space-y-3">
+        <div className="border-t border-[#ececf1] p-3 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] text-gray-500 mb-1 block">Function name (no spaces)</label>
               <input value={tool.name} onChange={e => onChange({ ...tool, name: e.target.value.replace(/\s/g, "_").toLowerCase() })}
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
             </div>
             <div>
               <label className="text-[10px] text-gray-500 mb-1 block">Type</label>
               <select value={tool.type} onChange={e => onChange({ ...tool, type: e.target.value as AgentTool["type"] })}
-                className="w-full rounded-lg border border-white/10 bg-[#1a1a22] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40">
+                className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40">
                 <option value="webhook">Webhook (call your API)</option>
                 <option value="fetch_url">Fetch URL</option>
                 <option value="browse_web">Browse Web</option>
@@ -165,7 +165,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
           <div>
             <label className="text-[10px] text-gray-500 mb-1 block">Description — tell the AI when to use this</label>
             <textarea value={tool.description} onChange={e => onChange({ ...tool, description: e.target.value })}
-              rows={2} className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white resize-none focus:outline-none focus:border-fuchsia-400/40" />
+              rows={2} className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white resize-none focus:outline-none focus:border-fuchsia-400/40" />
           </div>
 
           {(tool.type === "webhook" || tool.type === "fetch_url") && (
@@ -173,7 +173,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
               <div>
                 <label className="text-[10px] text-gray-500 mb-1 block">Method</label>
                 <select value={tool.method || "POST"} onChange={e => onChange({ ...tool, method: e.target.value as AgentTool["method"] })}
-                  className="w-full rounded-lg border border-white/10 bg-[#1a1a22] px-2 py-1.5 text-xs text-white focus:outline-none">
+                  className="w-full rounded-lg border border-[#ececf1] bg-white px-2 py-1.5 text-xs text-white focus:outline-none">
                   {["GET","POST","PUT","PATCH","DELETE"].map(m => <option key={m}>{m}</option>)}
                 </select>
               </div>
@@ -181,7 +181,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
                 <label className="text-[10px] text-gray-500 mb-1 block">Endpoint URL</label>
                 <input value={tool.url || ""} onChange={e => onChange({ ...tool, url: e.target.value })}
                   placeholder="https://your-api.com/endpoint"
-                  className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
               </div>
             </div>
           )}
@@ -191,7 +191,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
               <label className="text-[10px] text-gray-500 mb-1 block">Send to email</label>
               <input value={tool.toEmail || ""} onChange={e => onChange({ ...tool, toEmail: e.target.value })}
                 placeholder="you@example.com"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white focus:outline-none focus:border-fuchsia-400/40" />
             </div>
           )}
 
@@ -199,7 +199,7 @@ function ToolEditor({ tool, onChange, onDelete }: {
             <label className="text-[10px] text-gray-500 mb-1.5 block">Authorization header (optional)</label>
             <input value={tool.headers?.Authorization || ""} onChange={e => onChange({ ...tool, headers: { ...tool.headers, Authorization: e.target.value } })}
               placeholder="Bearer your_api_key_here"
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
+              className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400/40" />
           </div>
 
           <div>
@@ -212,17 +212,17 @@ function ToolEditor({ tool, onChange, onDelete }: {
               {tool.parameters.map((p, pi) => (
                 <div key={pi} className="flex gap-1.5 items-start">
                   <input value={p.name} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, name: e.target.value }; onChange({ ...tool, parameters: ps }); }}
-                    placeholder="name" className="w-24 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-white font-mono focus:outline-none" />
+                    placeholder="name" className="w-24 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-white font-mono focus:outline-none" />
                   <select value={p.type} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, type: e.target.value as ToolParam["type"] }; onChange({ ...tool, parameters: ps }); }}
-                    className="w-20 rounded-lg border border-white/10 bg-[#1a1a22] px-1 py-1 text-[10px] text-white focus:outline-none">
+                    className="w-20 rounded-lg border border-[#ececf1] bg-white px-1 py-1 text-[10px] text-white focus:outline-none">
                     <option value="string">string</option>
                     <option value="number">number</option>
                     <option value="boolean">bool</option>
                   </select>
                   <input value={p.description} onChange={e => { const ps = [...tool.parameters]; ps[pi] = { ...p, description: e.target.value }; onChange({ ...tool, parameters: ps }); }}
-                    placeholder="Description for AI" className="flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[10px] text-white focus:outline-none" />
+                    placeholder="Description for AI" className="flex-1 rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-2 py-1 text-[10px] text-white focus:outline-none" />
                   <button onClick={() => { const ps = [...tool.parameters]; ps[pi] = { ...p, required: !p.required }; onChange({ ...tool, parameters: ps }); }}
-                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-fuchsia-400/30 text-fuchsia-300 bg-fuchsia-500/10" : "border-white/10 text-gray-600"}`}>req</button>
+                    className={`text-[10px] px-1.5 py-1 rounded border shrink-0 ${p.required ? "border-fuchsia-400/30 text-fuchsia-300 bg-fuchsia-500/10" : "border-[#ececf1] text-gray-600"}`}>req</button>
                   <button onClick={() => { const ps = tool.parameters.filter((_, i) => i !== pi); onChange({ ...tool, parameters: ps }); }}
                     className="text-gray-600 hover:text-red-400 px-1 text-xs">×</button>
                 </div>
@@ -445,9 +445,9 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
   ] as const;
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0f]">
+    <div className="h-screen flex flex-col bg-[#f6f6f8]">
       {/* Header */}
-      <header className="border-b border-white/10 bg-[#0a0a0f]/90 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
+      <header className="border-b border-[#ececf1] bg-[#f6f6f8]/90 backdrop-blur px-4 py-2.5 flex items-center gap-3 shrink-0">
         <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
         <span className="text-gray-700">/</span>
         <span className="text-sm font-medium text-white truncate hidden sm:block">{agent.avatar} {agent.name}</span>
@@ -467,7 +467,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
       </header>
 
       {/* Tab bar */}
-      <div className="flex border-b border-white/10 bg-[#0c0c12] shrink-0 px-4">
+      <div className="flex border-b border-[#ececf1] bg-[#ffffff] shrink-0 px-4">
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setPanel(tab.id)}
             className={`px-4 py-2.5 text-xs font-medium transition-colors border-b-2 -mb-px ${
@@ -503,13 +503,13 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div key={mi}>
                 {msg.role === "user" ? (
                   <div className="flex justify-end">
-                    <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
+                    <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
                       {msg.blocks.map(b => b.type === "text" ? b.text : "").join("")}
                     </div>
                   </div>
                 ) : (
                   <div className="flex gap-3">
-                    <div className="h-7 w-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
+                    <div className="h-7 w-7 rounded-full bg-[#f0f0f5] border border-[#ececf1] flex items-center justify-center text-sm shrink-0 mt-0.5">{agent.avatar}</div>
                     <div className="flex-1 min-w-0 space-y-1">
                       {msg.blocks.map((block, bi) => {
                         if (block.type === "text") return block.text ? (
@@ -528,14 +528,14 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               </div>
             ))}
           </div>
-          <div className="border-t border-white/10 p-3 shrink-0">
-            <div className="rounded-xl border border-white/10 bg-white/[0.03] focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
+          <div className="border-t border-[#ececf1] p-3 shrink-0">
+            <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-fuchsia-400/40 transition-colors flex items-end gap-2 px-3 py-2">
               <textarea value={input} onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                 placeholder={`Message ${agent.name}…`} rows={2}
                 className="flex-1 resize-none bg-transparent text-sm text-white placeholder:text-gray-600 focus:outline-none max-h-40" />
               <button onClick={sendMessage} disabled={responding || !input.trim()}
-                className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 shrink-0">
+                className="rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-3 py-1.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 shrink-0">
                 {responding ? "…" : "↑"}
               </button>
             </div>
@@ -557,13 +557,13 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div>
                 <label className="text-[10px] text-gray-500 mb-1 block">Name</label>
                 <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40" />
               </div>
               <div>
                 <label className="text-[10px] text-gray-500 mb-1 block">One-line description</label>
                 <input value={draft.description ?? ""} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
                   placeholder="e.g. Sales assistant for ACME Corp"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                  className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
               </div>
             </div>
             <div>
@@ -571,7 +571,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex flex-wrap gap-2">
                 {AVATAR_OPTIONS.map(a => (
                   <button key={a} onClick={() => setDraft(d => ({ ...d, avatar: a }))}
-                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-white/5 hover:bg-white/10"}`}>
+                    className={`text-lg w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${draft.avatar === a ? "bg-fuchsia-500/20 ring-1 ring-fuchsia-400/50" : "bg-[#f0f0f5] hover:bg-white/10"}`}>
                     {a}
                   </button>
                 ))}
@@ -593,7 +593,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <textarea value={promptDescription} onChange={e => setPromptDescription(e.target.value)}
                 placeholder={`e.g. "A sales assistant for my software company. It should qualify leads, explain our pricing plans (Basic $29/mo, Pro $99/mo, Enterprise custom), handle objections, and book demos. Should be friendly but professional. Never give discounts without manager approval."`}
                 rows={4}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-400/40 resize-none leading-relaxed" />
+                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-indigo-400/40 resize-none leading-relaxed" />
               <button onClick={generatePrompt} disabled={generatingPrompt || !promptDescription.trim()}
                 className="rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 px-4 py-2 text-xs font-medium hover:bg-indigo-500/30 transition-colors disabled:opacity-40 flex items-center gap-2">
                 {generatingPrompt ? <><span className="h-3 w-3 rounded-full border border-indigo-400 border-t-transparent animate-spin" />Generating…</> : "✨ Generate instructions"}
@@ -608,7 +608,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <textarea value={draft.systemPrompt} onChange={e => setDraft(d => ({ ...d, systemPrompt: e.target.value }))}
                 rows={12}
                 placeholder={"You are a sales assistant for [Company].\n\nYou should:\n- Help customers understand our products\n- Answer pricing questions\n- Book demos when appropriate\n\nYou should NOT:\n- Give unauthorized discounts\n- Make promises you can't keep"}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none font-mono leading-relaxed" />
+                className="w-full rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none font-mono leading-relaxed" />
             </div>
 
             <div>
@@ -616,14 +616,14 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex gap-2">
                 {MODELS.map(m => (
                   <button key={m.id} onClick={() => setDraft(d => ({ ...d, model: m.id }))}
-                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"}`}>
+                    className={`flex-1 text-left rounded-xl border px-3 py-2 text-xs transition-colors ${draft.model === m.id ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200" : "border-[#ececf1] bg-[#f0f0f5] text-gray-400 hover:bg-white/10"}`}>
                     {m.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
+            <div className="flex items-center justify-between rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2.5">
               <div>
                 <p className="text-sm text-white">Public link</p>
                 <p className="text-xs text-gray-500">{draft.public ? "Anyone with the link can chat" : "Only you"}</p>
@@ -649,7 +649,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
             </p>
 
             {knowledge.length === 0 && (
-              <div className="rounded-xl border border-dashed border-white/10 p-6 text-center space-y-3">
+              <div className="rounded-xl border border-dashed border-[#ececf1] p-6 text-center space-y-3">
                 <p className="text-xs text-gray-600">No knowledge added yet.</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
@@ -659,7 +659,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                     { title: "Company info", content: "Company name:\nFounded:\nWhat we do:\nContact: support@yourcompany.com" },
                   ].map(template => (
                     <button key={template.title} onClick={() => setKnowledge(prev => [...prev, { id: `k_${Math.random().toString(36).slice(2,8)}`, title: template.title, content: template.content }])}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
                       + {template.title}
                     </button>
                   ))}
@@ -669,7 +669,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
             <div className="space-y-3">
               {knowledge.map((item, i) => (
-                <div key={item.id} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                <div key={item.id} className="rounded-xl border border-[#ececf1] bg-white overflow-hidden">
                   <div className="flex items-center gap-2 px-3 pt-3 pb-2">
                     <input value={item.title}
                       onChange={e => setKnowledge(prev => prev.map((k, ki) => ki === i ? { ...k, title: e.target.value } : k))}
@@ -688,7 +688,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
             </div>
 
             {knowledge.length > 0 && (
-              <button onClick={addKnowledge} className="w-full rounded-xl border border-dashed border-white/10 text-gray-600 py-3 text-xs hover:text-gray-400 hover:border-white/20 transition-colors">
+              <button onClick={addKnowledge} className="w-full rounded-xl border border-dashed border-[#ececf1] text-gray-600 py-3 text-xs hover:text-gray-400 hover:border-white/20 transition-colors">
                 + Add another document
               </button>
             )}
@@ -696,7 +696,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
 
           <div className="pb-8">
             <button onClick={saveAll} disabled={saving}
-              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-3 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+              className="w-full rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white py-3 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
               {saving ? "Saving…" : "Save changes"}
             </button>
           </div>
@@ -706,7 +706,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
       {/* Tools panel */}
       {panel === "tools" && (
         <div className="flex-1 overflow-y-auto p-5 max-w-2xl space-y-4">
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-1.5">
+          <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-1.5">
             <p className="text-sm font-medium text-white">What are tools?</p>
             <p className="text-xs text-gray-500 leading-relaxed">
               Tools let your agent take real actions — call your APIs, read inventory systems, place orders, browse websites, send emails.
@@ -722,7 +722,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
                 { name: "fetch_url", desc: "Call any HTTP API or endpoint", color: "blue" },
                 { name: "browse_web", desc: "Read any webpage's content", color: "cyan" },
               ].map(t => (
-                <div key={t.name} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+                <div key={t.name} className="flex items-center gap-2 rounded-lg border border-[#ececf1] bg-white px-3 py-2">
                   <span className="text-xs font-mono text-fuchsia-300">{t.name}</span>
                   <span className="text-xs text-gray-500 flex-1">{t.desc}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-green-500/30 text-green-400 bg-green-500/10">active</span>
@@ -738,12 +738,12 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <button onClick={() => addTool()} className="text-xs text-fuchsia-400 hover:text-fuchsia-300">+ Add tool</button>
             </div>
             {tools.length === 0 && (
-              <div className="rounded-xl border border-dashed border-white/10 p-6 text-center">
+              <div className="rounded-xl border border-dashed border-[#ececf1] p-6 text-center">
                 <p className="text-xs text-gray-600 mb-3">No custom tools yet. Add one to let your agent take real actions.</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {TOOL_TEMPLATES.map(t => (
                     <button key={t.name} onClick={() => addTool(t)}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                      className="text-xs px-3 py-1.5 rounded-lg border border-[#ececf1] text-gray-400 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
                       + {t.name}
                     </button>
                   ))}
@@ -761,7 +761,7 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
               <div className="flex flex-wrap gap-2 mt-3">
                 {TOOL_TEMPLATES.filter(t => !tools.find(x => x.name === t.name)).map(t => (
                   <button key={t.name} onClick={() => addTool(t)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-white/10 text-gray-500 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
+                    className="text-xs px-2.5 py-1 rounded-lg border border-[#ececf1] text-gray-500 hover:border-fuchsia-400/30 hover:text-fuchsia-300 transition-colors">
                     + {t.name}
                   </button>
                 ))}
@@ -790,18 +790,18 @@ export default function AgentWorkspace({ agent: initial }: { agent: Agent }) {
           <div>
             <p className="text-xs font-medium text-white mb-1.5">Public link</p>
             <div className="flex gap-2">
-              <input readOnly value={publicUrl} className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-300 focus:outline-none" />
+              <input readOnly value={publicUrl} className="flex-1 rounded-xl border border-[#ececf1] bg-[#f0f0f5] px-3 py-2 text-xs text-gray-300 focus:outline-none" />
               <button onClick={() => navigator.clipboard.writeText(publicUrl)}
-                className="rounded-xl border border-white/10 bg-white/5 text-gray-300 px-3 py-2 text-xs hover:bg-white/10">Copy</button>
+                className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-gray-300 px-3 py-2 text-xs hover:bg-white/10">Copy</button>
             </div>
           </div>
           <div>
             <p className="text-xs font-medium text-white mb-1.5">Embed on any website</p>
-            <pre className="rounded-xl border border-white/10 bg-white/5 p-3 text-[10px] text-gray-400 whitespace-pre-wrap break-all">{embedCode}</pre>
+            <pre className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] p-3 text-[10px] text-gray-400 whitespace-pre-wrap break-all">{embedCode}</pre>
             <button onClick={() => navigator.clipboard.writeText(embedCode)}
-              className="mt-2 text-xs rounded-xl border border-white/10 bg-white/5 text-gray-300 px-3 py-1.5 hover:bg-white/10">Copy embed</button>
+              className="mt-2 text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-gray-300 px-3 py-1.5 hover:bg-white/10">Copy embed</button>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+          <div className="rounded-xl border border-[#ececf1] bg-white p-4">
             <p className="text-xs font-medium text-white mb-1">API</p>
             <p className="text-[10px] text-gray-500 mb-1.5">POST <code className="text-gray-400">/api/agents/{agent.id}/chat</code></p>
             <pre className="text-[10px] text-gray-500">{`{ "messages": [

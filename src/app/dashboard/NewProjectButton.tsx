@@ -23,7 +23,7 @@ export default function NewProjectButton() {
   }
 
   return (
-    <div className="w-full rounded-2xl border border-white/10 bg-white/[0.03] focus-within:border-fuchsia-400/40 transition-colors">
+    <div className="w-full rounded-2xl border border-[#ececf1] bg-white focus-within:border-fuchsia-400/40 transition-colors">
       <textarea
         ref={textareaRef}
         value={prompt}

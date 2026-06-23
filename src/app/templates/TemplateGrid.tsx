@@ -261,7 +261,7 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search templates…"
           className="flex-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none"
-          style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.09)", color: "#eef0f6" }}
+          style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.09)", color: "#eef0f6" }}
           onFocus={(e) => (e.target.style.borderColor = "rgba(109,95,255,0.5)")}
           onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.09)")}
         />
@@ -289,7 +289,7 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div
             key={t.id}
             className="group relative overflow-hidden rounded-2xl transition-all duration-200 hover:-translate-y-1"
-            style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}
+            style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = `${t.accent}55`;
               e.currentTarget.style.boxShadow = `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${t.accent}22`;

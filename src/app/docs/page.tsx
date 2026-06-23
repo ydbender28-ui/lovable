@@ -84,7 +84,7 @@ const SECTIONS = [
 
 export default function DocsPage() {
   return (
-    <div style={{ background: "#0a0b0e", minHeight: "100vh" }}>
+    <div style={{ background: "#f6f6f8", minHeight: "100vh" }}>
       {/* Nav */}
       <header style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -156,7 +156,7 @@ export default function DocsPage() {
                       <h3 className="mb-3 text-base font-semibold" style={{ color: "#c4cad6" }}>
                         {item.title}
                       </h3>
-                      <div className="rounded-xl p-5" style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="rounded-xl p-5" style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}>
                         {item.content.split("\n\n").map((para, i) => (
                           <p key={i} className={`text-sm leading-relaxed ${i > 0 ? "mt-3" : ""}`} style={{ color: "#7a8099", whiteSpace: "pre-line" }}>
                             {para}

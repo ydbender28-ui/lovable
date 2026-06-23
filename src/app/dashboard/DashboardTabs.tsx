@@ -59,11 +59,11 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }}>
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0e0f17] p-6 space-y-5">
+      <div className="w-full max-w-lg rounded-2xl border border-[#ececf1] bg-white p-6 space-y-5">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-white">Buy Credits</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Credits never expire. Use them on any generation.</p>
+            <h2 className="text-lg font-semibold text-[#17171c]">Buy Credits</h2>
+            <p className="text-xs text-[#71717f] mt-0.5">Credits never expire. Use them on any generation.</p>
           </div>
           <button onClick={onClose} className="text-gray-600 hover:text-gray-300 text-xl leading-none">×</button>
         </div>
@@ -71,17 +71,17 @@ function BuyCreditsModal({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           {PACKAGES.map(pkg => (
             <button key={pkg.id} onClick={() => buy(pkg.id)} disabled={loading !== null}
-              className={`relative rounded-xl border p-4 text-left transition-all hover:border-fuchsia-400/50 hover:bg-fuchsia-500/5 disabled:opacity-60 ${
+              className={`relative rounded-xl border p-4 text-left transition-all hover:border-[#6a1ff7]/50 hover:bg-[#eef2ff] disabled:opacity-60 ${
                 "popular" in pkg && pkg.popular
-                  ? "border-fuchsia-400/40 bg-fuchsia-500/[0.06]"
-                  : "border-white/10 bg-white/[0.02]"
+                  ? "border-[#6a1ff7]/40 bg-[#eef2ff]"
+                  : "border-[#ececf1] bg-[#fbfbfc]"
               }`}>
               {"popular" in pkg && pkg.popular && (
-                <span className="absolute -top-2 left-3 text-[10px] font-semibold bg-fuchsia-500 text-white px-2 py-0.5 rounded-full">Most popular</span>
+                <span className="absolute -top-2 left-3 text-[10px] font-semibold bg-[#6a1ff7] text-white px-2 py-0.5 rounded-full">Most popular</span>
               )}
-              <p className="text-xl font-bold text-white">{pkg.price}</p>
-              <p className="text-sm font-semibold text-white mt-0.5">{pkg.credits.toLocaleString()} credits</p>
-              <p className="text-[10px] text-gray-500 mt-1">{pkg.per}</p>
+              <p className="text-xl font-bold text-[#17171c]">{pkg.price}</p>
+              <p className="text-sm font-semibold text-[#17171c] mt-0.5">{pkg.credits.toLocaleString()} credits</p>
+              <p className="text-[10px] text-[#71717f] mt-1">{pkg.per}</p>
               {loading === pkg.id && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
                   <span className="text-xs text-gray-300">Redirecting…</span>
@@ -170,7 +170,7 @@ export default function DashboardTabs({
 
       {/* Credits bar */}
       {credits !== null && (
-        <div className="mb-6 flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3">
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-[#ececf1] bg-white px-4 py-3">
           <div className="flex items-center gap-2.5">
             <span className="text-sm font-semibold text-white">{credits < 0 ? 0 : credits.toFixed(1)} credits</span>
             {credits < 10 && (
@@ -224,7 +224,7 @@ export default function DashboardTabs({
           <div
             className="w-full rounded-2xl transition-all"
             style={{
-              background: "#111318",
+              background: "#ffffff",
               border: `1px solid ${focused ? "rgba(109,95,255,0.55)" : "rgba(255,255,255,0.08)"}`,
               boxShadow: focused ? "0 0 0 4px rgba(109,95,255,0.12)" : "none",
             }}
@@ -295,7 +295,7 @@ export default function DashboardTabs({
                   key={agent.id}
                   href={`/agents/${agent.id}`}
                   className="group flex items-start gap-4 rounded-2xl p-5 transition-all hover:-translate-y-0.5"
-                  style={{ background: "#111318", border: "1px solid rgba(255,255,255,0.07)" }}
+                  style={{ background: "#ffffff", border: "1px solid rgba(255,255,255,0.07)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(109,95,255,0.35)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)")}
                 >

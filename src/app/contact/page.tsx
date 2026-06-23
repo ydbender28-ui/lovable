@@ -1,6 +1,6 @@
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-[#0a0b0e] text-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#f6f6f8] text-white flex items-center justify-center px-6">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h1 className="text-2xl font-semibold">Get in touch</h1>
@@ -10,7 +10,7 @@ export default function ContactPage() {
         <div className="space-y-4">
           <a
             href="mailto:support@thatcode.dev"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 hover:bg-white/[0.06] transition-colors group"
+            className="flex items-center gap-3 rounded-xl border border-[#ececf1] bg-white px-5 py-4 hover:bg-white/[0.06] transition-colors group"
           >
             <span className="text-xl">✉️</span>
             <div>
@@ -23,7 +23,7 @@ export default function ContactPage() {
             href="https://feedback.thatcode.dev"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 hover:bg-white/[0.06] transition-colors group"
+            className="flex items-center gap-3 rounded-xl border border-[#ececf1] bg-white px-5 py-4 hover:bg-white/[0.06] transition-colors group"
           >
             <span className="text-xl">💬</span>
             <div>

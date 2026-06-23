@@ -61,7 +61,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ background: "#0a0b0e" }}>
+    <div className="flex min-h-screen" style={{ background: "#f6f6f8" }}>
       {/* Left panel */}
       <div
         className="relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden px-12 py-12 lg:flex"

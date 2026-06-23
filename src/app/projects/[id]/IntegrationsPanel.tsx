@@ -351,7 +351,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
         style={{ background: "#0d0e14", borderLeft: "1px solid rgba(255,255,255,0.09)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[#ececf1] px-5 py-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Integrations</h2>
             <p className="mt-0.5 text-xs" style={{ color: "#7a8099" }}>
@@ -396,7 +396,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
                 key={integration.id}
                 className="overflow-hidden rounded-xl transition-all"
                 style={{
-                  background: "#111318",
+                  background: "#ffffff",
                   border: connected
                     ? "1px solid rgba(34,197,94,0.30)"
                     : open
@@ -406,7 +406,7 @@ export default function IntegrationsPanel({ envVars, onSaveEnv, onAutoPrompt, on
               >
                 {/* Row */}
                 <button
-                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.03]"
+                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white"
                   onClick={() => setOpenId(open ? null : integration.id)}
                 >
                   <span className="text-xl shrink-0">{integration.icon}</span>
