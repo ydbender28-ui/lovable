@@ -104,7 +104,7 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
   return (
     <div style={{
       flex: 1, minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start",
-      background: isDevice ? "#080810" : "transparent",
+      background: isDevice ? "#e8e8ee" : "transparent",
       padding: isDevice ? "24px 16px" : "0",
       overflowY: isDevice ? "auto" : "hidden",
     }}>
@@ -112,24 +112,24 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
         width: frameWidth, height: frameHeight, flexShrink: 0, position: "relative",
         overflow: "hidden",
         borderRadius: isMobile ? "2.5rem" : isDevice ? "12px" : "0",
-        border: isMobile ? "6px solid #374151" : isDevice ? "1px solid rgba(255,255,255,0.12)" : "none",
+        border: isMobile ? "6px solid #2a2a35" : isDevice ? "1px solid #ececf1" : "none",
         boxShadow: isDevice ? "0 24px 60px rgba(0,0,0,0.6)" : "none",
-        background: "#0a0a0f",
+        background: "#f6f6f8",
       }}>
-        {isMobile && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 28, background: "#374151", borderRadius: "0 0 20px 20px", zIndex: 10 }} />}
+        {isMobile && <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 28, background: "#2a2a35", borderRadius: "0 0 20px 20px", zIndex: 10 }} />}
         {/* Loading skeleton shown until iframe fires onLoad */}
         {!iframeReady && (
-          <div style={{ position: "absolute", inset: 0, background: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }}>
+          <div style={{ position: "absolute", inset: 0, background: "#f6f6f8", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 5 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 28, height: 28, border: "2px solid rgba(139,92,246,0.3)", borderTopColor: "#8b5cf6", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ fontSize: 12, color: "#4b5563" }}>Loading preview…</span>
+              <div style={{ width: 28, height: 28, border: "2px solid rgba(106,31,247,0.3)", borderTopColor: "#6a1ff7", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <span style={{ fontSize: 12, color: "#71717f" }}>Loading preview…</span>
             </div>
           </div>
         )}
         <iframe
           ref={iframeRef}
           onLoad={() => setIframeReady(true)}
-          style={{ width: "100%", height: "100%", border: "none", background: "#0a0a0f", display: "block", opacity: iframeReady ? 1 : 0, transition: "opacity 0.2s" }}
+          style={{ width: "100%", height: "100%", border: "none", background: "#f6f6f8", display: "block", opacity: iframeReady ? 1 : 0, transition: "opacity 0.2s" }}
           sandbox="allow-scripts allow-same-origin"
         />
       </div>
@@ -143,17 +143,17 @@ function SimpleMarkdown({ content }: { content: string }) {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
-    if (line.startsWith("# ")) elements.push(<h1 key={i} style={{ fontSize: 22, fontWeight: 700, color: "#f5f5f5", marginBottom: 8, marginTop: 16 }}>{line.slice(2)}</h1>);
-    else if (line.startsWith("## ")) elements.push(<h2 key={i} style={{ fontSize: 17, fontWeight: 600, color: "#e5e5e5", marginBottom: 6, marginTop: 14 }}>{line.slice(3)}</h2>);
-    else if (line.startsWith("### ")) elements.push(<h3 key={i} style={{ fontSize: 14, fontWeight: 600, color: "#d4d4d4", marginBottom: 4, marginTop: 12 }}>{line.slice(4)}</h3>);
-    else if (line.startsWith("- ") || line.startsWith("* ")) elements.push(<li key={i} style={{ fontSize: 13, color: "#a3a3a3", marginLeft: 16, marginBottom: 2 }}>{line.slice(2)}</li>);
+    if (line.startsWith("# ")) elements.push(<h1 key={i} style={{ fontSize: 22, fontWeight: 700, color: "#17171c", marginBottom: 8, marginTop: 16 }}>{line.slice(2)}</h1>);
+    else if (line.startsWith("## ")) elements.push(<h2 key={i} style={{ fontSize: 17, fontWeight: 600, color: "#2a2a3a", marginBottom: 6, marginTop: 14 }}>{line.slice(3)}</h2>);
+    else if (line.startsWith("### ")) elements.push(<h3 key={i} style={{ fontSize: 14, fontWeight: 600, color: "#3a3a4a", marginBottom: 4, marginTop: 12 }}>{line.slice(4)}</h3>);
+    else if (line.startsWith("- ") || line.startsWith("* ")) elements.push(<li key={i} style={{ fontSize: 13, color: "#71717f", marginLeft: 16, marginBottom: 2 }}>{line.slice(2)}</li>);
     else if (line.startsWith("```")) {
       const codeLines: string[] = [];
       i++;
       while (i < lines.length && !lines[i].startsWith("```")) { codeLines.push(lines[i]); i++; }
-      elements.push(<pre key={i} style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#86efac", overflowX: "auto", marginTop: 8, marginBottom: 8 }}>{codeLines.join("\n")}</pre>);
+      elements.push(<pre key={i} style={{ background: "#f5f5f8", border: "1px solid #ececf1", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#16a34a", overflowX: "auto", marginTop: 8, marginBottom: 8 }}>{codeLines.join("\n")}</pre>);
     } else if (line.trim() === "") elements.push(<div key={i} style={{ height: 8 }} />);
-    else elements.push(<p key={i} style={{ fontSize: 13, color: "#a3a3a3", lineHeight: 1.6, marginBottom: 4 }}>{line}</p>);
+    else elements.push(<p key={i} style={{ fontSize: 13, color: "#71717f", lineHeight: 1.6, marginBottom: 4 }}>{line}</p>);
     i++;
   }
   return <div style={{ padding: "16px 20px", overflowY: "auto", flex: 1 }}>{elements}</div>;
@@ -198,30 +198,30 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
 
   return (
     <div className="h-full flex overflow-hidden">
-      <div className="w-48 shrink-0 border-r border-white/10 bg-[#0c0c12] overflow-y-auto p-2 space-y-0.5">
+      <div className="w-48 shrink-0 border-r border-[#ececf1] bg-white overflow-y-auto p-2 space-y-0.5">
         {fileKeys.map((f) => (
           <button key={f} onClick={() => { setActiveFile(f); setEditedContent(null); setMdPreview(false); }}
-            className={`w-full text-left text-xs px-2 py-1.5 rounded truncate transition-colors ${activeFile === f ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}>
+            className={`w-full text-left text-xs px-2 py-1.5 rounded truncate transition-colors ${activeFile === f ? "bg-[#eef2ff] text-[#6a1ff7]" : "text-[#9090a0] hover:text-[#17171c] hover:bg-[#f0f0f5]"}`}>
             {f.split("/").pop()}
           </button>
         ))}
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-[#0c0c12] shrink-0">
-          <span className="text-[10px] text-gray-500 font-mono truncate">{activeFile}</span>
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#ececf1] bg-white shrink-0">
+          <span className="text-[10px] text-[#9090a0] font-mono truncate">{activeFile}</span>
           <div className="flex items-center gap-1 shrink-0 ml-2">
             {isMd && (
-              <button onClick={() => setMdPreview(v => !v)} className={`text-[11px] px-2 py-0.5 rounded transition-colors ${mdPreview ? "bg-purple-500/20 text-purple-300" : "text-gray-500 hover:text-white hover:bg-white/10"}`}>
+              <button onClick={() => setMdPreview(v => !v)} className={`text-[11px] px-2 py-0.5 rounded transition-colors ${mdPreview ? "bg-purple-500/20 text-purple-300" : "text-[#9090a0] hover:text-white hover:bg-white/10"}`}>
                 {mdPreview ? "Source" : "Preview"}
               </button>
             )}
             {devMode && isDirty && (
-              <button onClick={saveEdits} className="text-[11px] bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-2 py-0.5 rounded hover:bg-fuchsia-500/30 transition-colors">
+              <button onClick={saveEdits} className="text-[11px] bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] px-2 py-0.5 rounded hover:bg-fuchsia-500/30 transition-colors">
                 Save
               </button>
             )}
             {saved && <span className="text-[11px] text-green-400">✓ Saved</span>}
-            <button onClick={copyFile} className="text-[11px] text-gray-500 hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10">
+            <button onClick={copyFile} className="text-[11px] text-[#9090a0] hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10">
               {copied ? "✓ Copied" : "Copy"}
             </button>
           </div>
@@ -233,22 +233,22 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
             value={currentContent}
             onChange={e => setEditedContent(e.target.value)}
             spellCheck={false}
-            className="flex-1 overflow-auto p-4 text-xs text-gray-300 font-mono leading-relaxed bg-[#0d0d14] resize-none focus:outline-none w-full"
+            className="flex-1 overflow-auto p-4 text-xs text-[#3a3a4a] font-mono leading-relaxed bg-[#fbfbfc] resize-none focus:outline-none w-full"
           />
         ) : (
-          <div className="flex-1 overflow-auto bg-[#0d0d14]">
+          <div className="flex-1 overflow-auto bg-[#fbfbfc]">
             <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 400 }}>
               <tbody>
                 {lines.map((line, idx) => (
-                  <tr key={idx} className="group hover:bg-white/[0.02]">
+                  <tr key={idx} className="group hover:bg-[#fbfbfc]">
                     <td
                       onClick={() => onLineRef?.(`${activeFile}:${idx + 1}`)}
-                      className="select-none text-right pr-3 pl-3 text-[10px] text-gray-700 group-hover:text-fuchsia-400 cursor-pointer w-10 shrink-0 align-top pt-0.5"
+                      className="select-none text-right pr-3 pl-3 text-[10px] text-gray-700 group-hover:text-[#5a10e7] cursor-pointer w-10 shrink-0 align-top pt-0.5"
                       style={{ userSelect: "none", verticalAlign: "top" }}
                     >
                       {idx + 1}
                     </td>
-                    <td className="pl-1 pr-4 text-xs text-gray-300 font-mono leading-relaxed whitespace-pre-wrap break-all align-top">
+                    <td className="pl-1 pr-4 text-xs text-[#3a3a4a] font-mono leading-relaxed whitespace-pre-wrap break-all align-top">
                       {line || " "}
                     </td>
                   </tr>
@@ -1553,32 +1553,32 @@ export default function ProjectWorkspace({
     if (flow.type !== "designpick") return null;
     const f = flow;
     return (
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-        <p className="text-xs font-medium text-white">Choose a design direction</p>
+      <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-3">
+        <p className="text-xs font-medium text-[#17171c]">Choose a design direction</p>
         <div className="space-y-2">
           {f.directions.map((d, i) => (
             <button key={i} onClick={() => {
               setFlow({ type: "idle" });
               runGenerate(`${f.pendingPrompt}\n\nDesign direction: ${d.name} — ${d.description}. Use this color palette: background ${d.bg}, accent ${d.accent}, text ${d.text}. Style: ${d.style}.`);
             }}
-              className="w-full text-left rounded-xl border border-white/10 hover:border-fuchsia-400/30 bg-white/[0.02] hover:bg-fuchsia-500/5 p-3 transition-all group">
+              className="w-full text-left rounded-xl border border-[#ececf1] hover:border-[#6a1ff7]/30 bg-[#fbfbfc] hover:bg-[#f0f0ff] p-3 transition-all group">
               <div className="flex items-start gap-3">
                 <div className="flex gap-1 shrink-0 mt-0.5">
                   {[d.bg, d.accent, d.text].map((c, j) => (
-                    <div key={j} className="h-4 w-4 rounded-full border border-white/10" style={{ background: c }} />
+                    <div key={j} className="h-4 w-4 rounded-full border border-[#ececf1]" style={{ background: c }} />
                   ))}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-white group-hover:text-fuchsia-200">{d.name}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">{d.style}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{d.description}</p>
+                  <p className="text-xs font-medium text-[#17171c] group-hover:text-[#5a10e7]">{d.name}</p>
+                  <p className="text-[10px] text-[#9090a0] mt-0.5">{d.style}</p>
+                  <p className="text-[10px] text-[#71717f] mt-0.5">{d.description}</p>
                 </div>
               </div>
             </button>
           ))}
         </div>
         <button onClick={() => { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); }}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          className="text-xs text-[#9090a0] hover:text-[#17171c] transition-colors">
           Skip — let AI choose →
         </button>
       </div>
@@ -1598,26 +1598,26 @@ export default function ProjectWorkspace({
     if (flow.type !== "colorpick") return null;
     const f = flow;
     return (
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-        <p className="text-xs font-medium text-white">Choose a color palette</p>
+      <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-3">
+        <p className="text-xs font-medium text-[#17171c]">Choose a color palette</p>
         <div className="grid grid-cols-2 gap-2">
           {COLOR_PALETTES.map((p) => (
             <button key={p.name} onClick={() => {
               setFlow({ type: "idle" });
               runGenerate(`${f.pendingPrompt}\n\nApply this EXACT color palette to the ENTIRE app — every section, every component, every background, every card, every border. Leave no element with the old colors.\nBackground: ${p.bg}\nCard/surface: ${p.card}\nAccent/buttons: ${p.accent}\nText: ${p.text}\nMuted/secondary text: ${p.muted}\nChange ALL background colors, ALL card colors, ALL text colors, ALL border colors. Check every single style prop in the code.`);
             }}
-              className="text-left rounded-lg border border-white/10 hover:border-fuchsia-400/30 bg-white/[0.02] hover:bg-fuchsia-500/5 p-2.5 transition-all">
+              className="text-left rounded-lg border border-[#ececf1] hover:border-[#6a1ff7]/30 bg-[#fbfbfc] hover:bg-[#f0f0ff] p-2.5 transition-all">
               <div className="flex gap-1 mb-1.5">
                 {p.swatch.map((c, j) => (
-                  <div key={j} className="h-5 w-5 rounded-full border border-white/10" style={{ background: c }} />
+                  <div key={j} className="h-5 w-5 rounded-full border border-[#ececf1]" style={{ background: c }} />
                 ))}
               </div>
-              <p className="text-[11px] font-medium text-white">{p.name}</p>
+              <p className="text-[11px] font-medium text-[#17171c]">{p.name}</p>
             </button>
           ))}
         </div>
         <button onClick={() => { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); }}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          className="text-xs text-[#9090a0] hover:text-[#17171c] transition-colors">
           Skip — let AI decide →
         </button>
       </div>
@@ -1631,9 +1631,9 @@ export default function ProjectWorkspace({
       <div className="rounded-xl border border-purple-400/20 bg-purple-500/5 p-4 space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-sm">🏗️</span>
-          <p className="text-sm font-medium text-white">{plan.title}</p>
+          <p className="text-sm font-medium text-[#17171c]">{plan.title}</p>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed">{plan.overview}</p>
+        <p className="text-xs text-[#71717f] leading-relaxed">{plan.overview}</p>
         <div className="grid grid-cols-2 gap-2">
           {[
             { label: "Components", items: plan.components },
@@ -1641,21 +1641,21 @@ export default function ProjectWorkspace({
             { label: "Features", items: plan.features },
             { label: "Considerations", items: plan.considerations },
           ].filter(s => s.items?.length > 0).map(section => (
-            <div key={section.label} className="rounded-lg bg-white/[0.03] border border-white/10 p-2.5 space-y-1">
-              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{section.label}</p>
+            <div key={section.label} className="rounded-lg bg-white border border-[#ececf1] p-2.5 space-y-1">
+              <p className="text-[10px] font-semibold text-[#9090a0] uppercase tracking-wide">{section.label}</p>
               {section.items.map((item, i) => (
-                <p key={i} className="text-[11px] text-gray-300">· {item}</p>
+                <p key={i} className="text-[11px] text-[#3a3a4a]">· {item}</p>
               ))}
             </div>
           ))}
         </div>
         <div className="flex gap-2 pt-1">
           <button onClick={() => { setFlow({ type: "idle" }); runGenerate(pendingPrompt); }}
-            className="flex-1 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold py-2 hover:opacity-90 transition-opacity">
+            className="flex-1 rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-xs font-semibold py-2 hover:opacity-90 transition-opacity">
             Build this plan →
           </button>
           <button onClick={() => setFlow({ type: "idle" })}
-            className="text-xs text-gray-500 hover:text-gray-300 px-2 transition-colors">
+            className="text-xs text-[#9090a0] hover:text-[#17171c] px-2 transition-colors">
             Edit prompt
           </button>
         </div>
@@ -1681,32 +1681,32 @@ export default function ProjectWorkspace({
       runGenerate(full);
     }
     return (
-      <div className="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-4 max-w-[92%] space-y-3">
-        <p className="text-xs font-medium text-fuchsia-300">A few quick questions to build exactly what you want:</p>
+      <div className="rounded-xl border border-[#6a1ff7]/20 bg-[#f0f0ff] p-4 max-w-[92%] space-y-3">
+        <p className="text-xs font-medium text-[#6a1ff7]">A few quick questions to build exactly what you want:</p>
         <div>
-          <p className="text-[10px] text-gray-400 mb-1.5">What type of app?</p>
+          <p className="text-[10px] text-[#71717f] mb-1.5">What type of app?</p>
           <div className="flex flex-wrap gap-1.5">
             {typeOpts.map(o => (
               <button key={o} onClick={() => setType(o === type ? "" : o)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${type === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-300" : "border-white/10 text-gray-400 hover:border-white/20"}`}>{o}</button>
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${type === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] text-[#71717f] hover:border-white/20"}`}>{o}</button>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[10px] text-gray-400 mb-1.5">Style?</p>
+          <p className="text-[10px] text-[#71717f] mb-1.5">Style?</p>
           <div className="flex flex-wrap gap-1.5">
             {styleOpts.map(o => (
               <button key={o} onClick={() => setStyle(o === style ? "" : o)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${style === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-300" : "border-white/10 text-gray-400 hover:border-white/20"}`}>{o}</button>
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${style === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] text-[#71717f] hover:border-white/20"}`}>{o}</button>
             ))}
           </div>
         </div>
         <input value={extra} onChange={e => setExtra(e.target.value)}
           placeholder="Any specific features? (optional)"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+          className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-3 py-1.5 text-xs text-[#17171c] placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
         <div className="flex gap-2">
-          <button onClick={() => submit()} className="rounded-lg bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-3 py-1.5 text-xs hover:bg-fuchsia-500/30 transition-colors">Build it →</button>
-          <button onClick={() => submit(true)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Skip, just build</button>
+          <button onClick={() => submit()} className="rounded-lg bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] px-3 py-1.5 text-xs hover:bg-fuchsia-500/30 transition-colors">Build it →</button>
+          <button onClick={() => submit(true)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-2 py-1.5 transition-colors">Skip, just build</button>
         </div>
       </div>
     );
@@ -1728,26 +1728,26 @@ export default function ProjectWorkspace({
       <div className="rounded-xl border border-blue-400/20 bg-blue-500/5 p-4 max-w-[92%] space-y-3">
         <div>
           <p className="text-xs font-medium text-blue-300 mb-0.5">Optional: add API keys before building</p>
-          <p className="text-[10px] text-gray-500 leading-relaxed">Your prompt uses {flow.needed.map(a => a.name).join(" and ")}. Add your key{flow.needed.length > 1 ? "s" : ""} now so the feature works in the live app — or skip and build first.</p>
+          <p className="text-[10px] text-[#9090a0] leading-relaxed">Your prompt uses {flow.needed.map(a => a.name).join(" and ")}. Add your key{flow.needed.length > 1 ? "s" : ""} now so the feature works in the live app — or skip and build first.</p>
         </div>
         {flow.needed.map(api => (
           <div key={api.key}>
-            <label className="text-[10px] text-gray-400 mb-1 block">
-              <span className="font-medium text-gray-300">{api.name}</span>
-              {(api as { description?: string }).description && <span className="text-gray-600"> — {(api as { description?: string }).description}</span>}
+            <label className="text-[10px] text-[#71717f] mb-1 block">
+              <span className="font-medium text-[#3a3a4a]">{api.name}</span>
+              {(api as { description?: string }).description && <span className="text-[#9090a0]"> — {(api as { description?: string }).description}</span>}
             </label>
-            <label className="text-[10px] text-gray-600 mb-1 block">{api.hint}</label>
+            <label className="text-[10px] text-[#9090a0] mb-1 block">{api.hint}</label>
             <input
               value={values[api.key] ?? ""}
               onChange={e => setValues(v => ({ ...v, [api.key]: e.target.value }))}
               placeholder={api.placeholder || `Your ${api.name} key`}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-400/40 font-mono"
+              className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-3 py-1.5 text-xs text-[#17171c] placeholder:text-[#9090a0] focus:outline-none focus:border-blue-400/40 font-mono"
             />
           </div>
         ))}
         <div className="flex gap-2">
           <button onClick={() => submit()} className="rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 px-3 py-1.5 text-xs hover:bg-blue-500/30 transition-colors">Save & Build →</button>
-          <button onClick={() => submit(true)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Skip, build without keys</button>
+          <button onClick={() => submit(true)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-2 py-1.5 transition-colors">Skip, build without keys</button>
         </div>
       </div>
     );
@@ -1755,39 +1755,39 @@ export default function ProjectWorkspace({
 
   // ── Knowledge panel ────────────────────────────────────────────────────────────
   const knowledgePanel = showKnowledge && (
-    <div className="absolute inset-0 z-20 bg-[#0c0c12] flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
-        <span className="text-sm font-medium text-white">📚 Custom Knowledge</span>
-        <button onClick={() => setShowKnowledge(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+    <div className="absolute inset-0 z-20 bg-white flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#ececf1] shrink-0">
+        <span className="text-sm font-medium text-[#17171c]">📚 Custom Knowledge</span>
+        <button onClick={() => setShowKnowledge(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <p className="text-xs text-gray-500">Add context the AI should always remember — brand colors, tech stack preferences, coding conventions, business rules.</p>
+        <p className="text-xs text-[#9090a0]">Add context the AI should always remember — brand colors, tech stack preferences, coding conventions, business rules.</p>
         {knowledge.map(k => (
-          <div key={k.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1">
+          <div key={k.id} className="rounded-xl border border-[#ececf1] bg-white p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white">{k.title}</span>
+              <span className="text-xs font-medium text-[#17171c]">{k.title}</span>
               <div className="flex gap-2">
-                <button onClick={() => setKnowledgeDraft(k)} className="text-xs text-gray-500 hover:text-fuchsia-300">Edit</button>
-                <button onClick={() => saveKnowledge(knowledge.filter(x => x.id !== k.id))} className="text-xs text-gray-500 hover:text-red-400">Delete</button>
+                <button onClick={() => setKnowledgeDraft(k)} className="text-xs text-[#9090a0] hover:text-[#5a10e7]">Edit</button>
+                <button onClick={() => saveKnowledge(knowledge.filter(x => x.id !== k.id))} className="text-xs text-[#9090a0] hover:text-red-400">Delete</button>
               </div>
             </div>
-            <p className="text-xs text-gray-400 line-clamp-2">{k.content}</p>
+            <p className="text-xs text-[#71717f] line-clamp-2">{k.content}</p>
           </div>
         ))}
         {knowledgeDraft ? (
-          <div className="rounded-xl border border-fuchsia-400/30 bg-fuchsia-500/5 p-3 space-y-2">
+          <div className="rounded-xl border border-[#6a1ff7]/30 bg-[#f0f0ff] p-3 space-y-2">
             <input
               value={knowledgeDraft.title}
               onChange={e => setKnowledgeDraft({ ...knowledgeDraft, title: e.target.value })}
               placeholder="Title (e.g. Brand Colors, Tech Stack)"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40"
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-1.5 text-xs text-[#17171c] placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40"
             />
             <textarea
               value={knowledgeDraft.content}
               onChange={e => setKnowledgeDraft({ ...knowledgeDraft, content: e.target.value })}
               placeholder="Describe the convention, rule, or context..."
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-1.5 text-xs text-[#17171c] placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 resize-none"
             />
             <div className="flex gap-2">
               <button onClick={() => {
@@ -1797,13 +1797,13 @@ export default function ProjectWorkspace({
                   : [...knowledge, knowledgeDraft];
                 saveKnowledge(updated);
                 setKnowledgeDraft(null);
-              }} className="text-xs bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 px-3 py-1.5 rounded-lg hover:bg-fuchsia-500/30 transition-colors">Save</button>
-              <button onClick={() => setKnowledgeDraft(null)} className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition-colors">Cancel</button>
+              }} className="text-xs bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] px-3 py-1.5 rounded-lg hover:bg-fuchsia-500/30 transition-colors">Save</button>
+              <button onClick={() => setKnowledgeDraft(null)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-2 py-1.5 transition-colors">Cancel</button>
             </div>
           </div>
         ) : (
           <button onClick={() => setKnowledgeDraft({ id: `k-${Date.now()}`, title: "", content: "" })}
-            className="w-full text-xs rounded-xl border border-dashed border-white/10 text-gray-500 hover:border-fuchsia-400/30 hover:text-fuchsia-300 py-3 transition-colors">
+            className="w-full text-xs rounded-xl border border-dashed border-[#ececf1] text-[#9090a0] hover:border-[#6a1ff7]/30 hover:text-[#5a10e7] py-3 transition-colors">
             + Add knowledge
           </button>
         )}
@@ -1813,17 +1813,17 @@ export default function ProjectWorkspace({
 
   // ── Chat panel ─────────────────────────────────────────────────────────────────
   const chatPanel = (
-    <div className="flex flex-col h-full bg-[#10111a] relative">
+    <div className="flex flex-col h-full bg-[#f6f6f8] relative">
       {knowledgePanel}
       {/* Mode toggle + features */}
       <div className="flex items-center gap-2 px-3 pt-2 pb-1.5 shrink-0 border-b border-white/[0.05]">
-        <div className="flex rounded-lg border border-white/10 bg-white/[0.03] p-0.5 text-[11px]">
+        <div className="flex rounded-lg border border-[#ececf1] bg-white p-0.5 text-[11px]">
           <button onClick={() => setChatMode(false)}
-            className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-white/10 text-white font-medium" : "text-gray-500 hover:text-gray-300"}`}>
+            className={`px-3 py-1 rounded-md transition-colors ${!chatMode ? "bg-[#eef2ff] text-[#6a1ff7] font-medium" : "text-[#9090a0] hover:text-[#17171c]"}`}>
             Build
           </button>
           <button onClick={() => setChatMode(true)}
-            className={`px-3 py-1 rounded-md transition-colors ${chatMode ? "bg-white/10 text-white font-medium" : "text-gray-500 hover:text-gray-300"}`}>
+            className={`px-3 py-1 rounded-md transition-colors ${chatMode ? "bg-[#eef2ff] text-[#6a1ff7] font-medium" : "text-[#9090a0] hover:text-[#17171c]"}`}>
             Chat
           </button>
         </div>
@@ -1840,14 +1840,14 @@ export default function ProjectWorkspace({
         )}
         <div className="ml-auto relative">
           <button onClick={() => setShowFeaturesMenu(v => !v)}
-            className="text-xs rounded-lg border border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white px-2.5 py-1 transition-colors flex items-center gap-1.5">
+            className="text-xs rounded-lg border border-[#ececf1] bg-white text-[#71717f] hover:bg-white/[0.07] hover:text-white px-2.5 py-1 transition-colors flex items-center gap-1.5">
             <span className="text-base leading-none font-light">+</span> Features
           </button>
           {showFeaturesMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowFeaturesMenu(false)} />
-              <div className="absolute left-0 top-full mt-1 w-56 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
-                <p className="text-[10px] text-gray-600 font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">AI Tools</p>
+              <div className="absolute left-0 top-full mt-1 w-56 rounded-xl border border-[#ececf1] bg-white shadow-2xl z-50 py-1.5 overflow-hidden">
+                <p className="text-[10px] text-[#9090a0] font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">AI Tools</p>
                 {([
                   { icon: "🏗️", label: "Architect mode", desc: "Plan before building", action: () => { setArchitectMode(v => !v); setShowFeaturesMenu(false); }, active: architectMode },
                   { icon: "🔬", label: "Self-verify", desc: "Auto-test after build", action: () => { setSelfVerify(v => !v); setShowFeaturesMenu(false); }, active: selfVerify },
@@ -1863,13 +1863,13 @@ export default function ProjectWorkspace({
                   { icon: "📚", label: `Knowledge${knowledge.length > 0 ? ` (${knowledge.length})` : ""}`, desc: "Custom context for AI", action: () => { setShowKnowledge(true); setShowFeaturesMenu(false); } },
                 ] as { icon: string; label: string; desc: string; action: () => void; active?: boolean }[]).map(({ icon, label, desc, action, active }) => (
                   <button key={label} onClick={action}
-                    className={`w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04] ${active ? "bg-white/[0.03]" : ""}`}>
+                    className={`w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04] ${active ? "bg-white" : ""}`}>
                     <span className="text-base w-5 text-center shrink-0">{icon}</span>
                     <div className="min-w-0">
-                      <p className={`text-xs font-medium ${active ? "text-fuchsia-300" : "text-gray-200"}`}>{label}</p>
-                      <p className="text-[10px] text-gray-500 truncate">{desc}</p>
+                      <p className={`text-xs font-medium ${active ? "text-[#6a1ff7]" : "text-[#17171c]"}`}>{label}</p>
+                      <p className="text-[10px] text-[#9090a0] truncate">{desc}</p>
                     </div>
-                    {active && <span className="ml-auto text-[9px] text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-400/20 rounded-full px-1.5 py-0.5">ON</span>}
+                    {active && <span className="ml-auto text-[9px] text-[#6a1ff7] bg-[#eef2ff] border border-[#6a1ff7]/20 rounded-full px-1.5 py-0.5">ON</span>}
                   </button>
                 ))}
               </div>
@@ -1879,18 +1879,18 @@ export default function ProjectWorkspace({
       </div>
       {chatMode && (
         <div className="px-3 pb-1 shrink-0">
-          <p className="text-[10px] text-gray-600">Chat mode — discuss your app without generating code</p>
+          <p className="text-[10px] text-[#9090a0]">Chat mode — discuss your app without generating code</p>
         </div>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && !loading && flow.type === "idle" && !initialPrompt && (
-          <div className="rounded-xl border border-white/[0.07] bg-[#181a27] p-4">
-            <p className="text-sm text-gray-200 font-medium mb-1">Start building</p>
-            <p className="text-xs text-gray-400 leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>
+          <div className="rounded-xl border border-[#ececf1] bg-white p-4">
+            <p className="text-sm text-[#17171c] font-medium mb-1">Start building</p>
+            <p className="text-xs text-[#71717f] leading-relaxed">Describe the app you want and I&apos;ll generate a live preview instantly. You can also paste or upload a screenshot to build from a design.</p>
             <div className="mt-3 space-y-1">
               {["A SaaS dashboard with charts and analytics", "An e-commerce store with product catalog", "A landing page for a startup"].map((ex) => (
                 <button key={ex} onClick={() => setPrompt(ex)}
-                  className="block w-full text-left text-xs text-gray-500 hover:text-fuchsia-300 px-2 py-1 rounded hover:bg-white/5 transition-colors">{ex}</button>
+                  className="block w-full text-left text-xs text-[#9090a0] hover:text-[#5a10e7] px-2 py-1 rounded hover:bg-[#f0f0f5] transition-colors">{ex}</button>
               ))}
             </div>
           </div>
@@ -1899,12 +1899,12 @@ export default function ProjectWorkspace({
         {messages.map((m) => (
           <div key={m.id} className={`text-sm max-w-[92%] ${m.role === "user" ? "ml-auto" : ""}`}>
             {m.role === "user" ? (
-              <div className="rounded-2xl rounded-br-sm bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-3.5 py-2.5 leading-relaxed whitespace-pre-wrap">{m.content}</div>
+              <div className="rounded-2xl rounded-br-sm bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-3.5 py-2.5 leading-relaxed whitespace-pre-wrap">{m.content}</div>
             ) : (
-              <div className="rounded-2xl rounded-bl-sm bg-[#191b28] border border-white/[0.08] text-gray-100 px-3.5 py-2.5 leading-relaxed">
+              <div className="rounded-2xl rounded-bl-sm bg-white border border-[#ececf1] text-[#17171c] px-3.5 py-2.5 leading-relaxed">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
-                  <span className="text-xs font-medium text-fuchsia-300">AI</span>
+                  <div className="h-4 w-4 rounded bg-gradient-to-br from-[#6a1ff7] to-[#0a8ff0] shrink-0" />
+                  <span className="text-xs font-medium text-[#6a1ff7]">AI</span>
                 </div>
                 <span className="whitespace-pre-wrap">{m.content}</span>
               </div>
@@ -1915,10 +1915,10 @@ export default function ProjectWorkspace({
         {/* Smart suggestions */}
         {suggestions.length > 0 && !loading && (
           <div className="space-y-1.5">
-            <p className="text-[10px] text-gray-600 px-0.5">What&apos;s next?</p>
+            <p className="text-[10px] text-[#9090a0] px-0.5">What&apos;s next?</p>
             {suggestions.map((s) => (
               <button key={s} onClick={() => { setSuggestions([]); runGenerate(s); }}
-                className="block w-full text-left text-xs rounded-xl border border-fuchsia-400/15 bg-fuchsia-500/5 text-fuchsia-300/80 px-3.5 py-2 hover:bg-fuchsia-500/10 hover:border-fuchsia-400/30 transition-colors">
+                className="block w-full text-left text-xs rounded-xl border border-fuchsia-400/15 bg-[#f0f0ff] text-[#6a1ff7]/80 px-3.5 py-2 hover:bg-[#eef2ff] hover:border-[#6a1ff7]/30 transition-colors">
                 {s} →
               </button>
             ))}
@@ -1944,13 +1944,13 @@ export default function ProjectWorkspace({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-purple-400 font-medium">🧠 What you&apos;ll need next</span>
-              {proactiveAppType && <span className="text-[10px] text-gray-600">· {proactiveAppType}</span>}
+              {proactiveAppType && <span className="text-[10px] text-[#9090a0]">· {proactiveAppType}</span>}
             </div>
             {proactiveSuggestions.map((s, i) => (
               <button key={i} onClick={() => { setProactiveSuggestions([]); runGenerate(s.prompt); }}
                 className="w-full text-left rounded-xl border border-purple-400/15 bg-purple-500/5 hover:border-purple-400/30 hover:bg-purple-500/10 p-3 transition-colors">
                 <p className="text-xs font-medium text-purple-200">{s.title}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{s.description}</p>
+                <p className="text-[10px] text-[#9090a0] mt-0.5">{s.description}</p>
               </button>
             ))}
           </div>
@@ -1963,30 +1963,30 @@ export default function ProjectWorkspace({
         )}
 
         {chatStreaming && (
-          <div className="rounded-2xl rounded-bl-sm bg-white/5 border border-white/10 px-3.5 py-2.5 max-w-[92%]">
+          <div className="rounded-2xl rounded-bl-sm bg-[#f0f0f5] border border-[#ececf1] px-3.5 py-2.5 max-w-[92%]">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
-              <span className="text-xs font-medium text-fuchsia-300">AI</span>
+              <div className="h-4 w-4 rounded bg-gradient-to-br from-[#6a1ff7] to-[#0a8ff0] shrink-0" />
+              <span className="text-xs font-medium text-[#6a1ff7]">AI</span>
             </div>
-            <span className="text-xs text-gray-200 whitespace-pre-wrap">{chatStreamContent || "..."}</span>
+            <span className="text-xs text-[#17171c] whitespace-pre-wrap">{chatStreamContent || "..."}</span>
           </div>
         )}
         {loading && (
           <div className="space-y-2 max-w-[92%]">
             {routeInfo && (
-              <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-white/8 bg-white/[0.02]">
-                <span className="text-xs text-gray-400">{routeInfo.intent}</span>
+              <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 rounded-xl border border-[#ececf1] bg-[#fbfbfc]">
+                <span className="text-xs text-[#71717f]">{routeInfo.intent}</span>
               </div>
             )}
-            <div className="rounded-2xl rounded-bl-sm bg-[#191b28] border border-white/[0.08] px-3.5 py-2.5">
+            <div className="rounded-2xl rounded-bl-sm bg-white border border-[#ececf1] px-3.5 py-2.5">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <div className="h-4 w-4 rounded bg-gradient-to-br from-fuchsia-500 to-indigo-500 shrink-0" />
-                <span className="text-xs font-medium text-fuchsia-300">AI</span>
+                <div className="h-4 w-4 rounded bg-gradient-to-br from-[#6a1ff7] to-[#0a8ff0] shrink-0" />
+                <span className="text-xs font-medium text-[#6a1ff7]">AI</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-[#71717f]">
                 <span className="flex gap-1">
                   {[0, 1, 2].map((i) => (
-                    <span key={i} className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
+                    <span key={i} className="h-1.5 w-1.5 rounded-full bg-[#6a1ff7] animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
                   ))}
                 </span>
                 {loadingStatus}
@@ -2022,7 +2022,7 @@ export default function ProjectWorkspace({
         <div className="px-3 pt-2 pb-1 flex gap-1.5 overflow-x-auto shrink-0" style={{ scrollbarWidth: "none" }}>
           {QUICK_ACTIONS.map((a) => (
             <button key={a.label} onClick={() => { setSuggestions([]); runGenerate(a.prompt); }}
-              className="shrink-0 text-[11px] rounded-full border border-white/10 bg-white/[0.03] text-gray-400 px-2.5 py-1 hover:border-fuchsia-400/30 hover:text-fuchsia-300 hover:bg-fuchsia-500/5 transition-colors whitespace-nowrap">
+              className="shrink-0 text-[11px] rounded-full border border-[#ececf1] bg-white text-[#71717f] px-2.5 py-1 hover:border-[#6a1ff7]/30 hover:text-[#5a10e7] hover:bg-[#f0f0ff] transition-colors whitespace-nowrap">
               {a.label}
             </button>
           ))}
@@ -2044,7 +2044,7 @@ export default function ProjectWorkspace({
         <div className="px-3 pt-1 shrink-0">
           <div className="flex items-center gap-1.5 text-[10px] text-blue-400 bg-blue-500/10 border border-blue-400/20 rounded-lg px-2.5 py-1">
             <span>🔗 {refUrl}</span>
-            <button onClick={() => setRefUrl("")} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+            <button onClick={() => setRefUrl("")} className="text-[#9090a0] hover:text-[#71717f] ml-auto">×</button>
           </div>
         </div>
       )}
@@ -2054,7 +2054,7 @@ export default function ProjectWorkspace({
         <div className="px-3 pt-1 shrink-0">
           <div className="flex items-center gap-1.5 text-[10px] text-purple-400 bg-purple-500/10 border border-purple-400/20 rounded-lg px-2.5 py-1">
             <span>📍 {lineRef}</span>
-            <button onClick={() => setLineRef(null)} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+            <button onClick={() => setLineRef(null)} className="text-[#9090a0] hover:text-[#71717f] ml-auto">×</button>
           </div>
         </div>
       )}
@@ -2064,7 +2064,7 @@ export default function ProjectWorkspace({
         <div className="px-3 pt-1 shrink-0">
           <div className="flex items-center gap-1.5 text-[10px] text-green-400 bg-green-500/10 border border-green-400/20 rounded-lg px-2.5 py-1">
             <span>📊 CSV data ready ({csvData.split("\n").length} rows)</span>
-            <button onClick={() => setCsvData(null)} className="text-gray-600 hover:text-gray-400 ml-auto">×</button>
+            <button onClick={() => setCsvData(null)} className="text-[#9090a0] hover:text-[#71717f] ml-auto">×</button>
           </div>
         </div>
       )}
@@ -2074,15 +2074,15 @@ export default function ProjectWorkspace({
         <div className="px-3 pt-1 shrink-0">
           <div className="relative inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`data:${uploadImage.mimeType};base64,${uploadImage.base64}`} alt="Upload" className="h-14 w-14 object-cover rounded-lg border border-white/10" />
+            <img src={`data:${uploadImage.mimeType};base64,${uploadImage.base64}`} alt="Upload" className="h-14 w-14 object-cover rounded-lg border border-[#ececf1]" />
             <button onClick={() => setUploadImage(null)} className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center hover:bg-red-400 leading-none">×</button>
           </div>
         </div>
       )}
 
       {/* Input */}
-      <div className="border-t border-white/[0.07] p-3 shrink-0">
-        <div className="rounded-xl border border-white/10 bg-[#1a1c27] focus-within:border-fuchsia-400/50 transition-colors shadow-sm">
+      <div className="border-t border-[#ececf1] p-3 shrink-0">
+        <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-[#6a1ff7]/50 transition-colors shadow-sm">
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -2091,21 +2091,21 @@ export default function ProjectWorkspace({
             onPaste={handleImagePaste}
             placeholder="Describe what to build or change… paste a screenshot too"
             rows={3}
-            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none"
+            className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-[#17171c] placeholder:text-[#9090a0] focus:outline-none"
           />
           <div className="flex items-center justify-between px-2.5 pb-2.5">
             <div className="flex items-center gap-1 relative">
               {/* + Attach/actions popover */}
               <button onClick={() => setShowAttachMenu(v => !v)}
                 title="Attach or use tools"
-                className="flex items-center justify-center w-7 h-7 rounded-lg border border-white/10 bg-white/[0.03] text-gray-400 hover:bg-white/[0.07] hover:text-white transition-colors text-base font-light leading-none">
+                className="flex items-center justify-center w-7 h-7 rounded-lg border border-[#ececf1] bg-white text-[#71717f] hover:bg-white/[0.07] hover:text-white transition-colors text-base font-light leading-none">
                 +
               </button>
               {showAttachMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowAttachMenu(false)} />
-                  <div className="absolute bottom-full left-0 mb-2 w-52 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
-                    <p className="text-[10px] text-gray-600 font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">Attach</p>
+                  <div className="absolute bottom-full left-0 mb-2 w-52 rounded-xl border border-[#ececf1] bg-white shadow-2xl z-50 py-1.5 overflow-hidden">
+                    <p className="text-[10px] text-[#9090a0] font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">Attach</p>
                     {([
                       { icon: "📎", label: "Image / screenshot", desc: "Upload a photo or design", action: () => { fileInputRef.current?.click(); setShowAttachMenu(false); } },
                       { icon: "📊", label: "CSV data", desc: "Build around real data", action: () => { csvInputRef.current?.click(); setShowAttachMenu(false); } },
@@ -2115,13 +2115,13 @@ export default function ProjectWorkspace({
                       <button key={label} onClick={action} className="w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04]">
                         <span className="text-base w-5 text-center shrink-0">{icon}</span>
                         <div>
-                          <p className="text-xs font-medium text-gray-200">{label}</p>
-                          <p className="text-[10px] text-gray-500">{desc}</p>
+                          <p className="text-xs font-medium text-[#17171c]">{label}</p>
+                          <p className="text-[10px] text-[#9090a0]">{desc}</p>
                         </div>
                       </button>
                     ))}
                     <div className="border-t border-white/[0.05] mt-1 pt-1">
-                      <p className="text-[10px] text-gray-600 font-medium px-3 pb-1.5 uppercase tracking-wider">Actions</p>
+                      <p className="text-[10px] text-[#9090a0] font-medium px-3 pb-1.5 uppercase tracking-wider">Actions</p>
                       {([
                         { icon: "🎨", label: "Generate image", desc: "AI-generated art or assets", action: () => { setShowImageGen(true); setImageGenResult(null); setImageGenError(null); setShowAttachMenu(false); } },
                         { icon: "✨", label: "Enhance prompt", desc: "AI rewrites your prompt", action: () => { handleEnhancePrompt(); setShowAttachMenu(false); }, disabled: !prompt.trim() || enhancing },
@@ -2132,8 +2132,8 @@ export default function ProjectWorkspace({
                           className="w-full text-left px-3 py-2 flex items-center gap-2.5 transition-colors hover:bg-white/[0.04] disabled:opacity-40">
                           <span className="text-base w-5 text-center shrink-0">{icon}</span>
                           <div>
-                            <p className="text-xs font-medium text-gray-200">{label}</p>
-                            <p className="text-[10px] text-gray-500">{desc}</p>
+                            <p className="text-xs font-medium text-[#17171c]">{label}</p>
+                            <p className="text-[10px] text-[#9090a0]">{desc}</p>
                           </div>
                         </button>
                       ))}
@@ -2149,7 +2149,7 @@ export default function ProjectWorkspace({
                     {userCredits <= 0 ? "No credits · Buy more" : `${userCredits.toFixed(1)} credits · Buy more`}
                   </a>
                 ) : (
-                  <span className="text-[10px] font-medium text-gray-500 tabular-nums">
+                  <span className="text-[10px] font-medium text-[#9090a0] tabular-nums">
                     {userCredits.toFixed(1)} credits
                   </span>
                 )
@@ -2161,7 +2161,7 @@ export default function ProjectWorkspace({
                 </button>
               ) : (
                 <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : false) || !prompt.trim()}
-                  className="rounded-lg bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+                  className="rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
                   {chatMode ? (chatStreaming ? "Thinking..." : "Send") : "Send"}
                 </button>
               )}
@@ -2177,29 +2177,29 @@ export default function ProjectWorkspace({
   // ── Preview panel ─────────────────────────────────────────────────────────────
   const previewPanel = (
     <div className="flex flex-col overflow-hidden" style={{ height: "100%" }}>
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-white/10 bg-[#0d0d14] shrink-0">
+      <div className="flex items-center gap-1 px-3 py-2 border-b border-[#ececf1] bg-[#fbfbfc] shrink-0">
         {(["preview", "code"] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-[#eef2ff] text-[#6a1ff7]" : "text-[#9090a0] hover:text-[#17171c]"}`}>
             {tab === "preview" ? "Preview" : "Code"}
           </button>
         ))}
         {activeTab === "code" && (
           <button onClick={() => setDevModeEnabled(v => !v)} title="Dev Mode — edit code directly"
-            className={`ml-1 text-xs rounded-lg border px-2.5 py-1 transition-colors ${devModeEnabled ? "border-amber-400/40 bg-amber-500/10 text-amber-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300"}`}>
+            className={`ml-1 text-xs rounded-lg border px-2.5 py-1 transition-colors ${devModeEnabled ? "border-amber-400/40 bg-amber-500/10 text-amber-300" : "border-[#ececf1] bg-white text-[#9090a0] hover:text-[#17171c]"}`}>
             {devModeEnabled ? "✏️ Editing" : "✏️ Dev Mode"}
           </button>
         )}
 
         {activeTab === "preview" && (
-          <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+          <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-[#ececf1] bg-white p-0.5">
             {([
               { mode: "desktop" as PreviewMode, icon: "🖥", label: "Desktop" },
               { mode: "tablet" as PreviewMode, icon: "📲", label: "Tablet (768px)" },
               { mode: "mobile" as PreviewMode, icon: "📱", label: "Mobile (390px)" },
             ]).map(({ mode, icon, label }) => (
               <button key={mode} onClick={() => setPreviewMode(mode)} title={label}
-                className={`px-2 py-0.5 rounded-md text-sm transition-colors ${previewMode === mode ? "bg-white/10 text-white" : "text-gray-500 hover:text-gray-300"}`}>
+                className={`px-2 py-0.5 rounded-md text-sm transition-colors ${previewMode === mode ? "bg-[#eef2ff] text-[#6a1ff7]" : "text-[#9090a0] hover:text-[#17171c]"}`}>
                 {icon}
               </button>
             ))}
@@ -2208,7 +2208,7 @@ export default function ProjectWorkspace({
 
         {hasFiles && activeTab === "preview" && (
           <button onClick={toggleVisualEdit} title="Click any element to edit it"
-            className={`ml-2 text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${visualEditMode ? "border-fuchsia-400/50 bg-fuchsia-500/20 text-fuchsia-300" : "border-white/10 bg-white/[0.03] text-gray-500 hover:text-gray-300"}`}>
+            className={`ml-2 text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${visualEditMode ? "border-fuchsia-400/50 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] bg-white text-[#9090a0] hover:text-[#17171c]"}`}>
             <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.249.249 0 0 0 .108-.064l6.286-6.286z"/></svg>
             {visualEditMode ? "Click element…" : "Visual Edit"}
           </button>
@@ -2223,7 +2223,7 @@ export default function ProjectWorkspace({
       <div style={{ flex: 1, minHeight: 0, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" }}>
         {/* Floating error banner over preview */}
         {iframeError && !loading && activeTab === "preview" && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-[#1a0808]/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-50/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
             <span className="text-red-400 text-sm shrink-0">⚠</span>
             <p className="text-xs text-red-300 flex-1 whitespace-nowrap">
               Error detected — auto-fixing in {autoFixCountdown ?? 0}s
@@ -2244,7 +2244,7 @@ export default function ProjectWorkspace({
               if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
               if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
               setAutoFixCountdown(null); setIframeError(null);
-            }} className="text-gray-600 hover:text-gray-400 text-base leading-none">×</button>
+            }} className="text-[#9090a0] hover:text-[#71717f] text-base leading-none">×</button>
           </div>
         )}
         {hasFiles ? (
@@ -2252,15 +2252,15 @@ export default function ProjectWorkspace({
             ? <IframePreview files={files} projectName={projectName} mode={previewMode} />
             : <CodeViewer files={files} devMode={devModeEnabled} onSaveFiles={(updated) => { setFiles(updated); }} onLineRef={(ref) => { setLineRef(ref); setActiveTab("preview"); setMobileTab("chat"); setTimeout(() => textareaRef.current?.focus(), 100); }} />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-600 text-sm">
+          <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
           </div>
         )}
         {loading && (
-          <div className="absolute inset-0 bg-[#0a0a0f]/70 backdrop-blur-sm flex items-center justify-center">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-4 flex items-center gap-3">
+          <div className="absolute inset-0 bg-[#f6f6f8]/70 backdrop-blur-sm flex items-center justify-center">
+            <div className="rounded-2xl border border-[#ececf1] bg-white/[0.06] px-6 py-4 flex items-center gap-3">
               <div className="h-4 w-4 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin" />
-              <span className="text-sm text-gray-200">{loadingStatus}</span>
+              <span className="text-sm text-[#17171c]">{loadingStatus}</span>
             </div>
           </div>
         )}
@@ -2274,17 +2274,17 @@ export default function ProjectWorkspace({
         <div className="flex items-center gap-2 min-w-0">
           <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
           <span className="text-gray-700 hidden sm:inline">/</span>
-          <h1 className="text-sm font-medium text-white truncate hidden sm:block max-w-[160px]">{projectName}</h1>
+          <h1 className="text-sm font-medium text-[#17171c] truncate hidden sm:block max-w-[160px]">{projectName}</h1>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {/* Always-visible core actions */}
           <button onClick={() => { setShowHistory(true); handleLoadVersions(true); }} title="Version history"
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
+            className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
             ⏱
           </button>
           {hasFiles && (
             <button onClick={() => { setShowShareModal(true); setShareLink(null); }} title="Share"
-              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
+              className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center gap-1">
               🔗
             </button>
           )}
@@ -2292,13 +2292,13 @@ export default function ProjectWorkspace({
           {hasFiles && (
             <div className="relative">
               <button onClick={() => setShowMoreMenu(v => !v)}
-                className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
+                className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2.5 py-1.5 hover:bg-white/10 transition-colors flex items-center gap-1">
                 ··· More
               </button>
               {showMoreMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-white/10 bg-[#13141f] shadow-2xl z-50 py-1.5 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-[#ececf1] bg-white shadow-2xl z-50 py-1.5 overflow-hidden">
                   {([
                     { icon: "🗄️", label: supabaseStatus?.enabled ? "Database ✓" : "Database", action: () => { setShowSupabase(true); loadSupabaseStatus(); } },
                     { icon: "🔌", label: "Integrations", action: () => setShowIntegrations(true) },
@@ -2309,7 +2309,7 @@ export default function ProjectWorkspace({
                     { icon: "⬆️", label: "GitHub", action: () => { setShowGithub(true); setGithubResult(null); } },
                   ] as { icon: string; label: string; action: () => void }[]).map(({ icon, label, action }) => (
                     <button key={label} onClick={action}
-                      className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 flex items-center gap-2 transition-colors">
+                      className="w-full text-left px-3 py-2 text-xs text-[#3a3a4a] hover:bg-[#f0f0f5] flex items-center gap-2 transition-colors">
                       <span>{icon}</span>{label}
                     </button>
                   ))}
@@ -2325,10 +2325,10 @@ export default function ProjectWorkspace({
             title={isPaidPlan ? (isPrivate ? "Private — only you can see this" : "Public — anyone with the link can see this") : "Upgrade to make projects private"}
             className={`text-xs rounded-lg border px-2.5 py-1.5 transition-colors flex items-center gap-1.5 ${
               !isPaidPlan
-                ? "border-fuchsia-400/20 bg-fuchsia-500/5 text-fuchsia-400/70 hover:bg-fuchsia-500/10 hover:text-fuchsia-300 cursor-pointer"
+                ? "border-[#6a1ff7]/20 bg-[#f0f0ff] text-[#6a1ff7]/70 hover:bg-[#eef2ff] hover:text-[#5a10e7] cursor-pointer"
                 : isPrivate
                   ? "border-amber-400/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
-                  : "border-white/10 bg-white/5 text-gray-400 hover:bg-white/10"
+                  : "border-[#ececf1] bg-[#f0f0f5] text-[#71717f] hover:bg-white/10"
             }`}
           >
             {isPrivate ? "🔒" : "🌐"}
@@ -2337,8 +2337,8 @@ export default function ProjectWorkspace({
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
               <button onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
-                className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
-                {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Updating...</>
+                className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-[#eef2ff] text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
+                {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-[#6a1ff7] animate-pulse" />Updating...</>
                   : publishedFilesHash && hashFiles(files) !== publishedFilesHash
                     ? <><span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />Update</>
                     : liveUpdated ? "Updated ✓" : "Update"}
@@ -2346,17 +2346,17 @@ export default function ProjectWorkspace({
               <a href={publishUrl} target="_blank" rel="noreferrer"
                 className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-300 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
               <button onClick={() => navigator.clipboard.writeText(publishUrl ?? "")}
-                className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2 py-1.5 hover:bg-white/10 hidden sm:block">Copy</button>
-              <button onClick={handleUnpublish} className="text-xs text-gray-500 hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
+                className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] px-2 py-1.5 hover:bg-white/10 hidden sm:block">Copy</button>
+              <button onClick={handleUnpublish} className="text-xs text-[#9090a0] hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
             </div>
           ) : (
             <button onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
-              className="text-xs rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 text-fuchsia-300 px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5 relative">
-              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse" />Publishing...</> : <>Publish {hasFiles && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}</>}
+              className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-[#eef2ff] text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5 relative">
+              {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-[#6a1ff7] animate-pulse" />Publishing...</> : <>Publish {hasFiles && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}</>}
             </button>
           )}
           <Link href="/settings" title="Settings"
-            className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
+            className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
             ⚙️
           </Link>
         </div>
@@ -2364,17 +2364,17 @@ export default function ProjectWorkspace({
 
       {/* Desktop */}
       <div className="hidden sm:flex flex-1 overflow-hidden">
-        <div className="w-[340px] flex flex-col border-r border-white/10 shrink-0">{chatPanel}</div>
+        <div className="w-[340px] flex flex-col border-r border-[#ececf1] shrink-0">{chatPanel}</div>
         <div className="flex-1 overflow-hidden">{previewPanel}</div>
       </div>
 
       {/* Mobile */}
       <div className="sm:hidden flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
         <div style={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" }}>{mobileTab === "chat" ? chatPanel : previewPanel}</div>
-        <div className="shrink-0 border-t border-white/10 bg-[#0c0c12] flex">
+        <div className="shrink-0 border-t border-[#ececf1] bg-white flex">
           {(["chat", "preview"] as const).map((tab) => (
             <button key={tab} onClick={() => setMobileTab(tab)}
-              className={`flex-1 py-3 text-sm font-medium transition-colors flex flex-col items-center gap-0.5 ${mobileTab === tab ? "text-fuchsia-400 border-t-2 border-fuchsia-400 -mt-px" : "text-gray-500"}`}>
+              className={`flex-1 py-3 text-sm font-medium transition-colors flex flex-col items-center gap-0.5 ${mobileTab === tab ? "text-[#6a1ff7] border-t-2 border-fuchsia-400 -mt-px" : "text-[#9090a0]"}`}>
               {tab === "chat" ? (
                 <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>Chat</>
               ) : (
@@ -2412,12 +2412,12 @@ export default function ProjectWorkspace({
       {/* User testing modal */}
       {showUserTest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowUserTest(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🧪 Synthetic User Testing</h2>
-              <button onClick={() => setShowUserTest(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🧪 Synthetic User Testing</h2>
+              <button onClick={() => setShowUserTest(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">AI simulates real users clicking through your app and reports back issues — before any real user sees it.</p>
+            <p className="text-xs text-[#9090a0]">AI simulates real users clicking through your app and reports back issues — before any real user sees it.</p>
             {!userTestResult && (
               <button onClick={handleUserTest} disabled={userTestLoading}
                 className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
@@ -2431,8 +2431,8 @@ export default function ProjectWorkspace({
                     {userTestResult.overallScore}/100
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">Usability Score</p>
-                    <p className="text-xs text-gray-500">{userTestResult.testers.filter(t => t.verdict === "passed").length}/{userTestResult.testers.length} testers completed their goal</p>
+                    <p className="text-sm font-medium text-[#17171c]">Usability Score</p>
+                    <p className="text-xs text-[#9090a0]">{userTestResult.testers.filter(t => t.verdict === "passed").length}/{userTestResult.testers.length} testers completed their goal</p>
                   </div>
                 </div>
                 {userTestResult.criticalIssues.length > 0 && (
@@ -2455,12 +2455,12 @@ export default function ProjectWorkspace({
                   {userTestResult.testers.map((t, i) => (
                     <div key={i} className={`rounded-xl border p-3 space-y-2 ${t.verdict === "passed" ? "border-green-500/20 bg-green-500/5" : t.verdict === "confused" ? "border-amber-500/20 bg-amber-500/5" : "border-red-500/20 bg-red-500/5"}`}>
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-white">{t.persona}</p>
+                        <p className="text-xs font-medium text-[#17171c]">{t.persona}</p>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.verdict === "passed" ? "bg-green-500/20 text-green-300" : t.verdict === "confused" ? "bg-amber-500/20 text-amber-300" : "bg-red-500/20 text-red-300"}`}>
                           {t.verdict}
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-500">Goal: {t.goal}</p>
+                      <p className="text-[10px] text-[#9090a0]">Goal: {t.goal}</p>
                       {t.issues.map((issue, j) => (
                         <p key={j} className="text-[10px] text-red-300/80">⚠ {issue}</p>
                       ))}
@@ -2473,11 +2473,11 @@ export default function ProjectWorkspace({
                     setShowUserTest(false);
                     runGenerate(`Fix these user testing issues: ${fixes}. Do not change the design or layout — only fix the reported UX problems.`);
                   }}
-                    className="flex-1 text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2 hover:bg-fuchsia-500/30 transition-colors">
+                    className="flex-1 text-xs rounded-xl bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] py-2 hover:bg-fuchsia-500/30 transition-colors">
                     Fix all issues →
                   </button>
                   <button onClick={handleUserTest} disabled={userTestLoading}
-                    className="text-xs rounded-xl border border-white/10 bg-white/5 text-gray-400 px-3 py-2 hover:bg-white/10 transition-colors">
+                    className="text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-3 py-2 hover:bg-white/10 transition-colors">
                     Re-test
                   </button>
                 </div>
@@ -2490,18 +2490,18 @@ export default function ProjectWorkspace({
       {/* Monetize modal */}
       {showMonetize && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowMonetize(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">💰 One-Prompt Monetization</h2>
-              <button onClick={() => setShowMonetize(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">💰 One-Prompt Monetization</h2>
+              <button onClick={() => setShowMonetize(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Describe your pricing model and we&apos;ll wire up Stripe — pricing page, checkout, trials, webhooks — all from one sentence.</p>
+            <p className="text-xs text-[#9090a0]">Describe your pricing model and we&apos;ll wire up Stripe — pricing page, checkout, trials, webhooks — all from one sentence.</p>
             <textarea
               value={monetizeDesc}
               onChange={e => setMonetizeDesc(e.target.value)}
               placeholder='e.g. "Charge $19/month, 14-day free trial. Team plan $49/month for up to 5 users. Annual gets 20% off."'
               rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 resize-none"
             />
             {monetizePlan ? (
               <div className="space-y-3">
@@ -2509,7 +2509,7 @@ export default function ProjectWorkspace({
                   <p className="text-xs text-green-300">✓ {monetizePlan.summary}</p>
                 </div>
                 <button onClick={() => { setShowMonetize(false); runGenerate(monetizePlan.buildPrompt); }}
-                  className="w-full text-sm rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white font-semibold py-2.5 hover:opacity-90 transition-opacity">
+                  className="w-full text-sm rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white font-semibold py-2.5 hover:opacity-90 transition-opacity">
                   Add to my app →
                 </button>
               </div>
@@ -2526,23 +2526,23 @@ export default function ProjectWorkspace({
       {/* Share modal */}
       {showShareModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowShareModal(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🔗 Share Preview</h2>
-              <button onClick={() => setShowShareModal(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🔗 Share Preview</h2>
+              <button onClick={() => setShowShareModal(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Create a public view-only link to your current build. Valid for 7 days, no login required.</p>
+            <p className="text-xs text-[#9090a0]">Create a public view-only link to your current build. Valid for 7 days, no login required.</p>
             {shareLink ? (
               <div className="space-y-3">
-                <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-xs text-green-300 font-mono break-all">{shareLink}</div>
+                <div className="rounded-xl bg-[#f0f0f5] border border-[#ececf1] px-3 py-2 text-xs text-green-300 font-mono break-all">{shareLink}</div>
                 <p className="text-[10px] text-green-500">✓ Copied to clipboard</p>
-                <button onClick={() => navigator.clipboard.writeText(shareLink)} className="w-full text-xs rounded-xl border border-white/10 bg-white/5 text-gray-300 py-2 hover:bg-white/10 transition-colors">
+                <button onClick={() => navigator.clipboard.writeText(shareLink)} className="w-full text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] py-2 hover:bg-white/10 transition-colors">
                   Copy again
                 </button>
               </div>
             ) : (
               <button onClick={handleCreateShareLink} disabled={shareLoading}
-                className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+                className="w-full rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
                 {shareLoading ? "Creating link…" : "Create share link →"}
               </button>
             )}
@@ -2553,24 +2553,24 @@ export default function ProjectWorkspace({
       {/* Figma import modal */}
       {showFigma && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowFigma(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">Import from Figma</h2>
-              <button onClick={() => setShowFigma(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">Import from Figma</h2>
+              <button onClick={() => setShowFigma(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Paste a Figma file link and your personal access token to build from your design.</p>
+            <p className="text-xs text-[#9090a0]">Paste a Figma file link and your personal access token to build from your design.</p>
             <div className="space-y-2">
               <input value={figmaUrl} onChange={e => setFigmaUrl(e.target.value)}
                 placeholder="https://www.figma.com/file/..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
               <input type="password" value={figmaToken} onChange={e => setFigmaToken(e.target.value)}
                 placeholder="Figma personal access token (figd_...)"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono" />
-              <p className="text-[10px] text-gray-600">Get your token: figma.com → Account → Personal access tokens</p>
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 font-mono" />
+              <p className="text-[10px] text-[#9090a0]">Get your token: figma.com → Account → Personal access tokens</p>
             </div>
             {figmaError && <p className="text-xs text-red-400">{figmaError}</p>}
             <button onClick={handleFigmaImport} disabled={figmaLoading || !figmaUrl.trim() || !figmaToken.trim()}
-              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              className="w-full rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
               {figmaLoading ? "Reading design…" : "Import & Build →"}
             </button>
           </div>
@@ -2580,33 +2580,33 @@ export default function ProjectWorkspace({
       {/* Supabase database modal */}
       {showSupabase && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowSupabase(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🗄️ Built-in Database</h2>
-              <button onClick={() => setShowSupabase(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🗄️ Built-in Database</h2>
+              <button onClick={() => setShowSupabase(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
             {supabaseStatus?.enabled ? (
               <div className="space-y-3">
                 <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 px-4 py-3 text-sm">
                   ✓ Database is active
                 </div>
-                <p className="text-xs text-gray-500">Your app has a real Postgres database with authentication. Credentials are already injected into your project — just ask the AI to use Supabase for data storage.</p>
-                <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 space-y-1.5">
+                <p className="text-xs text-[#9090a0]">Your app has a real Postgres database with authentication. Credentials are already injected into your project — just ask the AI to use Supabase for data storage.</p>
+                <div className="rounded-xl bg-white border border-[#ececf1] p-3 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-gray-500">URL</span>
-                    <button onClick={() => navigator.clipboard.writeText(supabaseStatus.url ?? "")} className="text-[10px] text-gray-500 hover:text-gray-300">Copy</button>
+                    <span className="text-[10px] text-[#9090a0]">URL</span>
+                    <button onClick={() => navigator.clipboard.writeText(supabaseStatus.url ?? "")} className="text-[10px] text-[#9090a0] hover:text-[#17171c]">Copy</button>
                   </div>
-                  <p className="text-xs text-gray-300 font-mono truncate">{supabaseStatus.url}</p>
+                  <p className="text-xs text-[#3a3a4a] font-mono truncate">{supabaseStatus.url}</p>
                 </div>
                 <button onClick={() => runGenerate("Add Supabase database integration. The SUPABASE_URL and SUPABASE_ANON_KEY are already available in window.ENV. Use the Supabase JS client (import from CDN: https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm) to replace localStorage with real database storage for all data. Add Supabase auth if the app has user accounts.")}
-                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2.5 hover:bg-fuchsia-500/30 transition-colors">
+                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] py-2.5 hover:bg-fuchsia-500/30 transition-colors">
                   Connect database to app →
                 </button>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-gray-400 leading-relaxed">Enable a real Postgres database with authentication for your app. No setup required — we provision it automatically.</p>
-                <div className="space-y-2 text-xs text-gray-500">
+                <p className="text-xs text-[#71717f] leading-relaxed">Enable a real Postgres database with authentication for your app. No setup required — we provision it automatically.</p>
+                <div className="space-y-2 text-xs text-[#9090a0]">
                   <div className="flex items-center gap-2">✓ <span>Real Postgres database</span></div>
                   <div className="flex items-center gap-2">✓ <span>Built-in user authentication</span></div>
                   <div className="flex items-center gap-2">✓ <span>File storage</span></div>
@@ -2617,7 +2617,7 @@ export default function ProjectWorkspace({
                   className="w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
                   {supabaseProvisioning ? "Provisioning… (1-2 min)" : "Enable Database →"}
                 </button>
-                <p className="text-[10px] text-gray-600 text-center">Free tier • No credit card required</p>
+                <p className="text-[10px] text-[#9090a0] text-center">Free tier • No credit card required</p>
               </div>
             )}
           </div>
@@ -2627,39 +2627,39 @@ export default function ProjectWorkspace({
       {/* Image generation modal */}
       {showImageGen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowImageGen(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🎨 Generate Image</h2>
-              <button onClick={() => setShowImageGen(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🎨 Generate Image</h2>
+              <button onClick={() => setShowImageGen(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Describe the image you need. It will be generated and added to your app.</p>
+            <p className="text-xs text-[#9090a0]">Describe the image you need. It will be generated and added to your app.</p>
             <textarea
               value={imageGenPrompt}
               onChange={e => setImageGenPrompt(e.target.value)}
               placeholder="A minimalist product photo of wireless headphones on a white background..."
               rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 resize-none"
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 resize-none"
             />
             {imageGenResult && (
               <div className="space-y-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={imageGenResult} alt="Generated" className="w-full rounded-xl border border-white/10" />
+                <img src={imageGenResult} alt="Generated" className="w-full rounded-xl border border-[#ececf1]" />
                 <button onClick={() => {
                   runGenerate(`Add this image to the app. Use this URL as an <img> src: ${imageGenResult}`);
                   setShowImageGen(false);
                 }}
-                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-fuchsia-400/30 text-fuchsia-300 py-2 hover:bg-fuchsia-500/30 transition-colors">
+                  className="w-full text-xs rounded-xl bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] py-2 hover:bg-fuchsia-500/30 transition-colors">
                   Add to app →
                 </button>
                 <button onClick={() => { navigator.clipboard.writeText(imageGenResult); }}
-                  className="w-full text-xs rounded-xl border border-white/10 text-gray-400 py-2 hover:bg-white/5 transition-colors">
+                  className="w-full text-xs rounded-xl border border-[#ececf1] text-[#71717f] py-2 hover:bg-[#f0f0f5] transition-colors">
                   Copy URL
                 </button>
               </div>
             )}
             {imageGenError && <p className="text-xs text-red-400">{imageGenError}</p>}
             <button onClick={handleGenerateImage} disabled={imageGenLoading || !imageGenPrompt.trim()}
-              className="w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
+              className="w-full rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
               {imageGenLoading ? "Generating… (10-20s)" : "Generate →"}
             </button>
           </div>
@@ -2669,13 +2669,13 @@ export default function ProjectWorkspace({
       {/* GitHub export modal */}
       {showGithub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowGithub(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-[#17171c] flex items-center gap-2">
                 <svg viewBox="0 0 16 16" className="h-4 w-4 fill-white"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
                 Export to GitHub
               </h2>
-              <button onClick={() => setShowGithub(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <button onClick={() => setShowGithub(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
             {githubResult?.repoUrl ? (
               <div className="space-y-3">
@@ -2683,21 +2683,21 @@ export default function ProjectWorkspace({
                   ✓ Exported successfully!
                 </div>
                 <a href={githubResult.repoUrl} target="_blank" rel="noreferrer"
-                  className="block text-center text-sm text-fuchsia-300 hover:text-fuchsia-200 border border-fuchsia-400/30 rounded-xl py-2.5 hover:bg-fuchsia-500/5 transition-colors">
+                  className="block text-center text-sm text-[#6a1ff7] hover:text-[#5a10e7] border border-[#6a1ff7]/30 rounded-xl py-2.5 hover:bg-[#f0f0ff] transition-colors">
                   View on GitHub ↗
                 </a>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-gray-500">Create a GitHub Personal Access Token with <code className="text-gray-400">repo</code> scope at github.com/settings/tokens</p>
+                <p className="text-xs text-[#9090a0]">Create a GitHub Personal Access Token with <code className="text-[#71717f]">repo</code> scope at github.com/settings/tokens</p>
                 <div className="space-y-2">
                   <input type="password" value={githubToken} onChange={e => setGithubToken(e.target.value)}
                     placeholder="GitHub token (ghp_...)"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono" />
+                    className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 font-mono" />
                   <input value={githubRepo} onChange={e => setGithubRepo(e.target.value)}
                     placeholder="Repository name (e.g. my-app)"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
-                  <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                    className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
+                  <label className="flex items-center gap-2 text-xs text-[#71717f] cursor-pointer">
                     <input type="checkbox" checked={githubPrivate} onChange={e => setGithubPrivate(e.target.checked)} className="rounded" />
                     Private repository
                   </label>
@@ -2716,28 +2716,28 @@ export default function ProjectWorkspace({
       {/* Version history slide-over */}
       {showHistory && (
         <div className="fixed inset-0 z-50 flex" onClick={() => setShowHistory(false)}>
-          <div className="ml-auto h-full w-full max-w-xs bg-[#141418] border-l border-white/10 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-              <h3 className="text-sm font-semibold text-white">Version History</h3>
-              <button onClick={() => setShowHistory(false)} className="text-gray-500 hover:text-white transition-colors text-xl leading-none">×</button>
+          <div className="ml-auto h-full w-full max-w-xs bg-white border-l border-[#ececf1] shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-[#ececf1] shrink-0">
+              <h3 className="text-sm font-semibold text-[#17171c]">Version History</h3>
+              <button onClick={() => setShowHistory(false)} className="text-[#9090a0] hover:text-white transition-colors text-xl leading-none">×</button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {loadingVersions ? (
-                <div className="text-xs text-gray-500 text-center py-8">Loading versions…</div>
+                <div className="text-xs text-[#9090a0] text-center py-8">Loading versions…</div>
               ) : versionList.length === 0 ? (
-                <div className="text-xs text-gray-500 text-center py-8">No saved versions yet.</div>
+                <div className="text-xs text-[#9090a0] text-center py-8">No saved versions yet.</div>
               ) : (
                 versionList.map((v, i) => (
-                  <div key={v.id} className={`rounded-xl border p-3 space-y-2 ${v.bookmarked ? "border-amber-400/30 bg-amber-500/5" : "border-white/10 bg-white/[0.03]"}`}>
+                  <div key={v.id} className={`rounded-xl border p-3 space-y-2 ${v.bookmarked ? "border-amber-400/30 bg-amber-500/5" : "border-[#ececf1] bg-white"}`}>
                     <div className="flex items-center gap-2">
                       {i === 0 && <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">Latest</span>}
                       <button onClick={() => toggleBookmark(v.id, !!v.bookmarked)} title={v.bookmarked ? "Remove bookmark" : "Bookmark"}
-                        className={`text-sm leading-none transition-colors ${v.bookmarked ? "text-amber-400" : "text-gray-600 hover:text-amber-300"}`}>
+                        className={`text-sm leading-none transition-colors ${v.bookmarked ? "text-amber-400" : "text-[#9090a0] hover:text-amber-300"}`}>
                         {v.bookmarked ? "★" : "☆"}
                       </button>
-                      <span className="text-[10px] text-gray-500 ml-auto">{new Date(v.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+                      <span className="text-[10px] text-[#9090a0] ml-auto">{new Date(v.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
-                    <p className="text-[11px] text-gray-400">{v.modelUsed ?? "Unknown model"}</p>
+                    <p className="text-[11px] text-[#71717f]">{v.modelUsed ?? "Unknown model"}</p>
                     {v.bookmarkNote && <p className="text-[10px] text-amber-300/70 italic">{v.bookmarkNote}</p>}
                     {i > 0 && (
                       <div className="space-y-1">
@@ -2746,11 +2746,11 @@ export default function ProjectWorkspace({
                           const data = await res.json();
                           if (data.explanation) alert(data.explanation);
                         }}
-                          className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-500 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
+                          className="text-[11px] rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#9090a0] px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
                           What changed?
                         </button>
                         <button onClick={() => handleRestoreVersion(v.id)}
-                          className="text-[11px] rounded-lg border border-white/10 bg-white/5 text-gray-300 px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
+                          className="text-[11px] rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] px-2.5 py-1 hover:bg-white/10 transition-colors w-full">
                           Restore this version
                         </button>
                       </div>
@@ -2765,12 +2765,12 @@ export default function ProjectWorkspace({
       {/* Analytics modal */}
       {showAnalytics && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowAnalytics(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-lg space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">📊 Analytics (last 7 days)</h2>
-              <button onClick={() => setShowAnalytics(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">📊 Analytics (last 7 days)</h2>
+              <button onClick={() => setShowAnalytics(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {analyticsLoading && <p className="text-xs text-gray-500">Loading…</p>}
+            {analyticsLoading && <p className="text-xs text-[#9090a0]">Loading…</p>}
             {analyticsData && !analyticsLoading && (
               <div className="space-y-4">
                 <div className="grid grid-cols-4 gap-3">
@@ -2780,9 +2780,9 @@ export default function ProjectWorkspace({
                     { label: "Rage-clicks", value: analyticsData.rageclicks, color: "text-red-300" },
                     { label: "Form Submits", value: analyticsData.formSubmits, color: "text-purple-300" },
                   ].map(s => (
-                    <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
+                    <div key={s.label} className="bg-[#f0f0f5] rounded-xl p-3 text-center">
                       <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{s.label}</p>
+                      <p className="text-[10px] text-[#9090a0] mt-0.5">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -2791,7 +2791,7 @@ export default function ProjectWorkspace({
                     <p className="text-xs text-red-400 font-medium mb-2">🔥 Rage-click hotspots</p>
                     {analyticsData.topRageClicks.map(r => (
                       <div key={r.el} className="flex items-center justify-between text-xs py-1 border-b border-white/5">
-                        <span className="text-gray-400 truncate">{r.el}</span>
+                        <span className="text-[#71717f] truncate">{r.el}</span>
                         <span className="text-red-300 font-medium ml-2">{r.count}×</span>
                       </div>
                     ))}
@@ -2805,7 +2805,7 @@ export default function ProjectWorkspace({
                   </div>
                 )}
                 {analyticsData.pageviews === 0 && (
-                  <p className="text-xs text-gray-600">No data yet. Publish your app to start tracking visitors.</p>
+                  <p className="text-xs text-[#9090a0]">No data yet. Publish your app to start tracking visitors.</p>
                 )}
               </div>
             )}
@@ -2816,12 +2816,12 @@ export default function ProjectWorkspace({
       {/* Compliance modal */}
       {showCompliance && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowCompliance(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">⚖️ Legal Compliance Check</h2>
-              <button onClick={() => setShowCompliance(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">⚖️ Legal Compliance Check</h2>
+              <button onClick={() => setShowCompliance(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {complianceLoading && <p className="text-xs text-gray-500">Analyzing your app for compliance requirements…</p>}
+            {complianceLoading && <p className="text-xs text-[#9090a0]">Analyzing your app for compliance requirements…</p>}
             {complianceData && !complianceLoading && (
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-2">
@@ -2831,9 +2831,9 @@ export default function ProjectWorkspace({
                 </div>
                 {complianceData.issues.length > 0 && (
                   <div className="space-y-1.5">
-                    <p className="text-xs text-gray-500 font-medium">Issues found:</p>
+                    <p className="text-xs text-[#9090a0] font-medium">Issues found:</p>
                     {complianceData.issues.map((issue, i) => (
-                      <div key={i} className="text-xs text-gray-400 flex gap-2">
+                      <div key={i} className="text-xs text-[#71717f] flex gap-2">
                         <span className="text-amber-400 shrink-0">⚠</span>
                         <span>{issue}</span>
                       </div>
@@ -2858,15 +2858,15 @@ export default function ProjectWorkspace({
       {/* Clone URL modal */}
       {showCloneUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowCloneUrl(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🔍 Build inspired by a URL</h2>
-              <button onClick={() => setShowCloneUrl(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🔍 Build inspired by a URL</h2>
+              <button onClick={() => setShowCloneUrl(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Paste any public URL — AI analyzes its structure and builds you something inspired by it (original design, no copyright issues).</p>
+            <p className="text-xs text-[#9090a0]">Paste any public URL — AI analyzes its structure and builds you something inspired by it (original design, no copyright issues).</p>
             <input value={cloneUrl} onChange={e => setCloneUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
             {cloneError && <p className="text-xs text-red-400">{cloneError}</p>}
             <button onClick={handleCloneUrl} disabled={cloneLoading || !cloneUrl.trim()}
               className="w-full rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
@@ -2879,19 +2879,19 @@ export default function ProjectWorkspace({
       {/* App merge modal */}
       {showMerge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowMerge(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">⚡ Merge Another Project</h2>
-              <button onClick={() => setShowMerge(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">⚡ Merge Another Project</h2>
+              <button onClick={() => setShowMerge(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Paste the project ID of another app you own. AI will merge both apps into one unified experience.</p>
+            <p className="text-xs text-[#9090a0]">Paste the project ID of another app you own. AI will merge both apps into one unified experience.</p>
             <input value={mergeProjectId} onChange={e => setMergeProjectId(e.target.value)}
               placeholder="Project ID (from the URL: /projects/abc123)"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40 font-mono text-xs" />
+              className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40 font-mono text-xs" />
             <textarea value={mergeGoal} onChange={e => setMergeGoal(e.target.value)}
               placeholder="Describe the merge goal (optional) — e.g. 'Add the blog section from my other app into this dashboard'"
               rows={3}
-              className="w-full resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+              className="w-full resize-none bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
             <button onClick={handleMerge} disabled={mergeLoading || !mergeProjectId.trim()}
               className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
               {mergeLoading ? "Analyzing both apps…" : "Merge Projects →"}
@@ -2902,23 +2902,23 @@ export default function ProjectWorkspace({
       {/* Load test modal */}
       {showLoadTest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowLoadTest(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🏋️ AI Load Test</h2>
-              <button onClick={() => setShowLoadTest(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🏋️ AI Load Test</h2>
+              <button onClick={() => setShowLoadTest(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {loadTestLoading && <p className="text-xs text-gray-500">Simulating 10,000 users across your app flows…</p>}
+            {loadTestLoading && <p className="text-xs text-[#9090a0]">Simulating 10,000 users across your app flows…</p>}
             {loadTestData && !loadTestLoading && (
               <div className="space-y-4">
-                <p className="text-xs text-gray-400">⚠ Estimated crash point: <span className="text-red-300">{loadTestData.estimatedCrashPoint}</span></p>
+                <p className="text-xs text-[#71717f]">⚠ Estimated crash point: <span className="text-red-300">{loadTestData.estimatedCrashPoint}</span></p>
                 <div className="space-y-2">
                   {loadTestData.bottlenecks.map((b, i) => (
-                    <div key={i} className={`rounded-xl border p-3 space-y-1 ${b.severity === "critical" ? "border-red-500/30 bg-red-500/5" : b.severity === "high" ? "border-amber-500/30 bg-amber-500/5" : "border-white/10 bg-white/5"}`}>
+                    <div key={i} className={`rounded-xl border p-3 space-y-1 ${b.severity === "critical" ? "border-red-500/30 bg-red-500/5" : b.severity === "high" ? "border-amber-500/30 bg-amber-500/5" : "border-[#ececf1] bg-[#f0f0f5]"}`}>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-medium uppercase rounded px-1.5 py-0.5 ${b.severity === "critical" ? "bg-red-500/20 text-red-300" : b.severity === "high" ? "bg-amber-500/20 text-amber-300" : "bg-white/10 text-gray-400"}`}>{b.severity}</span>
-                        <span className="text-xs text-gray-300">{b.location}</span>
+                        <span className={`text-[10px] font-medium uppercase rounded px-1.5 py-0.5 ${b.severity === "critical" ? "bg-red-500/20 text-red-300" : b.severity === "high" ? "bg-amber-500/20 text-amber-300" : "bg-white/10 text-[#71717f]"}`}>{b.severity}</span>
+                        <span className="text-xs text-[#3a3a4a]">{b.location}</span>
                       </div>
-                      <p className="text-xs text-gray-500">{b.issue}</p>
+                      <p className="text-xs text-[#9090a0]">{b.issue}</p>
                       <p className="text-xs text-green-400">Fix: {b.fix}</p>
                     </div>
                   ))}
@@ -2939,19 +2939,19 @@ export default function ProjectWorkspace({
       {/* Red team modal */}
       {showRedTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowRedTeam(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🔴 Adversarial Red Team</h2>
-              <button onClick={() => setShowRedTeam(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🔴 Adversarial Red Team</h2>
+              <button onClick={() => setShowRedTeam(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {redTeamLoading && <p className="text-xs text-gray-500">AI is attempting to break your app like a real attacker…</p>}
+            {redTeamLoading && <p className="text-xs text-[#9090a0]">AI is attempting to break your app like a real attacker…</p>}
             {redTeamData && !redTeamLoading && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className={`text-2xl font-bold ${redTeamData.securityScore >= 80 ? "text-green-400" : redTeamData.securityScore >= 60 ? "text-amber-400" : "text-red-400"}`}>{redTeamData.securityScore}/100</div>
                   <div>
-                    <p className="text-xs text-gray-300 font-medium">Security Score</p>
-                    <p className="text-[10px] text-gray-500">{redTeamData.exploits.length} exploit{redTeamData.exploits.length !== 1 ? "s" : ""} found</p>
+                    <p className="text-xs text-[#3a3a4a] font-medium">Security Score</p>
+                    <p className="text-[10px] text-[#9090a0]">{redTeamData.exploits.length} exploit{redTeamData.exploits.length !== 1 ? "s" : ""} found</p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -2959,16 +2959,16 @@ export default function ProjectWorkspace({
                     <div key={i} className={`rounded-xl border p-3 space-y-1 ${e.severity === "critical" ? "border-red-500/40 bg-red-500/5" : e.severity === "high" ? "border-orange-500/30 bg-orange-500/5" : "border-amber-500/20 bg-amber-500/5"}`}>
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] uppercase font-medium rounded px-1.5 py-0.5 ${e.severity === "critical" ? "bg-red-500/20 text-red-300" : "bg-orange-500/20 text-orange-300"}`}>{e.severity}</span>
-                        <span className="text-xs text-gray-300 font-medium">{e.type}</span>
+                        <span className="text-xs text-[#3a3a4a] font-medium">{e.type}</span>
                       </div>
-                      <p className="text-xs text-gray-400">{e.description}</p>
+                      <p className="text-xs text-[#71717f]">{e.description}</p>
                       <p className="text-xs text-green-400">Fix: {e.fix}</p>
                     </div>
                   ))}
                 </div>
                 {redTeamData.passed.length > 0 && (
                   <div className="space-y-1">
-                    <p className="text-[10px] text-gray-600 font-medium">Passed checks</p>
+                    <p className="text-[10px] text-[#9090a0] font-medium">Passed checks</p>
                     {redTeamData.passed.map((p, i) => <p key={i} className="text-xs text-green-600">✓ {p}</p>)}
                   </div>
                 )}
@@ -2987,30 +2987,30 @@ export default function ProjectWorkspace({
       {/* Revenue model modal */}
       {showRevenue && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowRevenue(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">💰 Revenue Model</h2>
-              <button onClick={() => setShowRevenue(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">💰 Revenue Model</h2>
+              <button onClick={() => setShowRevenue(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {revenueLoading && <p className="text-xs text-gray-500">Modeling revenue strategies for your app…</p>}
+            {revenueLoading && <p className="text-xs text-[#9090a0]">Modeling revenue strategies for your app…</p>}
             {revenueData && !revenueLoading && (
               <div className="space-y-4">
                 <div className="rounded-xl bg-emerald-500/10 border border-emerald-400/20 px-4 py-3">
                   <p className="text-xs text-emerald-300 font-medium">Recommended: {revenueData.recommended} at {revenueData.launchPrice}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{revenueData.willingness_to_pay_reasoning}</p>
+                  <p className="text-[10px] text-[#71717f] mt-1">{revenueData.willingness_to_pay_reasoning}</p>
                 </div>
                 <div className="space-y-2">
                   {revenueData.strategies?.map((s, i) => (
-                    <div key={i} className={`rounded-xl border p-3 ${s.name === revenueData.recommended ? "border-emerald-400/30 bg-emerald-500/5" : "border-white/10 bg-white/5"}`}>
+                    <div key={i} className={`rounded-xl border p-3 ${s.name === revenueData.recommended ? "border-emerald-400/30 bg-emerald-500/5" : "border-[#ececf1] bg-[#f0f0f5]"}`}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-white font-medium">{s.name}</span>
-                        <span className="text-xs text-gray-400">{s.suggestedPrice}</span>
+                        <span className="text-xs text-[#71717f]">{s.suggestedPrice}</span>
                       </div>
-                      <p className="text-[10px] text-gray-500">{s.estimatedMRR}</p>
-                      <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                      <p className="text-[10px] text-[#9090a0]">{s.estimatedMRR}</p>
+                      <div className="mt-1.5 h-1 bg-[#f0f0f5] rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${s.fit}%` }} />
                       </div>
-                      <p className="text-[10px] text-gray-600 mt-0.5">{s.fit}% fit</p>
+                      <p className="text-[10px] text-[#9090a0] mt-0.5">{s.fit}% fit</p>
                     </div>
                   ))}
                 </div>
@@ -3027,21 +3027,21 @@ export default function ProjectWorkspace({
       {/* Brand voice modal */}
       {showBrandVoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowBrandVoice(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🎭 Brand Voice</h2>
-              <button onClick={() => setShowBrandVoice(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🎭 Brand Voice</h2>
+              <button onClick={() => setShowBrandVoice(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            <p className="text-xs text-gray-500">Define your product&apos;s personality once — AI applies it to every error message, empty state, and UI string across your entire app.</p>
+            <p className="text-xs text-[#9090a0]">Define your product&apos;s personality once — AI applies it to every error message, empty state, and UI string across your entire app.</p>
             <div className="space-y-2">
               <input value={brandTone} onChange={e => setBrandTone(e.target.value)} placeholder="Tone (e.g. friendly and direct, professional and warm)"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
               <input value={brandValues} onChange={e => setBrandValues(e.target.value)} placeholder="Values (e.g. transparent, reliable, human)"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
               <input value={brandPersonality} onChange={e => setBrandPersonality(e.target.value)} placeholder='Personality (e.g. "like a knowledgeable friend, not a corporate bot")'
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
               <textarea value={brandExamples} onChange={e => setBrandExamples(e.target.value)} placeholder={'Example phrases:\n"Oops, that page wandered off" instead of "404 Not Found"\n"Let\'s get you sorted" instead of "Error, please try again"'}
-                rows={3} className="w-full resize-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-fuchsia-400/40" />
+                rows={3} className="w-full resize-none bg-[#f0f0f5] border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
             </div>
             <button onClick={saveBrandVoice} disabled={brandLoading || !brandTone.trim()}
               className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40">
@@ -3054,29 +3054,29 @@ export default function ProjectWorkspace({
       {/* Sunset modal */}
       {showSunset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowSunset(false)}>
-          <div className="bg-[#0f0f1a] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white border border-[#ececf1] rounded-2xl p-6 w-full max-w-md space-y-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">🌅 App Lifecycle</h2>
-              <button onClick={() => setShowSunset(false)} className="text-gray-500 hover:text-white text-lg leading-none">×</button>
+              <h2 className="text-sm font-semibold text-[#17171c]">🌅 App Lifecycle</h2>
+              <button onClick={() => setShowSunset(false)} className="text-[#9090a0] hover:text-white text-lg leading-none">×</button>
             </div>
-            {sunsetLoading && <p className="text-xs text-gray-500">Analyzing app usage and lifecycle status…</p>}
+            {sunsetLoading && <p className="text-xs text-[#9090a0]">Analyzing app usage and lifecycle status…</p>}
             {sunsetData && !sunsetLoading && (
               <div className="space-y-4">
                 <div className={`rounded-xl border px-4 py-3 ${sunsetData.recommendation === "keep" ? "border-green-400/30 bg-green-500/10" : sunsetData.recommendation === "archive" ? "border-amber-400/30 bg-amber-500/10" : "border-red-400/30 bg-red-500/10"}`}>
-                  <p className="text-sm font-semibold text-white capitalize">{sunsetData.recommendation === "keep" ? "✓ Keep active" : sunsetData.recommendation === "archive" ? "⚠ Consider archiving" : "Archive this app"}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{sunsetData.reason}</p>
-                  <p className="text-[10px] text-gray-600 mt-1">Last updated {sunsetData.daysSinceUpdate} days ago</p>
+                  <p className="text-sm font-semibold text-[#17171c] capitalize">{sunsetData.recommendation === "keep" ? "✓ Keep active" : sunsetData.recommendation === "archive" ? "⚠ Consider archiving" : "Archive this app"}</p>
+                  <p className="text-xs text-[#71717f] mt-0.5">{sunsetData.reason}</p>
+                  <p className="text-[10px] text-[#9090a0] mt-1">Last updated {sunsetData.daysSinceUpdate} days ago</p>
                 </div>
                 {sunsetData.unusedFeatures.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 font-medium mb-1.5">Possibly unused features</p>
-                    {sunsetData.unusedFeatures.map((f, i) => <p key={i} className="text-xs text-gray-600">· {f}</p>)}
+                    <p className="text-xs text-[#9090a0] font-medium mb-1.5">Possibly unused features</p>
+                    {sunsetData.unusedFeatures.map((f, i) => <p key={i} className="text-xs text-[#9090a0]">· {f}</p>)}
                   </div>
                 )}
                 {sunsetData.cleanupActions.length > 0 && (
                   <div>
-                    <p className="text-xs text-gray-500 font-medium mb-1.5">Cleanup checklist</p>
-                    {sunsetData.cleanupActions.map((a, i) => <p key={i} className="text-xs text-gray-600">☐ {a}</p>)}
+                    <p className="text-xs text-[#9090a0] font-medium mb-1.5">Cleanup checklist</p>
+                    {sunsetData.cleanupActions.map((a, i) => <p key={i} className="text-xs text-[#9090a0]">☐ {a}</p>)}
                   </div>
                 )}
                 {sunsetData.recommendation !== "keep" && (
@@ -3138,58 +3138,58 @@ function DnsVerifyModal({ dnsInfo, onClose }: { dnsInfo: { domain: string; cname
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={status === "verified" ? onClose : undefined}>
-      <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="rounded-2xl border border-[#ececf1] bg-white p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
 
         {status === "verified" ? (
           <>
             <div className="text-4xl mb-3 text-center">🎉</div>
-            <h2 className="text-base font-semibold text-white mb-1 text-center">You&apos;re live!</h2>
-            <p className="text-xs text-gray-400 mb-5 text-center">
+            <h2 className="text-base font-semibold text-[#17171c] mb-1 text-center">You&apos;re live!</h2>
+            <p className="text-xs text-[#71717f] mb-5 text-center">
               <strong className="text-white">{dnsInfo.domain}</strong> is now pointing to your app.
             </p>
             <a href={`https://${dnsInfo.domain}`} target="_blank" rel="noreferrer"
-              className="block w-full text-center rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity mb-2">
+              className="block w-full text-center rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity mb-2">
               Visit {dnsInfo.domain} ↗
             </a>
-            <button onClick={onClose} className="w-full text-center text-xs text-gray-600 hover:text-gray-400 transition-colors py-1">
+            <button onClick={onClose} className="w-full text-center text-xs text-[#9090a0] hover:text-[#71717f] transition-colors py-1">
               Close
             </button>
           </>
         ) : (
           <>
             <div className="text-2xl mb-3">🌐</div>
-            <h2 className="text-base font-semibold text-white mb-1">One last step</h2>
-            <p className="text-xs text-gray-400 mb-4">
+            <h2 className="text-base font-semibold text-[#17171c] mb-1">One last step</h2>
+            <p className="text-xs text-[#71717f] mb-4">
               Log into wherever you bought <strong className="text-white">{dnsInfo.domain.split(".").slice(-2).join(".")}</strong> (GoDaddy, Namecheap, Cloudflare, etc.) → find <strong className="text-white">"DNS Records"</strong> → add this:
             </p>
 
-            <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-2.5 font-mono text-xs mb-4">
+            <div className="rounded-xl bg-black/30 border border-[#ececf1] p-4 space-y-2.5 font-mono text-xs mb-4">
               {dnsInfo.cname === "76.76.21.21" ? (
                 <>
-                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">A</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">@</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">76.76.21.21</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Type</span><span className="text-white">A</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Name</span><span className="text-[#6a1ff7]">@</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Value</span><span className="text-[#6a1ff7]">76.76.21.21</span></div>
                 </>
               ) : (
                 <>
-                  <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="text-white">CNAME</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="text-fuchsia-300">{recordName}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Value</span><span className="text-fuchsia-300">{dnsInfo.cname}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Type</span><span className="text-white">CNAME</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Name</span><span className="text-[#6a1ff7]">{recordName}</span></div>
+                  <div className="flex justify-between"><span className="text-[#9090a0]">Value</span><span className="text-[#6a1ff7]">{dnsInfo.cname}</span></div>
                 </>
               )}
             </div>
 
             {/* Live polling status */}
-            <div className="rounded-xl bg-white/[0.03] border border-white/10 p-3 mb-4 flex items-center gap-3">
+            <div className="rounded-xl bg-white border border-[#ececf1] p-3 mb-4 flex items-center gap-3">
               <div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse shrink-0" />
-              <div className="text-[11px] text-gray-500">
-                <span className="text-gray-300">Checking your DNS automatically…</span>
+              <div className="text-[11px] text-[#9090a0]">
+                <span className="text-[#3a3a4a]">Checking your DNS automatically…</span>
                 {elapsed > 0 && <span className="ml-1">(checked {Math.floor(elapsed / 5)}x)</span>}
                 <div className="mt-0.5">This page will update the moment it&apos;s live — no need to refresh.</div>
               </div>
             </div>
 
-            <button onClick={onClose} className="w-full text-center text-xs text-gray-600 hover:text-gray-400 transition-colors py-1">
+            <button onClick={onClose} className="w-full text-center text-xs text-[#9090a0] hover:text-[#71717f] transition-colors py-1">
               I&apos;ll do this later
             </button>
           </>
@@ -3253,12 +3253,12 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
-      <div className="rounded-2xl border border-white/10 bg-[#141418] p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-        <h2 className="text-base font-semibold text-white mb-1">Publish your app</h2>
-        <p className="text-xs text-gray-500 mb-5">Choose your subdomain on thatcode.dev</p>
+      <div className="rounded-2xl border border-[#ececf1] bg-white p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+        <h2 className="text-base font-semibold text-[#17171c] mb-1">Publish your app</h2>
+        <p className="text-xs text-[#9090a0] mb-5">Choose your subdomain on thatcode.dev</p>
 
-        <div className="flex items-center rounded-xl border border-white/10 bg-white/5 focus-within:border-fuchsia-400/40 transition-colors overflow-hidden">
-          <span className="pl-3 pr-1 text-gray-500 text-sm shrink-0 select-none">thatcode.dev/</span>
+        <div className="flex items-center rounded-xl border border-[#ececf1] bg-[#f0f0f5] focus-within:border-fuchsia-400/40 transition-colors overflow-hidden">
+          <span className="pl-3 pr-1 text-[#9090a0] text-sm shrink-0 select-none">thatcode.dev/</span>
           <input
             value={slug}
             onChange={e => onChange(e.target.value)}
@@ -3267,7 +3267,7 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
             autoFocus
           />
           <span className="pr-3 text-xs shrink-0">
-            {checking && <span className="text-gray-500">…</span>}
+            {checking && <span className="text-[#9090a0]">…</span>}
             {!checking && availability === "available" && <span className="text-green-400">✓</span>}
             {!checking && availability === "taken" && <span className="text-red-400">✗</span>}
           </span>
@@ -3277,64 +3277,64 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
         {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
         {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
 
-        <button onClick={() => setShowAdvanced(v => !v)} className="mt-4 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center gap-1">
+        <button onClick={() => setShowAdvanced(v => !v)} className="mt-4 text-xs text-[#9090a0] hover:text-[#17171c] transition-colors flex items-center gap-1">
           <span>{showAdvanced ? "▾" : "▸"}</span> Advanced options
         </button>
 
         {showAdvanced && (
           <div className="mt-3 space-y-3">
             <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">Custom domain <span className="text-gray-600">(optional)</span></label>
+              <label className="text-xs text-[#71717f] mb-1.5 block">Custom domain <span className="text-[#9090a0]">(optional)</span></label>
               <input
                 value={customDomain}
                 onChange={e => setCustomDomain(e.target.value.trim().toLowerCase().replace(/^https?:\/\//, ""))}
                 placeholder="myapp.com or app.mysite.com"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 transition-colors font-mono"
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#6a1ff7]/40 transition-colors font-mono"
               />
               {customDomain && (
-                <div className="mt-2 rounded-xl bg-white/[0.03] border border-white/10 p-3 space-y-2 text-[11px]">
-                  <p className="text-gray-300 font-medium">After publishing, you'll need to do one quick step:</p>
-                  <p className="text-gray-500">Log into wherever you bought <strong className="text-gray-300">{customDomain.split(".").slice(-2).join(".")}</strong> (GoDaddy, Namecheap, Cloudflare, etc.) and add this DNS record:</p>
-                  <div className="rounded-lg bg-black/30 border border-white/10 p-2.5 space-y-1.5 font-mono">
+                <div className="mt-2 rounded-xl bg-white border border-[#ececf1] p-3 space-y-2 text-[11px]">
+                  <p className="text-[#3a3a4a] font-medium">After publishing, you'll need to do one quick step:</p>
+                  <p className="text-[#9090a0]">Log into wherever you bought <strong className="text-[#3a3a4a]">{customDomain.split(".").slice(-2).join(".")}</strong> (GoDaddy, Namecheap, Cloudflare, etc.) and add this DNS record:</p>
+                  <div className="rounded-lg bg-black/30 border border-[#ececf1] p-2.5 space-y-1.5 font-mono">
                     <div className="flex justify-between gap-4">
-                      <span className="text-gray-600">Type</span>
+                      <span className="text-[#9090a0]">Type</span>
                       <span className="text-white">CNAME</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-gray-600">Name</span>
-                      <span className="text-fuchsia-300">{customDomain.split(".").slice(0, -2).join(".") || "@"}</span>
+                      <span className="text-[#9090a0]">Name</span>
+                      <span className="text-[#6a1ff7]">{customDomain.split(".").slice(0, -2).join(".") || "@"}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-gray-600">Value</span>
-                      <span className="text-fuchsia-300">domains.thatcode.dev</span>
+                      <span className="text-[#9090a0]">Value</span>
+                      <span className="text-[#6a1ff7]">domains.thatcode.dev</span>
                     </div>
                   </div>
-                  <p className="text-gray-600">Usually takes 5–10 minutes to go live.</p>
+                  <p className="text-[#9090a0]">Usually takes 5–10 minutes to go live.</p>
                 </div>
               )}
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-1 block">Password protect (optional)</label>
+              <label className="text-xs text-[#71717f] mb-1 block">Password protect (optional)</label>
               <input
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Leave blank for public access"
                 type="password"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-400/40 transition-colors"
+                className="w-full bg-[#f0f0f5] border border-[#ececf1] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#6a1ff7]/40 transition-colors"
               />
             </div>
           </div>
         )}
 
         {/* Security scan */}
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3 space-y-2">
+        <div className="mt-4 rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-3 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-white">🔒 Security Scan</p>
-              <p className="text-[10px] text-gray-600">Check for vulnerabilities before going live</p>
+              <p className="text-xs font-medium text-[#17171c]">🔒 Security Scan</p>
+              <p className="text-[10px] text-[#9090a0]">Check for vulnerabilities before going live</p>
             </div>
             <button onClick={runScan} disabled={scanLoading}
-              className="text-xs rounded-lg border border-white/10 bg-white/5 text-gray-400 px-2.5 py-1 hover:bg-white/10 transition-colors disabled:opacity-40">
+              className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2.5 py-1 hover:bg-white/10 transition-colors disabled:opacity-40">
               {scanLoading ? "Scanning…" : scanResult ? "Re-scan" : "Scan"}
             </button>
           </div>
@@ -3345,10 +3345,10 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
                 {scanResult.issues.length === 0 && <span className="text-green-400">✓ No issues found</span>}
               </div>
               {scanResult.issues.map((issue, i) => (
-                <div key={i} className={`rounded-lg p-2 text-[10px] space-y-0.5 ${issue.severity === "high" ? "bg-red-500/10 border border-red-500/20" : issue.severity === "medium" ? "bg-amber-500/10 border border-amber-500/20" : "bg-white/5 border border-white/10"}`}>
-                  <p className={`font-medium ${issue.severity === "high" ? "text-red-300" : issue.severity === "medium" ? "text-amber-300" : "text-gray-300"}`}>{issue.severity.toUpperCase()} — {issue.title}</p>
-                  <p className="text-gray-500">{issue.description}</p>
-                  <p className="text-gray-600">Fix: {issue.fix}</p>
+                <div key={i} className={`rounded-lg p-2 text-[10px] space-y-0.5 ${issue.severity === "high" ? "bg-red-500/10 border border-red-500/20" : issue.severity === "medium" ? "bg-amber-500/10 border border-amber-500/20" : "bg-[#f0f0f5] border border-[#ececf1]"}`}>
+                  <p className={`font-medium ${issue.severity === "high" ? "text-red-300" : issue.severity === "medium" ? "text-amber-300" : "text-[#3a3a4a]"}`}>{issue.severity.toUpperCase()} — {issue.title}</p>
+                  <p className="text-[#9090a0]">{issue.description}</p>
+                  <p className="text-[#9090a0]">Fix: {issue.fix}</p>
                 </div>
               ))}
             </div>
@@ -3357,10 +3357,10 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
 
         <div className="flex gap-2 mt-5">
           <button onClick={() => onPublish(slug, customDomain || undefined, password || undefined)} disabled={!canPublish}
-            className="flex-1 rounded-xl bg-gradient-to-r from-fuchsia-500 to-indigo-500 text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
+            className="flex-1 rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white py-2.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
             {publishing ? "Publishing…" : "Publish →"}
           </button>
-          <button onClick={onClose} className="rounded-xl border border-white/10 bg-white/5 text-gray-400 px-4 py-2.5 text-sm hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-4 py-2.5 text-sm hover:bg-white/10 transition-colors">
             Cancel
           </button>
         </div>
