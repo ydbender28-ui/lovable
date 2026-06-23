@@ -326,37 +326,20 @@ export default function ProjectWorkspace({
   const [iframeError, setIframeError] = useState<string | null>(null);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
     const msg = err?.message ?? null;
-    setIframeError(msg);
     if (msg && !loading) {
-      // Auto-fix: start 4-second countdown
+      // Silent auto-fix — no UI shown, just fix it immediately
       if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-      if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
-      setAutoFixCountdown(4);
-      autoFixCountdownRef.current = setInterval(() => {
-        setAutoFixCountdown((n) => {
-          if (n === null || n <= 1) {
-            clearInterval(autoFixCountdownRef.current!);
-            autoFixCountdownRef.current = null;
-            return null;
-          }
-          return n - 1;
-        });
-      }, 1000);
       autoFixTimerRef.current = setTimeout(() => {
-        setIframeError(null);
-        setAutoFixCountdown(null);
+        const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
         runGenerate(
-          `FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${msg}\n\nCode:\n${Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n")}`,
+          `FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${msg}\n\nCode:\n${code}`,
           undefined,
           "claude-sonnet-4-6",
           true
         );
-      }, 4000);
+      }, 1500);
     } else if (!msg) {
-      // Error cleared
       if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-      if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
-      setAutoFixCountdown(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, files]);
@@ -2151,27 +2134,7 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
-        {iframeError && !loading && (
-          <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
-            <p className="font-medium">Error detected</p>
-            <p className="text-orange-400/80">Type <strong>fix</strong> in the chat to repair it.</p>
-            <button onClick={() => { const e = iframeError; setIframeError(null); const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n"); runGenerate(`FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${e}\n\nCode:\n${code}`, undefined, "claude-sonnet-4-6", true); }}
-              className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium">
-              Fix error →
-            </button>
-          </div>
-        )}
-        {error && (
-          <div className="rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
-            <p>{error}</p>
-            {lastPrompt && (
-              <button onClick={() => { setError(null); runGenerate(lastPrompt); }}
-                className="rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1.5 text-xs transition-colors">
-                Try again
-              </button>
-            )}
-          </div>
-        )}
+        {/* Errors are auto-fixed silently — no error UI shown to user */}
       </div>
 
       {/* Quick actions */}
@@ -2395,33 +2358,7 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
-        {/* Floating error banner over preview */}
-        {iframeError && !loading && activeTab === "preview" && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-50/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
-            <span className="text-red-400 text-sm shrink-0">⚠</span>
-            <p className="text-xs text-red-300 flex-1 whitespace-nowrap">
-              Error detected — auto-fixing in {autoFixCountdown ?? 0}s
-            </p>
-            <button
-              onClick={() => {
-                if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-                if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
-                setAutoFixCountdown(null);
-                const e = iframeError; setIframeError(null);
-                const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
-                runGenerate(`FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${e}\n\nCode:\n${code}`, undefined, "claude-sonnet-4-6", true);
-              }}
-              className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
-            >
-              Fix now →
-            </button>
-            <button onClick={() => {
-              if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-              if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
-              setAutoFixCountdown(null); setIframeError(null);
-            }} className="text-[#9090a0] hover:text-[#71717f] text-base leading-none">×</button>
-          </div>
-        )}
+        {/* Errors are auto-fixed silently — no banner shown */}
         {hasFiles ? (
           <div style={{ flex: 1, minHeight: 0, height: "100%" }}>
             <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />

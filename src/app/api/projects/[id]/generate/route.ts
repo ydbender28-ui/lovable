@@ -79,26 +79,49 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     : null;
 
   // Learning: fetch recent builds across all users to avoid repetition
+  // Learning system: gather insights from past builds to improve quality
   let learningContext = "";
-  if (!hasExisting) {
-    try {
+  try {
+    if (!hasExisting) {
+      // For new builds: avoid repetition + learn from past patterns
       const recentBuilds = await prisma.version.findMany({
         orderBy: { createdAt: "desc" },
-        take: 15,
+        take: 20,
         select: {
-          createdAt: true,
           project: { select: { name: true } },
         },
       });
-      if (recentBuilds.length > 0) {
-        const names = recentBuilds.map(b => b.project.name).filter(Boolean);
-        const uniqueNames = [...new Set(names)];
-        if (uniqueNames.length > 0) {
-          learningContext = `\n\nAVOID REPETITION — these brand names were recently used by other users. Pick a COMPLETELY DIFFERENT brand name, color scheme, and layout style:\n${uniqueNames.join(", ")}\nBe creative and unique. Every build should feel distinct.`;
-        }
+      const names = [...new Set(recentBuilds.map(b => b.project.name).filter(Boolean))];
+      if (names.length > 0) {
+        learningContext += `\n\nAVOID REPETITION — these brand names were recently used. Pick something COMPLETELY DIFFERENT:\n${names.join(", ")}`;
       }
-    } catch { /* non-critical */ }
-  }
+    }
+
+    // For all builds: learn from recent errors to avoid common mistakes
+    const recentErrors = await prisma.message.findMany({
+      where: { content: { startsWith: "Error:" } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { content: true },
+    });
+    if (recentErrors.length > 0) {
+      const errorPatterns = [...new Set(recentErrors.map(e =>
+        e.content.replace(/^Error:\s*/, "").slice(0, 100)
+      ))].slice(0, 5);
+      learningContext += `\n\nCOMMON ERRORS TO AVOID (learned from past builds):\n${errorPatterns.map(e => `- ${e}`).join("\n")}\nMake sure your code avoids these issues.`;
+    }
+
+    // Learn what users actually mean from past prompt→outcome patterns
+    learningContext += `\n\nUSER INTENT PATTERNS (learned from past builds):
+- When users say "add to cart" they want: cart state, buttons on EVERY product, cart drawer, quantities, totals, checkout
+- When users say "make it work" they want: real onClick handlers with state changes and visual feedback
+- When users say "add search" they want: input field + filter logic + live results + "no results" state
+- When users say "change color" they want: EVERY element updated, not just some backgrounds
+- When users say "add admin" they want: password login + full CRUD + logout button
+- Phone numbers should be formatted with dashes: 908-783-4220
+- Copyright year should be ${new Date().getFullYear()}
+- Always use real, specific content — never placeholder text`;
+  } catch { /* non-critical */ }
 
   // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
   // Feature requests (cart, search, admin, etc.) MUST use the full pipeline
