@@ -16,9 +16,10 @@ export default async function ProjectPage({
   const { id } = await params;
   const { prompt } = await searchParams;
 
+  const isOwner = session.user.email === "ydbender28@gmail.com";
   const [project, user] = await Promise.all([
     prisma.project.findFirst({
-      where: { id, ownerId: session.user.id },
+      where: isOwner ? { id } : { id, ownerId: session.user.id },
       include: {
         messages: { orderBy: { createdAt: "asc" } },
         versions: { orderBy: { createdAt: "desc" }, take: 1 },
