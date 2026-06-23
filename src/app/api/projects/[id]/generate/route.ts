@@ -45,8 +45,11 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
+  // Skip classifier for first builds — we know it's "new-build"
   const [finalRoute] = await Promise.all([
-    smartRoute(prompt, hasExisting, forceModel ?? undefined),
+    hasExisting
+      ? smartRoute(prompt, true, forceModel ?? undefined)
+      : Promise.resolve({ intent: prompt.slice(0, 80), taskType: "new-build" as const, model: { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 }, modelReason: "New build" }),
     prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
   ]);
 

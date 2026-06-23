@@ -519,7 +519,7 @@ Return ONLY JSON, no markdown:
     const res = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 150,
-      system: classifierSystem,
+      system: [{ type: "text", text: classifierSystem, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: classifierPrompt }],
     });
     const text = (res.content[0] as { type: string; text: string }).text.trim();
@@ -583,7 +583,7 @@ async function generateWithAnthropic(
   const stream = client.messages.stream({
     model,
     max_tokens: maxTokens,
-    system: systemPrompt,
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: msgContent }],
   });
 
@@ -972,23 +972,29 @@ CRITICAL: Keep every existing section, image, menu item, text, and style EXACTLY
     }
   }
 
-  // Resolve {{unsplash:...}} tokens → real photo URLs (max 8s, falls back to picsum)
+  // Resolve {{unsplash:...}} tokens → real photo URLs
+  // Skip for edits (no new images) to save 2-8s
   let resolvedFiles: ProjectFiles;
-  try {
-    resolvedFiles = await Promise.race([
-      resolveImages(parsed.files),
-      new Promise<ProjectFiles>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
-    ]);
-  } catch {
-    // Timeout or error — fall back to picsum for any remaining tokens
-    resolvedFiles = {} as ProjectFiles;
-    for (const [path, content] of Object.entries(parsed.files)) {
-      resolvedFiles[path] = content.replace(UNSPLASH_TOKEN, (_full, qRaw: string, ws?: string, hs?: string) => {
-        const w = ws ? parseInt(ws, 10) : 1200;
-        const h = hs ? parseInt(hs, 10) : 800;
-        return picsumUrl(qRaw.trim(), w, h);
-      });
+  const hasTokens = Object.values(parsed.files).some(c => UNSPLASH_TOKEN.test(c));
+  UNSPLASH_TOKEN.lastIndex = 0;
+  if (hasTokens) {
+    try {
+      resolvedFiles = await Promise.race([
+        resolveImages(parsed.files),
+        new Promise<ProjectFiles>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+      ]);
+    } catch {
+      resolvedFiles = {} as ProjectFiles;
+      for (const [path, content] of Object.entries(parsed.files)) {
+        resolvedFiles[path] = content.replace(UNSPLASH_TOKEN, (_full, qRaw: string, ws?: string, hs?: string) => {
+          const w = ws ? parseInt(ws, 10) : 1200;
+          const h = hs ? parseInt(hs, 10) : 800;
+          return picsumUrl(qRaw.trim(), w, h);
+        });
+      }
     }
+  } else {
+    resolvedFiles = parsed.files;
   }
 
   // For edits: merge returned files with existing (AI only returns changed files)
