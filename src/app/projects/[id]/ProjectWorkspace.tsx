@@ -159,7 +159,7 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
                 Save
               </button>
             )}
-            {saved && <span className="text-[11px] text-green-400">✓ Saved</span>}
+            {saved && <span className="text-[11px] text-green-600">✓ Saved</span>}
             <button onClick={copyFile} className="text-[11px] text-[#9090a0] hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-white/10">
               {copied ? "✓ Copied" : "Copy"}
             </button>
@@ -1786,7 +1786,7 @@ export default function ProjectWorkspace({
           </button>
         )}
         {selfVerify && (
-          <button onClick={() => setSelfVerify(false)} className="text-[10px] border border-green-400/40 bg-green-500/10 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+          <button onClick={() => setSelfVerify(false)} className="text-[10px] border border-green-400/40 bg-green-500/10 text-green-600 px-2 py-0.5 rounded-full flex items-center gap-1">
             🔬 Verify <span className="opacity-60">×</span>
           </button>
         )}
@@ -2014,7 +2014,7 @@ export default function ProjectWorkspace({
       {/* CSV data indicator */}
       {csvData && (
         <div className="px-3 pt-1 shrink-0">
-          <div className="flex items-center gap-1.5 text-[10px] text-green-400 bg-green-500/10 border border-green-400/20 rounded-lg px-2.5 py-1">
+          <div className="flex items-center gap-1.5 text-[10px] text-green-600 bg-green-500/10 border border-green-400/20 rounded-lg px-2.5 py-1">
             <span>📊 CSV data ready ({csvData.split("\n").length} rows)</span>
             <button onClick={() => setCsvData(null)} className="text-[#9090a0] hover:text-[#71717f] ml-auto">×</button>
           </div>
@@ -2167,8 +2167,8 @@ export default function ProjectWorkspace({
         )}
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
-            className="ml-auto text-xs text-green-400 hover:text-green-300 flex items-center gap-1 transition-colors truncate">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />{publishDomain}
+            className="ml-auto text-xs text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors truncate font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />{publishDomain}
           </a>
         )}
       </div>
@@ -2296,7 +2296,7 @@ export default function ProjectWorkspace({
                     : liveUpdated ? "Updated ✓" : "Update"}
               </button>
               <a href={publishUrl} target="_blank" rel="noreferrer"
-                className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-300 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
+                className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-600 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
               <button onClick={() => navigator.clipboard.writeText(publishUrl ?? "")}
                 className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] px-2 py-1.5 hover:bg-white/10 hidden sm:block">Copy</button>
               <button onClick={handleUnpublish} className="text-xs text-[#9090a0] hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
@@ -2380,7 +2380,7 @@ export default function ProjectWorkspace({
             {userTestResult && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className={`text-2xl font-bold ${userTestResult.overallScore >= 80 ? "text-green-400" : userTestResult.overallScore >= 60 ? "text-amber-400" : "text-red-400"}`}>
+                  <div className={`text-2xl font-bold ${userTestResult.overallScore >= 80 ? "text-green-600" : userTestResult.overallScore >= 60 ? "text-amber-400" : "text-red-400"}`}>
                     {userTestResult.overallScore}/100
                   </div>
                   <div>
@@ -2398,9 +2398,9 @@ export default function ProjectWorkspace({
                 )}
                 {userTestResult.quickWins.length > 0 && (
                   <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3 space-y-1.5">
-                    <p className="text-xs font-semibold text-green-400">Quick wins</p>
+                    <p className="text-xs font-semibold text-green-600">Quick wins</p>
                     {userTestResult.quickWins.map((win, i) => (
-                      <p key={i} className="text-xs text-green-300/80">· {win}</p>
+                      <p key={i} className="text-xs text-green-600/80">· {win}</p>
                     ))}
                   </div>
                 )}
@@ -2409,7 +2409,7 @@ export default function ProjectWorkspace({
                     <div key={i} className={`rounded-xl border p-3 space-y-2 ${t.verdict === "passed" ? "border-green-500/20 bg-green-500/5" : t.verdict === "confused" ? "border-amber-500/20 bg-amber-500/5" : "border-red-500/20 bg-red-500/5"}`}>
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-[#17171c]">{t.persona}</p>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.verdict === "passed" ? "bg-green-500/20 text-green-300" : t.verdict === "confused" ? "bg-amber-500/20 text-amber-300" : "bg-red-500/20 text-red-300"}`}>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${t.verdict === "passed" ? "bg-green-500/20 text-green-600" : t.verdict === "confused" ? "bg-amber-500/20 text-amber-300" : "bg-red-500/20 text-red-300"}`}>
                           {t.verdict}
                         </span>
                       </div>
@@ -2459,7 +2459,7 @@ export default function ProjectWorkspace({
             {monetizePlan ? (
               <div className="space-y-3">
                 <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-3">
-                  <p className="text-xs text-green-300">✓ {monetizePlan.summary}</p>
+                  <p className="text-xs text-green-600">✓ {monetizePlan.summary}</p>
                 </div>
                 <button onClick={() => { setShowMonetize(false); runGenerate(monetizePlan.buildPrompt); }}
                   className="w-full text-sm rounded-xl bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white font-semibold py-2.5 hover:opacity-90 transition-opacity">
@@ -2487,7 +2487,7 @@ export default function ProjectWorkspace({
             <p className="text-xs text-[#9090a0]">Create a public view-only link to your current build. Valid for 7 days, no login required.</p>
             {shareLink ? (
               <div className="space-y-3">
-                <div className="rounded-xl bg-[#f0f0f5] border border-[#ececf1] px-3 py-2 text-xs text-green-300 font-mono break-all">{shareLink}</div>
+                <div className="rounded-xl bg-[#f0f0f5] border border-[#ececf1] px-3 py-2 text-xs text-green-600 font-mono break-all">{shareLink}</div>
                 <p className="text-[10px] text-green-500">✓ Copied to clipboard</p>
                 <button onClick={() => navigator.clipboard.writeText(shareLink)} className="w-full text-xs rounded-xl border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] py-2 hover:bg-white/10 transition-colors">
                   Copy again
@@ -2540,7 +2540,7 @@ export default function ProjectWorkspace({
             </div>
             {supabaseStatus?.enabled ? (
               <div className="space-y-3">
-                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 px-4 py-3 text-sm">
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 px-4 py-3 text-sm">
                   ✓ Database is active
                 </div>
                 <p className="text-xs text-[#9090a0]">Your app has a real Postgres database with authentication. Credentials are already injected into your project — just ask the AI to use Supabase for data storage.</p>
@@ -2632,7 +2632,7 @@ export default function ProjectWorkspace({
             </div>
             {githubResult?.repoUrl ? (
               <div className="space-y-3">
-                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 px-4 py-3 text-sm">
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 text-green-600 px-4 py-3 text-sm">
                   ✓ Exported successfully!
                 </div>
                 <a href={githubResult.repoUrl} target="_blank" rel="noreferrer"
@@ -2683,7 +2683,7 @@ export default function ProjectWorkspace({
                 versionList.map((v, i) => (
                   <div key={v.id} className={`rounded-xl border p-3 space-y-2 ${v.bookmarked ? "border-amber-400/30 bg-amber-500/5" : "border-[#ececf1] bg-white"}`}>
                     <div className="flex items-center gap-2">
-                      {i === 0 && <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">Latest</span>}
+                      {i === 0 && <span className="text-[10px] bg-green-500/20 text-green-600 px-1.5 py-0.5 rounded-full">Latest</span>}
                       <button onClick={() => toggleBookmark(v.id, !!v.bookmarked)} title={v.bookmarked ? "Remove bookmark" : "Bookmark"}
                         className={`text-sm leading-none transition-colors ${v.bookmarked ? "text-amber-400" : "text-[#9090a0] hover:text-amber-300"}`}>
                         {v.bookmarked ? "★" : "☆"}
@@ -2729,7 +2729,7 @@ export default function ProjectWorkspace({
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { label: "Pageviews", value: analyticsData.pageviews, color: "text-blue-300" },
-                    { label: "Clicks", value: analyticsData.clicks, color: "text-green-300" },
+                    { label: "Clicks", value: analyticsData.clicks, color: "text-green-600" },
                     { label: "Rage-clicks", value: analyticsData.rageclicks, color: "text-red-300" },
                     { label: "Form Submits", value: analyticsData.formSubmits, color: "text-purple-300" },
                   ].map(s => (
@@ -2794,7 +2794,7 @@ export default function ProjectWorkspace({
                   </div>
                 )}
                 {complianceData.issues.length === 0 && (
-                  <p className="text-xs text-green-400">✓ No major compliance issues detected.</p>
+                  <p className="text-xs text-green-600">✓ No major compliance issues detected.</p>
                 )}
                 {complianceData.issues.length > 0 && (
                   <button onClick={() => { setShowCompliance(false); runGenerate(complianceData.buildPrompt); }}
@@ -2872,7 +2872,7 @@ export default function ProjectWorkspace({
                         <span className="text-xs text-[#3a3a4a]">{b.location}</span>
                       </div>
                       <p className="text-xs text-[#9090a0]">{b.issue}</p>
-                      <p className="text-xs text-green-400">Fix: {b.fix}</p>
+                      <p className="text-xs text-green-600">Fix: {b.fix}</p>
                     </div>
                   ))}
                 </div>
@@ -2882,7 +2882,7 @@ export default function ProjectWorkspace({
                     Fix all performance issues →
                   </button>
                 )}
-                {loadTestData.bottlenecks.length === 0 && <p className="text-xs text-green-400">✓ No major performance issues found.</p>}
+                {loadTestData.bottlenecks.length === 0 && <p className="text-xs text-green-600">✓ No major performance issues found.</p>}
               </div>
             )}
           </div>
@@ -2901,7 +2901,7 @@ export default function ProjectWorkspace({
             {redTeamData && !redTeamLoading && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className={`text-2xl font-bold ${redTeamData.securityScore >= 80 ? "text-green-400" : redTeamData.securityScore >= 60 ? "text-amber-400" : "text-red-400"}`}>{redTeamData.securityScore}/100</div>
+                  <div className={`text-2xl font-bold ${redTeamData.securityScore >= 80 ? "text-green-600" : redTeamData.securityScore >= 60 ? "text-amber-400" : "text-red-400"}`}>{redTeamData.securityScore}/100</div>
                   <div>
                     <p className="text-xs text-[#3a3a4a] font-medium">Security Score</p>
                     <p className="text-[10px] text-[#9090a0]">{redTeamData.exploits.length} exploit{redTeamData.exploits.length !== 1 ? "s" : ""} found</p>
@@ -2915,7 +2915,7 @@ export default function ProjectWorkspace({
                         <span className="text-xs text-[#3a3a4a] font-medium">{e.type}</span>
                       </div>
                       <p className="text-xs text-[#71717f]">{e.description}</p>
-                      <p className="text-xs text-green-400">Fix: {e.fix}</p>
+                      <p className="text-xs text-green-600">Fix: {e.fix}</p>
                     </div>
                   ))}
                 </div>
@@ -3221,13 +3221,13 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
           />
           <span className="pr-3 text-xs shrink-0">
             {checking && <span className="text-[#9090a0]">…</span>}
-            {!checking && availability === "available" && <span className="text-green-400">✓</span>}
+            {!checking && availability === "available" && <span className="text-green-600">✓</span>}
             {!checking && availability === "taken" && <span className="text-red-400">✗</span>}
           </span>
         </div>
 
         {availability === "taken" && <p className="mt-1.5 text-xs text-red-400">That name is already taken. Try something else.</p>}
-        {availability === "available" && <p className="mt-1.5 text-xs text-green-400">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
+        {availability === "available" && <p className="mt-1.5 text-xs text-green-600">Available! Your app will be at <strong>{slug}.thatcode.dev</strong></p>}
         {publishError && <p className="mt-1.5 text-xs text-red-400">{publishError}</p>}
 
         <button onClick={() => setShowAdvanced(v => !v)} className="mt-4 text-xs text-[#9090a0] hover:text-[#17171c] transition-colors flex items-center gap-1">
@@ -3293,9 +3293,9 @@ function PublishDialog({ projectId, projectName, publishing, publishError, onPub
           </div>
           {scanResult && (
             <div className="space-y-1.5">
-              <div className={`flex items-center gap-2 text-xs ${scanResult.score >= 80 ? "text-green-400" : scanResult.score >= 50 ? "text-amber-400" : "text-red-400"}`}>
+              <div className={`flex items-center gap-2 text-xs ${scanResult.score >= 80 ? "text-green-600" : scanResult.score >= 50 ? "text-amber-400" : "text-red-400"}`}>
                 <span>Score: {scanResult.score}/100</span>
-                {scanResult.issues.length === 0 && <span className="text-green-400">✓ No issues found</span>}
+                {scanResult.issues.length === 0 && <span className="text-green-600">✓ No issues found</span>}
               </div>
               {scanResult.issues.map((issue, i) => (
                 <div key={i} className={`rounded-lg p-2 text-[10px] space-y-0.5 ${issue.severity === "high" ? "bg-red-500/10 border border-red-500/20" : issue.severity === "medium" ? "bg-amber-500/10 border border-amber-500/20" : "bg-[#f0f0f5] border border-[#ececf1]"}`}>
