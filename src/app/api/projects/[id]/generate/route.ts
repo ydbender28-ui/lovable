@@ -75,9 +75,13 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         .slice(0, 3000)
     : null;
 
+  // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
+  // Feature requests (cart, search, admin, etc.) MUST use the full pipeline
   const useQuickEdit = existingFiles &&
     (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
-    !imageBase64;
+    !imageBase64 &&
+    prompt.length < 80 &&
+    !/\b(add|cart|checkout|search|admin|login|auth|payment|form|modal|page|section|feature|button.*work|make.*work|implement)\b/i.test(prompt);
 
   // Run generation in after() — survives client disconnect on Vercel
   const genPromise = (async () => {
