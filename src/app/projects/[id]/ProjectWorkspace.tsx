@@ -93,7 +93,9 @@ function IframePreview({ files, projectName, mode }: { files: ProjectFiles; proj
     blobUrlRef.current = URL.createObjectURL(blob);
     setIframeReady(false);
     iframeRef.current.src = blobUrlRef.current;
-    return () => { if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current); };
+    // Fallback: if onLoad never fires, show the iframe after 5s
+    const timeout = setTimeout(() => setIframeReady(true), 5000);
+    return () => { clearTimeout(timeout); if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current); };
   }, [previewHtml]);
 
   const isDevice = mode !== "desktop";
