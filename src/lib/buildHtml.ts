@@ -148,6 +148,15 @@ export function buildPublishHtml(
 </html>`;
 }
 
+function editButton(projectId?: string): string {
+  if (!projectId) return "";
+  return `<a id="__tc_edit" href="https://thatcode.dev/projects/${projectId}" target="_blank" rel="noopener"
+    style="position:fixed;bottom:16px;left:16px;z-index:99999;display:flex;align-items:center;gap:5px;background:#fff;border:1px solid #ececf1;border-radius:999px;padding:6px 12px 6px 8px;font-family:-apple-system,sans-serif;font-size:11px;font-weight:600;color:#6a1ff7;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.1);transition:opacity .15s;opacity:0.7"
+    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+    ✏️ Edit
+  </a>`;
+}
+
 function thatcodeBadge(hideBadge: boolean): string {
   if (hideBadge) return "";
   return `
@@ -324,6 +333,7 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
     },true);
   </script>
   ${thatcodeBadge(hideBadge)}
+  ${editButton(projectId)}
 </body>
 </html>`;
 }
