@@ -78,6 +78,28 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         .slice(0, 3000)
     : null;
 
+  // Learning: fetch recent builds across all users to avoid repetition
+  let learningContext = "";
+  if (!hasExisting) {
+    try {
+      const recentBuilds = await prisma.version.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 15,
+        select: {
+          createdAt: true,
+          project: { select: { name: true } },
+        },
+      });
+      if (recentBuilds.length > 0) {
+        const names = recentBuilds.map(b => b.project.name).filter(Boolean);
+        const uniqueNames = [...new Set(names)];
+        if (uniqueNames.length > 0) {
+          learningContext = `\n\nAVOID REPETITION — these brand names were recently used by other users. Pick a COMPLETELY DIFFERENT brand name, color scheme, and layout style:\n${uniqueNames.join(", ")}\nBe creative and unique. Every build should feel distinct.`;
+        }
+      }
+    } catch { /* non-critical */ }
+  }
+
   // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
   // Feature requests (cart, search, admin, etc.) MUST use the full pipeline
   const useQuickEdit = existingFiles &&
@@ -105,10 +127,11 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   // Run generation in after() — survives client disconnect on Vercel
   const genPromise = (async () => {
     try {
+      const fullPrompt = learningContext ? prompt + learningContext : prompt;
       const result = useQuickEdit
         ? await generateQuickEdit(prompt, existingFiles, onToken, onStatus)
         : await generateProject(
-            prompt, existingFiles, envVars, onToken, onStatus,
+            fullPrompt, existingFiles, envVars, onToken, onStatus,
             imageBase64 ?? null, imageMimeType,
             finalRoute.model.model, customKnowledge, projectHistory
           );
