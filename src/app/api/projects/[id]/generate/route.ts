@@ -3,9 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
-// Pricing: for every $0.10 in AI cost, charge user $0.25 (2.5x markup, $0.15 profit per $0.10)
+// Pricing: 2.5x AI cost ($0.15 profit per $0.10 spent)
 function costToCredits(aiCostUsd: number): number {
-  return Math.max(0.5, Math.round((aiCostUsd / 0.10) * 0.25 * 100) / 100);
+  return Math.round(aiCostUsd * 2.5 * 100) / 100 || 0.01;
 }
 
 const ESTIMATED_CREDITS: Record<string, number> = {
