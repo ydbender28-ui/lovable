@@ -271,7 +271,55 @@ export default function ProjectWorkspace({
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("Thinking...");
-  const [streamingCode, setStreamingCode] = useState("");
+  const streamAccum = useRef("");
+  const streamUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const preStreamFiles = useRef<ProjectFiles | null>(null);
+
+  // Try to extract partial file content from streaming JSON and update preview live
+  function tryUpdatePreviewFromStream(raw: string) {
+    // Extract content between "content":" and the next unescaped quote
+    const filePattern = /"path"\s*:\s*"([^"]+)"\s*,\s*"content"\s*:\s*"/g;
+    const partialFiles: ProjectFiles = {};
+    let match;
+    while ((match = filePattern.exec(raw)) !== null) {
+      const path = match[1];
+      const startIdx = match.index + match[0].length;
+      // Find content: take everything from here, unescape JSON strings
+      let content = "";
+      let i = startIdx;
+      while (i < raw.length) {
+        if (raw[i] === "\\" && i + 1 < raw.length) {
+          const next = raw[i + 1];
+          if (next === "n") content += "\n";
+          else if (next === "t") content += "\t";
+          else if (next === '"') content += '"';
+          else if (next === "\\") content += "\\";
+          else content += next;
+          i += 2;
+        } else if (raw[i] === '"') {
+          break; // End of content string
+        } else {
+          content += raw[i];
+          i++;
+        }
+      }
+      if (content.length > 50) partialFiles[path] = content;
+    }
+
+    if (Object.keys(partialFiles).length > 0 && partialFiles["/App.js"]) {
+      // Add a closing to make partial JSX somewhat valid
+      let appCode = partialFiles["/App.js"];
+      if (!appCode.includes("export default")) {
+        appCode += "\n}\nexport default function App() { return <div>Building...</div>; }";
+      }
+      partialFiles["/App.js"] = appCode;
+      // Merge with any existing styles
+      if (!partialFiles["/styles.css"]) {
+        partialFiles["/styles.css"] = preStreamFiles.current?.["/styles.css"] ?? "body { font-family: system-ui; }";
+      }
+      setFiles(partialFiles);
+    }
+  }
   const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
@@ -1259,7 +1307,8 @@ export default function ProjectWorkspace({
       });
     }
     setLoading(true);
-    setStreamingCode("");
+    streamAccum.current = "";
+    preStreamFiles.current = { ...files };
     setError(null);
     setIframeError(null);
     setLastPrompt(text);
@@ -1314,11 +1363,19 @@ export default function ProjectWorkspace({
                 setRouteInfo(payload as RouteInfo);
               }
             else if (eventLine === "token") {
-              setStreamingCode(prev => prev + (payload.t ?? ""));
+              streamAccum.current += (payload.t ?? "");
+              // Debounce preview updates — every 500ms try to render partial result
+              if (!streamUpdateTimer.current) {
+                streamUpdateTimer.current = setTimeout(() => {
+                  streamUpdateTimer.current = null;
+                  tryUpdatePreviewFromStream(streamAccum.current);
+                }, 500);
+              }
             }
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
-              setStreamingCode("");
+              streamAccum.current = "";
+              if (streamUpdateTimer.current) { clearTimeout(streamUpdateTimer.current); streamUpdateTimer.current = null; }
               setFiles(payload.files);
               justSaved.current = true;
               // Auto preview switching based on prompt keywords
@@ -2375,24 +2432,10 @@ export default function ProjectWorkspace({
           </div>
         )}
         {loading && (
-          <div className="absolute inset-0 bg-[#f6f6f8] flex flex-col overflow-hidden">
-            {streamingCode ? (
-              <div className="flex-1 overflow-hidden flex flex-col">
-                <div className="flex items-center gap-2 px-4 py-2 border-b border-[#ececf1] bg-white shrink-0">
-                  <span className="h-2 w-2 rounded-full bg-[#6a1ff7] animate-pulse" />
-                  <span className="text-xs text-[#71717f]">{loadingStatus}</span>
-                  <span className="text-xs text-[#9090a0] ml-auto font-mono">{streamingCode.length.toLocaleString()} chars</span>
-                </div>
-                <pre className="flex-1 overflow-auto p-4 text-xs font-mono text-[#3a3a4a] leading-relaxed bg-[#fbfbfc] whitespace-pre-wrap">{streamingCode}<span className="animate-pulse text-[#6a1ff7]">▌</span></pre>
-              </div>
-            ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="rounded-2xl border border-[#ececf1] bg-white px-6 py-4 flex items-center gap-3">
-                <div className="h-4 w-4 rounded-full border-2 border-[#6a1ff7] border-t-transparent animate-spin" />
-                <span className="text-sm text-[#17171c]">{loadingStatus}</span>
-              </div>
-            </div>
-            )}
+          <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur border-t border-[#ececf1]">
+            <span className="h-2 w-2 rounded-full bg-[#6a1ff7] animate-pulse" />
+            <span className="text-xs text-[#71717f]">{loadingStatus}</span>
+            <span className="text-xs text-[#9090a0] ml-auto font-mono">{streamAccum.current.length > 0 ? `${streamAccum.current.length.toLocaleString()} chars` : ""}</span>
           </div>
         )}
       </div>
