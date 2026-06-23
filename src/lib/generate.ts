@@ -846,7 +846,11 @@ Make the entire layout and structure match this design system. It should look DR
     ? `When env vars are provided via window.ENV, read keys from there. Use /api/upload for image uploads. Use window.tcSave/tcLoad for data persistence.`
     : "Use window.tcSave(key, value) and window.tcLoad(key, fallback) for data persistence. Use /api/upload for image uploads.";
 
-  const SYSTEM_PROMPT = isEdit
+  // Feature-level edits (add cart, add search, add admin) use BUILD prompt so the AI
+  // generates complete, working features instead of minimal surgical stubs
+  const isFeatureEdit = isEdit && /\b(add|create|build|implement|make|need)\b.*\b(cart|checkout|search|filter|admin|login|auth|payment|form|modal|page|section|nav|footer|header|sidebar|dashboard|gallery|slider|carousel|notification|chat|comment|review|rating|booking|calendar|upload|download|share|export|import|drag|drop|sort|pagina)\b/i.test(prompt);
+
+  const SYSTEM_PROMPT = isEdit && !isFeatureEdit
     ? SYSTEM_EDIT
     : SYSTEM_BUILD
         .replace("{{DESIGN_INJECTION}}", designInjection)
@@ -866,9 +870,12 @@ Make the entire layout and structure match this design system. It should look DR
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
   const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
 
+  const year = new Date().getFullYear();
   const userContent = isEdit
-    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
-    : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${new Date().getFullYear()}) for any copyright notices.`;
+    ? isFeatureEdit
+      ? `Here is an existing app. Add the requested feature while keeping ALL existing content, design, images, and functionality intact. Return the COMPLETE updated files.\n\nCurrent files:\n${existingSection}${envSection}${knowledgeSection}\n\nFeature to add: ${prompt}\n\nCRITICAL: Keep every existing section, image, menu item, and style. Add the new feature ON TOP of what exists.`
+      : `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
+    : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
   let stopped = false;
