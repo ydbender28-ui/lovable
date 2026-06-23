@@ -779,7 +779,7 @@ async function generateWithOpenAI(
 
   const stream = await client.chat.completions.create({
     model,
-    max_tokens: maxTokens,
+    max_completion_tokens: maxTokens,
     stream: true,
     stream_options: { include_usage: true },
     messages: [
