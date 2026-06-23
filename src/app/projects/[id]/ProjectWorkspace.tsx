@@ -1604,16 +1604,20 @@ export default function ProjectWorkspace({
   function ColorPickCard() {
     if (flow.type !== "colorpick") return null;
     const f = flow;
-    const applyPalette = (bg: string, card: string, accent: string, text: string, muted: string) => {
+    const applyPalette = (name: string, bg: string, card: string, accent: string, text: string, muted: string) => {
       setFlow({ type: "idle" });
-      runGenerate(`${f.pendingPrompt}\n\nApply this EXACT color palette to the ENTIRE app — every section, every component, every background, every card, every border. Leave no element with the old colors.\nBackground: ${bg}\nCard/surface: ${card}\nAccent/buttons: ${accent}\nText: ${text}\nMuted/secondary text: ${muted}\nChange ALL background colors, ALL card colors, ALL text colors, ALL border colors. Check every single style prop in the code.`);
+      // Show clean message to user, send detailed instructions to AI
+      const userMsg = `Apply ${name} palette`;
+      const aiInstruction = `Change the color scheme. Apply this EXACT color palette to EVERY element in the app. Do not skip any element.\nBackground: ${bg}\nCard/surface: ${card}\nAccent/buttons: ${accent}\nText: ${text}\nMuted/secondary text: ${muted}\nBorders: use a slightly darker shade of the background.\nChange ALL background, card, text, button, border, and accent colors. Scan every single style prop.`;
+      setMessages(prev => [...prev, { id: `tmp-${Date.now()}`, role: "user", content: userMsg }]);
+      runGenerate(aiInstruction, undefined, undefined, true);
     };
     return (
       <div className="rounded-xl border border-[#ececf1] bg-white p-4 space-y-3">
         <p className="text-xs font-medium text-[#17171c]">Choose a color palette</p>
         <div className="grid grid-cols-2 gap-2">
           {COLOR_PALETTES.map((p) => (
-            <button key={p.name} onClick={() => applyPalette(p.bg, p.card, p.accent, p.text, p.muted)}
+            <button key={p.name} onClick={() => applyPalette(p.name, p.bg, p.card, p.accent, p.text, p.muted)}
               className="text-left rounded-lg border border-[#ececf1] hover:border-[#6a1ff7]/30 bg-[#fbfbfc] hover:bg-[#f0f0ff] p-2.5 transition-all">
               <div className="flex gap-1 mb-1.5">
                 {p.swatch.map((c, j) => (
@@ -1644,7 +1648,7 @@ export default function ProjectWorkspace({
               </label>
             ))}
           </div>
-          <button onClick={() => applyPalette(customColors.bg, customColors.card, customColors.accent, customColors.text, customColors.muted)}
+          <button onClick={() => applyPalette("Custom", customColors.bg, customColors.card, customColors.accent, customColors.text, customColors.muted)}
             className="w-full rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white text-xs font-medium py-1.5 hover:opacity-90 transition-opacity">
             Apply custom colors
           </button>
