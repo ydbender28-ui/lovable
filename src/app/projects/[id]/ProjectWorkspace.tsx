@@ -74,7 +74,33 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
   return pool.filter(([show]) => show).slice(0, 3).map(([, t]) => t as string);
 }
 
-// IframePreview replaced by SandpackPreview — no server round-trip needed
+// Inject a visual edit script into Sandpack files for click-to-edit text
+function injectVisualEditHelper(files: ProjectFiles): ProjectFiles {
+  const helperScript = `
+// Side-effect: attach click-to-edit handlers to all text elements
+(function() {
+  function handler(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var el = e.target;
+    var text = el.textContent?.trim();
+    if (text && text.length > 0 && text.length < 200 && el.children.length === 0) {
+      window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: text }, '*');
+      el.style.outline = '2px solid #6a1ff7';
+      el.style.outlineOffset = '2px';
+      setTimeout(function() { el.style.outline = ''; el.style.outlineOffset = ''; }, 1500);
+    }
+  }
+  document.addEventListener('click', handler, true);
+  document.body.style.cursor = 'crosshair';
+})();
+`;
+  const appCode = files["/App.js"] ?? "";
+  return {
+    ...files,
+    "/App.js": appCode + "\n" + helperScript,
+  };
+}
 
 function SimpleMarkdown({ content }: { content: string }) {
   const lines = content.split("\n");
@@ -711,11 +737,40 @@ export default function ProjectWorkspace({
     return () => window.removeEventListener("message", onMessage);
   }, [files]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [editingText, setEditingText] = useState<{ oldText: string; newText: string } | null>(null);
+
   function toggleVisualEdit() {
-    const next = !visualEditMode;
-    setVisualEditMode(next);
-    const iframes = document.querySelectorAll("iframe");
-    iframes.forEach(f => { try { f.contentWindow?.postMessage({ type: "TC_VISUAL_EDIT", enabled: next }, "*"); } catch { /**/ } });
+    setVisualEditMode(v => !v);
+    setEditingText(null);
+  }
+
+  // Listen for text clicks from the Sandpack preview
+  useEffect(() => {
+    if (!visualEditMode) return;
+    function handleMessage(e: MessageEvent) {
+      if (e.data?.type === "TC_TEXT_CLICK" && e.data.text) {
+        setEditingText({ oldText: e.data.text, newText: e.data.text });
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [visualEditMode]);
+
+  function applyTextEdit() {
+    if (!editingText || editingText.oldText === editingText.newText) { setEditingText(null); return; }
+    const appCode = files["/App.js"] ?? "";
+    const escaped = editingText.oldText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const updated = appCode.replace(new RegExp(escaped, "g"), editingText.newText);
+    if (updated !== appCode) {
+      const newFiles = { ...files, "/App.js": updated };
+      setFiles(newFiles);
+      justSaved.current = true;
+      fetch(`/api/projects/${projectId}/save-version`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: newFiles, summary: `Changed "${editingText.oldText.slice(0, 30)}" to "${editingText.newText.slice(0, 30)}"` }),
+      }).catch(() => {});
+    }
+    setEditingText(null);
   }
 
   async function handleAdminSave(serializedState: string) {
@@ -2173,6 +2228,23 @@ export default function ProjectWorkspace({
         )}
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" }}>
+        {/* Floating inline text editor */}
+        {editingText && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 rounded-xl border border-[#6a1ff7]/30 bg-white shadow-xl px-4 py-3 w-[90%] max-w-md space-y-2">
+            <p className="text-xs text-[#71717f]">Edit text</p>
+            <input
+              autoFocus
+              value={editingText.newText}
+              onChange={e => setEditingText(prev => prev ? { ...prev, newText: e.target.value } : null)}
+              onKeyDown={e => { if (e.key === "Enter") applyTextEdit(); if (e.key === "Escape") setEditingText(null); }}
+              className="w-full rounded-lg border border-[#ececf1] bg-[#fbfbfc] px-3 py-2 text-sm text-[#17171c] focus:outline-none focus:border-[#6a1ff7]/50"
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setEditingText(null)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-3 py-1">Cancel</button>
+              <button onClick={applyTextEdit} className="text-xs rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-1.5 font-medium hover:opacity-90">Save</button>
+            </div>
+          </div>
+        )}
         {/* Floating error banner over preview */}
         {iframeError && !loading && activeTab === "preview" && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-50/95 backdrop-blur px-4 py-2.5 shadow-xl max-w-[90%]">
@@ -2201,7 +2273,7 @@ export default function ProjectWorkspace({
         )}
         {hasFiles ? (
           <div style={{ flex: 1, minHeight: 0, height: "100%" }}>
-            <SandpackPreview files={files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
+            <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
