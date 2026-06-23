@@ -297,7 +297,7 @@ export default function ProjectWorkspace({
         setIframeError(null);
         setAutoFixCountdown(null);
         runGenerate(
-          `There is a JS build/runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${msg}`,
+          `FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${msg}\n\nCode:\n${Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n")}`,
           undefined,
           "claude-sonnet-4-6",
           true
@@ -1120,9 +1120,10 @@ export default function ProjectWorkspace({
           }
         } catch { /* cross-origin, ignore */ }
       }
+      const codeContext = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
       const fixPrompt = liveError
-        ? `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${liveError}`
-        : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return the fixed files as JSON.`;
+        ? `FIX THIS ERROR. The code below has a JS error. Find and fix ONLY the bug — do not change design, layout, content, or features.\n\nError: ${liveError}\n\nBroken code:\n${codeContext}`
+        : `FIX ALL ERRORS. The code below has JavaScript errors. Fix them without changing design, layout, content, or features.\n\nCode:\n${codeContext}`;
       setIframeError(null);
       runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
       return;
@@ -2091,7 +2092,7 @@ export default function ProjectWorkspace({
           <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
             <p className="font-medium">Error detected</p>
             <p className="text-orange-400/80">Type <strong>fix</strong> in the chat to repair it.</p>
-            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${e}`, undefined, "claude-sonnet-4-6", true); }}
+            <button onClick={() => { const e = iframeError; setIframeError(null); const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n"); runGenerate(`FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${e}\n\nCode:\n${code}`, undefined, "claude-sonnet-4-6", true); }}
               className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium">
               Fix error →
             </button>
@@ -2344,7 +2345,8 @@ export default function ProjectWorkspace({
                 if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
                 setAutoFixCountdown(null);
                 const e = iframeError; setIframeError(null);
-                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${e}`, undefined, "claude-sonnet-4-6", true);
+                const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
+                runGenerate(`FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${e}\n\nCode:\n${code}`, undefined, "claude-sonnet-4-6", true);
               }}
               className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
             >
