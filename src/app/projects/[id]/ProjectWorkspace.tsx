@@ -641,6 +641,14 @@ export default function ProjectWorkspace({
 
   useEffect(() => { if (!loading) setLoadingStatus("Thinking..."); }, [loading]);
 
+  // Warn before navigating away during generation
+  useEffect(() => {
+    if (!loading) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [loading]);
+
   useEffect(() => {
     if (loading) {
       if ("wakeLock" in navigator) {
@@ -2247,7 +2255,7 @@ export default function ProjectWorkspace({
     <div className="flex flex-col bg-white" style={{ height: "100dvh" }}>
       <header className="border-b border-gray-100 bg-white px-3 py-2 flex items-center justify-between shrink-0 gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Link href="/dashboard" className="shrink-0"><Logo size="sm" /></Link>
+          <Link href="/dashboard" className="shrink-0" onClick={e => { if (loading && !confirm("Generation is in progress. Leave anyway?")) e.preventDefault(); }}><Logo size="sm" /></Link>
           <span className="text-gray-700 hidden sm:inline">/</span>
           <h1 className="text-sm font-medium text-[#17171c] truncate hidden sm:block max-w-[160px]">{projectName}</h1>
         </div>
@@ -2331,6 +2339,7 @@ export default function ProjectWorkspace({
             </button>
           )}
           <Link href="/settings" title="Settings"
+            onClick={e => { if (loading && !confirm("Generation is in progress. Leave anyway?")) e.preventDefault(); }}
             className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2 py-1.5 hover:bg-white/10 transition-colors hidden sm:flex items-center">
             ⚙️
           </Link>
