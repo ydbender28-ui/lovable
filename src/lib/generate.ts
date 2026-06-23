@@ -927,8 +927,11 @@ async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
 // Bypasses the full system prompt — sends only the existing code and a short
 // instruction. Uses the cheapest available model. ~5-10x faster than full gen.
 
-const QUICK_EDIT_SYSTEM = `You are editing an existing React app. Make ONLY the change requested — nothing else.
-Preserve ALL existing code, design, colors, layout, features, and data.
+const QUICK_EDIT_SYSTEM = `You are editing an existing React app. Make ONLY the exact change requested.
+EVERYTHING else must be BYTE-FOR-BYTE identical — same images, same colors, same layout, same data,
+same fonts, same spacing. Do NOT "improve" or "clean up" anything. Do NOT swap image URLs.
+Find the specific lines that need to change, change ONLY those, copy-paste everything else unchanged.
+
 Return the complete updated files in this exact delimiter format:
 
 SUMMARY: <one sentence describing the change>
@@ -939,13 +942,7 @@ SUMMARY: <one sentence describing the change>
 <full file>
 ===FILE: src/App.tsx===
 <full file>
-===END===
-
-Rules:
-- Return ALL files, not just the changed one
-- Make the MINIMUM change needed
-- Do NOT restyle, redesign, or restructure anything
-- Do NOT change colors, fonts, or layout unless explicitly asked`;
+===END===`;
 
 export async function generateQuickEdit(
   prompt: string,
@@ -1091,18 +1088,37 @@ Make the entire layout and structure match this design system. It should look DR
   const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
 
   const userContent = isEdit
-    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES:
-- Make ONLY the minimal changes needed to address the edit request — add the feature, fix the bug, nothing more
-- PRESERVE 100% of the existing visual design: colors, fonts, spacing, layout, theme, background — DO NOT change any of these
-- PRESERVE all existing components, features, interactions, and data that are not part of the edit request
-- If it's a modern e-commerce site and you're asked to add admin: keep the EXACT same store UI, just add the admin section
-- If it's a dark terminal theme and asked to add search: add search, keep the terminal theme
-- NEVER change, restyle, or redesign any part of the app that was not explicitly mentioned in the edit request
-- NEVER change the application from one type to another (e.g., modern store → terminal hacker is forbidden)
-- NEVER change color scheme, typography, or visual style unless explicitly asked
-- ADMIN PANELS: when adding admin, add a password-protected route/view that reuses the existing design language — same colors, same card style, same button style
-- DATA PERSISTENCE WITH ADMIN: When adding admin CRUD for products/items, generate a "💾 Save to Site" button in the admin panel. That button must call: window.parent?.postMessage({type:'TC_SAVE_STATE',state:JSON.stringify({products: allProducts, /* other state */})}, '*'). This syncs admin edits back to the source code so the published site stays up to date.
-- You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
+    ? `CURRENT CODE:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nEDIT REQUEST: ${prompt}\n\nCRITICAL EDIT RULES — FOLLOW EXACTLY OR THE OUTPUT IS REJECTED:
+
+ZERO COLLATERAL DAMAGE — this is the #1 rule for ALL edits:
+The user asked for ONE thing. Change ONLY that one thing. Everything else must be BYTE-FOR-BYTE identical.
+
+DO NOT TOUCH (unless the user explicitly asked):
+- Image URLs — copy every src="..." and backgroundImage URL exactly as-is, character for character
+- Colors, fonts, font sizes, spacing, padding, margins, border-radius
+- Layout structure, flexbox/grid settings, section order
+- Component names, variable names, function names
+- Data arrays (products, menu items, team members, testimonials)
+- Copy/text content in any section not mentioned in the request
+- Hover styles, transitions, animations
+- Nav structure, footer content
+- Any import statements or script tags
+
+HOW TO EDIT SAFELY:
+1. Find the EXACT lines of code that need to change for the requested edit
+2. Change ONLY those lines
+3. Copy-paste everything else unchanged — do not retype or reformat it
+4. If you're unsure whether something should change, DON'T change it
+
+ADDING NEW FEATURES (admin panel, search, cart, etc.):
+- ADD new code — do not modify existing code unless the feature requires it
+- New sections/views go AFTER existing ones
+- Reuse the existing design language (same colors, same card style, same button style)
+- ADMIN PANELS: add a password-protected route/view. Default password "admin" unless user specified one.
+- DATA PERSISTENCE WITH ADMIN: include a "💾 Save to Site" button that calls: window.parent?.postMessage({type:'TC_SAVE_STATE',state:JSON.stringify({products: allProducts})}, '*')
+- On load, initialize from window.TC_INITIAL_DATA if it exists
+
+You MUST return the complete updated files in the delimiter format — NEVER respond with plain text or explanations only.`
     : `BUILD REQUEST: ${prompt}${envSection}${knowledgeSection}\n\nYou MUST return all 3 files in the delimiter format — NEVER respond with plain text or explanations only.`;
 
   let text = "";
