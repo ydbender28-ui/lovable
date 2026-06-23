@@ -146,6 +146,49 @@ You receive a user request and return a COMPLETE set of files for a single-page 
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;700&display=swap');
   Pick fonts that fit the brand's mood. Never leave typography on system-ui/Arial.
 
+## Server-side functions (Edge Functions)
+When the app needs server-side logic (payments, sending emails, webhook handlers, secret API calls),
+generate a /functions/<name>.js file. These run on Supabase Edge Functions (Deno runtime).
+
+Format for edge function files:
+- Path: /functions/stripe-checkout.js (or any name)
+- Content: Deno-compatible JavaScript with Deno.serve()
+
+Example — Stripe checkout:
+/functions/stripe-checkout.js:
+  import Stripe from "https://esm.sh/stripe@14?target=deno";
+  Deno.serve(async (req) => {
+    const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
+    if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
+    const { items, successUrl, cancelUrl } = await req.json();
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: items.map(i => ({ price_data: { currency: "usd", product_data: { name: i.name }, unit_amount: Math.round(i.price * 100) }, quantity: i.quantity })),
+      mode: "payment",
+      success_url: successUrl || req.headers.get("origin") + "?success=true",
+      cancel_url: cancelUrl || req.headers.get("origin") + "?canceled=true",
+    });
+    return new Response(JSON.stringify({ url: session.url }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  });
+
+In the React app, call edge functions via the Supabase functions URL:
+  const FUNCTIONS_URL = window.ENV?.SUPABASE_FUNCTIONS_URL || "";
+  const res = await fetch(FUNCTIONS_URL + "/stripe-checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: cart, successUrl: window.location.origin + "?success=true" })
+  });
+  const { url } = await res.json();
+  window.location.href = url; // Redirect to Stripe Checkout
+
+WHEN TO USE EDGE FUNCTIONS:
+- Stripe payments (secret key must stay server-side)
+- Sending emails (Resend, SendGrid)
+- Webhook handlers
+- Any API that needs a secret key
+NEVER put secret keys (sk_..., API secrets) in the React app. Always use edge functions.
+
 ## Make it look REAL and ALIVE — this is the most important rule
 Flat single-color pages with system fonts look like a robot made them. Every build must feel
 like a real, professionally designed product:

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
+import { decrypt, isEncrypted } from "@/lib/crypto";
 
 async function addVercelDomain(domain: string): Promise<{ cname: string; error?: string }> {
   const token = process.env.VERCEL_TOKEN;
@@ -115,10 +116,58 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
     },
   });
 
+  // Deploy edge functions if project has Supabase and function files
+  let functionsUrl: string | null = null;
+  if (project.supabaseProjectId) {
+    const edgeFunctions: Record<string, string> = {};
+    for (const [path, content] of Object.entries(files as Record<string, string>)) {
+      if (path.startsWith("/functions/") && path.endsWith(".js")) {
+        const name = path.replace("/functions/", "").replace(".js", "");
+        edgeFunctions[name] = content;
+      }
+    }
+    if (Object.keys(edgeFunctions).length > 0) {
+      const mgmtToken = process.env.SUPABASE_MANAGEMENT_TOKEN;
+      const ref = project.supabaseProjectId;
+      if (mgmtToken) {
+        // Deploy each function
+        for (const [name, code] of Object.entries(edgeFunctions)) {
+          try {
+            const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/functions/${name}`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${mgmtToken}`, "Content-Type": "application/json" },
+              body: JSON.stringify({ name, body: code, verify_jwt: false }),
+            });
+            if (!res.ok) {
+              await fetch(`https://api.supabase.com/v1/projects/${ref}/functions/${name}`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${mgmtToken}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ body: code, verify_jwt: false }),
+              });
+            }
+          } catch { /* best effort */ }
+        }
+        // Set secrets
+        if (project.envVars) {
+          try {
+            const raw = project.envVars;
+            const secrets = JSON.parse(isEncrypted(raw) ? decrypt(raw) : raw);
+            await fetch(`https://api.supabase.com/v1/projects/${ref}/secrets`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${mgmtToken}`, "Content-Type": "application/json" },
+              body: JSON.stringify(Object.entries(secrets).map(([n, v]) => ({ name: n, value: v }))),
+            });
+          } catch { /* best effort */ }
+        }
+        functionsUrl = `https://${ref}.supabase.co/functions/v1`;
+      }
+    }
+  }
+
   const baseDomain = process.env.PUBLISH_DOMAIN ?? "thatcode.dev";
   const url = `https://${slug}.${baseDomain}`;
 
-  return NextResponse.json({ url, customDomain, slug, vercelCname, domainError });
+  return NextResponse.json({ url, customDomain, slug, vercelCname, domainError, functionsUrl });
 }
 
 export async function DELETE(_req: Request, ctx: RouteContext<"/api/projects/[id]/publish">) {

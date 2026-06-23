@@ -72,7 +72,16 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     const raw = project.envVars;
     storedEnv = JSON.parse(isEncrypted(raw) ? decrypt(raw) : raw);
   }
-  const envVars = bodyEnvVars ?? storedEnv;
+  let envVars = bodyEnvVars ?? storedEnv;
+  // Auto-inject Supabase functions URL if project has Supabase
+  if (project.supabaseProjectId) {
+    envVars = {
+      ...(envVars ?? {}),
+      SUPABASE_URL: project.supabaseUrl ?? "",
+      SUPABASE_ANON_KEY: project.supabaseAnonKey ?? "",
+      SUPABASE_FUNCTIONS_URL: `https://${project.supabaseProjectId}.supabase.co/functions/v1`,
+    };
+  }
   const knowledge: Array<{ title: string; content: string }> = JSON.parse(project.knowledge || "[]");
   const customKnowledge = knowledge.length > 0
     ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
