@@ -495,7 +495,7 @@ DESIGN SYSTEM (injected per request — follow exactly):
 export type Complexity = "simple" | "medium" | "complex";
 
 export interface ModelOption {
-  provider: "anthropic" | "openai" | "google";
+  provider: "anthropic" | "openai";
   model: string;
   displayName: string;
   maxTokens: number;
@@ -529,16 +529,6 @@ export const MODELS: Record<string, ModelOption> = {
     provider: "openai", model: "gpt-5.4-nano",
     displayName: "GPT-5.4 nano", maxTokens: 16384,
     costPer1kInput: 0.0002, costPer1kOutput: 0.00125,
-  },
-  "gemini-2.5-flash": {
-    provider: "google", model: "gemini-2.5-flash",
-    displayName: "Gemini 2.5 Flash", maxTokens: 32000,
-    costPer1kInput: 0.00015, costPer1kOutput: 0.00060,
-  },
-  "gemini-2.5-flash-lite": {
-    provider: "google", model: "gemini-2.5-flash-lite",
-    displayName: "Gemini Flash Lite", maxTokens: 16384,
-    costPer1kInput: 0.0001, costPer1kOutput: 0.0004,
   },
 };
 
@@ -592,22 +582,17 @@ export function scoreComplexity(prompt: string, existingFiles: ProjectFiles | nu
 }
 
 // Priority order per complexity.
-// Gemini 2.5 Flash is fast + cheap → use it first for simple/medium when key exists.
-// GPT-4o mini is second. Claude Haiku/Sonnet as reliable fallback.
-// Complex always uses Sonnet first for quality.
+// Claude + GPT only. No Gemini — unreliable under load.
 function buildRouting(): Record<Complexity, string[]> {
-  const hasGemini = !!process.env.GOOGLE_AI_API_KEY;
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
 
   return {
     simple: [
-      ...(hasGemini ? ["gemini-2.5-flash-lite"] : []),
       ...(hasOpenAI ? ["gpt-5.4-nano"] : []),
       "claude-haiku-4-5-20251001",
     ],
     medium: [
       ...(hasOpenAI ? ["gpt-5.4-mini"] : []),
-      ...(hasGemini ? ["gemini-2.5-flash"] : []),
       "claude-haiku-4-5-20251001",
     ],
     complex: [
@@ -623,7 +608,6 @@ const ROUTING = buildRouting();
 function hasKey(provider: ModelOption["provider"]) {
   if (provider === "anthropic") return !!process.env.ANTHROPIC_API_KEY;
   if (provider === "openai")    return !!process.env.OPENAI_API_KEY;
-  if (provider === "google")    return !!process.env.GOOGLE_AI_API_KEY;
   return false;
 }
 
@@ -695,26 +679,14 @@ taskType options:
 Return ONLY JSON, no markdown:
 {"intent":"<10-15 word plain English description of exactly what will be built/changed>","taskType":"<one of the 6 types above>"}`;
 
-    let text: string;
-    if (process.env.GOOGLE_AI_API_KEY) {
-      const { GoogleGenAI } = await import("@google/genai");
-      const genai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-      const r = await genai.models.generateContent({
-        model: "gemini-2.5-flash-lite",
-        contents: classifierPrompt,
-        config: { systemInstruction: classifierSystem, responseMimeType: "text/plain", maxOutputTokens: 100 },
-      });
-      text = (r.text ?? "").trim();
-    } else {
-      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-      const res = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 150,
-        system: classifierSystem,
-        messages: [{ role: "user", content: classifierPrompt }],
-      });
-      text = (res.content[0] as { type: string; text: string }).text.trim();
-    }
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const res = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 150,
+      system: classifierSystem,
+      messages: [{ role: "user", content: classifierPrompt }],
+    });
+    const text = (res.content[0] as { type: string; text: string }).text.trim();
 
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("no json");
@@ -828,39 +800,6 @@ async function generateWithOpenAI(
   return { text, stopped, inputTokens, outputTokens };
 }
 
-async function generateWithGoogle(
-  model: string,
-  maxTokens: number,
-  userContent: string,
-  systemPrompt: string,
-  onToken: (t: string) => void
-): Promise<{ text: string; stopped: boolean; inputTokens: number; outputTokens: number }> {
-  const { GoogleGenAI } = await import("@google/genai");
-  const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-
-  const response = await client.models.generateContentStream({
-    model,
-    config: {
-      maxOutputTokens: maxTokens,
-      systemInstruction: systemPrompt,
-    },
-    contents: [{ role: "user", parts: [{ text: userContent }] }],
-  });
-
-  let text = "";
-  let stopped = false;
-  let inputTokens = 0, outputTokens = 0;
-  for await (const chunk of response) {
-    const delta = chunk.text ?? "";
-    if (delta) { text += delta; onToken(delta); }
-    if (chunk.candidates?.[0]?.finishReason === "MAX_TOKENS") stopped = true;
-    if (chunk.usageMetadata) {
-      inputTokens = chunk.usageMetadata.promptTokenCount ?? 0;
-      outputTokens = chunk.usageMetadata.candidatesTokenCount ?? 0;
-    }
-  }
-  return { text, stopped, inputTokens, outputTokens };
-}
 
 // ─── Unsplash image resolution ────────────────────────────────────────────────
 // Resolves {{unsplash:<query>|<w>x<h>}} tokens in generated code with real photos.
@@ -983,9 +922,8 @@ export async function generateQuickEdit(
   const userContent = `CURRENT CODE:\n${serialized}\n\nEDIT: ${prompt}`;
 
   // Use a fast but capable model — needs enough power to output the full app
-  const hasGemini = !!process.env.GOOGLE_AI_API_KEY;
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
-  const modelId = hasGemini ? "gemini-2.5-flash" : hasOpenAI ? "gpt-5.4-mini" : "claude-haiku-4-5-20251001";
+  const modelId = hasOpenAI ? "gpt-5.4-mini" : "claude-haiku-4-5-20251001";
   const modelOpt = MODELS[modelId] ?? MODELS["claude-haiku-4-5-20251001"];
 
   let text = "";
@@ -993,9 +931,7 @@ export async function generateQuickEdit(
 
   const tokenCallback = (token: string) => { text += token; onToken?.(token); };
 
-  if (modelOpt.provider === "google") {
-    ({ inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
-  } else if (modelOpt.provider === "openai") {
+  if (modelOpt.provider === "openai") {
     ({ inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
   } else {
     ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
@@ -1177,8 +1113,6 @@ You MUST return the complete updated files in the delimiter format — NEVER res
       ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
     } else if (modelOpt.provider === "openai") {
       ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
-    } else {
-      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
     }
   } catch {
     // Provider failed — silently fall back to Claude Sonnet
