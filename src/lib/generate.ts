@@ -876,7 +876,7 @@ Make the entire layout and structure match this design system. It should look DR
       ? `Here is an existing app. You must ADD a complete, fully working feature to it.
 
 WHAT "COMPLETE" MEANS — build ALL of these parts:
-- "add to cart" / "add cart" = (1) a cart state array with useState, (2) "Add to Cart" buttons on EVERY product/menu item, (3) a cart icon in the nav showing item count, (4) a cart drawer/panel that slides open showing all items with name, price, quantity, +/- buttons, remove button, (5) a subtotal and "Checkout" button. ALL FIVE PARTS ARE REQUIRED.
+- "add to cart" / "add cart" = (1) a cart state array with useState, (2) find EVERY existing product/menu item card in the code and ADD an "Add to Cart" button INSIDE each card — do NOT just create new cards, MODIFY the existing ones by adding a button after the price/description, (3) a cart icon in the nav bar showing item count badge, (4) a cart drawer/panel that slides open showing all added items with name, price, quantity, +/- buttons, remove button, (5) a subtotal and "Checkout" button. ALL FIVE PARTS ARE REQUIRED. The "Add to Cart" buttons MUST appear visually on the product cards in the preview.
 - "add search" = (1) a search input, (2) filter logic that searches through items, (3) filtered results display, (4) "no results" state
 - "add admin" = (1) password login form, (2) admin dashboard with CRUD for all data, (3) logout button
 
