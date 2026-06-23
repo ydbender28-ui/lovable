@@ -923,6 +923,80 @@ async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
   return resolved;
 }
 
+// ─── Quick edit (tiny/style/content changes) ─────────────────────────────────
+// Bypasses the full system prompt — sends only the existing code and a short
+// instruction. Uses the cheapest available model. ~5-10x faster than full gen.
+
+const QUICK_EDIT_SYSTEM = `You are editing an existing React app. Make ONLY the change requested — nothing else.
+Preserve ALL existing code, design, colors, layout, features, and data.
+Return the complete updated files in this exact delimiter format:
+
+SUMMARY: <one sentence describing the change>
+
+===FILE: index.html===
+<full file>
+===FILE: src/main.tsx===
+<full file>
+===FILE: src/App.tsx===
+<full file>
+===END===
+
+Rules:
+- Return ALL files, not just the changed one
+- Make the MINIMUM change needed
+- Do NOT restyle, redesign, or restructure anything
+- Do NOT change colors, fonts, or layout unless explicitly asked`;
+
+export async function generateQuickEdit(
+  prompt: string,
+  existingFiles: ProjectFiles,
+  onToken?: (text: string) => void,
+  onStatus?: (text: string) => void,
+): Promise<GenerateResult> {
+  onStatus?.("Applying quick edit…");
+
+  const serialized = Object.entries(existingFiles)
+    .map(([path, content]) => `===FILE: ${path}===\n${content}`)
+    .join("\n");
+
+  const userContent = `CURRENT CODE:\n${serialized}\n\nEDIT: ${prompt}`;
+
+  // Pick cheapest available model
+  const hasGemini = !!process.env.GOOGLE_AI_API_KEY;
+  const hasOpenAI = !!process.env.OPENAI_API_KEY;
+  const modelId = hasGemini ? "gemini-2.5-flash-lite" : hasOpenAI ? "gpt-5.4-nano" : "claude-haiku-4-5-20251001";
+  const modelOpt = MODELS[modelId] ?? MODELS["claude-haiku-4-5-20251001"];
+
+  let text = "";
+  let inputTokens = 0, outputTokens = 0;
+
+  const tokenCallback = (token: string) => { text += token; onToken?.(token); };
+
+  if (modelOpt.provider === "google") {
+    ({ inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
+  } else if (modelOpt.provider === "openai") {
+    ({ inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
+  } else {
+    ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, QUICK_EDIT_SYSTEM, tokenCallback));
+  }
+
+  const parsed = parseDelimitedOutput(text);
+  if (!parsed || !parsed.files["src/App.tsx"]) {
+    throw new Error("Quick edit failed — try again or use a more detailed prompt.");
+  }
+
+  return {
+    files: parsed.files,
+    summary: parsed.summary,
+    modelUsed: modelOpt.displayName,
+    complexity: "simple",
+    complexityReasons: ["quick-edit"],
+    inputTokens,
+    outputTokens,
+    estimatedCostUsd: estimateCost(modelOpt.model, inputTokens, outputTokens),
+  };
+}
+
 // ─── Delimiter format parser ──────────────────────────────────────────────────
 
 function parseDelimitedOutput(text: string): { summary: string; files: ProjectFiles } | null {

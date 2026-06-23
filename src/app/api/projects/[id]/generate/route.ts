@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateProject, smartRoute, estimateCost } from "@/lib/generate";
+import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
 // Each credit costs user $0.25. AI cost per credit = $0.10. Profit = $0.15/credit.
@@ -106,18 +106,30 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       });
 
       try {
-        const result = await generateProject(
-          prompt,
-          existingFiles,
-          envVars,
-          undefined,
-          (text) => send("status", { text }),
-          imageBase64 ?? null,
-          imageMimeType,
-          finalRoute.model.model,
-          customKnowledge,
-          projectHistory
-        );
+        // Fast path for tiny edits (style/content changes on existing apps)
+        const useQuickEdit = existingFiles &&
+          (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
+          !imageBase64;
+
+        const result = useQuickEdit
+          ? await generateQuickEdit(
+              prompt,
+              existingFiles,
+              undefined,
+              (text) => send("status", { text }),
+            )
+          : await generateProject(
+              prompt,
+              existingFiles,
+              envVars,
+              undefined,
+              (text) => send("status", { text }),
+              imageBase64 ?? null,
+              imageMimeType,
+              finalRoute.model.model,
+              customKnowledge,
+              projectHistory
+            );
 
         const wasPublished = !!project.publishSlug;
         const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
