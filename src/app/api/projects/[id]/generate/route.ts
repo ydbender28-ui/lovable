@@ -86,13 +86,29 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     prompt.length < 80 &&
     !/\b(add|cart|checkout|search|admin|login|auth|payment|form|modal|page|section|feature|button.*work|make.*work|implement)\b/i.test(prompt);
 
+  // Token buffer for streaming to client
+  const tokenBuffer: string[] = [];
+  let tokenCount = 0;
+
+  const onToken = (token: string) => {
+    tokenCount++;
+    // Buffer tokens in batches for efficiency
+    if (tokenCount % 5 === 0) {
+      tokenBuffer.push(token);
+    }
+  };
+
+  const onStatus = (text: string) => {
+    tokenBuffer.push(`__STATUS__${text}`);
+  };
+
   // Run generation in after() — survives client disconnect on Vercel
   const genPromise = (async () => {
     try {
       const result = useQuickEdit
-        ? await generateQuickEdit(prompt, existingFiles, undefined, undefined)
+        ? await generateQuickEdit(prompt, existingFiles, onToken, onStatus)
         : await generateProject(
-            prompt, existingFiles, envVars, undefined, undefined,
+            prompt, existingFiles, envVars, onToken, onStatus,
             imageBase64 ?? null, imageMimeType,
             finalRoute.model.model, customKnowledge, projectHistory
           );
@@ -156,7 +172,25 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         creditsRemaining: currentCredits,
       });
 
+      // Stream tokens to client while generation runs
+      const tokenInterval = setInterval(() => {
+        while (tokenBuffer.length > 0 && streamOpen) {
+          const item = tokenBuffer.shift()!;
+          if (item.startsWith("__STATUS__")) {
+            send("status", { text: item.slice(10) });
+          } else {
+            send("token", { t: item });
+          }
+        }
+      }, 100);
+
       const outcome = await genPromise;
+      clearInterval(tokenInterval);
+      // Flush remaining tokens
+      while (tokenBuffer.length > 0 && streamOpen) {
+        const item = tokenBuffer.shift()!;
+        if (item.startsWith("__STATUS__")) send("status", { text: item.slice(10) });
+      }
 
       if ("error" in outcome) {
         send("error", { error: outcome.error });

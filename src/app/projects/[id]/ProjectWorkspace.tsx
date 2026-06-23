@@ -271,6 +271,7 @@ export default function ProjectWorkspace({
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("Thinking...");
+  const [streamingCode, setStreamingCode] = useState("");
   const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
@@ -1258,6 +1259,7 @@ export default function ProjectWorkspace({
       });
     }
     setLoading(true);
+    setStreamingCode("");
     setError(null);
     setIframeError(null);
     setLastPrompt(text);
@@ -1311,8 +1313,12 @@ export default function ProjectWorkspace({
             if (eventLine === "route") {
                 setRouteInfo(payload as RouteInfo);
               }
+            else if (eventLine === "token") {
+              setStreamingCode(prev => prev + (payload.t ?? ""));
+            }
             else if (eventLine === "status") setLoadingStatus(payload.text);
             else if (eventLine === "done") {
+              setStreamingCode("");
               setFiles(payload.files);
               justSaved.current = true;
               // Auto preview switching based on prompt keywords
@@ -2369,11 +2375,24 @@ export default function ProjectWorkspace({
           </div>
         )}
         {loading && (
-          <div className="absolute inset-0 bg-[#f6f6f8]/70 backdrop-blur-sm flex items-center justify-center">
-            <div className="rounded-2xl border border-[#ececf1] bg-white/[0.06] px-6 py-4 flex items-center gap-3">
-              <div className="h-4 w-4 rounded-full border-2 border-fuchsia-400 border-t-transparent animate-spin" />
-              <span className="text-sm text-[#17171c]">{loadingStatus}</span>
+          <div className="absolute inset-0 bg-[#f6f6f8] flex flex-col overflow-hidden">
+            {streamingCode ? (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="flex items-center gap-2 px-4 py-2 border-b border-[#ececf1] bg-white shrink-0">
+                  <span className="h-2 w-2 rounded-full bg-[#6a1ff7] animate-pulse" />
+                  <span className="text-xs text-[#71717f]">{loadingStatus}</span>
+                  <span className="text-xs text-[#9090a0] ml-auto font-mono">{streamingCode.length.toLocaleString()} chars</span>
+                </div>
+                <pre className="flex-1 overflow-auto p-4 text-xs font-mono text-[#3a3a4a] leading-relaxed bg-[#fbfbfc] whitespace-pre-wrap">{streamingCode}<span className="animate-pulse text-[#6a1ff7]">▌</span></pre>
+              </div>
+            ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="rounded-2xl border border-[#ececf1] bg-white px-6 py-4 flex items-center gap-3">
+                <div className="h-4 w-4 rounded-full border-2 border-[#6a1ff7] border-t-transparent animate-spin" />
+                <span className="text-sm text-[#17171c]">{loadingStatus}</span>
+              </div>
             </div>
+            )}
           </div>
         )}
       </div>
