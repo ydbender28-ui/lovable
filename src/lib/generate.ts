@@ -155,18 +155,30 @@ SUMMARY: <2-3 sentences describing what you built>
 Rules: no JSON, no code fences, no commentary outside the format above.
 
 FILE RULES:
-- index.html: minimal shell with <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:{{THEME_BG}};color:{{THEME_TEXT}};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}#root{min-height:100vh}</style>
+- index.html: minimal shell with a <style> tag that includes:
+  * Reset: *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  * Body: body{background:{{THEME_BG}};color:{{THEME_TEXT}};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+  * Root: #root{min-height:100vh}
+  * Put @keyframes animations here (fadeIn, slideUp, etc.) — they CANNOT go in inline styles
+  * Put hover/focus pseudo-class styles here using CSS classes — inline styles can't do :hover
+  * Put @media responsive queries here — inline styles can't do breakpoints
+  * GOOGLE FONTS: add a <link> to Google Fonts in <head> for a distinctive heading + body font pair
 - src/main.tsx: just ReactDOM.createRoot + App mount
 - src/App.tsx: THE ENTIRE APPLICATION in one file — every component, hook, util, and data
 
 STYLING (mandatory):
-- ALL styles via inline style={{}} — never className with Tailwind/CSS files
+- Use inline style={{}} for most styling
+- Use CSS classes in the index.html <style> tag for: hover effects, animations, responsive breakpoints
+  Example in index.html: .btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+  Example in index.html: @media(max-width:768px){.hero-grid{grid-template-columns:1fr !important}}
+  Then in App.tsx: <button className="btn" style={{...}}>
 - Transitions: transition:'all 0.2s' on EVERY interactive element
 
-DESIGN RULES — LOOK LIKE A REAL PRODUCT, NOT AN AI DEMO:
-The #1 goal: someone should look at this and think a professional designer built it, not AI.
+DESIGN RULES — MODERN, PREMIUM, 2025 AESTHETIC:
+The #1 goal: this should look like a site built by a top design agency in 2025 — clean, bold,
+spacious, with real photography and distinctive typography. NOT a 2018 Bootstrap template.
 
-HOW TO NOT LOOK AI-GENERATED — STUDY THESE REAL SITE PATTERNS:
+MODERN DESIGN PRINCIPLES (study Stripe, Linear, Vercel, Arc, Framer sites):
 
 LAYOUT — copy how Apple, Stripe, Linear do it:
 - Hero: TWO options, pick ONE:
@@ -204,7 +216,19 @@ COLOR — pick ONE palette and commit:
 - Warm: bg #FAF9F6, text #2D2A26, accent #C8553D, muted #B8B2A8
 - Cool: bg #F8FAFC, text #1E293B, accent #2563EB, muted #94A3B8
 - Neutral: bg #FFFFFF, text #111111, accent #000000, muted #6B7280
+- Dark premium: bg #0A0A0A, text #FAFAFA, accent #E5E5E5, muted #666666
 - NEVER mix warm and cool. NEVER use more than 1 accent color. Gray + 1 color = professional.
+
+MODERN TOUCHES (2025 design trends):
+- Large bold headlines (56-80px) with tight letter-spacing (-0.04em) and heavy weight (800-900)
+- Generous whitespace — sections should breathe. 100-140px vertical padding between major sections.
+- Subtle entrance animations — elements fade in and slide up slightly as you scroll (use CSS @keyframes in index.html)
+- Soft, natural shadows — box-shadow:'0 2px 8px rgba(0,0,0,0.08)' not harsh dark shadows
+- Border-radius: 12-16px on cards (not 4px — that looks dated), 50px on buttons for a pill shape
+- Micro-interactions: buttons scale slightly on hover (transform:'scale(1.02)'), cards lift (translateY(-4px))
+- Use CSS backdrop-filter for nav: background:'rgba(255,255,255,0.8)', backdropFilter:'blur(12px)'
+- Sticky nav with blur background — feels modern and polished
+- Feature sections: large icon or image + short punchy text, not walls of copy
 
 COPY — write like a human founder, not a marketing bot:
 - BAD: "Welcome to our premium coffee experience. We are dedicated to providing the finest quality beverages."
@@ -958,10 +982,10 @@ export async function generateQuickEdit(
 
   const userContent = `CURRENT CODE:\n${serialized}\n\nEDIT: ${prompt}`;
 
-  // Pick cheapest available model
+  // Use a fast but capable model — needs enough power to output the full app
   const hasGemini = !!process.env.GOOGLE_AI_API_KEY;
   const hasOpenAI = !!process.env.OPENAI_API_KEY;
-  const modelId = hasGemini ? "gemini-2.5-flash-lite" : hasOpenAI ? "gpt-5.4-nano" : "claude-haiku-4-5-20251001";
+  const modelId = hasGemini ? "gemini-2.5-flash" : hasOpenAI ? "gpt-5.4-mini" : "claude-haiku-4-5-20251001";
   const modelOpt = MODELS[modelId] ?? MODELS["claude-haiku-4-5-20251001"];
 
   let text = "";
