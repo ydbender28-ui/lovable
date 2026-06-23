@@ -276,8 +276,41 @@ export default function ProjectWorkspace({
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
-    setIframeError(err?.message ?? null);
-  }, []);
+    const msg = err?.message ?? null;
+    setIframeError(msg);
+    if (msg && !loading) {
+      // Auto-fix: start 4-second countdown
+      if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+      if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
+      setAutoFixCountdown(4);
+      autoFixCountdownRef.current = setInterval(() => {
+        setAutoFixCountdown((n) => {
+          if (n === null || n <= 1) {
+            clearInterval(autoFixCountdownRef.current!);
+            autoFixCountdownRef.current = null;
+            return null;
+          }
+          return n - 1;
+        });
+      }, 1000);
+      autoFixTimerRef.current = setTimeout(() => {
+        setIframeError(null);
+        setAutoFixCountdown(null);
+        runGenerate(
+          `There is a JS build/runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${msg}`,
+          undefined,
+          "claude-sonnet-4-6",
+          true
+        );
+      }, 4000);
+    } else if (!msg) {
+      // Error cleared
+      if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+      if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
+      setAutoFixCountdown(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, files]);
   const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
   const autoFixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoFixCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -740,7 +773,7 @@ export default function ProjectWorkspace({
           setIframeError(null);
           setAutoFixCountdown(null);
           runGenerate(
-            `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${err}`,
+            `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${err}`,
             undefined,
             "claude-sonnet-4-6",
             true
@@ -1088,8 +1121,8 @@ export default function ProjectWorkspace({
         } catch { /* cross-origin, ignore */ }
       }
       const fixPrompt = liveError
-        ? `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${liveError}`
-        : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return all files in the ===FILE: path=== format.`;
+        ? `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${liveError}`
+        : `Fix all JavaScript errors in the current code. Common issue: CSS property names like 'uppercase', 'lowercase', 'capitalize' used as bare JS identifiers — replace each with the correct inline style e.g. textTransform:'uppercase'. Return the fixed files as JSON.`;
       setIframeError(null);
       runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
       return;
@@ -2058,7 +2091,7 @@ export default function ProjectWorkspace({
           <div className="rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs px-3.5 py-3 max-w-[92%] space-y-2">
             <p className="font-medium">Error detected</p>
             <p className="text-orange-400/80">Type <strong>fix</strong> in the chat to repair it.</p>
-            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6", true); }}
+            <button onClick={() => { const e = iframeError; setIframeError(null); runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${e}`, undefined, "claude-sonnet-4-6", true); }}
               className="rounded-lg bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-200 px-3 py-1.5 text-xs transition-colors font-medium">
               Fix error →
             </button>
@@ -2311,7 +2344,7 @@ export default function ProjectWorkspace({
                 if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
                 setAutoFixCountdown(null);
                 const e = iframeError; setIframeError(null);
-                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Return every file in ===FILE: path=== format. Error: ${e}`, undefined, "claude-sonnet-4-6", true);
+                runGenerate(`There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${e}`, undefined, "claude-sonnet-4-6", true);
               }}
               className="shrink-0 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-200 px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap"
             >
