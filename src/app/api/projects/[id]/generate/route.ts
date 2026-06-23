@@ -90,14 +90,83 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     : null;
 
   const encoder = new TextEncoder();
+  let streamOpen = true;
+
+  // Fire generation as an independent background task — survives client disconnect
+  const useQuickEdit = existingFiles &&
+    (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
+    !imageBase64;
+
+  const statusUpdates: string[] = [];
+  const genPromise = (async () => {
+    try {
+      const result = useQuickEdit
+        ? await generateQuickEdit(
+            prompt,
+            existingFiles,
+            undefined,
+            (text) => { statusUpdates.push(text); },
+          )
+        : await generateProject(
+            prompt,
+            existingFiles,
+            envVars,
+            undefined,
+            (text) => { statusUpdates.push(text); },
+            imageBase64 ?? null,
+            imageMimeType,
+            finalRoute.model.model,
+            customKnowledge,
+            projectHistory
+          );
+
+      const wasPublished = !!project.publishSlug;
+      const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
+      const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
+
+      const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
+      const actualCredits = costToCredits(actualCost, finalRoute.taskType);
+      const creditsAfter = Math.max(0, currentCredits - actualCredits);
+
+      // Save to DB regardless of whether client is still connected
+      await Promise.all([
+        prisma.version.create({
+          data: {
+            projectId: id,
+            files: JSON.stringify(result.files),
+            modelUsed: result.modelUsed,
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+          },
+        }),
+        prisma.message.create({ data: { projectId: id, role: "assistant", content: result.summary } }),
+        prisma.project.update({
+          where: { id },
+          data: {
+            updatedAt: new Date(),
+            ...(wasPublished && newHtml ? { publishedHtml: newHtml, publishedAt: new Date() } : {}),
+          },
+        }),
+        user?.plan !== "owner"
+          ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: actualCredits } } })
+          : Promise.resolve(),
+      ]);
+
+      return { result, actualCredits, creditsAfter, wasPublished };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Generation failed";
+      await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });
+      return { error: message };
+    }
+  })();
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: unknown) => {
-        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+        if (!streamOpen) return;
+        try { controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)); } catch { streamOpen = false; }
       };
 
-      // Stream routing decision with estimated credits
       send("route", {
         intent: finalRoute.intent,
         taskType: finalRoute.taskType,
@@ -105,82 +174,32 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         creditsRemaining: currentCredits,
       });
 
-      try {
-        // Fast path for tiny edits (style/content changes on existing apps)
-        const useQuickEdit = existingFiles &&
-          (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
-          !imageBase64;
+      // Poll for status updates while generation runs
+      const statusInterval = setInterval(() => {
+        while (statusUpdates.length > 0) {
+          send("status", { text: statusUpdates.shift() });
+        }
+      }, 500);
 
-        const result = useQuickEdit
-          ? await generateQuickEdit(
-              prompt,
-              existingFiles,
-              undefined,
-              (text) => send("status", { text }),
-            )
-          : await generateProject(
-              prompt,
-              existingFiles,
-              envVars,
-              undefined,
-              (text) => send("status", { text }),
-              imageBase64 ?? null,
-              imageMimeType,
-              finalRoute.model.model,
-              customKnowledge,
-              projectHistory
-            );
+      const outcome = await genPromise;
+      clearInterval(statusInterval);
 
-        const wasPublished = !!project.publishSlug;
-        const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
-        const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
-
-        // Calculate actual credits based on real token cost
-        const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
-        const actualCredits = costToCredits(actualCost, finalRoute.taskType);
-        const creditsAfter = Math.max(0, currentCredits - actualCredits);
-
+      if ("error" in outcome) {
+        send("error", { error: outcome.error });
+      } else {
         send("done", {
-          files: result.files,
-          summary: result.summary,
+          files: outcome.result.files,
+          summary: outcome.result.summary,
           tempMessageId: `msg-${Date.now()}`,
-          liveUpdated: wasPublished,
-          creditsUsed: actualCredits,
-          creditsRemaining: creditsAfter,
+          liveUpdated: outcome.wasPublished,
+          creditsUsed: outcome.actualCredits,
+          creditsRemaining: outcome.creditsAfter,
         });
-
-        // Deduct credits + write version/message/project in parallel
-        await Promise.all([
-          prisma.version.create({
-            data: {
-              projectId: id,
-              files: JSON.stringify(result.files),
-              modelUsed: result.modelUsed,
-              inputTokens: result.inputTokens,
-              outputTokens: result.outputTokens,
-            },
-          }),
-          prisma.message.create({ data: { projectId: id, role: "assistant", content: result.summary } }),
-          prisma.project.update({
-            where: { id },
-            data: {
-              updatedAt: new Date(),
-              ...(wasPublished && newHtml ? { publishedHtml: newHtml, publishedAt: new Date() } : {}),
-            },
-          }),
-          // Only deduct if not owner plan
-          user?.plan !== "owner"
-            ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: actualCredits } } })
-            : Promise.resolve(),
-        ]);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Generation failed";
-        await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });
-        send("error", { error: message });
       }
 
       controller.close();
     },
+    cancel() { streamOpen = false; },
   });
 
   return new Response(stream, {
