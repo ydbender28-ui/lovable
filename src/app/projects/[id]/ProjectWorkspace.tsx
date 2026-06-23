@@ -74,63 +74,55 @@ function getSmartSuggestions(files: ProjectFiles): string[] {
   return pool.filter(([show]) => show).slice(0, 3).map(([, t]) => t as string);
 }
 
-// Inject a visual edit script into Sandpack files for click-to-edit text
+// Inject visual edit as a React component that mounts click handlers
 function injectVisualEditHelper(files: ProjectFiles): ProjectFiles {
-  const helperScript = `
-// Side-effect: attach click-to-edit handlers to all elements
-(function() {
-  var lastHighlight = null;
-  function handler(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    var el = e.target;
-    // Walk up to find the nearest element with direct text content
-    var target = el;
-    for (var i = 0; i < 3 && target; i++) {
-      // Get only the direct text of this element (not children's text)
-      var directText = '';
-      for (var n = 0; n < target.childNodes.length; n++) {
-        if (target.childNodes[n].nodeType === 3) directText += target.childNodes[n].textContent;
+  const helper = `import { useEffect } from 'react';
+export default function VisualEdit() {
+  useEffect(() => {
+    var lastH = null;
+    function handler(e) {
+      e.preventDefault(); e.stopPropagation();
+      var t = e.target;
+      for (var i = 0; i < 4 && t; i++) {
+        var txt = t.innerText?.trim();
+        if (txt && txt.length > 0 && txt.length < 200) {
+          if (lastH) { lastH.style.outline = ''; }
+          try { window.top.postMessage({ type: 'TC_TEXT_CLICK', text: txt }, '*'); } catch(e) {}
+          try { window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: txt }, '*'); } catch(e) {}
+          t.style.outline = '2px solid #6a1ff7';
+          lastH = t;
+          return;
+        }
+        t = t.parentElement;
       }
-      directText = directText.trim();
-      // If this element has meaningful direct text, use it
-      if (directText.length > 0 && directText.length < 300) {
-        if (lastHighlight) { lastHighlight.style.outline = ''; lastHighlight.style.outlineOffset = ''; }
-        window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: directText }, '*');
-        target.style.outline = '2px solid #6a1ff7';
-        target.style.outlineOffset = '2px';
-        lastHighlight = target;
-        return;
-      }
-      // Also try full textContent for leaf-like elements
-      var full = target.textContent?.trim();
-      if (full && full.length > 0 && full.length < 150 && target.children.length <= 2) {
-        if (lastHighlight) { lastHighlight.style.outline = ''; lastHighlight.style.outlineOffset = ''; }
-        window.parent.postMessage({ type: 'TC_TEXT_CLICK', text: full }, '*');
-        target.style.outline = '2px solid #6a1ff7';
-        target.style.outlineOffset = '2px';
-        lastHighlight = target;
-        return;
-      }
-      target = target.parentElement;
     }
-  }
-  document.addEventListener('click', handler, true);
-  document.body.style.cursor = 'crosshair';
-  // Hover highlight
-  document.addEventListener('mouseover', function(e) {
-    e.target.style.outline = '1px dashed rgba(106,31,247,0.3)';
-  }, true);
-  document.addEventListener('mouseout', function(e) {
-    if (e.target !== lastHighlight) e.target.style.outline = '';
-  }, true);
-})();
-`;
+    function hover(e) { e.target.style.outline = '1px dashed rgba(106,31,247,0.3)'; }
+    function unhover(e) { if (e.target !== lastH) e.target.style.outline = ''; }
+    document.addEventListener('click', handler, true);
+    document.addEventListener('mouseover', hover, true);
+    document.addEventListener('mouseout', unhover, true);
+    document.body.style.cursor = 'crosshair';
+    return () => {
+      document.removeEventListener('click', handler, true);
+      document.removeEventListener('mouseover', hover, true);
+      document.removeEventListener('mouseout', unhover, true);
+      document.body.style.cursor = '';
+    };
+  }, []);
+  return null;
+}`;
+
   const appCode = files["/App.js"] ?? "";
-  return {
-    ...files,
-    "/App.js": appCode + "\n" + helperScript,
-  };
+  // Add import + render the VisualEdit component
+  const modified = `import VisualEdit from './VisualEdit';\n` + appCode.replace(
+    /return\s*\(/,
+    `return (<><VisualEdit />`
+  ).replace(
+    /\);\s*}\s*$/,
+    `)</> ); }`
+  );
+
+  return { ...files, "/VisualEdit.js": helper, "/App.js": modified };
 }
 
 function SimpleMarkdown({ content }: { content: string }) {
@@ -332,7 +324,7 @@ export default function ProjectWorkspace({
       autoFixTimerRef.current = setTimeout(() => {
         const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
         runGenerate(
-          `FIX THIS ERROR. Do not change design, layout, content, or features — only fix the bug.\n\nError: ${msg}\n\nCode:\n${code}`,
+          `FIX THIS ERROR. Fix ONLY the specific bug causing the error. Do NOT remove, simplify, or rewrite any features, components, or functionality. Keep ALL existing code — cart, search, admin, buttons, everything. Only change the minimum lines needed to fix the error.\n\nError: ${msg}\n\nCode:\n${code}`,
           undefined,
           "claude-sonnet-4-6",
           true
@@ -1154,7 +1146,7 @@ export default function ProjectWorkspace({
       }
       const codeContext = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
       const fixPrompt = liveError
-        ? `FIX THIS ERROR. The code below has a JS error. Find and fix ONLY the bug — do not change design, layout, content, or features.\n\nError: ${liveError}\n\nBroken code:\n${codeContext}`
+        ? `FIX THIS ERROR. Fix ONLY the specific bug. Do NOT remove, simplify, or rewrite any features. Keep ALL existing code intact — only change the minimum lines needed.\n\nError: ${liveError}\n\nBroken code:\n${codeContext}`
         : `FIX ALL ERRORS. The code below has JavaScript errors. Fix them without changing design, layout, content, or features.\n\nCode:\n${codeContext}`;
       setIframeError(null);
       runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
