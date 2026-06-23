@@ -873,7 +873,21 @@ Make the entire layout and structure match this design system. It should look DR
   const year = new Date().getFullYear();
   const userContent = isEdit
     ? isFeatureEdit
-      ? `Here is an existing app. Add the requested feature while keeping ALL existing content, design, images, and functionality intact. Return the COMPLETE updated files.\n\nCurrent files:\n${existingSection}${envSection}${knowledgeSection}\n\nFeature to add: ${prompt}\n\nCRITICAL: Keep every existing section, image, menu item, and style. Add the new feature ON TOP of what exists.`
+      ? `Here is an existing app. You must ADD a complete, fully working feature to it.
+
+WHAT "COMPLETE" MEANS — build ALL of these parts:
+- "add to cart" / "add cart" = (1) a cart state array with useState, (2) "Add to Cart" buttons on EVERY product/menu item, (3) a cart icon in the nav showing item count, (4) a cart drawer/panel that slides open showing all items with name, price, quantity, +/- buttons, remove button, (5) a subtotal and "Checkout" button. ALL FIVE PARTS ARE REQUIRED.
+- "add search" = (1) a search input, (2) filter logic that searches through items, (3) filtered results display, (4) "no results" state
+- "add admin" = (1) password login form, (2) admin dashboard with CRUD for all data, (3) logout button
+
+Return the COMPLETE updated /App.js and /styles.css files with ALL existing content preserved plus the new feature fully implemented.
+
+Current files:
+${existingSection}${envSection}${knowledgeSection}
+
+Feature to add: ${prompt}
+
+CRITICAL: Keep every existing section, image, menu item, text, and style EXACTLY as-is. Add the new feature ON TOP of what exists. Return ALL files.`
       : `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}\n\nRequest: ${prompt}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
@@ -949,11 +963,13 @@ Make the entire layout and structure match this design system. It should look DR
     throw new Error("Model did not return files in the expected format. Please try again.");
   }
 
-  if (!parsed.files["/App.js"]) {
-    throw new Error("Model response was incomplete — missing App.tsx. Please try again.");
-  }
-  if (parsed.files["/App.js"].length < 200) {
-    throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
+  if (!isEdit) {
+    if (!parsed.files["/App.js"]) {
+      throw new Error("Model response was incomplete — missing App.js. Please try again.");
+    }
+    if (parsed.files["/App.js"].length < 200) {
+      throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
+    }
   }
 
   // Resolve {{unsplash:...}} tokens → real photo URLs (max 8s, falls back to picsum)
