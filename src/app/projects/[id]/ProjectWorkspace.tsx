@@ -594,6 +594,27 @@ export default function ProjectWorkspace({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
+  // When tab becomes visible again, check if generation completed while away
+  useEffect(() => {
+    function onVisible() {
+      if (document.hidden || !loading) return;
+      // Check if a new version appeared while we were away
+      fetch(`/api/projects/${projectId}/latest-version`).then(r => r.json()).then(data => {
+        if (data.files && data.updatedAt !== lastKnownVersionAt.current) {
+          lastKnownVersionAt.current = data.updatedAt;
+          setFiles(data.files);
+          setLoading(false);
+          if (data.summary) {
+            setMessages(prev => [...prev, { id: `done-${Date.now()}`, role: "assistant", content: data.summary }]);
+          }
+        }
+      }).catch(() => {});
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, projectId]);
+
   useEffect(() => {
     if (initialPrompt && !autoFired.current && initialMessages.length === 0) {
       autoFired.current = true;
@@ -1322,8 +1343,13 @@ export default function ProjectWorkspace({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      const readTimeout = 120000; // 2 min max per chunk
       while (true) {
-        const { done, value } = await reader.read();
+        const readPromise = reader.read();
+        const timeoutPromise = new Promise<{done: true, value: undefined}>((resolve) =>
+          setTimeout(() => resolve({ done: true, value: undefined }), readTimeout)
+        );
+        const { done, value } = await Promise.race([readPromise, timeoutPromise]);
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
         const parts = buffer.split("\n\n");
