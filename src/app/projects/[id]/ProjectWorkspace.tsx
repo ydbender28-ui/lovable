@@ -445,7 +445,6 @@ export default function ProjectWorkspace({
     | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
     | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] }
     | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan }
-    | { type: "awaitingPassword" }
     | { type: "colorpick"; pendingPrompt: string };
   const [flow, setFlow] = useState<FlowState>({ type: "idle" });
   const [architectMode, setArchitectMode] = useState(false);
@@ -1174,20 +1173,18 @@ export default function ProjectWorkspace({
       return;
     }
 
-    // If awaiting admin password, treat ANY reply as the password (not a new build prompt)
-    if (flow.type === "awaitingPassword") {
-      const pw = trimmed.replace(/^[`'"]+|[`'"]+$/g, "").trim();
-      setFlow({ type: "idle" });
-      // Very targeted prompt — only touch the password constant, nothing else
-      runGenerate(`Search the code for a hardcoded password string used for admin authentication (e.g. const ADMIN_PASSWORD = "...", password === "...", pw === "..."). Change ONLY that literal string value to "${pw}". Do NOT modify any other code, logic, layout, or features. Every file must be returned as-is except the single character change to the password value.`);
-      return;
-    }
-
-    // Only ask for API keys when editing an existing app (not on first build — build first, ask after)
-    const needed = detectNeededApis(trimmed, envVars);
-    if (needed.length > 0 && messages.length > 0) {
-      setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
-      return;
+    // API key detection — only when editing, and only show once per session
+    if (flow.type === "idle") {
+      const needed = detectNeededApis(trimmed, envVars);
+      if (needed.length > 0 && messages.length > 0) {
+        setMessages(prev => {
+          const alreadyShown = prev.some(m => m.role === "user" && m.content === trimmed);
+          if (alreadyShown) return prev;
+          return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
+        });
+        setFlow({ type: "apikeys", pendingPrompt: trimmed, needed, keyValues: {} });
+        return;
+      }
     }
 
     if (messages.length === 0) {
@@ -1396,18 +1393,7 @@ export default function ProjectWorkspace({
                   role: "assistant",
                   content: summary,
                 }];
-                // If the app has an admin panel and no password was specified, ask inline
-                const htmlContent = Object.values(payload.files as Record<string, string>).join("\n");
-                const hasAdmin = /ADMIN_PASSWORD\s*=|adminPassword\s*=|checkPass|verifyPass|adminPw\s*=|isAdmin.*useState|setIsAdmin|Admin Login/i.test(htmlContent);
-                const userSpecifiedPassword = /password[:\s"']+\w{3,}|pass(word)?[:\s"']+\w{3,}/i.test(text);
-                if (hasAdmin && !userSpecifiedPassword && !silent) {
-                  msgs.push({
-                    id: `msg-adminpw-${Date.now()}`,
-                    role: "assistant",
-                    content: "🔑 Your app has an admin panel. What password do you want to use? (Reply with just the password, e.g. `MySecret123`)",
-                  });
-                  setFlow({ type: "awaitingPassword" });
-                }
+                // Admin password detection removed — was hijacking subsequent prompts
                 return msgs;
               });
               if (payload.liveUpdated) setLiveUpdated(true);
