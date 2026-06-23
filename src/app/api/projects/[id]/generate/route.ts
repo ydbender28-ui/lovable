@@ -3,30 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 
-// Each credit costs user $0.25. AI cost per credit = $0.10. Profit = $0.15/credit.
-// Task-type minimums ensure big builds always cost a meaningful amount.
-const CREDIT_MINIMUMS: Record<string, number> = {
-  "new-build": 5,
-  "complex":   5,
-  "feature":   2,
-  "bugfix":    1,
-  "style":     1,
-  "content":   1,
-};
-function costToCredits(costUsd: number, taskType?: string): number {
-  const raw = Math.round((costUsd / 0.10) * 10) / 10;
-  const min = (taskType ? (CREDIT_MINIMUMS[taskType] ?? 1) : 1);
-  return Math.max(min, raw);
+// Pricing: for every $0.10 in AI cost, charge user $0.25 (2.5x markup, $0.15 profit per $0.10)
+function costToCredits(aiCostUsd: number): number {
+  return Math.max(0.5, Math.round((aiCostUsd / 0.10) * 0.25 * 100) / 100);
 }
 
-// Estimated credits before generation (for the route chip) — based on typical cost per task
 const ESTIMATED_CREDITS: Record<string, number> = {
-  style:       0.5,
-  content:     0.5,
-  bugfix:      1,
-  feature:     2,
-  "new-build": 5,
-  complex:     5,
+  style:       0.25,
+  content:     0.25,
+  bugfix:      0.5,
+  feature:     1,
+  "new-build": 2,
+  complex:     3,
 };
 
 export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/generate">) {
@@ -125,7 +113,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
 
       const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
-      const actualCredits = costToCredits(actualCost, finalRoute.taskType);
+      const actualCredits = costToCredits(actualCost);
       const creditsAfter = Math.max(0, currentCredits - actualCredits);
 
       // Save to DB regardless of whether client is still connected

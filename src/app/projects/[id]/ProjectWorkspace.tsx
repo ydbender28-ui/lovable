@@ -1178,9 +1178,7 @@ export default function ProjectWorkspace({
               if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
               else if (/tablet|ipad/.test(pl)) setPreviewMode("tablet");
               else if (/dashboard|admin panel|analytics|desktop/.test(pl)) setPreviewMode("desktop");
-              const creditNote = payload.creditsUsed != null
-                ? `\n\n_Used ${payload.creditsUsed} credit${payload.creditsUsed !== 1 ? "s" : ""} · ${payload.creditsRemaining} remaining_`
-                : "";
+              const creditNote = "";
               if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
               const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
               const summary = silent
