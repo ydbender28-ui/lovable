@@ -1048,6 +1048,12 @@ export default function ProjectWorkspace({
     }
 
     if (messages.length === 0) {
+      // Show the user message immediately so the UI feels responsive
+      const earlyMsg: Message = { id: `tmp-${Date.now()}`, role: "user", content: trimmed };
+      setMessages([earlyMsg]);
+      setLoading(true);
+      setLoadingStatus("Analyzing your request…");
+
       // Run vague-check AND design-directions in parallel — no sequential blocking
       const visualKeywords = ["landing page", "portfolio", "marketing", "homepage", "website", "blog", "agency"];
       const isVisual = visualKeywords.some(kw => trimmed.toLowerCase().includes(kw));
@@ -1069,10 +1075,12 @@ export default function ProjectWorkspace({
       const designResult = checks[1].status === "fulfilled" ? checks[1].value : { directions: [] };
 
       if (vagueResult.vague) {
+        setLoading(false);
         setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
         return;
       }
       if (isVisual && designResult.directions?.length > 0) {
+        setLoading(false);
         setFlow({ type: "designpick", pendingPrompt: trimmed, directions: designResult.directions });
         return;
       }
@@ -1130,8 +1138,11 @@ export default function ProjectWorkspace({
     }
 
     if (!silent) {
-      const userMessage: Message = { id: `tmp-${Date.now()}`, role: "user", content: text };
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => {
+        const alreadyShown = prev.some(m => m.role === "user" && m.content === text);
+        if (alreadyShown) return prev;
+        return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: text }];
+      });
     }
     setLoading(true);
     setError(null);
