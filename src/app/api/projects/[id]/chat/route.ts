@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+
+export const maxDuration = 120;
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 

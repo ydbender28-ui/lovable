@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+
+export const maxDuration = 120;
 import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: Request) {

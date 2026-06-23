@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+
+export const maxDuration = 120;
 import Anthropic from "@anthropic-ai/sdk";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

@@ -5,6 +5,8 @@ import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 
+export const maxDuration = 300;
+
 // Pricing: 2.5x AI cost ($0.15 profit per $0.10 spent)
 function costToCredits(aiCostUsd: number): number {
   return Math.round(aiCostUsd * 2.5 * 100) / 100 || 0.01;
