@@ -127,6 +127,11 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Force Sandpack to fill container height */
+.sp-wrapper, .sp-layout, .sp-stack { height: 100% !important; }
+.sp-preview-container, .sp-preview-iframe { height: 100% !important; }
+.sp-code-editor { height: 100% !important; }
+
 .text-gradient {
   background: linear-gradient(135deg, #6a1ff7 0%, #0a8ff0 100%);
   -webkit-background-clip: text;

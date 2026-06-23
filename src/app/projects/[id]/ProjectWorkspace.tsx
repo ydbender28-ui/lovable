@@ -2233,7 +2233,9 @@ export default function ProjectWorkspace({
           </div>
         )}
         {hasFiles ? (
-          <SandpackPreview files={files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
+          <div style={{ flex: 1, minHeight: 0, height: "100%" }}>
+            <SandpackPreview files={files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
+          </div>
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
             {loading ? "" : "Describe something in the chat to get started."}
