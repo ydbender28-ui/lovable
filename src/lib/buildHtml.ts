@@ -129,16 +129,12 @@ export function buildPublishHtml(
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
-  <div id="__err" style="display:none;position:fixed;inset:0;background:#0d0d0d;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;font-family:-apple-system,sans-serif" onclick="this.style.display='none'">
-    <div style="font-size:32px">⚠️</div>
-    <div style="color:#f87171;font-size:15px;font-weight:600">Error detected</div>
-    <div style="color:#6b7280;font-size:13px">Auto-fixing… or type <strong style="color:#a78bfa">fix</strong> in the chat</div>
-  </div>
+  <!-- errors handled silently -->
   <script>${reactScripts.react}</script>
   <script>${reactScripts.reactDom}</script>
   <script>
     function __reportErr(msg){
-      var el=document.getElementById('__err');el.style.display='flex';
+      /* silent error handling */
       try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}
     }
     window.addEventListener('error',function(e){__reportErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
@@ -222,13 +218,9 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
-  <div id="__err" style="display:none;position:fixed;inset:0;background:#0d0d0d;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;font-family:-apple-system,sans-serif" onclick="this.style.display='none'">
-    <div style="font-size:32px">⚠️</div>
-    <div style="color:#f87171;font-size:15px;font-weight:600">Error detected</div>
-    <div style="color:#6b7280;font-size:13px">Auto-fixing… or type <strong style="color:#a78bfa">fix</strong> in the chat</div>
-  </div>
+  <!-- errors handled silently -->
   <script>
-    function showErr(msg){var el=document.getElementById('__err');el.style.display='flex';try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}}
+    function showErr(msg){/* silent error handling */try{window.parent.postMessage({type:'preview-error',error:msg},'*');}catch(e){}}
     window.addEventListener('error',function(e){showErr('Runtime error: '+e.message+'\\n\\n'+(e.error&&e.error.stack||''));});
     window.addEventListener('unhandledrejection',function(e){showErr('Promise error: '+(e.reason&&e.reason.message||String(e.reason)));});
     setTimeout(function(){
