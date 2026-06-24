@@ -43,6 +43,18 @@ const SYSTEM_BUILD = `You are an expert React developer building beautiful, prod
 - Pick a distinctive Google Font pair. Import in /index.css.
 - For multi-page: use useState('home') routing pattern.
 
+## ERRORS TO AVOID (learned from past builds — do NOT repeat):
+- Never import from packages that don't exist (only use: react, lucide-react, react-hot-toast)
+- Never use Supabase, fetch(), or API calls unless the user specifically asked for database/API
+- Every component must have a default export or be used inline
+- Every useState must have both getter and setter used
+- Never use TypeScript-only syntax that JSX can't handle (keep it simple)
+- Never reference window.ENV unless env vars were provided
+- All img tags must have src and alt attributes
+- Check every { has a matching } before returning
+- Check every ( has a matching ) before returning
+- The App component MUST be the default export at the bottom of the file
+
 ## Styling (make it look like a $5000 professional site):
 - Hero: minHeight:'85vh', background image with dark gradient overlay, white text
 - Nav: sticky, white/blur background, flex layout, z-index 100

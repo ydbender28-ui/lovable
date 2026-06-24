@@ -316,26 +316,9 @@ export default function ProjectWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
-  const autoFixCount = useRef(0);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
-    const msg = err?.message ?? null;
-    if (msg && !loading && autoFixCount.current < 2) {
-      // Silent auto-fix — max 2 attempts, then stop
-      if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-      autoFixTimerRef.current = setTimeout(() => {
-        autoFixCount.current++;
-        const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
-        runGenerate(
-          `FIX THIS ERROR. Fix ONLY the specific bug. Do NOT rewrite the app or change features. Minimum change only.\n\nError: ${msg}\n\nCode:\n${code}`,
-          undefined,
-          "claude-sonnet-4-6",
-          true
-        );
-      }, 2000);
-    } else if (!msg) {
-      if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-      autoFixCount.current = 0; // Reset counter when errors clear
-    }
+    // Don't auto-fix — it creates more errors. Just log silently.
+    // Errors will be learned from and avoided in future builds.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, files]);
   const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
