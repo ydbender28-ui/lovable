@@ -391,6 +391,13 @@ export default function ProjectWorkspace({
   const [visualEditMode, setVisualEditMode] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Circle-select mode
+  const [circleSelectMode, setCircleSelectMode] = useState(false);
+  const [circleDrawing, setCircleDrawing] = useState(false);
+  const [circleStart, setCircleStart] = useState<{x:number,y:number}|null>(null);
+  const [circleEnd, setCircleEnd] = useState<{x:number,y:number}|null>(null);
+  const circleOverlayRef = useRef<HTMLDivElement>(null);
+
   // Figma import
   const [showFigma, setShowFigma] = useState(false);
   const [figmaUrl, setFigmaUrl] = useState("");
@@ -1197,6 +1204,11 @@ export default function ProjectWorkspace({
           }
         } catch { /* fall through */ }
         setLoading(false);
+      } else {
+        // Plan before build — ask clarifying questions for new builds
+        setLoading(false);
+        setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
+        return;
       }
     }
 
@@ -1795,48 +1807,51 @@ export default function ProjectWorkspace({
 
   function ClarifyCard() {
     const [style, setStyle] = useState("");
-    const [type, setType] = useState("");
+    const [pages, setPages] = useState<string[]>([]);
     const [extra, setExtra] = useState("");
-    const styleOpts = ["Dark & minimal", "Light & clean", "Bold & colorful", "Professional"];
-    const typeOpts = ["Dashboard", "Landing page", "E-commerce", "Tool / App", "Social / Community"];
+    const styleOpts = ["Minimal & clean", "Bold & modern", "Warm & earthy", "Dark & sleek", "Playful & colorful"];
+    const pageOpts = ["Home", "About", "Menu / Products", "Contact", "Pricing", "Blog", "Gallery", "FAQ"];
     if (flow.type !== "clarify") return null;
     const f = flow;
+    function togglePage(p: string) {
+      setPages(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+    }
     function submit(skip = false) {
       let full = f.pendingPrompt;
       if (!skip) {
-        if (type) full += `. Type: ${type}`;
-        if (style) full += `. Style: ${style}`;
-        if (extra) full += `. Details: ${extra}`;
+        if (style) full += `\n\nDesign style: ${style}`;
+        if (pages.length > 0) full += `\n\nPages to include: ${pages.join(", ")}`;
+        if (extra) full += `\n\nAdditional details: ${extra}`;
       }
       runGenerate(full);
     }
     return (
-      <div className="rounded-xl border border-[#6a1ff7]/20 bg-[#f0f0ff] p-4 max-w-[92%] space-y-3">
-        <p className="text-xs font-medium text-[#6a1ff7]">A few quick questions to build exactly what you want:</p>
+      <div className="rounded-xl border border-[#e5e5e5] bg-white p-4 max-w-[92%] space-y-4 shadow-sm">
+        <p className="text-sm font-medium text-[#333]">Before I build, a few questions:</p>
         <div>
-          <p className="text-[10px] text-[#71717f] mb-1.5">What type of app?</p>
-          <div className="flex flex-wrap gap-1.5">
-            {typeOpts.map(o => (
-              <button key={o} onClick={() => setType(o === type ? "" : o)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${type === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] text-[#71717f] hover:border-white/20"}`}>{o}</button>
+          <p className="text-xs text-[#888] mb-2">What style do you want?</p>
+          <div className="flex flex-wrap gap-2">
+            {styleOpts.map(o => (
+              <button key={o} onClick={() => setStyle(o === style ? "" : o)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${style === o ? "border-[#c2410c] bg-[#fff7ed] text-[#c2410c] font-medium" : "border-[#e5e5e5] text-[#666] hover:border-[#ccc] bg-white"}`}>{o}</button>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-[10px] text-[#71717f] mb-1.5">Style?</p>
-          <div className="flex flex-wrap gap-1.5">
-            {styleOpts.map(o => (
-              <button key={o} onClick={() => setStyle(o === style ? "" : o)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${style === o ? "border-fuchsia-400 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] text-[#71717f] hover:border-white/20"}`}>{o}</button>
+          <p className="text-xs text-[#888] mb-2">Which pages do you need? (select multiple)</p>
+          <div className="flex flex-wrap gap-2">
+            {pageOpts.map(o => (
+              <button key={o} onClick={() => togglePage(o)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${pages.includes(o) ? "border-[#c2410c] bg-[#fff7ed] text-[#c2410c] font-medium" : "border-[#e5e5e5] text-[#666] hover:border-[#ccc] bg-white"}`}>{o}</button>
             ))}
           </div>
         </div>
         <input value={extra} onChange={e => setExtra(e.target.value)}
-          placeholder="Any specific features? (optional)"
-          className="w-full rounded-lg border border-[#ececf1] bg-[#f0f0f5] px-3 py-1.5 text-xs text-[#17171c] placeholder:text-[#9090a0] focus:outline-none focus:border-[#6a1ff7]/40" />
+          placeholder="Anything else? Colors, features, reference sites... (optional)"
+          className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-xs text-[#333] placeholder:text-[#aaa] focus:outline-none focus:border-[#c2410c]/40" />
         <div className="flex gap-2">
-          <button onClick={() => submit()} className="rounded-lg bg-fuchsia-500/20 border border-[#6a1ff7]/30 text-[#6a1ff7] px-3 py-1.5 text-xs hover:bg-fuchsia-500/30 transition-colors">Build it →</button>
-          <button onClick={() => submit(true)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-2 py-1.5 transition-colors">Skip, just build</button>
+          <button onClick={() => submit()} className="rounded-full bg-[#111] text-white px-4 py-2 text-xs font-medium hover:bg-[#333] transition-colors">Build it</button>
+          <button onClick={() => submit(true)} className="text-xs text-[#999] hover:text-[#333] px-3 py-2 transition-colors">Skip, just build</button>
         </div>
       </div>
     );
@@ -2321,11 +2336,34 @@ export default function ProjectWorkspace({
           </div>
         )}
 
+        {hasFiles && activeTab === "preview" && (() => {
+          const pageFiles = Object.keys(files).filter(f => f.startsWith("/pages/") && f.endsWith(".tsx"));
+          if (pageFiles.length > 0) {
+            const pageNames = pageFiles.map(f => f.replace("/pages/", "").replace(".tsx", ""));
+            return (
+              <select
+                className="ml-2 text-xs rounded-lg border border-[#ececf1] bg-white text-[#333] px-2 py-1 focus:outline-none focus:border-[#c2410c]/40"
+                defaultValue="Home"
+              >
+                <option value="Home">Homepage</option>
+                {pageNames.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            );
+          }
+          return null;
+        })()}
         {hasFiles && activeTab === "preview" && (
           <button onClick={toggleVisualEdit} title="Click any element to edit it"
             className={`ml-2 text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${visualEditMode ? "border-fuchsia-400/50 bg-fuchsia-500/20 text-[#6a1ff7]" : "border-[#ececf1] bg-white text-[#9090a0] hover:text-[#17171c]"}`}>
             <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81l-6.286 6.287a.25.25 0 0 0-.064.108l-.558 1.953 1.953-.558a.249.249 0 0 0 .108-.064l6.286-6.286z"/></svg>
             {visualEditMode ? "Click element…" : "Visual Edit"}
+          </button>
+        )}
+        {hasFiles && activeTab === "preview" && (
+          <button onClick={() => { setCircleSelectMode(v => !v); if (visualEditMode) setVisualEditMode(false); }} title="Draw a circle around any element to select it"
+            className={`text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${circleSelectMode ? "border-orange-400/50 bg-orange-500/10 text-orange-600" : "border-[#ececf1] bg-white text-[#9090a0] hover:text-[#17171c]"}`}>
+            <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/></svg>
+            {circleSelectMode ? "Draw circle…" : "Select"}
           </button>
         )}
         {publishUrl && (
@@ -2355,8 +2393,61 @@ export default function ProjectWorkspace({
         )}
         {/* Errors are auto-fixed silently — no banner shown */}
         {hasFiles ? (
-          <div style={{ flex: 1, minHeight: 0, height: "100%" }}>
+          <div style={{ flex: 1, minHeight: 0, height: "100%", position: "relative" }}>
             <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab} />
+            {circleSelectMode && (
+              <div
+                ref={circleOverlayRef}
+                style={{ position: "absolute", inset: 0, zIndex: 20, cursor: "crosshair" }}
+                onMouseDown={e => {
+                  const r = circleOverlayRef.current?.getBoundingClientRect();
+                  if (!r) return;
+                  setCircleDrawing(true);
+                  setCircleStart({ x: e.clientX - r.left, y: e.clientY - r.top });
+                  setCircleEnd({ x: e.clientX - r.left, y: e.clientY - r.top });
+                }}
+                onMouseMove={e => {
+                  if (!circleDrawing) return;
+                  const r = circleOverlayRef.current?.getBoundingClientRect();
+                  if (!r) return;
+                  setCircleEnd({ x: e.clientX - r.left, y: e.clientY - r.top });
+                }}
+                onMouseUp={() => {
+                  if (!circleDrawing || !circleStart || !circleEnd) return;
+                  setCircleDrawing(false);
+                  const cx = (circleStart.x + circleEnd.x) / 2;
+                  const cy = (circleStart.y + circleEnd.y) / 2;
+                  const w = Math.abs(circleEnd.x - circleStart.x);
+                  const h = Math.abs(circleEnd.y - circleStart.y);
+                  if (w < 20 && h < 20) { setCircleStart(null); setCircleEnd(null); return; }
+                  const overlayR = circleOverlayRef.current?.getBoundingClientRect();
+                  const pctX = Math.round(cx / (overlayR?.width ?? 1) * 100);
+                  const pctY = Math.round(cy / (overlayR?.height ?? 1) * 100);
+                  const region = pctY < 15 ? "top/header/navbar area" : pctY > 80 ? "bottom/footer area" : pctX < 30 ? "left side" : pctX > 70 ? "right side" : "center/main content area";
+                  setPrompt(`Change the element in the ${region} (around ${pctX}% from left, ${pctY}% from top): `);
+                  setCircleSelectMode(false);
+                  setCircleStart(null);
+                  setCircleEnd(null);
+                  const input = document.querySelector<HTMLTextAreaElement>("textarea");
+                  if (input) { input.focus(); input.selectionStart = input.value.length; }
+                }}
+              >
+                {circleStart && circleEnd && circleDrawing && (
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
+                    <ellipse
+                      cx={(circleStart.x + circleEnd.x) / 2}
+                      cy={(circleStart.y + circleEnd.y) / 2}
+                      rx={Math.abs(circleEnd.x - circleStart.x) / 2}
+                      ry={Math.abs(circleEnd.y - circleStart.y) / 2}
+                      fill="rgba(194, 65, 12, 0.08)"
+                      stroke="#c2410c"
+                      strokeWidth="2"
+                      strokeDasharray="6 4"
+                    />
+                  </svg>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">

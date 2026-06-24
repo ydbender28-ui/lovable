@@ -42,10 +42,18 @@ const SYSTEM_BUILD = `You are an AI website composer. You build pages by ASSEMBL
 - Build EXACTLY what the user asks. Nothing more.
 - ALWAYS use the pre-built section components (Navbar, Hero, MenuGrid, etc.)
 - DO NOT write raw HTML for layouts — use the sections
-- Return 2 files: /App.tsx (imports + data + composition) and /index.css (Google Fonts + CSS vars only)
 - Use {{unsplash:query|WxH}} for images. They auto-resolve to real photos.
 - Hardcode all data as arrays. No fetch(), no Supabase, no API calls.
-- App.tsx should be SHORT — mostly data + component composition, under 150 lines.
+
+## Multi-page apps:
+If user wants multiple pages, create separate page files + App.tsx with routing:
+- /App.tsx — imports all pages, uses useState for routing, renders active page
+- /pages/Home.tsx, /pages/About.tsx, /pages/Menu.tsx, etc.
+- /index.css — Google Fonts + CSS vars only
+Pattern: const [page, setPage] = useState('home'); in App.tsx, pass setPage to Navbar.
+For Navbar links: onClick={() => setPage('about')} instead of href="#about".
+Each page file is a default-exported component that uses section components.
+Keep each page SHORT — mostly data + section composition.
 
 ${SECTION_COMPONENT_LIST}
 
