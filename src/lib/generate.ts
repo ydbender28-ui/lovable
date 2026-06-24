@@ -40,12 +40,24 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - App component MUST be the default export.
 - Only import from: react, lucide-react, react-hot-toast.
 
-## ERRORS TO AVOID:
-- NEVER put semicolons inside JSX expressions: onMouseEnter={(e) => { e.target.style.color = "#fff" }} — NO semicolons before }}
-- Every { must have matching }. Every ( must have matching ).
+## JSX SYNTAX — FOLLOW EXACTLY (errors here break the entire app):
+
+Event handlers — use expression body, NO braces, NO semicolons:
+CORRECT: onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
+
+Multiple style changes — use Object.assign:
+CORRECT: onMouseEnter={(e) => Object.assign(e.currentTarget.style, { color: "#fff", background: "#000" })}
+WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#000"; }}
+
+Style objects — NO trailing semicolons:
+CORRECT: style={{ color: "#fff", fontSize: 16 }}
+WRONG:   style={{ color: "#fff", fontSize: 16; }}
+
+Other rules:
 - App component MUST be "export default function App()"
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/
-- All event handlers: use arrow functions, no semicolons inside JSX attribute expressions
+- Every { must have matching }. Every ( must have matching ).
 
 ## Quality standards (make it look like a $10,000 site):
 - Typography: Google Font pair. Headlines 48-72px, weight 800, tight letter-spacing. Body 16-18px, line-height 1.6.
@@ -101,6 +113,12 @@ const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.j
 // Separate edit prompt — surgical, preservation-first
 const SYSTEM_EDIT = `You are editing an existing React + TypeScript app.
 Root component = default export of /App.tsx. All styling via inline style={{}}.
+
+## JSX SYNTAX — FOLLOW EXACTLY:
+Event handlers — expression body, NO braces, NO semicolons:
+CORRECT: onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
+Multiple style changes: onMouseEnter={(e) => Object.assign(e.currentTarget.style, { color: "#fff", background: "#000" })}
 
 ## CARDINAL RULE: Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
 - Change ONLY what was requested. Don't "improve" anything else.
