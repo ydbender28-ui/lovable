@@ -6,113 +6,14 @@ export type ProjectFiles = Record<string, string>;
 // ─── Design seeds ─────────────────────────────────────────────────────────────
 
 const DESIGN_THEMES = [
-  {
-    name: "shopify-clean",
-    bg: "#f6f6f7", card: "#ffffff", border: "#e4e4e7",
-    accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", radius: "8px",
-    layout: "ecommerce",
-    description: `Clean e-commerce — Shopify/ASOS inspired, light, professional retail.
-LAYOUT: white top nav (bg:#fff, border-bottom:1px solid #e4e4e7), logo left (black text, font-weight:800), search bar center, cart + account right. Product grid 4 cols desktop / 2 cols mobile. Horizontal category filter pills below nav.
-TYPOGRAPHY: -apple-system, 14px base. Product names: 14px/600, color:#1a1a1a. NO colored text except sale prices.
-BUTTONS: "Add to Cart" = background:#111, color:#fff, border-radius:6px, padding:10px 0, width:100%, font-size:13px, font-weight:600, NO gradient, NO shadow, NO blue. Hover: background:#333.
-CARDS: white bg, 1px #e8e8e8 border, 8px radius, 12px padding, subtle box-shadow:0 1px 4px rgba(0,0,0,0.06). NO hover glow.
-IMAGES: aspect-ratio:4/3, background:#f5f5f5, display:flex, align-items:center, justify-content:center. Placeholder = a simple SVG camera icon in #ccc, NO text abbreviations like "WHP".
-PRICES: font-size:16px, font-weight:700, color:#111 (NEVER blue, NEVER accent color). Sale price: color:#dc2626. Original price: text-decoration:line-through, color:#9ca3af, font-size:13px.
-CATEGORIES: pill buttons, default = border:1px solid #e4e4e7 bg:#fff color:#374151. Active = bg:#111 color:#fff border:#111. NO blue.
-LOGO/BRAND NAME: color:#111, font-weight:800, font-size:20px. NEVER colored.
-NO: blue prices, blue buttons, colored accent text on prices, text abbreviations as image placeholders, gradients, purple/pink, glow shadows, glassmorphism.`,
-  },
-  {
-    name: "saas-light",
-    bg: "#ffffff", card: "#ffffff", border: "#e5e7eb",
-    accent: "#2563eb", accent2: "#1d4ed8", text: "#111827", muted: "#6b7280", radius: "8px",
-    layout: "saas",
-    description: `Professional SaaS — Linear/Notion/Stripe inspired. Light, minimal, business.
-LAYOUT: left sidebar 220px (white, 1px right border #e5e7eb) + main area. Top bar with breadcrumb + user avatar. Content max-width 900px centered.
-TYPOGRAPHY: -apple-system sans-serif. 14px base, 600 for section headings, 700 for page titles. Very tight spacing.
-BUTTONS: Primary = solid #2563eb, white text, 6px radius, 10px 18px padding, NO gradient, NO shadow. Hover: #1d4ed8. Secondary = white bg + 1px border.
-CARDS: white bg, 1px #e5e7eb border, 8px radius, 20px padding. Shadow: 0 1px 3px rgba(0,0,0,0.08).
-TABLES: clean dividers, alternating #f9fafb rows, left-aligned text, no card wrapper.
-NO: dark backgrounds, gradients, purple/violet colors, glow effects, emoji icons in nav.`,
-  },
-  {
-    name: "dark-dashboard",
-    bg: "#0f1117", card: "#1a1d27", border: "#2a2d3a",
-    accent: "#3b82f6", accent2: "#2563eb", text: "#f1f5f9", muted: "#64748b", radius: "10px",
-    layout: "dashboard",
-    description: `Dark analytics dashboard — Vercel/Planetscale inspired. Dense, data-focused.
-LAYOUT: fixed left sidebar 240px (#13151f, no border just shadow) + content area. Top stats row 3-4 KPI cards. Charts + tables below.
-TYPOGRAPHY: 13px base, monospace for numbers (font-variant-numeric:tabular-nums). Muted labels 11px uppercase.
-BUTTONS: solid #3b82f6, 7px radius, NO gradient. Icon buttons: 32px square, #1e2130 bg, hover #252836.
-CARDS: #1a1d27 bg, 1px #2a2d3a border, subtle shadow. Stat cards: large number 28px/700, trend badge (green/red).
-CHARTS: use div-based bar charts with percentage heights, blue bars, muted grid lines.
-NO: purple gradients, glow shadows, glassmorphism, emoji in data tables.`,
-  },
-  {
-    name: "agency-bold",
-    bg: "#0a0a0a", card: "#111111", border: "#222222",
-    accent: "#ffffff", accent2: "#e5e5e5", text: "#ffffff", muted: "#888888", radius: "0px",
-    layout: "bold",
-    description: `Bold agency/portfolio — Apple/Awwwards inspired. High contrast, editorial, striking.
-LAYOUT: full-width sections, no sidebar. Hero = huge headline (72-96px, fontWeight:900) + subtext + single CTA. Sections alternate black/white.
-TYPOGRAPHY: system-ui,-apple-system. 96px hero, 48px section titles, 16px body. ALL caps section labels with letterSpacing:6.
-BUTTONS: white bg + black text (on dark sections) OR black bg + white text (on light). Sharp corners (borderRadius:0 or 4px). Padding:14px 32px. NO gradients.
-CARDS: stark minimal. Just content, maybe a thin 1px border. No shadows. Let content breathe with big padding (48px+).
-IMAGES: large, full-bleed where possible. Black and white tones. Strong contrast.
-NO: gradients, purple/pink, card shadows, rounded corners, glow, emoji icons.`,
-  },
-  {
-    name: "restaurant-warm",
-    bg: "#faf8f5", card: "#ffffff", border: "#e8e0d5",
-    accent: "#b45309", accent2: "#92400e", text: "#1c1109", muted: "#78716c", radius: "4px",
-    layout: "editorial",
-    description: `Warm restaurant/food — earthy, artisan, upscale hospitality feel.
-LAYOUT: centered max-width 1100px. Top nav: logo center, links either side. Hero: full-width image area with overlay text. Menu grid 2-3 cols.
-TYPOGRAPHY: serif headings (Georgia,serif, fontStyle:italic for dish names). Sans body. 15px base. Warm brown text #1c1109.
-BUTTONS: background:#b45309, white text, borderRadius:2px, padding:12px 28px, letterSpacing:1, textTransform:'uppercase', NO gradient, NO shadow.
-CARDS: white bg, 1px #e8e0d5 border, 4px radius. Food items: image top, name/description/price below. Clean, no decoration.
-PRICES: amber color #b45309, fontWeight:600.
-NO: dark mode cards, gradients, purple colors, emoji icons, glow effects.`,
-  },
-  {
-    name: "fintech-professional",
-    bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0",
-    accent: "#0f766e", accent2: "#0d9488", text: "#0f172a", muted: "#64748b", radius: "6px",
-    layout: "fintech",
-    description: `Professional fintech/banking — Stripe/Wise/Mercury inspired. Trustworthy, clean.
-LAYOUT: top nav (white, 1px bottom border) + page content max-width 1100px. Dashboard: summary bar + 2-col layout (main + sidebar).
-TYPOGRAPHY: Inter-like, 14px base. Numbers: font-variant-numeric:tabular-nums, monospace feel. Green for positive, red for negative amounts.
-BUTTONS: teal #0f766e solid, white text, 6px radius, NO gradient. Hover: #0d9488. Destructive: #dc2626.
-CARDS: white, 1px #e2e8f0 border, 8px radius, 24px padding. Transaction rows: hover #f8fafc bg, left icon + right amount.
-AMOUNTS: large (24px+) with currency symbol smaller. Color-code: green income, red expense.
-NO: dark themes, gradients, purple, shadows with glow, emoji in financial data.`,
-  },
-  {
-    name: "startup-modern",
-    bg: "#ffffff", card: "#f9fafb", border: "#f3f4f6",
-    accent: "#7c3aed", accent2: "#6d28d9", text: "#111827", muted: "#9ca3af", radius: "12px",
-    layout: "landing",
-    description: `Modern startup landing page — Loom/Linear/Vercel marketing page style.
-LAYOUT: centered, max-width 1100px. Full-screen hero with headline + subhead + 2 CTAs. Features grid 3-col. Testimonials. Pricing section.
-TYPOGRAPHY: 64px hero headline (fontWeight:800, letterSpacing:-2px), 18px subhead, 15px body. Clean and modern.
-BUTTONS: Primary = #7c3aed solid, white text, 10px radius, 14px 28px padding. Secondary = white + 1px border #e5e7eb. NO glow shadows.
-CARDS: #f9fafb bg or white, very subtle border, 16px radius. Feature icons: colored square bg (not emoji), 40px.
-HERO: gradient text for ONE key word only (background-clip:text). Everything else solid color.
-NO: full-page gradients, multiple gradient buttons, purple everywhere, glassmorphism, floating blobs.`,
-  },
-  {
-    name: "dark-minimal-pro",
-    bg: "#111111", card: "#1a1a1a", border: "#2a2a2a",
-    accent: "#22c55e", accent2: "#16a34a", text: "#f5f5f5", muted: "#737373", radius: "8px",
-    layout: "minimal",
-    description: `Dark minimal pro — GitHub/Raycast inspired. Focused, no-nonsense, developer tool feel.
-LAYOUT: top nav (48px, #111, bottom border #2a2a2a) + content. Sidebar optional 200px. Content max-width 800px, lots of breathing room.
-TYPOGRAPHY: 14px base, monospace for code/data, 600 for headings. Minimal color use — almost everything is white/gray.
-BUTTONS: #1a1a1a bg + 1px #3a3a3a border, #f5f5f5 text. Primary action only: #22c55e bg, black text. Hover: brighten 10%. NO gradients.
-CARDS: #1a1a1a bg, 1px #2a2a2a border, 8px radius. No shadows. Content-first.
-LISTS: simple divider lines, no card wrapping. Hover: #222 row bg.
-NO: gradient buttons, purple/pink, glow effects, heavy shadows, decorative elements.`,
-  },
+  { name: "shopify-clean", bg: "#f6f6f7", card: "#ffffff", border: "#e4e4e7", accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", radius: "8px", layout: "ecommerce", description: "Clean e-commerce — light, professional, Shopify-inspired" },
+  { name: "saas-light", bg: "#ffffff", card: "#ffffff", border: "#e5e7eb", accent: "#2563eb", accent2: "#1d4ed8", text: "#111827", muted: "#6b7280", radius: "8px", layout: "saas", description: "Professional SaaS — Linear/Stripe inspired, minimal" },
+  { name: "dark-dashboard", bg: "#0f1117", card: "#1a1d27", border: "#2a2d3a", accent: "#3b82f6", accent2: "#2563eb", text: "#f1f5f9", muted: "#64748b", radius: "10px", layout: "dashboard", description: "Dark analytics dashboard — Vercel-inspired, data-focused" },
+  { name: "agency-bold", bg: "#0a0a0a", card: "#111111", border: "#222222", accent: "#ffffff", accent2: "#e5e5e5", text: "#ffffff", muted: "#888888", radius: "0px", layout: "bold", description: "Bold agency — Apple/Awwwards-inspired, high contrast editorial" },
+  { name: "restaurant-warm", bg: "#faf8f5", card: "#ffffff", border: "#e8e0d5", accent: "#b45309", accent2: "#92400e", text: "#1c1109", muted: "#78716c", radius: "4px", layout: "editorial", description: "Warm restaurant — earthy, artisan, upscale hospitality" },
+  { name: "fintech-professional", bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0", accent: "#0f766e", accent2: "#0d9488", text: "#0f172a", muted: "#64748b", radius: "6px", layout: "fintech", description: "Fintech — Stripe/Wise-inspired, trustworthy and clean" },
+  { name: "startup-modern", bg: "#ffffff", card: "#f9fafb", border: "#f3f4f6", accent: "#7c3aed", accent2: "#6d28d9", text: "#111827", muted: "#9ca3af", radius: "12px", layout: "landing", description: "Modern startup landing page — Loom/Linear marketing style" },
+  { name: "dark-minimal-pro", bg: "#111111", card: "#1a1a1a", border: "#2a2a2a", accent: "#22c55e", accent2: "#16a34a", text: "#f5f5f5", muted: "#737373", radius: "8px", layout: "minimal", description: "Dark minimal — GitHub/Raycast-inspired developer tool" },
 ] as const;
 
 let _lastThemeIdx = -1;
