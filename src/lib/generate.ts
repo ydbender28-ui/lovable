@@ -67,7 +67,11 @@ Other rules:
 - Cards: white bg, border-radius 12-16px, subtle shadow, hover lift effect.
 - Buttons: solid fill, padding 14px 28px, border-radius 8-50px, cursor pointer, hover effect.
 - Colors: warm, cohesive palette. Use CSS variables in :root. NOT generic blue/purple.
-- Images: use {{unsplash:specific descriptive query|WxH}} for EVERY image. Make queries specific.
+- Images: use {{unsplash:specific descriptive query|WxH}} for EVERY image. Dimensions REQUIRED. Examples:
+  Hero: {{unsplash:artisan coffee shop interior warm lighting|1600x900}}
+  Card: {{unsplash:latte art close up|400x300}}
+  Portrait: {{unsplash:smiling woman professional headshot|200x200}}
+  NEVER use bare {{unsplash:query}} without |WxH — it will break.
 - Data: 8-12+ items for lists/menus. Real-sounding names, prices, descriptions.
 - Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
 - Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
@@ -676,12 +680,12 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
   const files: ProjectFiles = {};
 
   // Strategy 1: GPT Engineer markdown format — /filename\n```lang\ncode\n```
-  const filePattern = /^\/(\S+)\s*\n```\w*\n([\s\S]*?)```/gm;
+  const filePattern = /^\/(\S+)\s*\n```[\w]*\n([\s\S]*?)```/gm;
   let match;
   while ((match = filePattern.exec(text)) !== null) {
     const path = "/" + match[1];
     const content = match[2].trimEnd();
-    if (content.length > 10) files[path] = content;
+    if (content.length > 20) files[path] = content;
   }
 
   // Extract summary
@@ -798,16 +802,21 @@ export async function generateProject(
   const designInjection = isEdit
     ? `EDITING AN EXISTING APP — DO NOT apply any new design system. Read the existing code and match its exact colors, fonts, spacing, and visual style. Your only job is to add/change what was requested.`
     : `${pickedDesign!.description}
-COLORS (use exactly):
-- body background: ${pickedDesign!.bg}
-- card/surface: ${pickedDesign!.card}
-- border: ${pickedDesign!.border}
-- primary accent: ${pickedDesign!.accent}
-- secondary accent: ${pickedDesign!.accent2}
-- text: ${pickedDesign!.text}
-- muted text: ${pickedDesign!.muted}
-- border-radius: ${pickedDesign!.radius}
-Make the entire layout and structure match this design system. It should look DRAMATICALLY different from a generic dark-mode app.`;
+
+In /index.css, define EXACTLY these CSS variables:
+:root {
+  --background: ${pickedDesign!.bg};
+  --card: ${pickedDesign!.card};
+  --border: ${pickedDesign!.border};
+  --accent: ${pickedDesign!.accent};
+  --accent2: ${pickedDesign!.accent2};
+  --text: ${pickedDesign!.text};
+  --muted: ${pickedDesign!.muted};
+}
+
+Use these in inline styles: style={{ background: "var(--accent)", color: "var(--text)" }}
+body background: var(--background). Cards: var(--card). Borders: var(--border).
+border-radius: ${pickedDesign!.radius} everywhere.`;
 
   const hasEnvVars = envVars && Object.keys(envVars).length > 0;
   const integrationsBlock = hasEnvVars
@@ -975,21 +984,24 @@ Make the entire layout and structure match this design system. It should look DR
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
-    // Fix common JSX syntax errors
-    let fixedApp = parsed.files["/App.tsx"] ?? appCode;
-    // Fix: semicolons inside JSX expressions — (expr; ) → (expr)
-    fixedApp = fixedApp.replace(/;\s*\)/g, ")");
-    // Fix: double semicolons
-    fixedApp = fixedApp.replace(/;;\s*/g, ";\n");
-    // Fix: missing comma between JSX props — style={{}} onX → style={{}} , but actually JSX doesn't need commas between props
-    // Fix: stray semicolons inside style objects
-    fixedApp = fixedApp.replace(/;\s*\}\}/g, "}}");
-    if (fixedApp !== appCode) parsed.files["/App.tsx"] = fixedApp;
+    // Fix common JSX syntax errors in ALL files
+    for (const [path, code] of Object.entries(parsed.files)) {
+      let fixed = code;
+      // Fix: semicolons before }} in JSX style/event handler expressions
+      fixed = fixed.replace(/;\s*\}\}/g, "}}");
+      // Fix: semicolons before ) }} in arrow functions inside JSX attributes
+      fixed = fixed.replace(/;\s*\)\s*\}\}/g, ")}}");
+      // Fix: block-body arrow in JSX attr — { expr; } → expr (single-expression only)
+      fixed = fixed.replace(/=\{(\([\w,\s:]*\))\s*=>\s*\{\s*([^;{}]+?);\s*\}\}/g, "={$1 => ($2)}");
+      // Fix: double semicolons
+      fixed = fixed.replace(/;;\s*/g, ";\n");
+      if (fixed !== code) parsed.files[path] = fixed;
+    }
 
     // Check for missing default export
-    if (!fixedApp.includes("export default")) {
-      // Add a default export wrapper
-      parsed.files["/App.tsx"] = appCode + "\nexport default function App() { return <div>Error: missing export</div>; }";
+    const finalApp = parsed.files["/App.tsx"] ?? appCode;
+    if (!finalApp.includes("export default")) {
+      parsed.files["/App.tsx"] = finalApp + "\nexport default function App() { return <div>Error: missing export</div>; }";
     }
   }
 

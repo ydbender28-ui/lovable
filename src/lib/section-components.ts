@@ -14,8 +14,8 @@ export default function Navbar({ brand, links, cta, onNavigate }: { brand: strin
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
         <div style={{ display:'flex', gap:32, alignItems:'center' }}>
-          {links.map(l => <a key={l} href={\`#\${l.toLowerCase()}\`} onClick={handleClick(l)} style={{ fontSize:14, color:'#555', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.target as HTMLElement).style.color='#111'} onMouseOut={e=>(e.target as HTMLElement).style.color='#555'}>{l}</a>)}
-          {cta && <a href="#contact" onClick={handleClick('contact')} style={{ background:'#111', color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:600, textDecoration:'none', cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.target as HTMLElement).style.background='#333'} onMouseOut={e=>(e.target as HTMLElement).style.background='#111'}>{cta}</a>}
+          {links.map(l => <a key={l} href={\`#\${l.toLowerCase()}\`} onClick={handleClick(l)} style={{ fontSize:14, color:'#555', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#555'}>{l}</a>)}
+          {cta && <a href="#contact" onClick={handleClick('contact')} style={{ background:'#111', color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:600, textDecoration:'none', cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#333'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#111'}>{cta}</a>}
         </div>
       </div>
     </nav>
@@ -219,7 +219,7 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
                   </div>
                   {item.badge && <span style={{ fontSize:11, background:'var(--accent,#c2410c)', color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600, display:'inline-block', marginTop:6 }}>{item.badge}</span>}
                   <p style={{ fontSize:14, color:'#888', marginTop:8 }}>{item.desc}</p>
-                  <button onClick={() => addToCart(item)} style={{ marginTop:16, width:'100%', background:'#111', color:'#fff', border:'none', padding:'12px', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.target as HTMLElement).style.background='#333'} onMouseOut={e=>(e.target as HTMLElement).style.background='#111'}>Add to Cart</button>
+                  <button onClick={() => addToCart(item)} style={{ marginTop:16, width:'100%', background:'#111', color:'#fff', border:'none', padding:'12px', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#333'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#111'}>Add to Cart</button>
                 </div>
               </div>
             ))}

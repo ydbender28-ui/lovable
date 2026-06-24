@@ -2358,6 +2358,27 @@ export default function ProjectWorkspace({
               </select>
             );
           }
+          // Detect sections from id="" attributes in the code
+          const appCode = Object.values(files).join("\n");
+          const sectionIds = [...appCode.matchAll(/id=["']([a-z-]+)["']/gi)].map(m => m[1]).filter(id => !["root", "app", "__err"].includes(id));
+          if (sectionIds.length > 1) {
+            return (
+              <select
+                onChange={(e) => {
+                  try {
+                    const iframe = document.querySelector("iframe");
+                    const el = iframe?.contentDocument?.getElementById(e.target.value);
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  } catch { /* cross-origin */ }
+                }}
+                className="ml-2 text-xs rounded-lg border border-[#ececf1] bg-white text-[#333] px-2 py-1 focus:outline-none focus:border-[#c2410c]/40"
+                defaultValue=""
+              >
+                <option value="" disabled>Jump to section…</option>
+                {sectionIds.map(id => <option key={id} value={id}>{id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, " ")}</option>)}
+              </select>
+            );
+          }
           return null;
         })()}
         {hasFiles && activeTab === "preview" && (
@@ -2422,31 +2443,32 @@ export default function ProjectWorkspace({
             {circleSelectMode && (
               <div
                 ref={circleOverlayRef}
-                style={{ position: "absolute", inset: 0, zIndex: 20, cursor: "crosshair" }}
-                onMouseDown={e => {
-                  const r = circleOverlayRef.current?.getBoundingClientRect();
-                  if (!r) return;
+                style={{ position: "absolute", inset: 0, zIndex: 20, cursor: "crosshair", touchAction: "none" }}
+                onPointerDown={e => {
+                  (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                  const x = e.nativeEvent.offsetX;
+                  const y = e.nativeEvent.offsetY;
                   setCircleDrawing(true);
-                  setCircleStart({ x: e.clientX - r.left, y: e.clientY - r.top });
-                  setCircleEnd({ x: e.clientX - r.left, y: e.clientY - r.top });
+                  setCircleStart({ x, y });
+                  setCircleEnd({ x, y });
                 }}
-                onMouseMove={e => {
+                onPointerMove={e => {
                   if (!circleDrawing) return;
-                  const r = circleOverlayRef.current?.getBoundingClientRect();
-                  if (!r) return;
-                  setCircleEnd({ x: e.clientX - r.left, y: e.clientY - r.top });
+                  setCircleEnd({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
                 }}
-                onMouseUp={() => {
-                  if (!circleDrawing || !circleStart || !circleEnd) return;
+                onPointerUp={e => {
+                  if (!circleDrawing || !circleStart) return;
+                  const endX = e.nativeEvent.offsetX;
+                  const endY = e.nativeEvent.offsetY;
                   setCircleDrawing(false);
-                  const cx = (circleStart.x + circleEnd.x) / 2;
-                  const cy = (circleStart.y + circleEnd.y) / 2;
-                  const w = Math.abs(circleEnd.x - circleStart.x);
-                  const h = Math.abs(circleEnd.y - circleStart.y);
+                  const cx = (circleStart.x + endX) / 2;
+                  const cy = (circleStart.y + endY) / 2;
+                  const w = Math.abs(endX - circleStart.x);
+                  const h = Math.abs(endY - circleStart.y);
                   if (w < 20 && h < 20) { setCircleStart(null); setCircleEnd(null); return; }
-                  const overlayR = circleOverlayRef.current?.getBoundingClientRect();
-                  const pctX = Math.round(cx / (overlayR?.width ?? 1) * 100);
-                  const pctY = Math.round(cy / (overlayR?.height ?? 1) * 100);
+                  const el = circleOverlayRef.current;
+                  const pctX = Math.round(cx / (el?.offsetWidth ?? 1) * 100);
+                  const pctY = Math.round(cy / (el?.offsetHeight ?? 1) * 100);
                   const region = pctY < 15 ? "top/header/navbar area" : pctY > 80 ? "bottom/footer area" : pctX < 30 ? "left side" : pctX > 70 ? "right side" : "center/main content area";
                   setPrompt(`Change the element in the ${region} (around ${pctX}% from left, ${pctY}% from top): `);
                   setCircleSelectMode(false);
@@ -2456,20 +2478,18 @@ export default function ProjectWorkspace({
                   if (input) { input.focus(); input.selectionStart = input.value.length; }
                 }}
               >
-                {circleStart && circleEnd && circleDrawing && (
-                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
-                    <ellipse
-                      cx={(circleStart.x + circleEnd.x) / 2}
-                      cy={(circleStart.y + circleEnd.y) / 2}
-                      rx={Math.abs(circleEnd.x - circleStart.x) / 2}
-                      ry={Math.abs(circleEnd.y - circleStart.y) / 2}
-                      fill="rgba(194, 65, 12, 0.08)"
-                      stroke="#c2410c"
-                      strokeWidth="2"
-                      strokeDasharray="6 4"
-                    />
-                  </svg>
-                )}
+                {circleStart && circleEnd && circleDrawing && (() => {
+                  const cx = (circleStart.x + circleEnd.x) / 2;
+                  const cy = (circleStart.y + circleEnd.y) / 2;
+                  const rx = Math.abs(circleEnd.x - circleStart.x) / 2;
+                  const ry = Math.abs(circleEnd.y - circleStart.y) / 2;
+                  return (
+                    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}>
+                      <ellipse cx={cx} cy={cy} rx={rx} ry={ry}
+                        fill="rgba(194, 65, 12, 0.08)" stroke="#c2410c" strokeWidth="2" strokeDasharray="6 4" />
+                    </svg>
+                  );
+                })()}
               </div>
             )}
           </div>
