@@ -109,6 +109,67 @@ your code here
 your css here
 \`\`\`
 
+## COMPLETE EXAMPLE of correct output format and code style:
+
+SUMMARY: A warm, editorial bakery landing page with hero, menu grid, and contact section.
+
+SUGGESTIONS: Add online ordering | Add customer reviews | Add dark mode | Add gallery section | Add newsletter signup
+
+/App.tsx
+\`\`\`tsx
+import React, { useState } from 'react';
+import { ShoppingCart, MapPin, Clock, Phone } from 'lucide-react';
+
+const MENU = [
+  { id: 1, name: "Sourdough Loaf", price: 8.50, desc: "72-hour fermented, crispy crust", category: "Bread" },
+  { id: 2, name: "Almond Croissant", price: 5.25, desc: "Twice-baked with frangipane cream", category: "Pastry" },
+];
+
+export default function App() {
+  const [active, setActive] = useState("All");
+  return (
+    <div style={{ background: "var(--background)", color: "var(--text)", minHeight: "100vh" }}>
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)", padding: "0 40px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
+          <span style={{ fontSize: 20, fontWeight: 800 }}>Rise & Crust</span>
+        </div>
+      </nav>
+      <section style={{ position: "relative", minHeight: "85vh", display: "flex", alignItems: "center" }}>
+        <img src="{{unsplash:artisan bakery warm morning light|1600x900}}" alt="Bakery" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", padding: "80px 40px", color: "#fff" }}>
+          <h1 style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, lineHeight: 1.05 }}>Baked fresh. Every morning.</h1>
+        </div>
+      </section>
+      <section style={{ padding: "100px 40px", maxWidth: 1200, margin: "0 auto" }}>
+        <h2 style={{ fontSize: 40, fontWeight: 700, marginBottom: 40 }}>Our Menu</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
+          {MENU.map(item => (
+            <div key={item.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 24 }}
+              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-4px)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
+              <h3 style={{ fontSize: 17, fontWeight: 600 }}>{item.name}</h3>
+              <p style={{ fontSize: 14, color: "var(--muted)", marginTop: 4 }}>{item.desc}</p>
+              <p style={{ fontSize: 17, fontWeight: 700, marginTop: 12 }}>\${item.price.toFixed(2)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+\`\`\`
+
+/index.css
+\`\`\`css
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root { --background: #faf8f5; --card: #ffffff; --border: #e8e0d5; --accent: #b45309; --accent2: #92400e; --text: #1c1109; --muted: #78716c; }
+body { font-family: 'DM Sans', sans-serif; margin: 0; }
+* { box-sizing: border-box; }
+\`\`\`
+
+^^^ Follow this EXACT code style: expression-body event handlers, CSS variables, clean structure.
+
 {{DESIGN_INJECTION}}`;
 
 // Edge functions instructions — only injected when Supabase is enabled
