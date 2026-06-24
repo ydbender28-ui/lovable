@@ -1140,6 +1140,17 @@ export default function ProjectWorkspace({
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
+    // Plan before build — show clarifying questions for brand new projects
+    const isNewProject = Object.keys(files).length === 0 && flow.type === "idle";
+    if (isNewProject && !architectMode) {
+      setMessages(prev => {
+        if (prev.some(m => m.content === trimmed)) return prev;
+        return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
+      });
+      setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
+      return;
+    }
+
     // If user types a short fix command, inject full context so AI knows what to fix
     const isFix = /^fix(\s|$)/i.test(trimmed) || trimmed.toLowerCase() === "fix";
     if (isFix) {
@@ -1204,11 +1215,6 @@ export default function ProjectWorkspace({
           }
         } catch { /* fall through */ }
         setLoading(false);
-      } else {
-        // Plan before build — ask clarifying questions for new builds
-        setLoading(false);
-        setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
-        return;
       }
     }
 
