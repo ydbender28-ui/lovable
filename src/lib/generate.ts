@@ -871,7 +871,9 @@ Make the entire layout and structure match this design system. It should look DR
   const parsed = parseJsonOutput(text, existingFiles);
 
   if (!parsed) {
-    throw new Error("Model did not return files in the expected format. Please try again.");
+    // Show first 500 chars of response for debugging
+    const preview = text.slice(0, 500).replace(/\n/g, " ");
+    throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
   }
 
   // ── Build Validator (like open-lovable) ──
