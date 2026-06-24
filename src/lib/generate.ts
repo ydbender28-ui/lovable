@@ -730,11 +730,20 @@ Make the entire layout and structure match this design system. It should look DR
     ? `When env vars are provided via window.ENV, read keys from there. Use /api/upload for image uploads. Use window.tcSave/tcLoad for data persistence.`
     : "Use window.tcSave(key, value) and window.tcLoad(key, fallback) for data persistence. Use /api/upload for image uploads.";
 
-  // Feature-level edits (add cart, add search, add admin) use BUILD prompt so the AI
-  // generates complete, working features instead of minimal surgical stubs
-  const isFeatureEdit = isEdit && /\b(add|create|build|implement|make|need)\b.*\b(cart|checkout|search|filter|admin|login|auth|payment|form|modal|page|section|nav|footer|header|sidebar|dashboard|gallery|slider|carousel|notification|chat|comment|review|rating|booking|calendar|upload|download|share|export|import|drag|drop|sort|pagina)\b/i.test(prompt);
+  // ── Edit Intent Analyzer (7 categories like open-lovable) ──
+  type EditIntent = "update_component" | "add_feature" | "fix_issue" | "update_style" | "refactor" | "full_rebuild" | "update_content";
+  let editIntent: EditIntent = "update_component";
+  if (isEdit) {
+    const p = prompt.toLowerCase();
+    if (/\b(fix|bug|error|broken|crash|not working|debug)\b/.test(p)) editIntent = "fix_issue";
+    else if (/\b(add|create|build|implement|new|need)\b.*\b(cart|checkout|search|admin|login|auth|payment|form|modal|page|section|feature)\b/.test(p)) editIntent = "add_feature";
+    else if (/\b(color|theme|dark|light|style|font|background|gradient|palette|scheme)\b/.test(p)) editIntent = "update_style";
+    else if (/\b(change|update|rename|replace|swap)\b.*\b(text|name|title|copy|content|phone|email|address|number|price|description)\b/.test(p)) editIntent = "update_content";
+    else if (/\b(refactor|clean|reorganize|optimize|simplify)\b/.test(p)) editIntent = "refactor";
+    else if (/\b(rebuild|redo|start over|from scratch)\b/.test(p)) editIntent = "full_rebuild";
+  }
 
-  // All edits use short EDIT prompt for speed. Only new builds use full BUILD prompt.
+  // All edits use EDIT prompt. Only new builds use BUILD prompt.
   const SYSTEM_PROMPT = isEdit
     ? SYSTEM_EDIT
     : SYSTEM_BUILD
@@ -747,23 +756,44 @@ Make the entire layout and structure match this design system. It should look DR
     ? `\n\nEnv vars: ${JSON.stringify(envVars)}`
     : "";
 
+  // ── Smart Context Selection (like open-lovable) ──
+  // Only send relevant files, truncate large ones to save tokens
   let existingSection = "";
   if (existingFiles && Object.keys(existingFiles).length > 0) {
-    const serialized = JSON.stringify(existingFiles);
+    const contextFiles: ProjectFiles = {};
+    for (const [path, content] of Object.entries(existingFiles)) {
+      // Always include App.tsx and index.css
+      if (path === "/App.tsx" || path === "/index.css") {
+        // Truncate very large files to 8000 chars
+        contextFiles[path] = content.length > 8000 ? content.slice(0, 8000) + "\n// ... (truncated)" : content;
+      } else if (editIntent === "update_style" && (path.includes("css") || path.includes("style"))) {
+        contextFiles[path] = content;
+      } else if (editIntent === "add_feature" || editIntent === "full_rebuild") {
+        // Send all files for feature additions
+        contextFiles[path] = content.length > 4000 ? content.slice(0, 4000) + "\n// ... (truncated)" : content;
+      }
+      // For simple edits (content, fix), only send App.tsx — skip component files
+    }
+    const serialized = JSON.stringify(contextFiles);
     if (serialized.length < 60000) existingSection = serialized;
   }
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
   const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
 
   const year = new Date().getFullYear();
+  // Build user content based on edit intent
+  const intentHints: Record<EditIntent, string> = {
+    add_feature: "Build the COMPLETE feature with working state, UI, and interactions. Keep ALL existing content intact.",
+    fix_issue: "Fix ONLY the bug. Do NOT remove or simplify any features.",
+    update_style: "Update the visual style as requested. Keep all content and functionality.",
+    update_content: "Update only the specific text/content mentioned. Change nothing else.",
+    update_component: "Modify the component as requested. Preserve everything else.",
+    refactor: "Clean up the code without changing any visible behavior.",
+    full_rebuild: "Rebuild the app from scratch based on the request.",
+  };
+
   const userContent = isEdit
-    ? isFeatureEdit
-      ? `Current files:\n${existingSection}${envSection}
-
-ADD THIS FEATURE: ${prompt}
-
-Build the COMPLETE feature with working state, UI, and interactions. "Add to cart" = cart state + buttons on every product + cart drawer + totals. "Add search" = input + filter + results. Keep ALL existing content intact. Return complete updated files.`
-      : `Current files:\n${existingSection}${envSection}\n\nRequest: ${prompt}`
+    ? `Current files:\n${existingSection}${envSection}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
@@ -840,12 +870,29 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
     throw new Error("Model did not return files in the expected format. Please try again.");
   }
 
-  if (!isEdit) {
-    if (!parsed.files["/App.tsx"]) {
-      throw new Error("Model response was incomplete — missing App.js. Please try again.");
+  // ── Build Validator (like open-lovable) ──
+  // Check for common issues before showing preview
+  const appCode = parsed.files["/App.tsx"] ?? "";
+  if (!isEdit && !appCode) {
+    throw new Error("Model response was incomplete — missing App.tsx. Please try again.");
+  }
+  if (!isEdit && appCode.length < 200) {
+    throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
+  }
+  if (appCode) {
+    // Check for unbalanced braces (common AI error)
+    const opens = (appCode.match(/\{/g) || []).length;
+    const closes = (appCode.match(/\}/g) || []).length;
+    if (Math.abs(opens - closes) > 2) {
+      // Try to fix by adding missing closing braces
+      let fixed = appCode;
+      for (let i = 0; i < opens - closes; i++) fixed += "\n}";
+      parsed.files["/App.tsx"] = fixed;
     }
-    if (parsed.files["/App.tsx"].length < 200) {
-      throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
+    // Check for missing default export
+    if (!appCode.includes("export default")) {
+      // Add a default export wrapper
+      parsed.files["/App.tsx"] = appCode + "\nexport default function App() { return <div>Error: missing export</div>; }";
     }
   }
 
