@@ -185,22 +185,10 @@ In /App.tsx, set document head via useEffect:
 - Animations: @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 - Make it look BEAUTIFUL — professional gradients, shadows, spacing, typography
 
-## File structure (MANDATORY — split into components):
-For a landing page:
-  /App.tsx — imports + renders Hero, Features, About, Footer
-  /index.css — design tokens
-  /components/Hero.tsx — hero section
-  /components/Features.tsx — features grid
-  /components/About.tsx — about section
-  /components/Footer.tsx — footer
-For an e-commerce store:
-  /App.tsx — routing + layout
-  /components/Navbar.tsx — nav with cart icon
-  /components/ProductGrid.tsx — product cards
-  /components/ProductCard.tsx — single product
-  /components/Cart.tsx — cart drawer
-  /components/Footer.tsx — footer
-NEVER put everything in one file. Split into 4-8 component files minimum.
+## File structure:
+- /App.tsx — the ENTIRE app in one file. Keep it clean and organized with components defined above the default export.
+- /index.css — design tokens + all CSS rules
+That's it. Two files. Keep it simple.
 
 ## Common pitfalls — NEVER DO THESE:
 - Don't create monolithic files (>200 lines)
@@ -439,7 +427,7 @@ These are not extra features — they are the default baseline for every app.
 
 ## Output format
 Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
-{ "files": [ { "path": "/App.tsx", "content": "..." }, { "path": "/index.css", "content": "..." }, { "path": "/components/Hero.tsx", "content": "..." } ], "summary": "one sentence" }
+{ "files": [ { "path": "/App.tsx", "content": "..." }, { "path": "/index.css", "content": "..." } ], "summary": "one sentence" }
 
 DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
@@ -521,7 +509,7 @@ export const MODELS: Record<string, ModelOption> = {
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 16000,
+    displayName: "Claude Sonnet", maxTokens: 32000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
