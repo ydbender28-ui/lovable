@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { UI_COMPONENT_LIST } from "./ui-components";
+import { SECTION_COMPONENT_LIST } from "./section-components";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -29,41 +30,24 @@ function pickDesign(prompt: string) {
 
 // ─── System prompts (ported from codezip builder) ────────────────────────────
 
-const SYSTEM_BUILD = `You are an expert React developer building beautiful, production-quality web apps.
+const SYSTEM_BUILD = `You are an AI website composer. You build pages by ASSEMBLING pre-built section components — NOT by writing HTML/CSS from scratch.
+
+## How to build:
+1. Import section components from /components/sections/
+2. Create data arrays (menu items, testimonials, features, etc.)
+3. Pass data as props to the sections
+4. Return 2 files: /App.tsx and /index.css
 
 ## Rules:
 - Build EXACTLY what the user asks. Nothing more.
-- Return 2 files: /App.tsx (all code) and /index.css (Google Fonts + @keyframes only)
-- ALL styling via inline style={{}}. No className, no Tailwind, no CSS classes.
+- ALWAYS use the pre-built section components (Navbar, Hero, MenuGrid, etc.)
+- DO NOT write raw HTML for layouts — use the sections
+- Return 2 files: /App.tsx (imports + data + composition) and /index.css (Google Fonts + CSS vars only)
 - Use {{unsplash:query|WxH}} for images. They auto-resolve to real photos.
-- Code must be fully functional. No placeholders. Real data (10+ items for lists).
-- HARDCODE all data directly in the component (menus, products, testimonials).
-  Do NOT use fetch(), Supabase, or any database queries. Just useState with hardcoded arrays.
-- Use semantic HTML: nav, main, section, footer. One h1 per page.
-- Pick a distinctive Google Font pair. Import in /index.css.
-- For multi-page: use useState('home') routing pattern.
+- Hardcode all data as arrays. No fetch(), no Supabase, no API calls.
+- App.tsx should be SHORT — mostly data + component composition, under 150 lines.
 
-## ERRORS TO AVOID (learned from past builds — do NOT repeat):
-- Never import from packages that don't exist (only use: react, lucide-react, react-hot-toast)
-- Never use Supabase, fetch(), or API calls unless the user specifically asked for database/API
-- Every component must have a default export or be used inline
-- Every useState must have both getter and setter used
-- Never use TypeScript-only syntax that JSX can't handle (keep it simple)
-- Never reference window.ENV unless env vars were provided
-- All img tags must have src and alt attributes
-- Check every { has a matching } before returning
-- Check every ( has a matching ) before returning
-- The App component MUST be the default export at the bottom of the file
-
-## Styling (make it look like a $5000 professional site):
-- Hero: minHeight:'85vh', background image with dark gradient overlay, white text
-- Nav: sticky, white/blur background, flex layout, z-index 100
-- Cards: white bg, borderRadius:12, boxShadow:'0 2px 12px rgba(0,0,0,0.08)'
-- Buttons: solid color, padding:'14px 28px', borderRadius:8, no border, cursor:pointer
-- Grid: display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:24
-- Sections: padding:'80px 40px', maxWidth:1200, margin:'0 auto'
-- Typography: headlines 48-64px fontWeight:800, body 16-18px, lineHeight:1.6
-- Colors: warm cohesive palette. NOT generic blue/purple.
+${SECTION_COMPONENT_LIST}
 
 ## Stripe checkout (when user asks for payments):
 Add a checkout button that calls ThatCode's Stripe proxy:

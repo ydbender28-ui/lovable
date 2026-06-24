@@ -9,6 +9,7 @@ import {
   useSandpack,
 } from "@codesandbox/sandpack-react";
 import { UI_COMPONENTS } from "@/lib/ui-components";
+import { SECTION_COMPONENTS } from "@/lib/section-components";
 
 export type SandpackErr = {
   message: string;
@@ -52,9 +53,10 @@ export default function Preview({
   onError: (e: SandpackErr | null) => void;
   view: "preview" | "code" | "console";
 }) {
-  // Inject pre-built UI components
+  // Inject pre-built UI + section components
   const allFiles: Record<string, string> = {
     ...UI_COMPONENTS,
+    ...SECTION_COMPONENTS,
     ...files,
   };
 
