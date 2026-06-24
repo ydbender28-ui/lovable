@@ -95,51 +95,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         .slice(0, 3000)
     : null;
 
-  // Self-learning system: detect failures and inject learnings
-  let learningContext = "";
-  try {
-    if (!hasExisting) {
-      const recentBuilds = await prisma.version.findMany({
-        orderBy: { createdAt: "desc" }, take: 10,
-        select: { project: { select: { name: true } } },
-      });
-      const names = [...new Set(recentBuilds.map(b => b.project.name).filter(Boolean))];
-      if (names.length > 0) {
-        learningContext += `\nAvoid these brand names (already used): ${names.join(", ")}`;
-      }
-    }
-
-    // Detect failure patterns: user complained after AI's response
-    const failurePatterns = /didn'?t|doesn'?t|where is|not working|still no|broken|missing|can'?t find|theres no|there'?s no|it only|just added|but no|nothing happen|didn'?t add|took off|removed|lost|gone/i;
-    const allMsgs = (project.messages ?? []).slice(-20);
-    const complaints: string[] = [];
-    for (let i = 1; i < allMsgs.length; i++) {
-      if (allMsgs[i].role === "user" && failurePatterns.test(allMsgs[i].content)) {
-        // Found a complaint — the previous AI response failed
-        const prevAi = allMsgs[i - 1]?.content?.slice(0, 100) ?? "";
-        const userAsked = allMsgs[i].content.slice(0, 100);
-        complaints.push(`User said "${userAsked}" after AI said "${prevAi}"`);
-      }
-    }
-    if (complaints.length > 0) {
-      learningContext += `\n\nPAST FAILURES IN THIS PROJECT — the user was unhappy with these results. Do NOT repeat these mistakes:\n${complaints.slice(-3).join("\n")}\nMake sure your response ACTUALLY implements what the user asks for. Don't just say you did it — actually do it.`;
-    }
-
-    // Global learnings from all users' complaints
-    const globalComplaints = await prisma.message.findMany({
-      where: {
-        role: "user",
-        content: { contains: "didn" },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      select: { content: true },
-    });
-    if (globalComplaints.length > 3) {
-      const patterns = globalComplaints.map(m => m.content.slice(0, 60));
-      learningContext += `\n\nCOMMON USER COMPLAINTS (from all users):\n${[...new Set(patterns)].slice(0, 5).map(p => `- "${p}"`).join("\n")}\nLearn from these — make sure features are FULLY implemented with working UI.`;
-    }
-  } catch { /* non-critical */ }
+  // Learning context — kept minimal to avoid slowing down generation
+  const learningContext = "";
 
   // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
   // Feature requests (cart, search, admin, etc.) MUST use the full pipeline

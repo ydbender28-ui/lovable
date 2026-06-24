@@ -610,12 +610,34 @@ type ParsedOutput = {
 };
 
 function parseJsonOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
-  // Find JSON in the response
-  const jsonMatch = text.match(/\{[\s\S]*("files"|"replacements")[\s\S]*\}/);
-  if (!jsonMatch) return null;
+  // Try multiple strategies to extract JSON from the response
+  let jsonStr: string | null = null;
+
+  // Strategy 1: extract from markdown code fence
+  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  if (fenceMatch) jsonStr = fenceMatch[1].trim();
+
+  // Strategy 2: find JSON object with "files" or "replacements"
+  if (!jsonStr) {
+    const jsonMatch = text.match(/\{[\s\S]*?"files"\s*:\s*\[[\s\S]*?\]\s*[\s\S]*?\}/);
+    if (jsonMatch) jsonStr = jsonMatch[0];
+  }
+
+  // Strategy 3: find any JSON object
+  if (!jsonStr) {
+    const anyJson = text.match(/\{[\s\S]*("files"|"replacements")[\s\S]*\}/);
+    if (anyJson) jsonStr = anyJson[0];
+  }
+
+  // Strategy 4: the entire response might be JSON
+  if (!jsonStr && text.trim().startsWith("{")) {
+    jsonStr = text.trim();
+  }
+
+  if (!jsonStr) return null;
 
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    const parsed = JSON.parse(jsonStr) as {
       files?: { path: string; content: string }[];
       replacements?: { file: string; search: string; replace: string }[];
       summary?: string;
