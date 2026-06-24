@@ -146,21 +146,51 @@ const SYSTEM_BUILD = `You are a senior product designer and React engineer power
   Check every component referenced is defined. Check every import resolves.
   This concludes a fully working implementation.
 
-## File rules
-- The app runs in the Sandpack "react" template. The root component MUST be the default
-  export of /App.js. An /index.js is provided automatically — do not write one.
-- Put all CSS in /styles.css and import it at the top of /App.js with: import './styles.css';
-- You may add extra component files (e.g. /components/Hero.js) and import them with relative paths.
-- Use ONLY React plus plain CSS. Do NOT import any npm packages. You MAY load fonts and images
-  from the network by URL — that is not a package.
-- Always return the FULL file set needed to run. Include /App.js every time.
-- For multi-page apps, use a simple useState-based router pattern:
+## Technology stack
+- React + TypeScript + Tailwind CSS
+- The app runs in Sandpack "react-ts" template with Tailwind CSS loaded via CDN
+- Root component: default export of /App.tsx
+- Additional components in /components/*.tsx
+- CSS in /index.css (design tokens only — all styling via Tailwind classes)
+- Do NOT import any npm packages. Only React + Tailwind classes.
+- Always return the FULL file set. Include /App.tsx every time.
+
+## File structure
+- /App.tsx — main app component (default export)
+- /index.css — design tokens as CSS variables + @import for Google Fonts + base styles
+- /components/*.tsx — reusable components (Hero.tsx, Footer.tsx, etc.)
+
+## Styling rules (CRITICAL — follow exactly like Lovable):
+- ALL styling via Tailwind utility classes. NEVER use inline style={{}}.
+- Define a design system in /index.css using CSS variables:
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --border: 214 32% 91%;
+    --radius: 0.5rem;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+  }
+  Use these via Tailwind: bg-background, text-foreground, text-primary, bg-card, etc.
+- Pick a distinctive Google Font and @import it at the top of /index.css
+- NEVER use direct colors like text-white, bg-black, text-gray-500 in components.
+  Instead use semantic tokens: text-foreground, bg-background, text-muted-foreground, bg-primary, etc.
+- Responsive: use Tailwind breakpoints (sm:, md:, lg:). Mobile-first.
+- Hover/focus: use Tailwind modifiers (hover:bg-primary/90, focus:ring-2, etc.)
+- Animations: use Tailwind animate classes or @keyframes in /index.css
+- Shadows: use Tailwind shadow-sm, shadow-md, shadow-lg
+- Rounded corners: use rounded-lg, rounded-xl, rounded-full
+
+## Multi-page routing
+Use useState-based routing:
   const [page, setPage] = useState('home');
-  Then render different components based on page value. Add nav links that call setPage.
-  Do NOT use react-router or any routing library — just useState.
-- GOOGLE FONTS: import a characterful Google Font pairing at the VERY TOP of /styles.css, e.g.
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;700&display=swap');
-  Pick fonts that fit the brand's mood. Never leave typography on system-ui/Arial.
+  Render different components based on page value. Nav links call setPage.
 
 ## Server-side functions (Edge Functions)
 When the app needs server-side logic (payments, sending emails, webhook handlers, secret API calls),
@@ -350,14 +380,14 @@ These are not extra features — they are the default baseline for every app.
 
 ## Output format
 Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
-{ "files": [ { "path": "/App.js", "content": "..." }, { "path": "/styles.css", "content": "..." } ], "summary": "one sentence" }
+{ "files": [ { "path": "/App.tsx", "content": "..." }, { "path": "/index.css", "content": "..." }, { "path": "/components/Hero.tsx", "content": "..." } ], "summary": "one sentence" }
 
 DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
 
 // Separate edit prompt — surgical, preservation-first
-const SYSTEM_EDIT = `You are editing an existing React app (Sandpack "react" template,
-root component = default export of /App.js, CSS in /styles.css).
+const SYSTEM_EDIT = `You are editing an existing React + TypeScript + Tailwind CSS app.
+Root component = default export of /App.tsx. Design tokens in /index.css. All styling via Tailwind utility classes.
 
 ## BEFORE YOU WRITE — think step by step:
 1. Read the existing code carefully — understand the current structure
@@ -393,7 +423,7 @@ root component = default export of /App.js, CSS in /styles.css).
 
 ## Output format
 Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
-{ "files": [ { "path": "/App.js", "content": "..." } ], "summary": "one sentence" }`;
+{ "files": [ { "path": "/App.tsx", "content": "..." } ], "summary": "one sentence" }`;
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
@@ -1067,10 +1097,10 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
   }
 
   if (!isEdit) {
-    if (!parsed.files["/App.js"]) {
+    if (!parsed.files["/App.tsx"]) {
       throw new Error("Model response was incomplete — missing App.js. Please try again.");
     }
-    if (parsed.files["/App.js"].length < 200) {
+    if (parsed.files["/App.tsx"].length < 200) {
       throw new Error("Model returned a near-empty app. Please try again or rephrase your request.");
     }
   }
@@ -1119,7 +1149,7 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
 
 export function defaultProjectFiles(): ProjectFiles {
   return {
-    "/App.js": `import './styles.css';\n\nexport default function App() {\n  return (\n    <div className="placeholder">\n      <h1>Your app will appear here</h1>\n      <p>Describe what you want to build in the chat.</p>\n    </div>\n  );\n}`,
-    "/styles.css": `.placeholder {\n  font-family: system-ui, sans-serif;\n  min-height: 100vh;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  color: #555;\n  padding: 48px;\n}\n.placeholder h1 {\n  font-size: 24px;\n  font-weight: 700;\n  color: #111;\n  margin-bottom: 8px;\n}\n.placeholder p {\n  font-size: 16px;\n}`,
+    "/App.tsx": `import './index.css';\n\nexport default function App() {\n  return (\n    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">\n      <h1 className="text-2xl font-bold mb-2">Your app will appear here</h1>\n      <p className="text-muted-foreground">Describe what you want to build in the chat.</p>\n    </div>\n  );\n}`,
+    "/index.css": `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');\n\n:root {\n  --background: 0 0% 100%;\n  --foreground: 222 47% 11%;\n  --primary: 262 83% 58%;\n  --primary-foreground: 0 0% 100%;\n  --secondary: 210 40% 96%;\n  --secondary-foreground: 222 47% 11%;\n  --muted: 210 40% 96%;\n  --muted-foreground: 215 16% 47%;\n  --accent: 210 40% 96%;\n  --accent-foreground: 222 47% 11%;\n  --destructive: 0 84% 60%;\n  --destructive-foreground: 0 0% 100%;\n  --border: 214 32% 91%;\n  --input: 214 32% 91%;\n  --ring: 262 83% 58%;\n  --card: 0 0% 100%;\n  --card-foreground: 222 47% 11%;\n  --radius: 0.5rem;\n}\n\n* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }`,
   };
 }

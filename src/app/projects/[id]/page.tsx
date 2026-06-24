@@ -32,17 +32,22 @@ export default async function ProjectPage({
 
   const rawFiles = JSON.parse(project.versions[0]?.files ?? "{}");
 
-  // Migrate old format (src/App.tsx + index.html + src/main.tsx) → Sandpack (/App.js + /styles.css)
+  // Migrate old formats to current Tailwind + TypeScript format
   let files = rawFiles;
-  if (rawFiles["src/App.tsx"] && !rawFiles["/App.js"]) {
+  if (rawFiles["src/App.tsx"] && !rawFiles["/App.tsx"] && !rawFiles["/App.js"]) {
     const appCode = rawFiles["src/App.tsx"] || "";
-    // Extract inline styles from the old format into a basic styles.css
     files = {
-      "/App.js": `import './styles.css';\n\n${appCode
-        .replace(/^import\s.*;\s*$/gm, "")
-        .replace(/export default/, "export default")}`,
-      "/styles.css": `* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }`,
+      "/App.tsx": `import './index.css';\n\n${appCode.replace(/^import\s.*;\s*$/gm, "").replace(/export default/, "export default")}`,
+      "/index.css": `:root { --background: 0 0% 100%; --foreground: 222 47% 11%; --primary: 262 83% 58%; --border: 214 32% 91%; --muted-foreground: 215 16% 47%; }\n* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: system-ui, sans-serif; }`,
     };
+  } else if (rawFiles["/App.js"] && !rawFiles["/App.tsx"]) {
+    // Migrate .js to .tsx
+    files = { ...rawFiles, "/App.tsx": rawFiles["/App.js"] };
+    delete files["/App.js"];
+    if (files["/styles.css"] && !files["/index.css"]) {
+      files["/index.css"] = files["/styles.css"];
+      delete files["/styles.css"];
+    }
   }
 
   return (

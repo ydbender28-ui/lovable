@@ -48,10 +48,11 @@ function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName
     src[p.replace(/^\//, "")] = c;
   }
 
-  // New Sandpack format: /App.js + /styles.css
-  if (src["App.js"]) {
-    const rawApp = src["App.js"] ?? "";
-    const styles = src["styles.css"] ?? "body{font-family:system-ui,sans-serif}";
+  // Sandpack format: /App.tsx + /index.css (or legacy /App.js + /styles.css)
+  const appFile = src["App.tsx"] ?? src["App.js"];
+  if (appFile) {
+    const rawApp = appFile;
+    const styles = src["index.css"] ?? src["styles.css"] ?? "body{font-family:system-ui,sans-serif}";
     const exportDefaultMatch =
       rawApp.match(/^export\s+default\s+(?:function|class)\s+(\w+)/m) ||
       rawApp.match(/^export\s+default\s+(\w+)\s*;/m);
@@ -59,9 +60,9 @@ function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName
 
     const reactGlobals = `var { useState, useEffect, useRef, useCallback, useMemo, useContext, useReducer, useLayoutEffect, useId, useTransition, useDeferredValue } = React;`;
 
-    // Collect all JS/JSX files (App.js + any component files)
+    // Collect all JS/JSX/TSX files
     const jsFiles = Object.keys(src)
-      .filter((p) => p.match(/\.jsx?$/) && !p.match(/^(index|main)\./))
+      .filter((p) => p.match(/\.(jsx?|tsx?)$/) && !p.match(/^(index|main)\./))
       .sort((a, b) => (a.includes("App") ? 1 : 0) - (b.includes("App") ? 1 : 0));
 
     const strippedCode = jsFiles
@@ -123,7 +124,8 @@ export function buildPublishHtml(
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>${title || projectName}</title>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}${styles}</style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>${styles}</style>
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>
@@ -215,7 +217,8 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>${title || projectName}</title>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}${styles}</style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>${styles}</style>
 </head>
 <body>
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font:16px/1 -apple-system,sans-serif;color:#71717a">Loading…</div></div>

@@ -25,6 +25,42 @@ function ErrorWatcher({ onError }: { onError: (e: SandpackErr | null) => void })
   return null;
 }
 
+// Tailwind CSS via CDN — injected into every preview
+const TAILWIND_INDEX = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            border: "hsl(var(--border))",
+            input: "hsl(var(--input))",
+            ring: "hsl(var(--ring))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+            secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
+            destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
+            muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
+            accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
+            card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+          },
+          borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
+        },
+      },
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>`;
+
 export default function Preview({
   files,
   onError,
@@ -34,9 +70,15 @@ export default function Preview({
   onError: (e: SandpackErr | null) => void;
   view: "preview" | "code";
 }) {
+  // Inject Tailwind HTML if not provided
+  const allFiles = {
+    ...files,
+    "/public/index.html": files["/public/index.html"] ?? TAILWIND_INDEX,
+  };
+
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-    <SandpackProvider template="react" files={files} theme="light" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <SandpackProvider template="react-ts" files={allFiles} theme="light" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <ErrorWatcher onError={onError} />
       <div style={{ flex: 1, minHeight: 0 }}>
         <div style={{ height: "100%", display: view === "code" ? "none" : "block" }}>
