@@ -152,7 +152,9 @@ const SYSTEM_BUILD = `You are a senior product designer and React engineer power
 - Root component: default export of /App.tsx
 - Additional components in /components/*.tsx
 - CSS in /index.css (design tokens only — all styling via Tailwind classes)
-- Do NOT import any npm packages. Only React + Tailwind classes.
+- You MAY import npm packages — they are auto-detected and installed. Popular ones:
+  lucide-react (icons), date-fns, recharts, framer-motion, zustand, clsx, react-hot-toast.
+  Import normally: import { Heart } from 'lucide-react';
 - Always return the FULL file set. Include /App.tsx every time.
 
 ## File structure
@@ -421,9 +423,18 @@ Root component = default export of /App.tsx. Design tokens in /index.css. All st
 - If you added a cart icon, does clicking it actually open the cart?
 - This concludes a fully working implementation.
 
-## Output format
-Return ONLY a JSON object of exactly this shape — no markdown, no prose around it:
-{ "files": [ { "path": "/App.tsx", "content": "..." } ], "summary": "one sentence" }`;
+## Output format — choose based on change size:
+
+FOR SMALL CHANGES (rename, text swap, color change, add a link, fix one bug):
+Return a JSON with "replacements" — search-and-replace operations on specific files:
+{ "replacements": [ { "file": "/App.tsx", "search": "exact text to find", "replace": "replacement text" } ], "summary": "one sentence" }
+Rules: "search" must be an EXACT substring of the current file content. Include enough context (2-3 lines) to be unique. You can have multiple replacements.
+
+FOR LARGE CHANGES (new feature, restructure, add component):
+Return a JSON with "files" — complete file contents for changed files only:
+{ "files": [ { "path": "/App.tsx", "content": "full file content" } ], "summary": "one sentence" }
+
+ALWAYS prefer "replacements" when possible — it's 10x faster. Only use "files" when you're adding a new file or changing more than 30% of a file.`;
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
@@ -892,8 +903,8 @@ export async function generateQuickEdit(
     ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   }
 
-  const parsed = parseJsonOutput(text);
-  if (!parsed || Object.keys(parsed.files).length === 0) {
+  const parsed = parseJsonOutput(text, existingFiles);
+  if (!parsed || (Object.keys(parsed.files).length === 0 && !parsed.replacements?.length)) {
     throw new Error("Quick edit failed — try again or use a more detailed prompt.");
   }
 
@@ -914,23 +925,56 @@ export async function generateQuickEdit(
 
 // ─── JSON output parser ──────────────────────────────────────────────────────
 
-function parseJsonOutput(text: string): { summary: string; files: ProjectFiles } | null {
-  // Find JSON in the response (may have markdown fences or prose around it)
-  const jsonMatch = text.match(/\{[\s\S]*"files"[\s\S]*\}/);
+type ParsedOutput = {
+  summary: string;
+  files: ProjectFiles;
+  replacements?: { file: string; search: string; replace: string }[];
+};
+
+function parseJsonOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
+  // Find JSON in the response
+  const jsonMatch = text.match(/\{[\s\S]*("files"|"replacements")[\s\S]*\}/);
   if (!jsonMatch) return null;
 
   try {
     const parsed = JSON.parse(jsonMatch[0]) as {
       files?: { path: string; content: string }[];
+      replacements?: { file: string; search: string; replace: string }[];
       summary?: string;
     };
-    if (!parsed.files || !Array.isArray(parsed.files) || parsed.files.length === 0) return null;
 
-    const files: ProjectFiles = {};
-    for (const f of parsed.files) {
-      if (f.path && f.content) files[f.path] = f.content;
+    // Handle replacements format (line-replace — fast edits)
+    if (parsed.replacements && Array.isArray(parsed.replacements) && parsed.replacements.length > 0) {
+      const files: ProjectFiles = {};
+      if (existingFiles) {
+        // Apply each replacement to the existing files
+        for (const r of parsed.replacements) {
+          const filePath = r.file;
+          const source = files[filePath] ?? existingFiles[filePath] ?? "";
+          if (source.includes(r.search)) {
+            files[filePath] = source.replace(r.search, r.replace);
+          } else {
+            // Fuzzy match — try trimming whitespace
+            const trimmedSearch = r.search.trim();
+            if (source.includes(trimmedSearch)) {
+              files[filePath] = source.replace(trimmedSearch, r.replace.trim());
+            }
+          }
+        }
+      }
+      return { summary: parsed.summary || "Done! Check the preview.", files, replacements: parsed.replacements };
     }
-    return { summary: parsed.summary || "Done! Check the preview.", files };
+
+    // Handle files format (full rewrite)
+    if (parsed.files && Array.isArray(parsed.files) && parsed.files.length > 0) {
+      const files: ProjectFiles = {};
+      for (const f of parsed.files) {
+        if (f.path && f.content) files[f.path] = f.content;
+      }
+      return { summary: parsed.summary || "Done! Check the preview.", files };
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -1090,7 +1134,7 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
     );
   }
 
-  const parsed = parseJsonOutput(text);
+  const parsed = parseJsonOutput(text, existingFiles);
 
   if (!parsed) {
     throw new Error("Model did not return files in the expected format. Please try again.");

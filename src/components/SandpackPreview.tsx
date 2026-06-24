@@ -61,6 +61,22 @@ const TAILWIND_INDEX = `<!DOCTYPE html>
 </body>
 </html>`;
 
+// Extract npm dependencies from import statements in the code
+function extractDependencies(files: Record<string, string>): Record<string, string> {
+  const deps: Record<string, string> = {};
+  const builtins = new Set(["react", "react-dom", "react/jsx-runtime"]);
+  for (const content of Object.values(files)) {
+    const imports = content.matchAll(/import\s+.*?\s+from\s+['"]([^./][^'"]*)['"]/g);
+    for (const m of imports) {
+      const pkg = m[1].startsWith("@") ? m[1].split("/").slice(0, 2).join("/") : m[1].split("/")[0];
+      if (!builtins.has(pkg) && !deps[pkg]) {
+        deps[pkg] = "latest";
+      }
+    }
+  }
+  return deps;
+}
+
 export default function Preview({
   files,
   onError,
@@ -76,9 +92,18 @@ export default function Preview({
     "/public/index.html": files["/public/index.html"] ?? TAILWIND_INDEX,
   };
 
+  // Auto-detect npm dependencies from imports
+  const customDeps = extractDependencies(files);
+
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-    <SandpackProvider template="react-ts" files={allFiles} theme="light" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <SandpackProvider
+      template="react-ts"
+      files={allFiles}
+      theme="light"
+      style={{ flex: 1, display: "flex", flexDirection: "column" }}
+      customSetup={Object.keys(customDeps).length > 0 ? { dependencies: customDeps } : undefined}
+    >
       <ErrorWatcher onError={onError} />
       <div style={{ flex: 1, minHeight: 0 }}>
         <div style={{ height: "100%", display: view === "code" ? "none" : "block" }}>
