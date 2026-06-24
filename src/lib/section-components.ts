@@ -168,6 +168,101 @@ export default function SplitSection({ tag, title, text, image, reverse }: { tag
   );
 }`,
 
+"/components/sections/ShopGrid.tsx": `import React, { useState } from 'react';
+type Product = { id: number; name: string; price: number; desc: string; category: string; badge?: string; image?: string };
+type CartItem = Product & { qty: number };
+
+export default function ShopGrid({ title, subtitle, items, onCheckout }: { title: string; subtitle?: string; items: Product[]; onCheckout?: (items: CartItem[]) => void }) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const cats = ['All', ...new Set(items.map(i => i.category))];
+  const [active, setActive] = useState('All');
+  const filtered = active === 'All' ? items : items.filter(i => i.category === active);
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const addToCart = (item: Product) => {
+    setCart(prev => {
+      const found = prev.find(c => c.id === item.id);
+      if (found) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
+      return [...prev, { ...item, qty: 1 }];
+    });
+  };
+
+  return (
+    <>
+      <section id="menu" style={{ padding:'100px 40px', background:'#faf9f7' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:40 }}>
+            <div>
+              <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
+              {subtitle && <p style={{ color:'#666', fontSize:16, marginTop:8 }}>{subtitle}</p>}
+            </div>
+            <button onClick={() => setShowCart(true)} style={{ position:'relative', background:'#111', color:'#fff', border:'none', padding:'12px 24px', borderRadius:50, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+              Cart {cartCount > 0 && <span style={{ position:'absolute', top:-8, right:-8, background:'var(--accent, #c2410c)', color:'#fff', width:22, height:22, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
+            </button>
+          </div>
+          <div style={{ display:'flex', gap:8, marginBottom:32, flexWrap:'wrap' }}>
+            {cats.map(c => <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border:active===c?'none':'1px solid #ddd', background:active===c?'var(--accent, #c2410c)':'#fff', color:active===c?'#fff':'#555', fontSize:14, cursor:'pointer' }}>{c}</button>)}
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24 }}>
+            {filtered.map(item => (
+              <div key={item.id} style={{ background:'#fff', borderRadius:12, border:'1px solid #eee', overflow:'hidden', transition:'transform 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.transform='translateY(-4px)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.transform='none'}>
+                {item.image && <img src={item.image} alt={item.name} style={{ width:'100%', height:200, objectFit:'cover' }} />}
+                <div style={{ padding:20 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <h3 style={{ fontSize:17, fontWeight:600 }}>{item.name}</h3>
+                    <span style={{ fontSize:17, fontWeight:700 }}>\${item.price.toFixed(2)}</span>
+                  </div>
+                  {item.badge && <span style={{ fontSize:11, background:'var(--accent,#c2410c)', color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600, display:'inline-block', marginTop:6 }}>{item.badge}</span>}
+                  <p style={{ fontSize:14, color:'#888', marginTop:8 }}>{item.desc}</p>
+                  <button onClick={() => addToCart(item)} style={{ marginTop:16, width:'100%', background:'#111', color:'#fff', border:'none', padding:'12px', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.target as HTMLElement).style.background='#333'} onMouseOut={e=>(e.target as HTMLElement).style.background='#111'}>Add to Cart</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {showCart && (
+        <div style={{ position:'fixed', inset:0, zIndex:200 }}>
+          <div onClick={() => setShowCart(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.5)' }} />
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:420, background:'#fff', boxShadow:'-8px 0 30px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column' }}>
+            <div style={{ padding:'24px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <h2 style={{ fontSize:24, fontWeight:700 }}>Your Cart</h2>
+              <button onClick={() => setShowCart(false)} style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#999' }}>×</button>
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:24 }}>
+              {cart.length === 0 ? <p style={{ color:'#999', textAlign:'center', marginTop:40 }}>Your cart is empty</p> : cart.map(item => (
+                <div key={item.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 0', borderBottom:'1px solid #f0f0f0' }}>
+                  <div>
+                    <p style={{ fontWeight:600 }}>{item.name}</p>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:8 }}>
+                      <button onClick={() => setCart(prev => prev.map(c => c.id===item.id ? {...c, qty: Math.max(1, c.qty-1)} : c))} style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, background:'#fff', cursor:'pointer' }}>-</button>
+                      <span style={{ fontSize:14, minWidth:20, textAlign:'center' }}>{item.qty}</span>
+                      <button onClick={() => setCart(prev => prev.map(c => c.id===item.id ? {...c, qty: c.qty+1} : c))} style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, background:'#fff', cursor:'pointer' }}>+</button>
+                      <button onClick={() => setCart(prev => prev.filter(c => c.id!==item.id))} style={{ marginLeft:8, color:'#999', background:'none', border:'none', fontSize:13, cursor:'pointer' }}>Remove</button>
+                    </div>
+                  </div>
+                  <span style={{ fontWeight:600 }}>\${(item.price * item.qty).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            {cart.length > 0 && (
+              <div style={{ padding:24, borderTop:'1px solid #eee' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:700, marginBottom:16 }}>
+                  <span>Total</span><span>\${cartTotal.toFixed(2)}</span>
+                </div>
+                <button onClick={() => { alert('Order placed! Total: $' + cartTotal.toFixed(2)); setCart([]); setShowCart(false); }} style={{ width:'100%', background:'var(--accent, #c2410c)', color:'#fff', border:'none', padding:'14px', borderRadius:50, fontSize:16, fontWeight:600, cursor:'pointer' }}>Checkout — \${cartTotal.toFixed(2)}</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}`,
+
 };
 
 export const SECTION_COMPONENT_LIST = `
@@ -182,6 +277,11 @@ Import from /components/sections/:
 - Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
 - Contact: <Contact title="Visit us" items={[{label:"Address", value:"123 Main St"}, {label:"Phone", value:"908-783-4220", href:"tel:9087834220"}]} />
 - Footer: <Footer brand="Name" tagline="Tagline" />
+- ShopGrid: <ShopGrid title="Our Menu" items={[{id:1, name:"Espresso", price:3.50, desc:"Rich shot", category:"Coffee", badge:"Popular", image:"{{unsplash:espresso|400x300}}"}]} />
+  → Has built-in Add to Cart buttons, cart drawer with +/- quantity, checkout button. USE THIS instead of MenuGrid when user wants ordering/checkout/cart.
 
-The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
-ALWAYS prefer these sections over writing raw HTML. They are pre-styled and look professional.`;
+RULES:
+- The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
+- ALWAYS prefer these sections over writing raw HTML. They are pre-styled and look professional.
+- When user asks for "checkout", "cart", "ordering", "e-commerce" → use ShopGrid instead of MenuGrid.
+- When editing: if the current code uses MenuGrid and user wants cart/checkout, REPLACE MenuGrid with ShopGrid.`;
