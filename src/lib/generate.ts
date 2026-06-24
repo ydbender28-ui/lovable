@@ -40,6 +40,13 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - App component MUST be the default export.
 - Only import from: react, lucide-react, react-hot-toast.
 
+## ERRORS TO AVOID:
+- NEVER put semicolons inside JSX expressions: onMouseEnter={(e) => { e.target.style.color = "#fff" }} — NO semicolons before }}
+- Every { must have matching }. Every ( must have matching ).
+- App component MUST be "export default function App()"
+- Only import from: react, lucide-react, react-hot-toast, or /components/sections/
+- All event handlers: use arrow functions, no semicolons inside JSX attribute expressions
+
 ## Quality standards (make it look like a $10,000 site):
 - Typography: Google Font pair. Headlines 48-72px, weight 800, tight letter-spacing. Body 16-18px, line-height 1.6.
 - Layout: max-width 1200px centered. Sections 80-100px vertical padding. CSS Grid for cards.
@@ -950,8 +957,19 @@ Make the entire layout and structure match this design system. It should look DR
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
+    // Fix common JSX syntax errors
+    let fixedApp = parsed.files["/App.tsx"] ?? appCode;
+    // Fix: semicolons inside JSX expressions — (expr; ) → (expr)
+    fixedApp = fixedApp.replace(/;\s*\)/g, ")");
+    // Fix: double semicolons
+    fixedApp = fixedApp.replace(/;;\s*/g, ";\n");
+    // Fix: missing comma between JSX props — style={{}} onX → style={{}} , but actually JSX doesn't need commas between props
+    // Fix: stray semicolons inside style objects
+    fixedApp = fixedApp.replace(/;\s*\}\}/g, "}}");
+    if (fixedApp !== appCode) parsed.files["/App.tsx"] = fixedApp;
+
     // Check for missing default export
-    if (!appCode.includes("export default")) {
+    if (!fixedApp.includes("export default")) {
       // Add a default export wrapper
       parsed.files["/App.tsx"] = appCode + "\nexport default function App() { return <div>Error: missing export</div>; }";
     }

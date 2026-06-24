@@ -1818,11 +1818,11 @@ export default function ProjectWorkspace({
     const [pages, setPages] = useState<string[]>([]);
     const [extra, setExtra] = useState("");
     const styleOpts = ["Minimal & clean", "Bold & modern", "Warm & earthy", "Dark & sleek", "Playful & colorful"];
-    const pageOpts = ["Home", "About", "Menu / Products", "Contact", "Pricing", "Blog", "Gallery", "FAQ"];
+    const pageOpts = ["Home", "About", "Menu / Products", "Contact", "Pricing"];
     if (flow.type !== "clarify") return null;
     const f = flow;
     function togglePage(p: string) {
-      setPages(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+      setPages(prev => prev.includes(p) ? prev.filter(x => x !== p) : prev.length >= 3 ? prev : [...prev, p]);
     }
     function submit(skip = false) {
       let full = f.pendingPrompt;
@@ -1846,7 +1846,7 @@ export default function ProjectWorkspace({
           </div>
         </div>
         <div>
-          <p className="text-xs text-[#888] mb-2">Which pages do you need? (select multiple)</p>
+          <p className="text-xs text-[#888] mb-2">Which pages do you need? (pick up to 3 — add more later)</p>
           <div className="flex flex-wrap gap-2">
             {pageOpts.map(o => (
               <button key={o} onClick={() => togglePage(o)}
