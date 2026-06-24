@@ -317,8 +317,10 @@ export default function ProjectWorkspace({
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
-    // Don't auto-fix — it creates more errors. Just log silently.
-    // Errors will be learned from and avoided in future builds.
+    if (!err || loading) return;
+    const msg = typeof err === "string" ? err : err.message ?? String(err);
+    if (!msg || msg.length < 5) return;
+    setIframeError(msg);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, files]);
   const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
@@ -2397,7 +2399,23 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
-        {/* Errors are auto-fixed silently — no banner shown */}
+        {iframeError && !loading && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-b border-red-200 shrink-0">
+            <span className="text-xs text-red-600 truncate flex-1">Error: {iframeError.slice(0, 120)}</span>
+            {autoFixCountdown != null ? (
+              <span className="text-xs text-red-400 whitespace-nowrap">Fixing in {autoFixCountdown}s…</span>
+            ) : (
+              <button onClick={() => {
+                const fixPrompt = `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${iframeError}`;
+                setIframeError(null);
+                runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
+              }} className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium hover:bg-red-700 transition-colors whitespace-nowrap">
+                Fix error
+              </button>
+            )}
+            <button onClick={() => setIframeError(null)} className="text-red-400 hover:text-red-600 text-sm">✕</button>
+          </div>
+        )}
         {hasFiles ? (
           <div style={{ flex: 1, minHeight: 0, height: "100%", position: "relative" }}>
             <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab} />
