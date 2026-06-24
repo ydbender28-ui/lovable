@@ -7,6 +7,7 @@ import {
   SandpackPreview,
   useSandpack,
 } from "@codesandbox/sandpack-react";
+import { UI_COMPONENTS } from "@/lib/ui-components";
 
 export type SandpackErr = {
   message: string;
@@ -86,8 +87,9 @@ export default function Preview({
   onError: (e: SandpackErr | null) => void;
   view: "preview" | "code";
 }) {
-  // Inject Tailwind HTML if not provided
+  // Inject Tailwind HTML + pre-built UI components
   const allFiles = {
+    ...UI_COMPONENTS,
     ...files,
     "/public/index.html": files["/public/index.html"] ?? TAILWIND_INDEX,
   };

@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { UI_COMPONENT_LIST } from "./ui-components";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -188,6 +189,8 @@ const SYSTEM_BUILD = `You are a senior product designer and React engineer power
 - Animations: use Tailwind animate classes or @keyframes in /index.css
 - Shadows: use Tailwind shadow-sm, shadow-md, shadow-lg
 - Rounded corners: use rounded-lg, rounded-xl, rounded-full
+
+${UI_COMPONENT_LIST}
 
 ## Multi-page routing
 Use useState-based routing:
