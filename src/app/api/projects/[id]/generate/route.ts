@@ -219,6 +219,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         send("done", {
           files: outcome.result.files,
           summary: outcome.result.summary,
+          suggestions: outcome.result.suggestions || [],
           tempMessageId: `msg-${Date.now()}`,
           liveUpdated: outcome.wasPublished,
           creditsUsed: outcome.actualCredits,

@@ -66,6 +66,9 @@ The STRIPE_SECRET_KEY is stored securely on the server — never in client code.
 ## Output format (use EXACTLY this — no JSON):
 SUMMARY: one sentence describing what you built
 
+SUGGESTIONS: Add dark mode | Improve mobile layout | Add contact form | Add animations
+(4-5 short suggestions for what to build next, separated by |)
+
 /App.tsx
 \`\`\`tsx
 your code here
@@ -127,6 +130,9 @@ Root component = default export of /App.tsx. All styling via inline style={{}}.
 Return ONLY the changed files in this format:
 
 SUMMARY: one sentence
+
+SUGGESTIONS: suggestion 1 | suggestion 2 | suggestion 3 | suggestion 4
+(4-5 short next-step suggestions separated by |, relevant to what was just built/changed)
 
 /App.tsx
 \`\`\`tsx
@@ -613,6 +619,7 @@ export async function generateQuickEdit(
   return {
     files: mergedFiles,
     summary: parsed.summary,
+    suggestions: parsed.suggestions || [],
     modelUsed: modelOpt.displayName,
     complexity: "simple",
     complexityReasons: ["quick-edit"],
@@ -627,6 +634,7 @@ export async function generateQuickEdit(
 type ParsedOutput = {
   summary: string;
   files: ProjectFiles;
+  suggestions?: string[];
   replacements?: { file: string; search: string; replace: string }[];
 };
 
@@ -646,8 +654,12 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
   const summaryMatch = text.match(/SUMMARY:\s*(.+)/i);
   const summary = summaryMatch ? summaryMatch[1].trim() : "Done! Check the preview.";
 
+  // Extract suggestions
+  const sugMatch = text.match(/SUGGESTIONS:\s*(.+)/i);
+  const suggestions = sugMatch ? sugMatch[1].split("|").map(s => s.trim()).filter(Boolean) : [];
+
   if (Object.keys(files).length > 0) {
-    return { summary, files };
+    return { summary, files, suggestions };
   }
 
   // Strategy 2: try JSON format as fallback
@@ -722,6 +734,7 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
 export interface GenerateResult {
   files: ProjectFiles;
   summary: string;
+  suggestions: string[];
   modelUsed: string;
   complexity: Complexity;
   complexityReasons: string[];
@@ -968,6 +981,7 @@ Make the entire layout and structure match this design system. It should look DR
   return {
     files: finalFiles,
     summary: parsed.summary,
+    suggestions: parsed.suggestions || [],
     modelUsed: modelOpt.displayName,
     complexity,
     complexityReasons,

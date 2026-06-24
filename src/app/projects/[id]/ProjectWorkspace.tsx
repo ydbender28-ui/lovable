@@ -1383,7 +1383,7 @@ export default function ProjectWorkspace({
                 return msgs;
               });
               if (payload.liveUpdated) setLiveUpdated(true);
-              setSuggestions(getSmartSuggestions(payload.files));
+              setSuggestions(payload.suggestions?.length ? payload.suggestions : getSmartSuggestions(payload.files));
               setShowUndo(true);
               // Self-verify: auto user-test and fix if score is too low
               if (selfVerify && !silent) {
@@ -2048,14 +2048,13 @@ export default function ProjectWorkspace({
           </div>
         ))}
 
-        {/* Smart suggestions */}
+        {/* Smart suggestions — horizontal chips like Lovable */}
         {suggestions.length > 0 && !loading && (
-          <div className="space-y-1.5">
-            <p className="text-[10px] text-[#9090a0] px-0.5">What&apos;s next?</p>
+          <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
               <button key={s} onClick={() => { setSuggestions([]); runGenerate(s); }}
-                className="block w-full text-left text-xs rounded-xl border border-fuchsia-400/15 bg-[#f0f0ff] text-[#6a1ff7]/80 px-3.5 py-2 hover:bg-[#eef2ff] hover:border-[#6a1ff7]/30 transition-colors">
-                {s} →
+                className="text-xs rounded-full border border-[#e5e5e5] bg-white text-[#333] px-4 py-2 hover:bg-[#f5f5f5] hover:border-[#ccc] transition-colors shadow-sm whitespace-nowrap">
+                {s}
               </button>
             ))}
           </div>
