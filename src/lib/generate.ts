@@ -174,23 +174,21 @@ In /App.tsx, set document head via useEffect:
 - NPM packages auto-installed from imports. Recommended: lucide-react, react-hot-toast
 
 ## Styling rules (CRITICAL — this determines how good the site looks):
-- Write ALL styles in /index.css as real CSS classes. NEVER use Tailwind utility classes.
-- DO NOT use className="flex gap-4 p-6" — Tailwind is NOT available.
-- DO use className="hero" with .hero { display: flex; gap: 16px; padding: 24px; } in /index.css
-- Start /index.css with a Google Font import and :root CSS variables:
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
-  :root {
-    --bg: #FAF9F6; --text: #1a1a1a; --primary: #8B4513; --primary-light: #D2A679;
-    --muted: #6b7280; --card: #ffffff; --border: #e5e7eb; --radius: 12px;
-  }
-- Then write beautiful CSS:
-  .hero { min-height: 85vh; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('...'); background-size: cover; display: flex; align-items: center; }
-  .nav { position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); }
-  .card { background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-- Make it look STUNNING — like a real professional site, not a homework project
+- Use INLINE STYLES on every element: style={{ background: '#8B4513', padding: '80px 0' }}
+- DO NOT use className for styling. DO NOT use Tailwind. Only inline style={{}}.
+- /index.css is for Google Fonts import and @keyframes animations ONLY
+- Start /index.css with: @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+- Every element must be visually styled. Example:
+  <nav style={{ position: 'sticky', top: 0, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', zIndex: 100 }}>
+  <section style={{ minHeight: '85vh', background: 'linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.6)), url(...)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', textAlign: 'center' }}>
+  <button style={{ background: '#8B4513', color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
+- Colors: pick a warm, cohesive palette. NOT generic blue/purple.
+- Typography: use the Google Font in fontFamily. Headlines 48-64px bold. Body 16-18px.
+- Spacing: generous padding (60-100px vertically between sections). Not cramped.
+- Cards: white bg, subtle shadow (boxShadow: '0 2px 12px rgba(0,0,0,0.08)'), rounded corners (borderRadius: 12)
+- Hero: full-height with background image + dark gradient overlay + white text
+- Grid: display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24
+- Make it look STUNNING — like a real $5000 professional website
 
 ## Common pitfalls — NEVER DO THESE:
 - Don't create monolithic files (>200 lines)
