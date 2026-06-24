@@ -5,6 +5,7 @@ import {
   SandpackProvider,
   SandpackCodeEditor,
   SandpackPreview,
+  SandpackConsole,
   useSandpack,
 } from "@codesandbox/sandpack-react";
 import { UI_COMPONENTS } from "@/lib/ui-components";
@@ -85,7 +86,7 @@ export default function Preview({
 }: {
   files: Record<string, string>;
   onError: (e: SandpackErr | null) => void;
-  view: "preview" | "code";
+  view: "preview" | "code" | "console";
 }) {
   // Inject Tailwind HTML + pre-built UI components
   const allFiles = {
@@ -108,7 +109,7 @@ export default function Preview({
     >
       <ErrorWatcher onError={onError} />
       <div style={{ flex: 1, minHeight: 0 }}>
-        <div style={{ height: "100%", display: view === "code" ? "none" : "block" }}>
+        <div style={{ height: "100%", display: view === "preview" ? "block" : "none" }}>
           <SandpackPreview
             showOpenInCodeSandbox={false}
             showRefreshButton
@@ -117,6 +118,9 @@ export default function Preview({
         </div>
         <div style={{ height: "100%", display: view === "code" ? "block" : "none" }}>
           <SandpackCodeEditor showTabs showLineNumbers style={{ height: "100%" }} />
+        </div>
+        <div style={{ height: "100%", display: view === "console" ? "block" : "none" }}>
+          <SandpackConsole style={{ height: "100%" }} />
         </div>
       </div>
     </SandpackProvider>

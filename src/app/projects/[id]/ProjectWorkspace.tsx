@@ -338,7 +338,7 @@ export default function ProjectWorkspace({
   const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
   const autoFixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoFixCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
+  const [activeTab, setActiveTab] = useState<"preview" | "code" | "console">("preview");
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
   const [isPrivate, setIsPrivate] = useState(initialIsPrivate ?? false);
@@ -1993,7 +1993,7 @@ export default function ProjectWorkspace({
               <div className="absolute left-0 top-full mt-1 w-56 rounded-xl border border-[#ececf1] bg-white shadow-2xl z-50 py-1.5 overflow-hidden">
                 <p className="text-[10px] text-[#9090a0] font-medium px-3 pt-1 pb-1.5 uppercase tracking-wider">AI Tools</p>
                 {([
-                  { icon: "🏗️", label: "Architect mode", desc: "Plan before building", action: () => { setArchitectMode(v => !v); setShowFeaturesMenu(false); }, active: architectMode },
+                  { icon: "📋", label: "Plan mode", desc: "Think & plan before coding", action: () => { setArchitectMode(v => !v); setShowFeaturesMenu(false); }, active: architectMode },
                   { icon: "🔬", label: "Self-verify", desc: "Auto-test after build", action: () => { setSelfVerify(v => !v); setShowFeaturesMenu(false); }, active: selfVerify },
                   { icon: "📊", label: "Analytics", desc: "Pageviews & rage-clicks", action: () => { setShowAnalytics(true); loadAnalytics(); setShowFeaturesMenu(false); } },
                   { icon: "⚖️", label: "Compliance", desc: "GDPR, HIPAA, CCPA", action: () => { setShowCompliance(true); runCompliance(); setShowFeaturesMenu(false); } },
@@ -2302,10 +2302,10 @@ export default function ProjectWorkspace({
   const previewPanel = (
     <div className="flex flex-col overflow-hidden" style={{ height: "100%" }}>
       <div className="flex items-center gap-1 px-3 py-2 border-b border-[#ececf1] bg-[#fbfbfc] shrink-0">
-        {(["preview", "code"] as const).map((tab) => (
+        {(["preview", "code", "console"] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? "bg-[#eef2ff] text-[#6a1ff7]" : "text-[#9090a0] hover:text-[#17171c]"}`}>
-            {tab === "preview" ? "Preview" : "Code"}
+            {tab === "preview" ? "Preview" : tab === "code" ? "Code" : "Console"}
           </button>
         ))}
         {activeTab === "code" && (
@@ -2365,7 +2365,7 @@ export default function ProjectWorkspace({
         {/* Errors are auto-fixed silently — no banner shown */}
         {hasFiles ? (
           <div style={{ flex: 1, minHeight: 0, height: "100%" }}>
-            <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab === "preview" ? "preview" : "code"} />
+            <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab} />
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
