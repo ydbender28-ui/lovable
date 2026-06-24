@@ -269,45 +269,54 @@ export default function ProjectWorkspace({
 
   // Try to extract partial file content from streaming JSON and update preview live
   function tryUpdatePreviewFromStream(raw: string) {
-    // Extract content between "content":" and the next unescaped quote
-    const filePattern = /"path"\s*:\s*"([^"]+)"\s*,\s*"content"\s*:\s*"/g;
     const partialFiles: ProjectFiles = {};
+
+    // Strategy 1: Markdown fence format — /filename\n```lang\ncode\n```
+    const mdPattern = /^\/(\S+)\s*\n```[\w]*\n([\s\S]*?)```/gm;
     let match;
-    while ((match = filePattern.exec(raw)) !== null) {
-      const path = match[1];
-      const startIdx = match.index + match[0].length;
-      // Find content: take everything from here, unescape JSON strings
-      let content = "";
-      let i = startIdx;
-      while (i < raw.length) {
-        if (raw[i] === "\\" && i + 1 < raw.length) {
-          const next = raw[i + 1];
-          if (next === "n") content += "\n";
-          else if (next === "t") content += "\t";
-          else if (next === '"') content += '"';
-          else if (next === "\\") content += "\\";
-          else content += next;
-          i += 2;
-        } else if (raw[i] === '"') {
-          break; // End of content string
-        } else {
-          content += raw[i];
-          i++;
-        }
-      }
-      if (content.length > 50) partialFiles[path] = content;
+    while ((match = mdPattern.exec(raw)) !== null) {
+      const content = match[2].trimEnd();
+      if (content.length > 50) partialFiles["/" + match[1]] = content;
     }
 
-    if (Object.keys(partialFiles).length > 0 && partialFiles["/App.js"]) {
-      // Add a closing to make partial JSX somewhat valid
-      let appCode = partialFiles["/App.js"];
+    // Strategy 2: JSON format fallback
+    if (Object.keys(partialFiles).length === 0) {
+      const filePattern = /"path"\s*:\s*"([^"]+)"\s*,\s*"content"\s*:\s*"/g;
+      while ((match = filePattern.exec(raw)) !== null) {
+        const path = match[1];
+        const startIdx = match.index + match[0].length;
+        let content = "";
+        let i = startIdx;
+        while (i < raw.length) {
+          if (raw[i] === "\\" && i + 1 < raw.length) {
+            const next = raw[i + 1];
+            if (next === "n") content += "\n";
+            else if (next === "t") content += "\t";
+            else if (next === '"') content += '"';
+            else if (next === "\\") content += "\\";
+            else content += next;
+            i += 2;
+          } else if (raw[i] === '"') {
+            break;
+          } else {
+            content += raw[i];
+            i++;
+          }
+        }
+        if (content.length > 50) partialFiles[path] = content;
+      }
+    }
+
+    const appKey = partialFiles["/App.tsx"] ? "/App.tsx" : partialFiles["/App.js"] ? "/App.js" : null;
+    if (Object.keys(partialFiles).length > 0 && appKey) {
+      let appCode = partialFiles[appKey];
       if (!appCode.includes("export default")) {
         appCode += "\n}\nexport default function App() { return <div>Building...</div>; }";
       }
-      partialFiles["/App.js"] = appCode;
-      // Merge with any existing styles
-      if (!partialFiles["/styles.css"]) {
-        partialFiles["/styles.css"] = preStreamFiles.current?.["/styles.css"] ?? "body { font-family: system-ui; }";
+      partialFiles[appKey] = appCode;
+      const cssKey = partialFiles["/index.css"] ? "/index.css" : "/styles.css";
+      if (!partialFiles[cssKey]) {
+        partialFiles[cssKey] = preStreamFiles.current?.["/index.css"] ?? preStreamFiles.current?.["/styles.css"] ?? "body { font-family: system-ui; }";
       }
       setFiles(partialFiles);
     }
