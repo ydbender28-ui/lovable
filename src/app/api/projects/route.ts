@@ -11,7 +11,7 @@ async function nameFromPrompt(prompt: string): Promise<string> {
       max_tokens: 20,
       messages: [{
         role: "user",
-        content: `Create a short 2-4 word project name from this description. Use the actual words from the description — do NOT invent creative names. Just extract the core noun/type of app in title case. No punctuation, reply with ONLY the name.\n\nExamples:\n"build e commerce store" → "E Commerce Store"\n"todo app with reminders" → "Todo App"\n"admin dashboard for products" → "Product Admin Dashboard"\n"landing page for my startup" → "Startup Landing Page"\n\nDescription: ${prompt.slice(0, 300)}`,
+        content: `Generate a creative, memorable brand name for this project. Think like a startup founder naming their company — short, catchy, professional. 2-3 words max. No generic descriptions like "Coffee Shop" — give it a real brand identity. No punctuation, reply with ONLY the name.\n\nExamples:\n"coffee shop landing page" → "Brew & Bloom"\n"todo app with reminders" → "Taskflow"\n"admin dashboard for products" → "Nexus Dashboard"\n"landing page for my startup" → "LaunchPad"\n"restaurant website" → "Hearth & Table"\n"fitness tracker app" → "PulseTrack"\n"portfolio website for photographer" → "Shutter Studio"\n\nDescription: ${prompt.slice(0, 300)}`,
       }],
     });
     const name = (msg.content[0] as { text: string }).text.trim().replace(/['"]/g, "");
