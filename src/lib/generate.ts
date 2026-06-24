@@ -37,6 +37,8 @@ const SYSTEM_BUILD = `You are an expert React developer building beautiful, prod
 - ALL styling via inline style={{}}. No className, no Tailwind, no CSS classes.
 - Use {{unsplash:query|WxH}} for images. They auto-resolve to real photos.
 - Code must be fully functional. No placeholders. Real data (10+ items for lists).
+- HARDCODE all data directly in the component (menus, products, testimonials).
+  Do NOT use fetch(), Supabase, or any database queries. Just useState with hardcoded arrays.
 - Use semantic HTML: nav, main, section, footer. One h1 per page.
 - Pick a distinctive Google Font pair. Import in /index.css.
 - For multi-page: use useState('home') routing pattern.

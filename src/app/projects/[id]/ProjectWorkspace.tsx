@@ -316,22 +316,25 @@ export default function ProjectWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
+  const autoFixCount = useRef(0);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
     const msg = err?.message ?? null;
-    if (msg && !loading) {
-      // Silent auto-fix — no UI shown, just fix it immediately
+    if (msg && !loading && autoFixCount.current < 2) {
+      // Silent auto-fix — max 2 attempts, then stop
       if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
       autoFixTimerRef.current = setTimeout(() => {
+        autoFixCount.current++;
         const code = Object.entries(files).map(([p, c]) => `--- ${p} ---\n${c}`).join("\n\n");
         runGenerate(
-          `FIX THIS ERROR. Fix ONLY the specific bug causing the error. Do NOT remove, simplify, or rewrite any features, components, or functionality. Keep ALL existing code — cart, search, admin, buttons, everything. Only change the minimum lines needed to fix the error.\n\nError: ${msg}\n\nCode:\n${code}`,
+          `FIX THIS ERROR. Fix ONLY the specific bug. Do NOT rewrite the app or change features. Minimum change only.\n\nError: ${msg}\n\nCode:\n${code}`,
           undefined,
           "claude-sonnet-4-6",
           true
         );
-      }, 1500);
+      }, 2000);
     } else if (!msg) {
       if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
+      autoFixCount.current = 0; // Reset counter when errors clear
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, files]);
