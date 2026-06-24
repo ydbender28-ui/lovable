@@ -166,14 +166,24 @@ In /App.tsx, set document head via useEffect:
 - Add aria-labels to icon-only buttons
 
 ## Technology stack
-- React + TypeScript + Tailwind CSS
-- Sandpack "react-ts" template with Tailwind CSS via CDN
+- React + TypeScript
+- Sandpack "react-ts" template
 - Root component: default export of /App.tsx (routing + layout ONLY)
 - Components in /components/*.tsx (SMALL FILES — one per section/feature)
-- CSS in /index.css (design tokens only — all styling via Tailwind classes)
+- CSS in /index.css — use CSS variables for design tokens + real CSS rules
 - NPM packages auto-installed from imports. Recommended:
   lucide-react (icons), date-fns, recharts, framer-motion, zustand, clsx, react-hot-toast
 - Always return the FULL file set. Include /App.tsx every time.
+
+## Styling rules
+- Use a /index.css file with CSS variables for the design system, then real CSS classes
+- Define :root variables for colors, then use them: color: var(--foreground)
+- Write real CSS: .hero { min-height: 80vh; display: flex; background: var(--primary); }
+- Use className="hero" in JSX — NOT inline style={{}}
+- Media queries for responsive: @media (max-width: 768px) { ... }
+- Hover effects: .btn:hover { transform: translateY(-2px); }
+- Animations: @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+- Make it look BEAUTIFUL — professional gradients, shadows, spacing, typography
 
 ## File structure (MANDATORY — split into components):
 For a landing page:
@@ -435,8 +445,8 @@ DESIGN SYSTEM (injected per request — follow exactly):
 {{DESIGN_INJECTION}}`;
 
 // Separate edit prompt — surgical, preservation-first
-const SYSTEM_EDIT = `You are editing an existing React + TypeScript + Tailwind CSS app.
-Root component = default export of /App.tsx. Design tokens in /index.css. All styling via Tailwind utility classes.
+const SYSTEM_EDIT = `You are editing an existing React + TypeScript app.
+Root component = default export of /App.tsx. Design tokens in /index.css. Styling via CSS classes.
 
 ## CARDINAL RULE: Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
 - Change ONLY what was requested. Don't "improve" anything else.
@@ -1246,7 +1256,7 @@ Build the COMPLETE feature with working state, UI, and interactions. "Add to car
 
 export function defaultProjectFiles(): ProjectFiles {
   return {
-    "/App.tsx": `import './index.css';\n\nexport default function App() {\n  return (\n    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">\n      <h1 className="text-2xl font-bold mb-2">Your app will appear here</h1>\n      <p className="text-muted-foreground">Describe what you want to build in the chat.</p>\n    </div>\n  );\n}`,
+    "/App.tsx": `import './index.css';\n\nexport default function App() {\n  return (\n    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>\n      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Your app will appear here</h1>\n      <p style={{ color: "hsl(var(--muted-foreground))" }}>Describe what you want to build in the chat.</p>\n    </div>\n  );\n}`,
     "/index.css": `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');\n\n:root {\n  --background: 0 0% 100%;\n  --foreground: 222 47% 11%;\n  --primary: 262 83% 58%;\n  --primary-foreground: 0 0% 100%;\n  --secondary: 210 40% 96%;\n  --secondary-foreground: 222 47% 11%;\n  --muted: 210 40% 96%;\n  --muted-foreground: 215 16% 47%;\n  --accent: 210 40% 96%;\n  --accent-foreground: 222 47% 11%;\n  --destructive: 0 84% 60%;\n  --destructive-foreground: 0 0% 100%;\n  --border: 214 32% 91%;\n  --input: 214 32% 91%;\n  --ring: 262 83% 58%;\n  --card: 0 0% 100%;\n  --card-foreground: 222 47% 11%;\n  --radius: 0.5rem;\n}\n\n* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }`,
   };
 }
