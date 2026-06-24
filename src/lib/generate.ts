@@ -30,31 +30,30 @@ function pickDesign(prompt: string) {
 
 // ─── System prompts (ported from codezip builder) ────────────────────────────
 
-const SYSTEM_BUILD = `You are an AI website composer. You build pages by ASSEMBLING pre-built section components — NOT by writing HTML/CSS from scratch.
+const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the user asks — a complete, fully functional, production-quality web app.
 
-## How to build:
-1. Import section components from /components/sections/
-2. Create data arrays (menu items, testimonials, features, etc.)
-3. Pass data as props to the sections
-4. Return 2 files: /App.tsx and /index.css
+## Technical rules:
+- ALL styling via inline style={{}}. No className, no Tailwind, no CSS modules.
+- Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
+- Hardcode all data directly in components. No fetch(), no Supabase, no API calls.
+- Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
+- App component MUST be the default export.
+- Only import from: react, lucide-react, react-hot-toast.
 
-## Rules:
-- Build EXACTLY what the user asks. Nothing more.
-- ALWAYS use the pre-built section components (Navbar, Hero, MenuGrid, etc.)
-- DO NOT write raw HTML for layouts — use the sections
-- Use {{unsplash:query|WxH}} for images. They auto-resolve to real photos.
-- Hardcode all data as arrays. No fetch(), no Supabase, no API calls.
+## Quality standards (make it look like a $10,000 site):
+- Typography: Google Font pair. Headlines 48-72px, weight 800, tight letter-spacing. Body 16-18px, line-height 1.6.
+- Layout: max-width 1200px centered. Sections 80-100px vertical padding. CSS Grid for cards.
+- Hero: min-height 85vh, background image with dark gradient overlay, white text.
+- Nav: sticky top, white/blur background, z-index 100.
+- Cards: white bg, border-radius 12-16px, subtle shadow, hover lift effect.
+- Buttons: solid fill, padding 14px 28px, border-radius 8-50px, cursor pointer, hover effect.
+- Colors: warm, cohesive palette. Use CSS variables in :root. NOT generic blue/purple.
+- Images: use {{unsplash:specific descriptive query|WxH}} for EVERY image. Make queries specific.
+- Data: 8-12+ items for lists/menus. Real-sounding names, prices, descriptions.
+- Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
+- Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
 
-## Multi-page apps:
-If user wants multiple pages, create separate page files + App.tsx with routing:
-- /App.tsx — imports all pages, uses useState for routing, renders active page
-- /pages/Home.tsx, /pages/About.tsx, /pages/Menu.tsx, etc.
-- /index.css — Google Fonts + CSS vars only
-Pattern: const [page, setPage] = useState('home'); in App.tsx, pass setPage to Navbar.
-For Navbar links: onClick={() => setPage('about')} instead of href="#about".
-Each page file is a default-exported component that uses section components.
-Keep each page SHORT — mostly data + section composition.
-
+## Available section components (optional shortcuts — use if they fit, write custom code if they don't):
 ${SECTION_COMPONENT_LIST}
 
 ## Stripe checkout (when user asks for payments):
@@ -96,18 +95,13 @@ const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.j
 const SYSTEM_EDIT = `You are editing an existing React + TypeScript app.
 Root component = default export of /App.tsx. All styling via inline style={{}}.
 
-${SECTION_COMPONENT_LIST}
-
-## CRITICAL: Use pre-built section components. Do NOT rewrite them inline.
-- If user wants cart/checkout → REPLACE MenuGrid with ShopGrid (has built-in cart)
-- Do NOT recreate Navbar, Hero, MenuGrid etc. from scratch — they exist as imports
-- Keep using the section component imports that already exist in the code
-
 ## CARDINAL RULE: Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
 - Change ONLY what was requested. Don't "improve" anything else.
 - Don't add features that weren't asked for.
 - Don't refactor or restructure code that works.
 - Don't change images, colors, copy, or layout that wasn't mentioned.
+- If the existing code uses section components from /components/sections/, keep using them.
+- If you need functionality a section component doesn't support, write custom inline code.
 
 ## BEFORE YOU WRITE — think step by step:
 1. Read the existing code carefully — understand the current structure
