@@ -67,8 +67,18 @@ Add a checkout button that calls ThatCode's Stripe proxy:
   };
 The STRIPE_SECRET_KEY is stored securely on the server — never in client code.
 
-## Output format:
-{ "files": [{ "path": "/App.tsx", "content": "..." }, { "path": "/index.css", "content": "..." }], "summary": "one sentence" }
+## Output format (use EXACTLY this — no JSON):
+SUMMARY: one sentence describing what you built
+
+/App.tsx
+\`\`\`tsx
+your code here
+\`\`\`
+
+/index.css
+\`\`\`css
+your css here
+\`\`\`
 
 {{DESIGN_INJECTION}}`;
 
@@ -117,18 +127,17 @@ Root component = default export of /App.tsx. All styling via inline style={{}}.
 - If you added a cart icon, does clicking it actually open the cart?
 - This concludes a fully working implementation.
 
-## Output format — choose based on change size:
+## Output format (use EXACTLY this — no JSON):
+Return ONLY the changed files in this format:
 
-FOR SMALL CHANGES (rename, text swap, color change, add a link, fix one bug):
-Return a JSON with "replacements" — search-and-replace operations on specific files:
-{ "replacements": [ { "file": "/App.tsx", "search": "exact text to find", "replace": "replacement text" } ], "summary": "one sentence" }
-Rules: "search" must be an EXACT substring of the current file content. Include enough context (2-3 lines) to be unique. You can have multiple replacements.
+SUMMARY: one sentence
 
-FOR LARGE CHANGES (new feature, restructure, add component):
-Return a JSON with "files" — complete file contents for changed files only:
-{ "files": [ { "path": "/App.tsx", "content": "full file content" } ], "summary": "one sentence" }
+/App.tsx
+\`\`\`tsx
+full updated file content
+\`\`\`
 
-ALWAYS prefer "replacements" when possible — it's 10x faster. Only use "files" when you're adding a new file or changing more than 30% of a file.`;
+Only include files you actually changed. Omit unchanged files.`;
 
 // ─── Model routing ────────────────────────────────────────────────────────────
 
@@ -597,7 +606,7 @@ export async function generateQuickEdit(
     ({ inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, 16000, userContent, SYSTEM_EDIT, tokenCallback));
   }
 
-  const parsed = parseJsonOutput(text, existingFiles);
+  const parsed = parseOutput(text, existingFiles);
   if (!parsed || (Object.keys(parsed.files).length === 0 && !parsed.replacements?.length)) {
     throw new Error("Quick edit failed — try again or use a more detailed prompt.");
   }
@@ -625,37 +634,44 @@ type ParsedOutput = {
   replacements?: { file: string; search: string; replace: string }[];
 };
 
-function parseJsonOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
+function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
+  const files: ProjectFiles = {};
+
+  // Strategy 1: GPT Engineer markdown format — /filename\n```lang\ncode\n```
+  const filePattern = /^\/(\S+)\s*\n```\w*\n([\s\S]*?)```/gm;
+  let match;
+  while ((match = filePattern.exec(text)) !== null) {
+    const path = "/" + match[1];
+    const content = match[2].trimEnd();
+    if (content.length > 10) files[path] = content;
+  }
+
+  // Extract summary
+  const summaryMatch = text.match(/SUMMARY:\s*(.+)/i);
+  const summary = summaryMatch ? summaryMatch[1].trim() : "Done! Check the preview.";
+
+  if (Object.keys(files).length > 0) {
+    return { summary, files };
+  }
+
+  // Strategy 2: try JSON format as fallback
   let jsonStr: string | null = null;
 
-  // Strategy 1: extract from markdown code fence (greedy — get ALL content between fences)
+  // Try extracting from JSON code fence
   const fenceMatch = text.match(/```(?:json)?\s*\n([\s\S]*)```\s*$/);
   if (fenceMatch) {
-    try { JSON.parse(fenceMatch[1].trim()); jsonStr = fenceMatch[1].trim(); } catch { /* not valid */ }
+    try { JSON.parse(fenceMatch[1].trim()); jsonStr = fenceMatch[1].trim(); } catch { /* */ }
   }
-  // Also try non-greedy fence
   if (!jsonStr) {
-    const fenceMatch2 = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
-    if (fenceMatch2) {
-      try { JSON.parse(fenceMatch2[1].trim()); jsonStr = fenceMatch2[1].trim(); } catch { /* not valid */ }
-    }
+    const trimmed = text.trim().replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+    try { JSON.parse(trimmed); jsonStr = trimmed; } catch { /* */ }
   }
-
-  // Strategy 2: try parsing the entire trimmed response
-  if (!jsonStr) {
-    const trimmed = text.trim();
-    // Remove leading/trailing markdown fences if present
-    const cleaned = trimmed.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
-    try { JSON.parse(cleaned); jsonStr = cleaned; } catch { /* not valid */ }
-  }
-
-  // Strategy 3: find first { and last } — try parsing that substring
   if (!jsonStr) {
     const firstBrace = text.indexOf("{");
     const lastBrace = text.lastIndexOf("}");
     if (firstBrace !== -1 && lastBrace > firstBrace) {
       const sub = text.slice(firstBrace, lastBrace + 1);
-      try { JSON.parse(sub); jsonStr = sub; } catch { /* not valid */ }
+      try { JSON.parse(sub); jsonStr = sub; } catch { /* */ }
     }
   }
 
@@ -889,7 +905,7 @@ Make the entire layout and structure match this design system. It should look DR
     );
   }
 
-  const parsed = parseJsonOutput(text, existingFiles);
+  const parsed = parseOutput(text, existingFiles);
 
   if (!parsed) {
     // Show first 500 chars of response for debugging
