@@ -628,29 +628,34 @@ type ParsedOutput = {
 function parseJsonOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
   let jsonStr: string | null = null;
 
-  // Strategy 1: extract from markdown code fence
-  const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+  // Strategy 1: extract from markdown code fence (greedy — get ALL content between fences)
+  const fenceMatch = text.match(/```(?:json)?\s*\n([\s\S]*)```\s*$/);
   if (fenceMatch) {
     try { JSON.parse(fenceMatch[1].trim()); jsonStr = fenceMatch[1].trim(); } catch { /* not valid */ }
+  }
+  // Also try non-greedy fence
+  if (!jsonStr) {
+    const fenceMatch2 = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
+    if (fenceMatch2) {
+      try { JSON.parse(fenceMatch2[1].trim()); jsonStr = fenceMatch2[1].trim(); } catch { /* not valid */ }
+    }
   }
 
   // Strategy 2: try parsing the entire trimmed response
   if (!jsonStr) {
     const trimmed = text.trim();
-    try { JSON.parse(trimmed); jsonStr = trimmed; } catch { /* not valid */ }
+    // Remove leading/trailing markdown fences if present
+    const cleaned = trimmed.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+    try { JSON.parse(cleaned); jsonStr = cleaned; } catch { /* not valid */ }
   }
 
-  // Strategy 3: find first { and try to parse from there
+  // Strategy 3: find first { and last } — try parsing that substring
   if (!jsonStr) {
     const firstBrace = text.indexOf("{");
-    if (firstBrace !== -1) {
-      const sub = text.slice(firstBrace);
-      // Try parsing progressively shorter substrings
-      for (let end = sub.length; end > 10; end--) {
-        if (sub[end - 1] === "}") {
-          try { JSON.parse(sub.slice(0, end)); jsonStr = sub.slice(0, end); break; } catch { /* keep trying */ }
-        }
-      }
+    const lastBrace = text.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      const sub = text.slice(firstBrace, lastBrace + 1);
+      try { JSON.parse(sub); jsonStr = sub; } catch { /* not valid */ }
     }
   }
 
