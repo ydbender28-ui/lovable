@@ -610,28 +610,32 @@ type ParsedOutput = {
 };
 
 function parseJsonOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
-  // Try multiple strategies to extract JSON from the response
   let jsonStr: string | null = null;
 
   // Strategy 1: extract from markdown code fence
   const fenceMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)```/);
-  if (fenceMatch) jsonStr = fenceMatch[1].trim();
-
-  // Strategy 2: find JSON object with "files" or "replacements"
-  if (!jsonStr) {
-    const jsonMatch = text.match(/\{[\s\S]*?"files"\s*:\s*\[[\s\S]*?\]\s*[\s\S]*?\}/);
-    if (jsonMatch) jsonStr = jsonMatch[0];
+  if (fenceMatch) {
+    try { JSON.parse(fenceMatch[1].trim()); jsonStr = fenceMatch[1].trim(); } catch { /* not valid */ }
   }
 
-  // Strategy 3: find any JSON object
+  // Strategy 2: try parsing the entire trimmed response
   if (!jsonStr) {
-    const anyJson = text.match(/\{[\s\S]*("files"|"replacements")[\s\S]*\}/);
-    if (anyJson) jsonStr = anyJson[0];
+    const trimmed = text.trim();
+    try { JSON.parse(trimmed); jsonStr = trimmed; } catch { /* not valid */ }
   }
 
-  // Strategy 4: the entire response might be JSON
-  if (!jsonStr && text.trim().startsWith("{")) {
-    jsonStr = text.trim();
+  // Strategy 3: find first { and try to parse from there
+  if (!jsonStr) {
+    const firstBrace = text.indexOf("{");
+    if (firstBrace !== -1) {
+      const sub = text.slice(firstBrace);
+      // Try parsing progressively shorter substrings
+      for (let end = sub.length; end > 10; end--) {
+        if (sub[end - 1] === "}") {
+          try { JSON.parse(sub.slice(0, end)); jsonStr = sub.slice(0, end); break; } catch { /* keep trying */ }
+        }
+      }
+    }
   }
 
   if (!jsonStr) return null;
