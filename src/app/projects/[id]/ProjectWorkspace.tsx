@@ -1861,12 +1861,18 @@ export default function ProjectWorkspace({
     if (flow.type !== "apikeys") return null;
     const f = flow;
     async function submit(skip = false) {
-      let newEnv = envVars;
-      if (!skip && Object.keys(values).length > 0) {
-        newEnv = { ...envVars, ...values };
-        await saveEnvVars(newEnv);
+      try {
+        let newEnv = envVars;
+        if (!skip && Object.keys(values).length > 0) {
+          newEnv = { ...envVars, ...values };
+          try { await saveEnvVars(newEnv); } catch { /* save failed, continue anyway */ }
+        }
+        setFlow({ type: "idle" });
+        runGenerate(f.pendingPrompt, newEnv);
+      } catch {
+        setFlow({ type: "idle" });
+        runGenerate(f.pendingPrompt);
       }
-      runGenerate(f.pendingPrompt, newEnv);
     }
     return (
       <div className="rounded-xl border border-blue-400/20 bg-blue-500/5 p-4 max-w-[92%] space-y-3">

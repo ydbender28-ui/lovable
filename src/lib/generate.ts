@@ -51,6 +51,20 @@ const SYSTEM_BUILD = `You are an expert React developer building beautiful, prod
 - Typography: headlines 48-64px fontWeight:800, body 16-18px, lineHeight:1.6
 - Colors: warm cohesive palette. NOT generic blue/purple.
 
+## Stripe checkout (when user asks for payments):
+Add a checkout button that calls ThatCode's Stripe proxy:
+  const checkout = async (cartItems) => {
+    const res = await fetch('/api/stripe-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId: 'PROJECT_ID', items: cartItems.map(i => ({ name: i.name, price: i.price, quantity: i.quantity || 1 })) })
+    });
+    const { url, error } = await res.json();
+    if (url) window.location.href = url;
+    else alert(error || 'Checkout failed');
+  };
+The STRIPE_SECRET_KEY is stored securely on the server — never in client code.
+
 ## Output format:
 { "files": [{ "path": "/App.tsx", "content": "..." }, { "path": "/index.css", "content": "..." }], "summary": "one sentence" }
 
