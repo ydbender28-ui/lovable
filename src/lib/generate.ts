@@ -947,26 +947,17 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     ? `\n\nEnv vars: ${JSON.stringify(envVars)}`
     : "";
 
-  // ── Smart Context Selection (like open-lovable) ──
-  // Only send relevant files, truncate large ones to save tokens
+  // ── Smart Context Selection ──
+  // Always send ALL project files so the AI can search/replace accurately
   let existingSection = "";
   if (existingFiles && Object.keys(existingFiles).length > 0) {
-    const contextFiles: ProjectFiles = {};
+    const parts: string[] = [];
     for (const [path, content] of Object.entries(existingFiles)) {
-      // Always include App.tsx and index.css
-      if (path === "/App.tsx" || path === "/index.css") {
-        // Truncate very large files to 8000 chars
-        contextFiles[path] = content.length > 8000 ? content.slice(0, 8000) + "\n// ... (truncated)" : content;
-      } else if (editIntent === "update_style" && (path.includes("css") || path.includes("style"))) {
-        contextFiles[path] = content;
-      } else if (editIntent === "add_feature" || editIntent === "full_rebuild") {
-        // Send all files for feature additions
-        contextFiles[path] = content.length > 4000 ? content.slice(0, 4000) + "\n// ... (truncated)" : content;
-      }
-      // For simple edits (content, fix), only send App.tsx — skip component files
+      const truncated = content.length > 12000 ? content.slice(0, 12000) + "\n// ... (truncated)" : content;
+      parts.push(`${path}\n\`\`\`\n${truncated}\n\`\`\``);
     }
-    const serialized = JSON.stringify(contextFiles);
-    if (serialized.length < 60000) existingSection = serialized;
+    const joined = parts.join("\n\n");
+    if (joined.length < 80000) existingSection = joined;
   }
   const knowledgeSection = customKnowledge ? `\n\nPROJECT KNOWLEDGE (always follow these conventions and requirements):\n${customKnowledge}` : "";
   const historySection = projectHistory ? `\n\nPROJECT HISTORY (what has been built so far — maintain all existing features, fix known issues, avoid regressions):\n${projectHistory}` : "";
