@@ -740,6 +740,133 @@ async function generateWithAnthropic(
   };
 }
 
+// ─── Tool-use generation (structured edits via Claude) ─────────────────────
+// Instead of parsing <<<SEARCH>>>/<<<REPLACE>>> text, Claude calls edit_file/create_file
+// tools directly. This eliminates fuzzy matching failures entirely.
+
+const EDIT_TOOLS: Anthropic.Tool[] = [
+  {
+    name: "edit_file",
+    description: "Overwrite an existing file with new content. Provide the COMPLETE new file content — not a diff.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: 'File path starting with / (e.g. "/App.tsx", "/index.css")' },
+        content: { type: "string", description: "The complete new file content" },
+      },
+      required: ["path", "content"],
+    },
+  },
+  {
+    name: "create_file",
+    description: "Create a new file in the project.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        path: { type: "string", description: 'File path starting with / (e.g. "/components/Cart.tsx")' },
+        content: { type: "string", description: "The file content" },
+      },
+      required: ["path", "content"],
+    },
+  },
+];
+
+const SYSTEM_EDIT_TOOLS = `You are editing an existing React + TypeScript app. Tailwind CSS is available.
+
+## RULES:
+- Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
+- Match the existing code style (Tailwind or inline styles).
+- NEVER change unrelated code, images, or layout.
+- Build COMPLETE features — no stubs, no TODOs.
+- The code MUST be fully functional.
+- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
+
+## HOW TO MAKE EDITS:
+Use the edit_file tool to modify existing files, or create_file for new files.
+Always provide the COMPLETE file content — not a diff or partial update.
+Only edit files that need to change. Leave unchanged files alone.
+
+## COLOR/THEME CHANGES:
+First, check the existing code to determine which color system it uses:
+- If CSS variables (bg-background, text-foreground): Change /index.css ONLY.
+- If hardcoded Tailwind classes (bg-white, text-gray-900): Edit /App.tsx with all colors swapped.
+
+## IMPORTANT:
+- Start with a brief explanation of what you'll do.
+- Then call the tools to make the edits.
+- After editing, confirm what was changed.`;
+
+async function generateWithTools(
+  model: string,
+  maxTokens: number,
+  userContent: string,
+  existingFiles: ProjectFiles,
+  onToken: (t: string) => void,
+  onStatus?: (text: string) => void,
+): Promise<{ files: ProjectFiles; text: string; inputTokens: number; outputTokens: number }> {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const editedFiles: ProjectFiles = {};
+  let fullText = "";
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  type MessageParam = Anthropic.MessageParam;
+  const messages: MessageParam[] = [{ role: "user", content: userContent }];
+
+  let continueLoop = true;
+  while (continueLoop) {
+    const stream = client.messages.stream({
+      model,
+      max_tokens: maxTokens,
+      system: [{ type: "text", text: SYSTEM_EDIT_TOOLS, cache_control: { type: "ephemeral" } }],
+      tools: EDIT_TOOLS,
+      messages,
+    });
+
+    for await (const event of stream) {
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        fullText += event.delta.text;
+        onToken(event.delta.text);
+      }
+    }
+
+    const final = await stream.finalMessage();
+    totalInputTokens += final.usage.input_tokens;
+    totalOutputTokens += final.usage.output_tokens;
+
+    const toolBlocks = final.content.filter(
+      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
+    );
+
+    if (toolBlocks.length === 0) {
+      continueLoop = false;
+      break;
+    }
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of toolBlocks) {
+      const input = block.input as { path: string; content: string };
+      const path = input.path.startsWith("/") ? input.path : "/" + input.path;
+      editedFiles[path] = input.content;
+      onStatus?.(`Edited ${path}`);
+      toolResults.push({
+        type: "tool_result",
+        tool_use_id: block.id,
+        content: `Successfully ${block.name === "create_file" ? "created" : "edited"} ${path}`,
+      });
+    }
+
+    messages.push({ role: "assistant", content: final.content });
+    messages.push({ role: "user", content: toolResults });
+
+    if (final.stop_reason !== "tool_use") {
+      continueLoop = false;
+    }
+  }
+
+  return { files: editedFiles, text: fullText, inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
+}
+
 async function generateWithOpenAI(
   model: string,
   maxTokens: number,
@@ -1347,7 +1474,7 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
   const conversationCtx = isEdit ? buildConversationContext() : "";
 
   const userContent = isEdit
-    ? `Current files:\n${existingSection}${envSection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
+    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
@@ -1377,62 +1504,98 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     }
   };
 
-  try {
-    if (modelOpt.provider === "anthropic") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
-    } else if (modelOpt.provider === "openai") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
-    } else if (modelOpt.provider === "google") {
-      ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+  // ── Tool-based edits for Anthropic (edits only) ──
+  // Uses structured tool calls instead of search/replace text parsing.
+  // New builds still use the text-based flow (full file output works great).
+  let toolEditFiles: ProjectFiles | null = null;
+
+  if (isEdit && modelOpt.provider === "anthropic" && existingFiles) {
+    try {
+      onStatus?.("Analyzing your request…");
+      const toolResult = await generateWithTools(
+        modelOpt.model, modelOpt.maxTokens, userContent, existingFiles, tokenCallback, onStatus
+      );
+      toolEditFiles = toolResult.files;
+      text = toolResult.text;
+      inputTokens = toolResult.inputTokens;
+      outputTokens = toolResult.outputTokens;
+    } catch {
+      // Tool-based edit failed — fall through to text-based flow below
+      toolEditFiles = null;
+      text = "";
+      lastStatusIdx = -1;
     }
-  } catch {
-    // Provider failed — silently fall back to Claude Sonnet
-    const fallback = MODELS["claude-sonnet-4-6"];
-    if (modelOpt.provider !== "anthropic") {
+  }
+
+  // Text-based flow: new builds, non-Anthropic providers, or tool-edit fallback
+  if (!toolEditFiles) {
+    try {
+      if (modelOpt.provider === "anthropic") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
+      } else if (modelOpt.provider === "openai") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+      } else if (modelOpt.provider === "google") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+      }
+    } catch {
+      // Provider failed — silently fall back to Claude Sonnet
+      const fallback = MODELS["claude-sonnet-4-6"];
+      if (modelOpt.provider !== "anthropic") {
+        text = "";
+        lastStatusIdx = -1;
+        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
+          fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
+        ));
+        modelOpt = { ...fallback };
+      } else {
+        throw new Error("Generation failed. Please try again.");
+      }
+    }
+
+    // If output was cut off and we're not already on Sonnet, retry with Sonnet
+    if (stopped && modelOpt.model !== "claude-sonnet-4-6") {
+      const sonnet = MODELS["claude-sonnet-4-6"];
       text = "";
       lastStatusIdx = -1;
       ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-        fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
+        sonnet.model, sonnet.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
       ));
-      modelOpt = { ...fallback };
-    } else {
-      throw new Error("Generation failed. Please try again.");
+      modelOpt = { ...sonnet };
+    }
+
+    if (stopped) {
+      throw new Error(
+        `Response was cut off (${modelOpt.displayName} hit its output limit). ` +
+        "Try breaking your request into steps — build the basics first, then add features one at a time."
+      );
     }
   }
 
-  // If output was cut off and we're not already on Sonnet, retry with Sonnet
-  if (stopped && modelOpt.model !== "claude-sonnet-4-6") {
-    const sonnet = MODELS["claude-sonnet-4-6"];
-    text = "";
-    lastStatusIdx = -1;
-    ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-      sonnet.model, sonnet.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
-    ));
-    modelOpt = { ...sonnet };
-  }
+  // ── Parse results ──
+  let parsed: ParsedOutput | null;
 
-  if (stopped) {
-    throw new Error(
-      `Response was cut off (${modelOpt.displayName} hit its output limit). ` +
-      "Try breaking your request into steps — build the basics first, then add features one at a time."
-    );
-  }
+  if (toolEditFiles && Object.keys(toolEditFiles).length > 0) {
+    // Tool-based edit succeeded — extract summary from the text response
+    const summaryMatch = text.match(/^(.{10,150}?)(?:\.|$)/m);
+    parsed = {
+      summary: summaryMatch ? summaryMatch[1].trim() : "Edit applied successfully.",
+      files: toolEditFiles,
+      suggestions: [],
+    };
+  } else {
+    parsed = parseOutput(text, existingFiles);
 
-  let parsed = parseOutput(text, existingFiles);
+    if (!parsed) {
+      const preview = text.slice(0, 500).replace(/\n/g, " ");
+      throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
+    }
 
-  if (!parsed) {
-    // Show first 500 chars of response for debugging
-    const preview = text.slice(0, 500).replace(/\n/g, " ");
-    throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
-  }
+    // ── Retry failed replacements (one attempt) ──
+    if (isEdit && parsed.failedReplacements && parsed.failedReplacements.length > 0 && existingFiles) {
+      const failedFiles = [...new Set(parsed.failedReplacements.map(r => r.file))];
+      onStatus?.("Some edits didn't match — retrying…");
 
-  // ── Retry failed replacements (one attempt) ──
-  // If some search/replace blocks didn't match, ask the AI to return full files for those
-  if (isEdit && parsed.failedReplacements && parsed.failedReplacements.length > 0 && existingFiles) {
-    const failedFiles = [...new Set(parsed.failedReplacements.map(r => r.file))];
-    onStatus?.("Some edits didn't match — retrying…");
-
-    const retryPrompt = `Your previous search/replace blocks failed to match. The SEARCH text didn't exist in the file.
+      const retryPrompt = `Your previous search/replace blocks failed to match. The SEARCH text didn't exist in the file.
 
 Failed edits that need to be applied:
 ${parsed.failedReplacements.map(r => `File: ${r.file}\nIntended change: replace\n${r.search}\nwith\n${r.replace}`).join("\n\n")}
@@ -1444,25 +1607,25 @@ Return the FULL updated file(s) in markdown fence format with the changes applie
 
 ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("\n\n")}`;
 
-    let retryText = "";
-    try {
-      if (modelOpt.provider === "anthropic") {
-        await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
-      } else if (modelOpt.provider === "openai") {
-        await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
-      } else if (modelOpt.provider === "google") {
-        await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
-      }
-      const retryParsed = parseOutput(retryText, existingFiles);
-      if (retryParsed && Object.keys(retryParsed.files).length > 0) {
-        // Merge retry results into the original parsed files
-        for (const [path, content] of Object.entries(retryParsed.files)) {
-          parsed.files[path] = content;
+      let retryText = "";
+      try {
+        if (modelOpt.provider === "anthropic") {
+          await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
+        } else if (modelOpt.provider === "openai") {
+          await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
+        } else if (modelOpt.provider === "google") {
+          await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
         }
-        parsed.failedReplacements = undefined;
+        const retryParsed = parseOutput(retryText, existingFiles);
+        if (retryParsed && Object.keys(retryParsed.files).length > 0) {
+          for (const [path, content] of Object.entries(retryParsed.files)) {
+            parsed.files[path] = content;
+          }
+          parsed.failedReplacements = undefined;
+        }
+      } catch {
+        // Retry failed — continue with whatever edits did succeed
       }
-    } catch {
-      // Retry failed — continue with whatever edits did succeed
     }
   }
 
