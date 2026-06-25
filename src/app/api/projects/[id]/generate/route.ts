@@ -101,13 +101,8 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     : null;
 
 
-  // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
-  // Feature requests (cart, search, admin, etc.) MUST use the full pipeline
-  const useQuickEdit = existingFiles &&
-    (finalRoute.taskType === "style" || finalRoute.taskType === "content") &&
-    !imageBase64 &&
-    prompt.length < 80 &&
-    !/\b(add|cart|checkout|search|admin|login|auth|payment|form|modal|page|section|feature|button.*work|make.*work|implement)\b/i.test(prompt);
+  // Quick edit disabled — full pipeline with search/replace is more reliable
+  const useQuickEdit = false;
 
   // Token buffer for streaming to client
   const tokenBuffer: string[] = [];
