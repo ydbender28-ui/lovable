@@ -197,11 +197,32 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
 
-## COLOR/THEME CHANGES — CRITICAL:
-When the user asks to change colors, you MUST change the Tailwind classes in the JSX, NOT CSS variables.
-Example: "make it dark green" means change className="bg-white" → className="bg-green-950" and className="text-gray-900" → className="text-green-100" etc.
-Change ALL elements: nav, sections, cards, buttons, text, borders, footer. Every className with a color.
-Do NOT just change :root CSS variables — Tailwind classes override them so it won't work.
+## COLOR/THEME CHANGES — READ THIS CAREFULLY:
+CSS variables DO NOT WORK for color changes. Tailwind classes override them.
+The ONLY way to change colors is to modify className="..." strings in the JSX.
+
+You MUST use multiple <<<SEARCH>>> / <<<REPLACE>>> blocks to change EVERY element:
+
+<<<SEARCH>>> /App.tsx
+className="bg-white
+<<<REPLACE>>>
+className="bg-green-950
+<<<END>>>
+
+<<<SEARCH>>> /App.tsx
+className="bg-stone-50
+<<<REPLACE>>>
+className="bg-green-900
+<<<END>>>
+
+<<<SEARCH>>> /App.tsx
+className="text-stone-900
+<<<REPLACE>>>
+className="bg-green-950 text-green-50
+<<<END>>>
+
+Do this for EVERY color class in the file. Search for bg-, text-, border- classes and replace them ALL.
+NEVER touch /index.css for color changes. NEVER add CSS overrides. ONLY change className values.
 
 ## OUTPUT FORMAT — use SEARCH/REPLACE blocks:
 
