@@ -1510,29 +1510,9 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     }
   };
 
-  // ── Tool-based edits for Anthropic (edits only) ──
-  // Uses structured tool calls instead of search/replace text parsing.
-  // New builds still use the text-based flow (full file output works great).
-  let toolEditFiles: ProjectFiles | null = null;
-
-  if (isEdit && modelOpt.provider === "anthropic" && existingFiles) {
-    try {
-      onStatus?.("Analyzing your request…");
-      const toolResult = await generateWithTools(
-        modelOpt.model, modelOpt.maxTokens, toolUserContent, existingFiles, tokenCallback, onStatus
-      );
-      toolEditFiles = toolResult.files;
-      text = toolResult.text;
-      inputTokens = toolResult.inputTokens;
-      outputTokens = toolResult.outputTokens;
-    } catch (err) {
-      // Tool-based edit failed — fall through to text-based flow below
-      console.error("Tool-use edit failed, falling back to text:", err);
-      toolEditFiles = null;
-      text = "";
-      lastStatusIdx = -1;
-    }
-  }
+  // ── Tool-based edits (disabled for now — text-based is more stable) ──
+  // TODO: Re-enable once tool-use streaming is verified on Vercel
+  const toolEditFiles: ProjectFiles | null = null;
 
   // Text-based flow: new builds, non-Anthropic providers, or tool-edit fallback
   if (!toolEditFiles) {
