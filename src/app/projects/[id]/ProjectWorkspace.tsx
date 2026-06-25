@@ -1236,8 +1236,8 @@ export default function ProjectWorkspace({
       const renameMatch = trimmed.match(
         /^(?:change|rename|update|set)\s+(?:the\s+)?(?:company\s+)?(?:name|title|heading|brand|text)\s+(?:from\s+.+?\s+)?to\s+["']?(.+?)["']?\s*$/i
       );
-      // Detect color/theme change requests → show palette picker
-      const isColorChange = /\b(change|make|set|switch|update)\b.*\b(color|background|theme|dark|light|blue|red|green|purple|pink|orange|teal|warm|cool|palette|scheme)\b/i.test(trimmed);
+      // Color changes go straight to AI — Tailwind makes them reliable
+      const isColorChange = false;
 
       if (renameMatch) {
         const newName = renameMatch[1].trim();
