@@ -1,9 +1,14 @@
 import ts from "typescript";
+import { SECTION_COMPONENTS } from "./section-components";
+import { UI_COMPONENTS } from "./ui-components";
 
 export type ProjectFiles = Record<string, string>;
 
 const REACT_CDN = "https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js";
 const REACT_DOM_CDN = "https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js";
+
+// Stub lucide-react icons as simple SVG components so published apps don't crash
+const LUCIDE_STUB = `var _ic=function(d){return function(p){var s=p&&p.size||24;return React.createElement('svg',{width:s,height:s,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round',style:p&&p.style||{}},React.createElement('path',{d:d}));}};var ShoppingCart=_ic('M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6');var MapPin=_ic('M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z');var Phone=_ic('M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72');var Clock=_ic('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 6v6l4 2');var Mail=_ic('M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zM22 6l-10 7L2 6');var Star=_ic('M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z');var Heart=_ic('M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z');var Search=_ic('M11 17.25a6.25 6.25 0 1 1 0-12.5 6.25 6.25 0 0 1 0 12.5zM21 21l-4.35-4.35');var Menu=_ic('M3 12h18M3 6h18M3 18h18');var X=_ic('M18 6L6 18M6 6l12 12');var ChevronDown=_ic('M6 9l6 6 6-6');var ChevronRight=_ic('M9 18l6-6-6-6');var ArrowRight=_ic('M5 12h14M12 5l7 7-7 7');var Check=_ic('M20 6L9 17l-5-5');var Plus=_ic('M12 5v14M5 12h14');var Minus=_ic('M5 12h14');var Trash2=_ic('M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2');var Eye=_ic('M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z');var User=_ic('M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z');var Settings=_ic('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z');var Home=_ic('M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z');var Calendar=_ic('M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18');var Filter=_ic('M22 3H2l8 9.46V19l4 2v-8.54L22 3z');var ExternalLink=_ic('M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3');`;
 
 let _reactCache: { react: string; reactDom: string } | null = null;
 
@@ -43,8 +48,10 @@ function transpileTSX(code: string): string {
 }
 
 function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName: string; styles: string; title: string } {
+  // Merge in pre-built components that the app may import
+  const allFiles = { ...UI_COMPONENTS, ...SECTION_COMPONENTS, ...projectFiles };
   const src: ProjectFiles = {};
-  for (const [p, c] of Object.entries(projectFiles)) {
+  for (const [p, c] of Object.entries(allFiles)) {
     src[p.replace(/^\//, "")] = c;
   }
 
@@ -116,7 +123,7 @@ export function buildPublishHtml(
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){__reportErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
   const renderCall = `${errorBoundary}\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__EB,null,React.createElement(${componentName},null)));`;
-  const fullCode = (code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
+  const fullCode = (LUCIDE_STUB + "\n" + code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
 
   return `<!doctype html>
 <html lang="en">
@@ -205,7 +212,7 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
   const renderCall = `${errorBoundary}\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__EB,null,React.createElement(${componentName},null)));`;
-  const fullCode = (code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
+  const fullCode = (LUCIDE_STUB + "\n" + code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
 
   return `<!doctype html>
 <html lang="en">
