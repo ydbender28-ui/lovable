@@ -5,6 +5,83 @@ import { EXTRA_COMPONENT_LIST } from "./extra-components";
 
 export type ProjectFiles = Record<string, string>;
 
+// ─── Conversation state (tracks edits across requests to prevent regressions) ─
+
+interface ConversationEdit {
+  timestamp: number;
+  userRequest: string;
+  editType: string;
+  filesChanged: string[];
+}
+
+interface ConversationState {
+  messages: { role: "user" | "assistant"; content: string; filesChanged?: string[] }[];
+  edits: ConversationEdit[];
+  recentlyCreatedFiles: string[];
+}
+
+// Global state — persists across requests within the same server process
+const conversationState: ConversationState = {
+  messages: [],
+  edits: [],
+  recentlyCreatedFiles: [],
+};
+
+function trimConversationState() {
+  if (conversationState.messages.length > 15) {
+    conversationState.messages = conversationState.messages.slice(-15);
+  }
+  if (conversationState.edits.length > 8) {
+    conversationState.edits = conversationState.edits.slice(-8);
+  }
+  if (conversationState.recentlyCreatedFiles.length > 20) {
+    conversationState.recentlyCreatedFiles = conversationState.recentlyCreatedFiles.slice(-20);
+  }
+}
+
+function buildConversationContext(): string {
+  if (conversationState.messages.length < 2 && conversationState.edits.length === 0) return "";
+
+  const parts: string[] = ["\n\n## Conversation History"];
+
+  // Warn about recently created files to prevent duplicates
+  if (conversationState.recentlyCreatedFiles.length > 0) {
+    const unique = [...new Set(conversationState.recentlyCreatedFiles)];
+    parts.push("\n### RECENTLY CREATED/EDITED FILES (DO NOT RECREATE — UPDATE THEM INSTEAD):");
+    for (const f of unique) parts.push(`- ${f}`);
+  }
+
+  // Last few user messages for context continuity
+  const recentUserMsgs = conversationState.messages
+    .filter(m => m.role === "user")
+    .slice(-3);
+  if (recentUserMsgs.length > 0) {
+    parts.push("\n### Recent requests:");
+    for (const m of recentUserMsgs) {
+      const truncated = m.content.length > 120 ? m.content.slice(0, 120) + "…" : m.content;
+      parts.push(`- "${truncated}"`);
+    }
+  }
+
+  // Recent edits so the AI knows what was changed
+  const recentEdits = conversationState.edits.slice(-3);
+  if (recentEdits.length > 0) {
+    parts.push("\n### Recent edits applied:");
+    for (const e of recentEdits) {
+      parts.push(`- [${e.editType}] ${e.userRequest.slice(0, 80)} → changed: ${e.filesChanged.join(", ")}`);
+    }
+  }
+
+  const ctx = parts.join("\n");
+  return ctx.length > 2000 ? ctx.slice(0, 2000) + "\n[context truncated]" : ctx;
+}
+
+export function resetConversationState() {
+  conversationState.messages = [];
+  conversationState.edits = [];
+  conversationState.recentlyCreatedFiles = [];
+}
+
 // ─── Design seeds ─────────────────────────────────────────────────────────────
 
 const DESIGN_THEMES = [
@@ -878,6 +955,34 @@ type ParsedOutput = {
 // Longest Common Subsequence based fuzzy match — finds the best matching
 // region in source for a search string, tolerating minor whitespace differences
 // while preserving indentation in the output.
+// ─── Truncation detection ────────────────────────────────────────────────────
+
+function detectTruncatedFiles(files: ProjectFiles): string[] {
+  const truncated: string[] = [];
+  for (const [path, content] of Object.entries(files)) {
+    if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+
+    const opens = (content.match(/\{/g) || []).length;
+    const closes = (content.match(/\}/g) || []).length;
+    const severeBraceMismatch = Math.abs(opens - closes) > 3;
+
+    const endsAbruptly = /[,(\{<]\s*$/.test(content.trim());
+
+    const hasEllipsis = content.includes("...") &&
+      !content.includes("...rest") && !content.includes("...props") &&
+      content.trim().endsWith("...");
+
+    const tooShort = content.length < 50 && !content.includes("export");
+
+    if (severeBraceMismatch || endsAbruptly || hasEllipsis || tooShort) {
+      truncated.push(path);
+    }
+  }
+  return truncated;
+}
+
+// ─── Fuzzy matching ──────────────────────────────────────────────────────────
+
 function fuzzyFindRegion(source: string, search: string): { start: number; end: number } | null {
   const sourceLines = source.split("\n");
   const searchLines = search.split("\n").map(l => l.trim()).filter(l => l.length > 0);
@@ -1157,13 +1262,65 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     : "";
 
   // ── Smart Context Selection ──
-  // Always send ALL project files so the AI can search/replace accurately
+  // For edits: split files into PRIMARY (to edit, full content) and CONTEXT (reference, truncated)
+  // For new builds: no existing files needed
   let existingSection = "";
   if (existingFiles && Object.keys(existingFiles).length > 0) {
+    const allPaths = Object.keys(existingFiles);
+
+    // Key files always included in full
+    const keyFiles = allPaths.filter(p =>
+      p.endsWith("/App.tsx") || p.endsWith("/index.css") || p.endsWith("tailwind.config.js") || p.endsWith("package.json")
+    );
+
+    // Find primary files: files the user is likely referring to
+    const promptLower = prompt.toLowerCase();
+    const primaryFiles = allPaths.filter(p => {
+      if (keyFiles.includes(p)) return true;
+      const name = p.split("/").pop()?.replace(/\.\w+$/, "").toLowerCase() ?? "";
+      // If user mentions the component/file name
+      if (name && promptLower.includes(name)) return true;
+      // If user mentions text that exists in this file
+      const content = existingFiles[p];
+      const quotedStrings = prompt.match(/["']([^"']+)["']/g);
+      if (quotedStrings) {
+        for (const qs of quotedStrings) {
+          const clean = qs.replace(/["']/g, "");
+          if (clean.length > 2 && content.includes(clean)) return true;
+        }
+      }
+      return false;
+    });
+
+    // If no specific files matched, or it's a style/rebuild — include all
+    const usePrimary = primaryFiles.length > 0 && primaryFiles.length < allPaths.length &&
+      editIntent !== "full_rebuild" && editIntent !== "update_style";
+
     const parts: string[] = [];
-    for (const [path, content] of Object.entries(existingFiles)) {
-      const truncated = content.length > 12000 ? content.slice(0, 12000) + "\n// ... (truncated)" : content;
-      parts.push(`${path}\n\`\`\`\n${truncated}\n\`\`\``);
+    if (usePrimary) {
+      // Primary files: full content, marked for editing
+      parts.push("## Files to Edit:\n");
+      for (const path of primaryFiles) {
+        const content = existingFiles[path];
+        const truncated = content.length > 12000 ? content.slice(0, 12000) + "\n// ... (truncated)" : content;
+        parts.push(`${path}\n\`\`\`\n${truncated}\n\`\`\``);
+      }
+      // Context files: truncated for reference
+      const contextPaths = allPaths.filter(p => !primaryFiles.includes(p));
+      if (contextPaths.length > 0) {
+        parts.push("\n## Context Files (reference only — do not edit unless necessary):\n");
+        for (const path of contextPaths) {
+          const content = existingFiles[path];
+          const truncated = content.length > 2000 ? content.slice(0, 2000) + "\n// ... [truncated]" : content;
+          parts.push(`${path}\n\`\`\`\n${truncated}\n\`\`\``);
+        }
+      }
+    } else {
+      // Fallback: send all files in full (small projects or broad edits)
+      for (const [path, content] of Object.entries(existingFiles)) {
+        const truncated = content.length > 12000 ? content.slice(0, 12000) + "\n// ... (truncated)" : content;
+        parts.push(`${path}\n\`\`\`\n${truncated}\n\`\`\``);
+      }
     }
     const joined = parts.join("\n\n");
     if (joined.length < 80000) existingSection = joined;
@@ -1183,8 +1340,14 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     full_rebuild: "Rebuild the app from scratch. Return the FULL file using markdown fence format.",
   };
 
+  // Track this request in conversation state
+  conversationState.messages.push({ role: "user", content: prompt });
+  trimConversationState();
+
+  const conversationCtx = isEdit ? buildConversationContext() : "";
+
   const userContent = isEdit
-    ? `Current files:\n${existingSection}${envSection}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
+    ? `Current files:\n${existingSection}${envSection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
@@ -1339,6 +1502,50 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
     }
   }
 
+  // ── Truncation Recovery ──
+  // Detect files that look cut off and ask the AI to complete them
+  const truncatedFiles = detectTruncatedFiles(parsed.files);
+  if (truncatedFiles.length > 0) {
+    onStatus?.("Fixing truncated files…");
+    for (const filePath of truncatedFiles) {
+      const partialContent = parsed.files[filePath];
+      const completionPrompt = `This file was truncated during generation. Complete it.
+
+File: ${filePath}
+Original request: ${prompt}
+
+Partial content:
+\`\`\`tsx
+${partialContent}
+\`\`\`
+
+Return the COMPLETE file. Include all imports, complete all functions, close all tags. Use markdown fence format:
+
+${filePath}
+\`\`\`tsx
+complete file here
+\`\`\``;
+
+      let completionText = "";
+      try {
+        if (modelOpt.provider === "anthropic") {
+          await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, completionPrompt, "Complete the truncated file. Return the full working code.", (t) => { completionText += t; });
+        } else if (modelOpt.provider === "openai") {
+          await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, completionPrompt, "Complete the truncated file. Return the full working code.", (t) => { completionText += t; });
+        } else if (modelOpt.provider === "google") {
+          await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, completionPrompt, "Complete the truncated file. Return the full working code.", (t) => { completionText += t; });
+        }
+        // Extract code from markdown fence
+        const codeMatch = completionText.match(/```[\w]*\n([\s\S]*?)```/);
+        if (codeMatch && codeMatch[1].length > partialContent.length) {
+          parsed.files[filePath] = codeMatch[1].trimEnd();
+        }
+      } catch {
+        // Completion failed — keep partial content, better than nothing
+      }
+    }
+  }
+
   // Resolve {{unsplash:...}} tokens → real photo URLs
   // Skip for edits (no new images) to save 2-8s
   let resolvedFiles: ProjectFiles;
@@ -1368,6 +1575,20 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
   const finalFiles = isEdit && existingFiles
     ? { ...existingFiles, ...resolvedFiles }
     : resolvedFiles;
+
+  // ── Update conversation state ──
+  const changedFiles = Object.keys(parsed.files);
+  conversationState.messages.push({ role: "assistant", content: parsed.summary, filesChanged: changedFiles });
+  conversationState.recentlyCreatedFiles.push(...changedFiles);
+  if (isEdit) {
+    conversationState.edits.push({
+      timestamp: Date.now(),
+      userRequest: prompt.slice(0, 120),
+      editType: editIntent,
+      filesChanged: changedFiles,
+    });
+  }
+  trimConversationState();
 
   return {
     files: finalFiles,
