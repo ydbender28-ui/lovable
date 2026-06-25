@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { UI_COMPONENT_LIST } from "./ui-components";
 import { SECTION_COMPONENT_LIST } from "./section-components";
+import { EXTRA_COMPONENT_LIST } from "./extra-components";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -33,26 +34,24 @@ function pickDesign(prompt: string) {
 const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the user asks — a complete, fully functional, production-quality web app.
 
 ## Technical rules:
-- ALL styling via inline style={{}}. No className, no Tailwind, no CSS modules.
+- Styling: use Tailwind CSS classes via className="..." (preferred) OR inline style={{}}. Both work.
+- Tailwind CDN is pre-loaded — all Tailwind classes work out of the box.
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
 - App component MUST be the default export.
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
 
-## JSX SYNTAX — FOLLOW EXACTLY (errors here break the entire app):
+## STYLING — USE TAILWIND CSS (preferred):
 
-Event handlers — use expression body, NO braces, NO semicolons:
-CORRECT: onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
+Tailwind CDN is pre-loaded. Use className for all styling:
+<div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+<button className="bg-orange-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-700 transition-colors">
+<section className="py-24 px-10 max-w-7xl mx-auto">
+<h1 className="text-6xl font-extrabold tracking-tight">
+<nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
 
-Multiple style changes — use Object.assign:
-CORRECT: onMouseEnter={(e) => Object.assign(e.currentTarget.style, { color: "#fff", background: "#000" })}
-WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#000"; }}
-
-Style objects — NO trailing semicolons:
-CORRECT: style={{ color: "#fff", fontSize: 16 }}
-WRONG:   style={{ color: "#fff", fontSize: 16; }}
+Inline style={{}} also works as fallback. Do NOT use semicolons in style objects.
 
 Other rules:
 - App component MUST be "export default function App()"
@@ -76,8 +75,11 @@ Other rules:
 - Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
 - Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
 
-## Available section components (optional shortcuts — use if they fit, write custom code if they don't):
+## 50+ pre-built components available (import from /components/sections/):
 ${SECTION_COMPONENT_LIST}
+
+## Additional UI components:
+${EXTRA_COMPONENT_LIST}
 
 ## Stripe checkout (when user asks for payments):
 Add a checkout button that calls ThatCode's Stripe proxy:
@@ -109,52 +111,62 @@ your code here
 your css here
 \`\`\`
 
-## COMPLETE EXAMPLE of correct output format and code style:
+## COMPLETE EXAMPLE (use Tailwind classes like this):
 
-SUMMARY: A warm, editorial bakery landing page with hero, menu grid, and contact section.
+SUMMARY: A warm bakery landing page with hero, menu grid, and contact section.
 
-SUGGESTIONS: Add online ordering | Add customer reviews | Add dark mode | Add gallery section | Add newsletter signup
+SUGGESTIONS: Add online ordering | Add customer reviews | Add dark mode | Add gallery | Add newsletter
 
 /App.tsx
 \`\`\`tsx
 import React, { useState } from 'react';
-import { ShoppingCart, MapPin, Clock, Phone } from 'lucide-react';
+import { MapPin, Clock } from 'lucide-react';
 
 const MENU = [
-  { id: 1, name: "Sourdough Loaf", price: 8.50, desc: "72-hour fermented, crispy crust", category: "Bread" },
-  { id: 2, name: "Almond Croissant", price: 5.25, desc: "Twice-baked with frangipane cream", category: "Pastry" },
+  { id: 1, name: "Sourdough Loaf", price: 8.50, desc: "72-hour fermented, crispy crust", cat: "Bread" },
+  { id: 2, name: "Almond Croissant", price: 5.25, desc: "Twice-baked with frangipane", cat: "Pastry" },
+  { id: 3, name: "Espresso", price: 3.50, desc: "Bold, rich single shot", cat: "Coffee" },
 ];
 
 export default function App() {
-  const [active, setActive] = useState("All");
   return (
-    <div style={{ background: "var(--background)", color: "var(--text)", minHeight: "100vh" }}>
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid var(--border)", padding: "0 40px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-          <span style={{ fontSize: 20, fontWeight: 800 }}>Rise & Crust</span>
+    <div className="min-h-screen bg-stone-50 text-stone-900">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-stone-200 px-10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-16">
+          <span className="text-xl font-extrabold tracking-tight">Rise & Crust</span>
+          <div className="flex gap-8 items-center">
+            <a href="#menu" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Menu</a>
+            <a href="#about" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">About</a>
+            <a href="#contact" className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-stone-700 transition-colors">Visit Us</a>
+          </div>
         </div>
       </nav>
-      <section style={{ position: "relative", minHeight: "85vh", display: "flex", alignItems: "center" }}>
-        <img src="{{unsplash:artisan bakery warm morning light|1600x900}}" alt="Bakery" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", padding: "80px 40px", color: "#fff" }}>
-          <h1 style={{ fontSize: "clamp(36px, 6vw, 72px)", fontWeight: 800, lineHeight: 1.05 }}>Baked fresh. Every morning.</h1>
+      <section className="relative min-h-[85vh] flex items-center">
+        <img src="{{unsplash:artisan bakery warm morning light|1600x900}}" alt="Bakery" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70" />
+        <div className="relative z-10 max-w-7xl mx-auto px-10 py-20 text-white">
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight max-w-2xl">Baked fresh. Every morning.</h1>
+          <p className="text-lg mt-6 max-w-lg opacity-85">Small-batch sourdough, pastries, and single-origin coffee in the heart of downtown.</p>
         </div>
       </section>
-      <section style={{ padding: "100px 40px", maxWidth: 1200, margin: "0 auto" }}>
-        <h2 style={{ fontSize: 40, fontWeight: 700, marginBottom: 40 }}>Our Menu</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
+      <section id="menu" className="py-24 px-10 max-w-7xl mx-auto">
+        <h2 className="text-4xl font-bold tracking-tight mb-10">Our Menu</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {MENU.map(item => (
-            <div key={item.id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 24 }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-4px)")}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "none")}>
-              <h3 style={{ fontSize: 17, fontWeight: 600 }}>{item.name}</h3>
-              <p style={{ fontSize: 14, color: "var(--muted)", marginTop: 4 }}>{item.desc}</p>
-              <p style={{ fontSize: 17, fontWeight: 700, marginTop: 12 }}>\${item.price.toFixed(2)}</p>
+            <div key={item.id} className="bg-white border border-stone-200 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
+              <h3 className="text-lg font-semibold">{item.name}</h3>
+              <p className="text-sm text-stone-500 mt-1">{item.desc}</p>
+              <p className="text-lg font-bold mt-3">\${item.price.toFixed(2)}</p>
             </div>
           ))}
         </div>
       </section>
+      <footer className="border-t border-stone-200 py-12 px-10">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <span className="font-bold">Rise & Crust</span>
+          <span className="text-sm text-stone-400">&copy; 2026 All rights reserved.</span>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -163,12 +175,10 @@ export default function App() {
 /index.css
 \`\`\`css
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-:root { --background: #faf8f5; --card: #ffffff; --border: #e8e0d5; --accent: #b45309; --accent2: #92400e; --text: #1c1109; --muted: #78716c; }
 body { font-family: 'DM Sans', sans-serif; margin: 0; }
-* { box-sizing: border-box; }
 \`\`\`
 
-^^^ Follow this EXACT code style: expression-body event handlers, CSS variables, clean structure.
+^^^ Follow this EXACT code style: Tailwind classes, clean structure, real data.
 
 {{DESIGN_INJECTION}}
 
@@ -179,13 +189,12 @@ const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.j
 
 // Separate edit prompt — surgical, preservation-first
 const SYSTEM_EDIT = `You are editing an existing React + TypeScript app.
-Root component = default export of /App.tsx. All styling via inline style={{}}.
+Root component = default export of /App.tsx. Tailwind CSS is available — use className for styling.
 
-## JSX SYNTAX — FOLLOW EXACTLY:
-Event handlers — expression body, NO braces, NO semicolons:
-CORRECT: onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-WRONG:   onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
-Multiple style changes: onMouseEnter={(e) => Object.assign(e.currentTarget.style, { color: "#fff", background: "#000" })}
+## MATCH THE EXISTING STYLE:
+- If existing code uses Tailwind classes → use Tailwind for your changes.
+- If existing code uses inline styles → use inline styles for consistency.
+- Do NOT mix approaches within the same component.
 
 ## CARDINAL RULE: Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
 - Change ONLY what was requested. Don't "improve" anything else.

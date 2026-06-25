@@ -10,6 +10,7 @@ import {
 } from "@codesandbox/sandpack-react";
 import { UI_COMPONENTS } from "@/lib/ui-components";
 import { SECTION_COMPONENTS } from "@/lib/section-components";
+import { EXTRA_COMPONENTS } from "@/lib/extra-components";
 
 export type SandpackErr = {
   message: string;
@@ -53,10 +54,22 @@ export default function Preview({
   onError: (e: SandpackErr | null) => void;
   view: "preview" | "code" | "console";
 }) {
-  // Inject pre-built UI + section components
+  // Inject Tailwind CDN + pre-built components
   const allFiles: Record<string, string> = {
+    "/public/index.html": `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwindcss?.config && Object.assign(tailwindcss.config, { theme: { extend: {} } });</script>
+</head>
+<body><div id="root"></div></body>
+</html>`,
     ...UI_COMPONENTS,
     ...SECTION_COMPONENTS,
+    ...EXTRA_COMPONENTS,
     ...files,
   };
 

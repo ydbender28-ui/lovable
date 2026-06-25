@@ -1,6 +1,7 @@
 import ts from "typescript";
 import { SECTION_COMPONENTS } from "./section-components";
 import { UI_COMPONENTS } from "./ui-components";
+import { EXTRA_COMPONENTS } from "./extra-components";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -49,7 +50,7 @@ function transpileTSX(code: string): string {
 
 function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName: string; styles: string; title: string } {
   // Merge in pre-built components that the app may import
-  const allFiles = { ...UI_COMPONENTS, ...SECTION_COMPONENTS, ...projectFiles };
+  const allFiles = { ...UI_COMPONENTS, ...SECTION_COMPONENTS, ...EXTRA_COMPONENTS, ...projectFiles };
   const src: ProjectFiles = {};
   for (const [p, c] of Object.entries(allFiles)) {
     src[p.replace(/^\//, "")] = c;
