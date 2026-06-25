@@ -810,12 +810,11 @@ async function generateWithTools(
   let totalInputTokens = 0;
   let totalOutputTokens = 0;
 
-  type MessageParam = Anthropic.MessageParam;
-  const messages: MessageParam[] = [{ role: "user", content: userContent }];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const messages: any[] = [{ role: "user", content: userContent }];
 
-  let continueLoop = true;
-  while (continueLoop) {
-    const stream = client.messages.stream({
+  for (let iteration = 0; iteration < 5; iteration++) {
+    const response = await client.messages.create({
       model,
       max_tokens: maxTokens,
       system: [{ type: "text", text: SYSTEM_EDIT_TOOLS, cache_control: { type: "ephemeral" } }],
@@ -823,45 +822,46 @@ async function generateWithTools(
       messages,
     });
 
-    for await (const event of stream) {
-      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        fullText += event.delta.text;
-        onToken(event.delta.text);
+    totalInputTokens += response.usage.input_tokens;
+    totalOutputTokens += response.usage.output_tokens;
+
+    // Extract text and tool use blocks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const toolBlocks: any[] = [];
+    for (const block of response.content) {
+      if (block.type === "text") {
+        fullText += block.text;
+        onToken(block.text);
+      } else if (block.type === "tool_use") {
+        toolBlocks.push(block);
       }
     }
 
-    const final = await stream.finalMessage();
-    totalInputTokens += final.usage.input_tokens;
-    totalOutputTokens += final.usage.output_tokens;
-
-    const toolBlocks = final.content.filter(
-      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-    );
-
-    if (toolBlocks.length === 0) {
-      continueLoop = false;
+    if (toolBlocks.length === 0 || response.stop_reason !== "tool_use") {
       break;
     }
 
-    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    // Process tool calls
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const toolResults: any[] = [];
     for (const block of toolBlocks) {
       const input = block.input as { path: string; content: string };
-      const path = input.path.startsWith("/") ? input.path : "/" + input.path;
-      editedFiles[path] = input.content;
-      onStatus?.(`Edited ${path}`);
+      const filePath = input.path.startsWith("/") ? input.path : "/" + input.path;
+      editedFiles[filePath] = input.content;
+      onStatus?.(`Edited ${filePath}`);
       toolResults.push({
         type: "tool_result",
         tool_use_id: block.id,
-        content: `Successfully ${block.name === "create_file" ? "created" : "edited"} ${path}`,
+        content: `Successfully ${block.name === "create_file" ? "created" : "edited"} ${filePath}`,
       });
     }
 
-    messages.push({ role: "assistant", content: final.content });
+    messages.push({ role: "assistant", content: response.content });
     messages.push({ role: "user", content: toolResults });
+  }
 
-    if (final.stop_reason !== "tool_use") {
-      continueLoop = false;
-    }
+  if (Object.keys(editedFiles).length === 0) {
+    throw new Error("Tool-use edit produced no file changes");
   }
 
   return { files: editedFiles, text: fullText, inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
@@ -1473,8 +1473,14 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
 
   const conversationCtx = isEdit ? buildConversationContext() : "";
 
-  const userContent = isEdit
+  // Tool-use path gets a clean prompt without search/replace hints
+  const toolUserContent = isEdit
     ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}`
+    : "";
+
+  // Text-based path keeps the intent hints (tells AI to use SEARCH/REPLACE format)
+  const userContent = isEdit
+    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
@@ -1513,14 +1519,15 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     try {
       onStatus?.("Analyzing your request…");
       const toolResult = await generateWithTools(
-        modelOpt.model, modelOpt.maxTokens, userContent, existingFiles, tokenCallback, onStatus
+        modelOpt.model, modelOpt.maxTokens, toolUserContent, existingFiles, tokenCallback, onStatus
       );
       toolEditFiles = toolResult.files;
       text = toolResult.text;
       inputTokens = toolResult.inputTokens;
       outputTokens = toolResult.outputTokens;
-    } catch {
+    } catch (err) {
       // Tool-based edit failed — fall through to text-based flow below
+      console.error("Tool-use edit failed, falling back to text:", err);
       toolEditFiles = null;
       text = "";
       lastStatusIdx = -1;
