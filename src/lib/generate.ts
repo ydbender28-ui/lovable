@@ -35,10 +35,10 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 ## Technical rules:
 - ALL styling via inline style={{}}. No className, no Tailwind, no CSS modules.
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
-- Hardcode all data directly in components. No fetch(), no Supabase, no API calls.
+- Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
 - App component MUST be the default export.
-- Only import from: react, lucide-react, react-hot-toast.
+- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
 
 ## JSX SYNTAX — FOLLOW EXACTLY (errors here break the entire app):
 
@@ -170,7 +170,9 @@ body { font-family: 'DM Sans', sans-serif; margin: 0; }
 
 ^^^ Follow this EXACT code style: expression-body event handlers, CSS variables, clean structure.
 
-{{DESIGN_INJECTION}}`;
+{{DESIGN_INJECTION}}
+
+{{INTEGRATIONS_INJECTION}}`;
 
 // Edge functions instructions — only injected when Supabase is enabled
 const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.js (Supabase Edge Functions, Deno runtime).`;
@@ -201,7 +203,6 @@ Multiple style changes: onMouseEnter={(e) => Object.assign(e.currentTarget.style
 5. Before returning, verify: does the feature ACTUALLY WORK? Can a user
    interact with it and see results? If not, you're not done.
 
-## The code MUST be fully functional. No placeholders. No TODOs. No stubs.
 ## The code MUST be fully functional. No placeholders. No TODOs. No stubs.
 
 ## What "complete" means — build ALL parts:
@@ -740,22 +741,25 @@ type ParsedOutput = {
 function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
   const files: ProjectFiles = {};
 
+  // Strip outer markdown fence wrapper if AI wrapped entire output
+  let cleaned = text.replace(/^```\w*\n([\s\S]*)\n```\s*$/g, "$1");
+  // Normalize line endings
+  cleaned = cleaned.replace(/\r\n/g, "\n");
+
+  // Extract summary and suggestions FIRST (before file parsing consumes text)
+  const summaryMatch = cleaned.match(/^SUMMARY:\s*(.+)/im);
+  const summary = summaryMatch ? summaryMatch[1].trim() : "Done! Check the preview.";
+  const sugMatch = cleaned.match(/^SUGGESTIONS:\s*(.+)/im);
+  const suggestions = sugMatch ? sugMatch[1].split("|").map(s => s.trim()).filter(Boolean) : [];
+
   // Strategy 1: GPT Engineer markdown format — /filename\n```lang\ncode\n```
   const filePattern = /^\/(\S+)\s*\n```[\w]*\n([\s\S]*?)```/gm;
   let match;
-  while ((match = filePattern.exec(text)) !== null) {
+  while ((match = filePattern.exec(cleaned)) !== null) {
     const path = "/" + match[1];
     const content = match[2].trimEnd();
     if (content.length > 20) files[path] = content;
   }
-
-  // Extract summary
-  const summaryMatch = text.match(/SUMMARY:\s*(.+)/i);
-  const summary = summaryMatch ? summaryMatch[1].trim() : "Done! Check the preview.";
-
-  // Extract suggestions
-  const sugMatch = text.match(/SUGGESTIONS:\s*(.+)/i);
-  const suggestions = sugMatch ? sugMatch[1].split("|").map(s => s.trim()).filter(Boolean) : [];
 
   if (Object.keys(files).length > 0) {
     return { summary, files, suggestions };
@@ -1048,12 +1052,8 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     // Fix common JSX syntax errors in ALL files
     for (const [path, code] of Object.entries(parsed.files)) {
       let fixed = code;
-      // Fix: semicolons before }} in JSX style/event handler expressions
-      fixed = fixed.replace(/;\s*\}\}/g, "}}");
-      // Fix: semicolons before ) }} in arrow functions inside JSX attributes
-      fixed = fixed.replace(/;\s*\)\s*\}\}/g, ")}}");
-      // Fix: block-body arrow in JSX attr — { expr; } → expr (single-expression only)
-      fixed = fixed.replace(/=\{(\([\w,\s:]*\))\s*=>\s*\{\s*([^;{}]+?);\s*\}\}/g, "={$1 => ($2)}");
+      // Fix: semicolons before }} ONLY in JSX event handler attributes (on\w+=)
+      fixed = fixed.replace(/(on\w+=\{[^}]*?);\s*\}\}/g, "$1}}");
       // Fix: double semicolons
       fixed = fixed.replace(/;;\s*/g, ";\n");
       if (fixed !== code) parsed.files[path] = fixed;

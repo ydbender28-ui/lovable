@@ -270,7 +270,8 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
 
 export const SECTION_COMPONENT_LIST = `
 ## Pre-built page sections (USE THESE to build pages — don't write layouts from scratch):
-Import from /components/sections/:
+Import using: import Navbar from '/components/sections/Navbar';
+(Use ABSOLUTE paths starting with / — NOT relative ./components):
 
 - Navbar: <Navbar brand="Name" links={["Menu","Story","Contact"]} cta="Order Now" />
 - Hero: <Hero tag="Est. 2018" title="Big headline" subtitle="Description" cta1={{text:"See menu"}} cta2={{text:"Find us"}} image="{{unsplash:coffee shop|1600x900}}" />

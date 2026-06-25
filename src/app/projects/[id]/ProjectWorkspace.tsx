@@ -1283,6 +1283,8 @@ export default function ProjectWorkspace({
     setSuggestions([]);
     setShowUndo(false);
     setRouteInfo(null);
+    setLiveUpdated(false);
+    setUploadImage(null);
 
     // Inject URL reference if set
     let fullText = text;
@@ -1437,7 +1439,11 @@ export default function ProjectWorkspace({
               if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
               undoTimerRef.current = setTimeout(() => setShowUndo(false), 60000);
               setMobileTab("preview");
-            } else if (eventLine === "error") setError(payload.error ?? "Generation failed");
+            } else if (eventLine === "error") {
+              const errMsg = payload.error ?? "Generation failed";
+              setMessages(prev => [...prev, { id: `err-${Date.now()}`, role: "assistant", content: `Error: ${errMsg}. Try again or rephrase your request.` }]);
+              setSuggestions([]);
+            }
           } catch { /* ignore */ }
         }
       }
