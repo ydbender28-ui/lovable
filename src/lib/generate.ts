@@ -227,9 +227,17 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
 
 ## COLOR/THEME CHANGES:
-Since all colors use CSS variables, changing the theme = changing /index.css ONLY.
-Use search/replace on /index.css to swap the HSL values. Do NOT touch /App.tsx.
-Example: "make it dark green" → change --background: 150 30% 8%; --foreground: 150 10% 95%; --primary: 150 60% 40%; etc.
+First, check the existing code to determine which color system it uses:
+
+CASE A — Code uses CSS variables like bg-[hsl(var(--background))], text-[hsl(var(--foreground))]:
+Change /index.css ONLY. Swap the HSL values in :root. Do NOT touch /App.tsx.
+Example: "make it dark green" → --background: 150 30% 8%; --foreground: 150 10% 95%; --primary: 150 60% 40%;
+
+CASE B — Code uses hardcoded Tailwind classes like bg-white, bg-stone-50, text-gray-900:
+You MUST return the FULL /App.tsx file with all color classes swapped to the new theme.
+Also update /index.css if it has color variables.
+Example: "make it dark green" → bg-white becomes bg-green-950, text-gray-900 becomes text-green-50, etc.
+Keep ALL layout, structure, content, images, and functionality identical — only swap color/bg/text/border classes.
 
 ## CHOOSING SEARCH/REPLACE vs FULL FILE:
 
@@ -1165,7 +1173,7 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
   const intentHints: Record<EditIntent, string> = {
     add_feature: "Build the COMPLETE feature with working state, UI, and interactions. Keep ALL existing content intact. You will likely need multiple SEARCH/REPLACE blocks: one for new imports, one for new state/handlers, and one or more for new JSX. If the feature is large (50+ new lines), return the full file instead.",
     fix_issue: "Fix ONLY the bug. Do NOT remove or simplify any features. Use SEARCH/REPLACE — bug fixes are always small, targeted changes. Include the broken code in SEARCH and the fixed version in REPLACE.",
-    update_style: "For scattered style changes (dark mode, full theme change), return the FULL file. For targeted style changes (one button, one section), use SEARCH/REPLACE. Keep all content and functionality identical — only change className strings or style objects.",
+    update_style: "First check if the existing code uses CSS variables (bg-[hsl(var(--...))]) or hardcoded Tailwind colors (bg-white, text-gray-900). If CSS variables: only change /index.css. If hardcoded colors: return the FULL /App.tsx with color classes swapped. For targeted style changes (one button, one section), use SEARCH/REPLACE. Keep all content and functionality identical.",
     update_content: "Update only the specific text/content mentioned. Use SEARCH/REPLACE — content changes are always small. Copy the exact existing text in SEARCH, put the new text in REPLACE. Change nothing else.",
     update_component: "Modify the component as requested. Use SEARCH/REPLACE. Preserve everything the user didn't mention.",
     refactor: "Clean up the code without changing any visible behavior. Use SEARCH/REPLACE for targeted refactors. Return full file only if restructuring the entire component.",
