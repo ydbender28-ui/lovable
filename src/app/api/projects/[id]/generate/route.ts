@@ -1,7 +1,7 @@
 import { after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateProject, generateQuickEdit, smartRoute, estimateCost } from "@/lib/generate";
+import { generateProject, generateQuickEdit, smartRoute, estimateCost, MODELS } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 
@@ -38,7 +38,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       where: { id, ownerId: session.user.id },
       include: {
         versions: { orderBy: { createdAt: "desc" }, take: 1 },
-        messages: { orderBy: { createdAt: "desc" }, take: 20 },
+        messages: { orderBy: { createdAt: "desc" }, take: 5 },
       },
     }),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true } }),
@@ -48,13 +48,18 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  // Skip classifier for first builds — we know it's "new-build"
-  const [finalRoute] = await Promise.all([
-    hasExisting
-      ? smartRoute(prompt, true, forceModel ?? undefined)
-      : Promise.resolve({ intent: prompt.slice(0, 80), taskType: "new-build" as const, model: { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 }, modelReason: "New build" }),
-    prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }),
-  ]);
+  // Skip classifier entirely — use inline heuristics instead of burning 1-2s on a Haiku call
+  const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
+  const p = prompt.toLowerCase();
+  const taskType = !hasExisting ? "new-build" as const
+    : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
+    : /\b(fix|bug|error|broken|crash)\b/.test(p) ? "bugfix" as const
+    : /\b(add|create|build|implement|make|cart|checkout|search|auth|login)\b/.test(p) ? "feature" as const
+    : "content" as const;
+  const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : sonnetModel, modelReason: "inline" };
+
+  // Save user message in background — don't block generation
+  prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }).catch(() => {});
 
   const estimatedCredits = ESTIMATED_CREDITS[finalRoute.taskType] ?? 2;
   const currentCredits = user?.credits ?? 0;
@@ -95,8 +100,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         .slice(0, 3000)
     : null;
 
-  // Learning context — kept minimal to avoid slowing down generation
-  const learningContext = "";
 
   // Only use quick edit for truly trivial changes — text swaps and simple style tweaks
   // Feature requests (cart, search, admin, etc.) MUST use the full pipeline
@@ -125,11 +128,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   // Run generation in after() — survives client disconnect on Vercel
   const genPromise = (async () => {
     try {
-      const fullPrompt = learningContext ? prompt + learningContext : prompt;
       const result = useQuickEdit
         ? await generateQuickEdit(prompt, existingFiles, onToken, onStatus)
         : await generateProject(
-            fullPrompt, existingFiles, envVars, onToken, onStatus,
+            prompt, existingFiles, envVars, onToken, onStatus,
             imageBase64 ?? null, imageMimeType,
             finalRoute.model.model, customKnowledge, projectHistory
           );
