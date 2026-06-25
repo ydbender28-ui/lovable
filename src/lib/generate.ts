@@ -224,49 +224,145 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - NEVER change unrelated code, images, or layout.
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
+- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
 
 ## COLOR/THEME CHANGES:
 Since all colors use CSS variables, changing the theme = changing /index.css ONLY.
 Use search/replace on /index.css to swap the HSL values. Do NOT touch /App.tsx.
 Example: "make it dark green" → change --background: 150 30% 8%; --foreground: 150 10% 95%; --primary: 150 60% 40%; etc.
 
-## OUTPUT FORMAT — use SEARCH/REPLACE blocks:
+## CHOOSING SEARCH/REPLACE vs FULL FILE:
 
-For SMALL changes (text, colors, moving elements, simple fixes):
-Use <<<SEARCH>>> and <<<REPLACE>>> blocks. Only include the exact lines that change.
+Use SEARCH/REPLACE when: fixing a bug, changing text/content, updating a few styles, tweaking props, adding/removing a single element, small refactors. This is the DEFAULT — use it whenever possible.
 
-For LARGE changes (adding cart, new sections, major features):
-Return the FULL updated file in markdown fence format.
+Return the FULL FILE when: adding dark mode / theme overhaul (too many scattered className changes), adding a major new section (50+ new lines), the user says "rebuild" or "redo", or more than 60% of the file would change.
+
+## SEARCH/REPLACE FORMAT:
+
+SUMMARY: one sentence describing what you changed
+
+SUGGESTIONS: suggestion 1 | suggestion 2 | suggestion 3 | suggestion 4
+
+<<<SEARCH>>> /App.tsx
+exactly copied lines from existing code
+<<<REPLACE>>>
+the new replacement lines
+<<<END>>>
+
+## CRITICAL RULES FOR SEARCH/REPLACE — READ CAREFULLY:
+
+### 1. Copy the SEARCH text EXACTLY — character for character
+The SEARCH block is matched against the existing file using exact string comparison. If even one character differs (wrong spacing, missing comma, different quote style), the edit SILENTLY FAILS and the user's change is lost.
+
+WRONG — retyped from memory, subtle differences:
+<<<SEARCH>>> /App.tsx
+<h1 className="text-4xl font-bold">Welcome</h1>
+<<<REPLACE>>>
+<h1 className="text-4xl font-bold">Hello World</h1>
+<<<END>>>
+
+RIGHT — copied verbatim from the existing code provided:
+<<<SEARCH>>> /App.tsx
+          <h1 className="text-5xl font-extrabold tracking-tight">Welcome</h1>
+<<<REPLACE>>>
+          <h1 className="text-5xl font-extrabold tracking-tight">Hello World</h1>
+<<<END>>>
+
+### 2. Preserve exact indentation in BOTH search and replace
+The existing code uses specific indentation (spaces). Your SEARCH must include that exact indentation. Your REPLACE must also use correct indentation so the resulting code stays properly formatted.
+
+### 3. Include 2-4 surrounding context lines to make the match unique
+If a line like \`<div className="p-4">\` appears 5 times, include the lines above/below it to create a unique match.
+
+WRONG — ambiguous, matches multiple locations:
+<<<SEARCH>>> /App.tsx
+        <div className="p-4">
+<<<REPLACE>>>
+        <div className="p-6">
+<<<END>>>
+
+RIGHT — enough context to uniquely identify the location:
+<<<SEARCH>>> /App.tsx
+      <section id="pricing" className="py-24">
+        <h2 className="text-3xl font-bold mb-8">Pricing</h2>
+        <div className="p-4">
+<<<REPLACE>>>
+      <section id="pricing" className="py-24">
+        <h2 className="text-3xl font-bold mb-8">Pricing</h2>
+        <div className="p-6">
+<<<END>>>
+
+### 4. Adding new code: search for the insertion point and include it in the replacement
+To add an import, search for existing imports and replace with old + new:
+
+<<<SEARCH>>> /App.tsx
+import React, { useState } from 'react';
+import { ShoppingCart } from 'lucide-react';
+<<<REPLACE>>>
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Heart } from 'lucide-react';
+<<<END>>>
+
+To add a new section, search for the code above or below where it should go and include it unchanged plus the new code:
+
+<<<SEARCH>>> /App.tsx
+      </section>
+
+      <footer className="border-t py-12">
+<<<REPLACE>>>
+      </section>
+
+      <section id="testimonials" className="py-24 px-10 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold mb-10">What Our Customers Say</h2>
+        {/* new testimonials content */}
+      </section>
+
+      <footer className="border-t py-12">
+<<<END>>>
+
+### 5. Multiple changes = multiple blocks, in order they appear in the file
+Apply changes from TOP of file to BOTTOM. Each block is independent.
+
+### 6. Deleting code: use an empty REPLACE block
+<<<SEARCH>>> /App.tsx
+      <div className="banner bg-yellow-100 p-4">
+        <p>Limited time offer!</p>
+      </div>
+<<<REPLACE>>>
+<<<END>>>
+
+### 7. Modifying state or logic: include the full function/hook being changed
+Don't search for just one line inside a function — include the whole useState/useEffect/handler so the replacement is clean:
+
+<<<SEARCH>>> /App.tsx
+  const [count, setCount] = useState(0);
+  const increment = () => setCount(count + 1);
+<<<REPLACE>>>
+  const [count, setCount] = useState(0);
+  const [total, setTotal] = useState(0);
+  const increment = () => {
+    setCount(count + 1);
+    setTotal(total + count + 1);
+  };
+<<<END>>>
+
+## FULL FILE FORMAT (only when needed per rules above):
 
 SUMMARY: one sentence
 
 SUGGESTIONS: suggestion 1 | suggestion 2 | suggestion 3 | suggestion 4
 
-<<<SEARCH>>> /App.tsx
-code to find (copy EXACTLY from existing code, enough context to be unique)
-<<<REPLACE>>>
-replacement code
-<<<END>>>
-
-<<<SEARCH>>> /App.tsx
-another section to change
-<<<REPLACE>>>
-replacement
-<<<END>>>
-
-OR for full rewrites:
-
 /App.tsx
 \`\`\`tsx
-full file content
+full file content here
 \`\`\`
 
-Rules for SEARCH/REPLACE:
-- Copy the SEARCH text EXACTLY from the existing code — every character must match.
-- Include enough surrounding lines (3-5) to make the match unique.
-- You can have multiple SEARCH/REPLACE blocks for the same file.
-- For adding new code (imports, new functions), use a SEARCH that finds the insertion point.
-- For adding imports, search for the FIRST import line and replace with old + new imports.
+## FINAL CHECKLIST before responding:
+- Did you copy every SEARCH block character-for-character from the existing code shown to you? If unsure, use more context lines.
+- Did you preserve indentation in both SEARCH and REPLACE?
+- Is each SEARCH unique enough to match only one location?
+- Did you include ALL necessary changes (don't forget new imports, new state, new handlers)?
+- Did you avoid changing anything the user didn't ask for?
 
 Only include files you actually changed. Omit unchanged files.`;
 
@@ -765,7 +861,56 @@ type ParsedOutput = {
   files: ProjectFiles;
   suggestions?: string[];
   replacements?: { file: string; search: string; replace: string }[];
+  failedReplacements?: { file: string; search: string; replace: string }[];
 };
+
+// Longest Common Subsequence based fuzzy match — finds the best matching
+// region in source for a search string, tolerating minor whitespace differences
+// while preserving indentation in the output.
+function fuzzyFindRegion(source: string, search: string): { start: number; end: number } | null {
+  const sourceLines = source.split("\n");
+  const searchLines = search.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+  if (searchLines.length === 0) return null;
+
+  let bestScore = 0;
+  let bestStart = -1;
+  let bestEnd = -1;
+
+  // Sliding window: try every possible position
+  const windowSize = searchLines.length;
+  for (let i = 0; i <= sourceLines.length - windowSize; i++) {
+    // Check candidate window [i, i + windowSize + slack)
+    // Allow up to 2 extra lines (blank lines the AI may have omitted)
+    for (let slack = 0; slack <= 2; slack++) {
+      const candidateEnd = Math.min(i + windowSize + slack, sourceLines.length);
+      const candidateLines = sourceLines.slice(i, candidateEnd).map(l => l.trim()).filter(l => l.length > 0);
+
+      if (candidateLines.length < searchLines.length) continue;
+      if (candidateLines.length > searchLines.length + 2) continue;
+
+      // Score: how many lines match exactly (trimmed)?
+      let matches = 0;
+      let si = 0;
+      for (let ci = 0; ci < candidateLines.length && si < searchLines.length; ci++) {
+        if (candidateLines[ci] === searchLines[si]) {
+          matches++;
+          si++;
+        }
+      }
+
+      // Require at least 80% of search lines to match
+      const score = matches / searchLines.length;
+      if (score >= 0.8 && score > bestScore) {
+        bestScore = score;
+        bestStart = i;
+        bestEnd = candidateEnd;
+      }
+    }
+  }
+
+  if (bestStart === -1) return null;
+  return { start: bestStart, end: bestEnd };
+}
 
 function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedOutput | null {
   const files: ProjectFiles = {};
@@ -789,32 +934,48 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
     replacements.push({ file: srMatch[1].startsWith("/") ? srMatch[1] : "/" + srMatch[1], search: srMatch[2].trimEnd(), replace: srMatch[3].trimEnd() });
   }
   if (replacements.length > 0 && existingFiles) {
+    const failedReplacements: { file: string; search: string; replace: string }[] = [];
     for (const r of replacements) {
       const source = files[r.file] ?? existingFiles[r.file] ?? "";
+      if (!source && !existingFiles[r.file]) {
+        failedReplacements.push(r);
+        continue;
+      }
       if (source.includes(r.search)) {
+        // Exact match — best case
         files[r.file] = source.replace(r.search, r.replace);
       } else {
-        // Fuzzy match — trim whitespace from each line and try again
-        const trimmedSearch = r.search.split("\n").map(l => l.trim()).join("\n");
-        const trimmedSource = source.split("\n").map(l => l.trim()).join("\n");
-        if (trimmedSource.includes(trimmedSearch)) {
-          // Find the original lines and replace
+        // Fuzzy match using LCS-based region finder
+        const region = fuzzyFindRegion(source, r.search);
+        if (region) {
           const lines = source.split("\n");
-          const searchLines = r.search.split("\n").map(l => l.trim());
-          for (let i = 0; i <= lines.length - searchLines.length; i++) {
-            const match = searchLines.every((sl, j) => lines[i + j].trim() === sl);
-            if (match) {
-              const before = lines.slice(0, i);
-              const after = lines.slice(i + searchLines.length);
-              files[r.file] = [...before, r.replace, ...after].join("\n");
-              break;
-            }
+          const before = lines.slice(0, region.start);
+          const after = lines.slice(region.end);
+          // Detect the indentation of the matched region to align the replacement
+          const firstMatchedLine = lines[region.start];
+          const existingIndent = firstMatchedLine.match(/^(\s*)/)?.[1] ?? "";
+          const replaceLines = r.replace.split("\n");
+          const replaceIndent = replaceLines[0]?.match(/^(\s*)/)?.[1] ?? "";
+          let alignedReplace: string;
+          if (replaceIndent !== existingIndent && replaceLines.length > 0) {
+            // Re-indent replacement to match the source indentation
+            alignedReplace = replaceLines.map(l => {
+              if (l.startsWith(replaceIndent)) {
+                return existingIndent + l.slice(replaceIndent.length);
+              }
+              return l;
+            }).join("\n");
+          } else {
+            alignedReplace = r.replace;
           }
+          files[r.file] = [...before, alignedReplace, ...after].join("\n");
+        } else {
+          failedReplacements.push(r);
         }
       }
     }
     if (Object.keys(files).length > 0) {
-      return { summary, files, suggestions, replacements };
+      return { summary, files, suggestions, replacements, failedReplacements: failedReplacements.length > 0 ? failedReplacements : undefined };
     }
   }
 
@@ -864,23 +1025,27 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
     // Handle replacements format (line-replace — fast edits)
     if (parsed.replacements && Array.isArray(parsed.replacements) && parsed.replacements.length > 0) {
       const files: ProjectFiles = {};
+      const failedReplacements: { file: string; search: string; replace: string }[] = [];
       if (existingFiles) {
-        // Apply each replacement to the existing files
         for (const r of parsed.replacements) {
           const filePath = r.file;
           const source = files[filePath] ?? existingFiles[filePath] ?? "";
           if (source.includes(r.search)) {
             files[filePath] = source.replace(r.search, r.replace);
           } else {
-            // Fuzzy match — try trimming whitespace
-            const trimmedSearch = r.search.trim();
-            if (source.includes(trimmedSearch)) {
-              files[filePath] = source.replace(trimmedSearch, r.replace.trim());
+            const region = fuzzyFindRegion(source, r.search);
+            if (region) {
+              const lines = source.split("\n");
+              const before = lines.slice(0, region.start);
+              const after = lines.slice(region.end);
+              files[filePath] = [...before, r.replace, ...after].join("\n");
+            } else {
+              failedReplacements.push(r);
             }
           }
         }
       }
-      return { summary: parsed.summary || "Done! Check the preview.", files, replacements: parsed.replacements };
+      return { summary: parsed.summary || "Done! Check the preview.", files, replacements: parsed.replacements, failedReplacements: failedReplacements.length > 0 ? failedReplacements : undefined };
     }
 
     // Handle files format (full rewrite)
@@ -998,13 +1163,13 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
   const year = new Date().getFullYear();
   // Build user content based on edit intent
   const intentHints: Record<EditIntent, string> = {
-    add_feature: "Build the COMPLETE feature with working state, UI, and interactions. Keep ALL existing content intact.",
-    fix_issue: "Fix ONLY the bug. Do NOT remove or simplify any features.",
-    update_style: "Update the visual style as requested. Keep all content and functionality.",
-    update_content: "Update only the specific text/content mentioned. Change nothing else.",
-    update_component: "Modify the component as requested. Preserve everything else.",
-    refactor: "Clean up the code without changing any visible behavior.",
-    full_rebuild: "Rebuild the app from scratch based on the request.",
+    add_feature: "Build the COMPLETE feature with working state, UI, and interactions. Keep ALL existing content intact. You will likely need multiple SEARCH/REPLACE blocks: one for new imports, one for new state/handlers, and one or more for new JSX. If the feature is large (50+ new lines), return the full file instead.",
+    fix_issue: "Fix ONLY the bug. Do NOT remove or simplify any features. Use SEARCH/REPLACE — bug fixes are always small, targeted changes. Include the broken code in SEARCH and the fixed version in REPLACE.",
+    update_style: "For scattered style changes (dark mode, full theme change), return the FULL file. For targeted style changes (one button, one section), use SEARCH/REPLACE. Keep all content and functionality identical — only change className strings or style objects.",
+    update_content: "Update only the specific text/content mentioned. Use SEARCH/REPLACE — content changes are always small. Copy the exact existing text in SEARCH, put the new text in REPLACE. Change nothing else.",
+    update_component: "Modify the component as requested. Use SEARCH/REPLACE. Preserve everything the user didn't mention.",
+    refactor: "Clean up the code without changing any visible behavior. Use SEARCH/REPLACE for targeted refactors. Return full file only if restructuring the entire component.",
+    full_rebuild: "Rebuild the app from scratch. Return the FULL file using markdown fence format.",
   };
 
   const userContent = isEdit
@@ -1079,12 +1244,52 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     );
   }
 
-  const parsed = parseOutput(text, existingFiles);
+  let parsed = parseOutput(text, existingFiles);
 
   if (!parsed) {
     // Show first 500 chars of response for debugging
     const preview = text.slice(0, 500).replace(/\n/g, " ");
     throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
+  }
+
+  // ── Retry failed replacements (one attempt) ──
+  // If some search/replace blocks didn't match, ask the AI to return full files for those
+  if (isEdit && parsed.failedReplacements && parsed.failedReplacements.length > 0 && existingFiles) {
+    const failedFiles = [...new Set(parsed.failedReplacements.map(r => r.file))];
+    onStatus?.("Some edits didn't match — retrying…");
+
+    const retryPrompt = `Your previous search/replace blocks failed to match. The SEARCH text didn't exist in the file.
+
+Failed edits that need to be applied:
+${parsed.failedReplacements.map(r => `File: ${r.file}\nIntended change: replace\n${r.search}\nwith\n${r.replace}`).join("\n\n")}
+
+Current file contents:
+${failedFiles.map(f => `${f}\n\`\`\`\n${existingFiles[f] ?? ""}\n\`\`\``).join("\n\n")}
+
+Return the FULL updated file(s) in markdown fence format with the changes applied. Do NOT use search/replace this time.
+
+${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("\n\n")}`;
+
+    let retryText = "";
+    try {
+      if (modelOpt.provider === "anthropic") {
+        await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
+      } else if (modelOpt.provider === "openai") {
+        await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
+      } else if (modelOpt.provider === "google") {
+        await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, retryPrompt, "You are applying code edits. Return the complete updated file(s).", (t) => { retryText += t; });
+      }
+      const retryParsed = parseOutput(retryText, existingFiles);
+      if (retryParsed && Object.keys(retryParsed.files).length > 0) {
+        // Merge retry results into the original parsed files
+        for (const [path, content] of Object.entries(retryParsed.files)) {
+          parsed.files[path] = content;
+        }
+        parsed.failedReplacements = undefined;
+      }
+    } catch {
+      // Retry failed — continue with whatever edits did succeed
+    }
   }
 
   // ── Build Validator (like open-lovable) ──
