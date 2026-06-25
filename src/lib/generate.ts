@@ -197,6 +197,12 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
 
+## COLOR/THEME CHANGES — CRITICAL:
+When the user asks to change colors, you MUST change the Tailwind classes in the JSX, NOT CSS variables.
+Example: "make it dark green" means change className="bg-white" → className="bg-green-950" and className="text-gray-900" → className="text-green-100" etc.
+Change ALL elements: nav, sections, cards, buttons, text, borders, footer. Every className with a color.
+Do NOT just change :root CSS variables — Tailwind classes override them so it won't work.
+
 ## OUTPUT FORMAT — use SEARCH/REPLACE blocks:
 
 For SMALL changes (text, colors, moving elements, simple fixes):
