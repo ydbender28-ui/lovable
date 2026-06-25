@@ -136,9 +136,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
             finalRoute.model.model, customKnowledge, projectHistory
           );
 
+      // Merge AI output with existing files — AI may only return changed files
+      const finalFiles = existingFiles ? { ...existingFiles, ...result.files } : result.files;
+
       const wasPublished = !!project.publishSlug;
       const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
-      const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
+      const newHtml = wasPublished ? buildStandaloneHtml(finalFiles, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
 
       const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
       const actualCredits = costToCredits(actualCost);
@@ -147,7 +150,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         prisma.version.create({
           data: {
             projectId: id,
-            files: JSON.stringify(result.files),
+            files: JSON.stringify(finalFiles),
             modelUsed: result.modelUsed,
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
@@ -166,7 +169,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           : Promise.resolve(),
       ]);
 
-      return { result, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
+      return { result: { ...result, files: finalFiles }, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
       await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });

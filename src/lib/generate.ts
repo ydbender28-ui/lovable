@@ -187,67 +187,53 @@ body { font-family: 'DM Sans', sans-serif; margin: 0; }
 // Edge functions instructions — only injected when Supabase is enabled
 const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.js (Supabase Edge Functions, Deno runtime).`;
 
-// Separate edit prompt — surgical, preservation-first
-const SYSTEM_EDIT = `You are editing an existing React + TypeScript app.
-Root component = default export of /App.tsx. Tailwind CSS is available — use className for styling.
+// Separate edit prompt — search/replace format for surgical edits
+const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwind CSS is available.
 
-## MATCH THE EXISTING STYLE:
-- If existing code uses Tailwind classes → use Tailwind for your changes.
-- If existing code uses inline styles → use inline styles for consistency.
-- Do NOT mix approaches within the same component.
+## RULES:
+- Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
+- Match the existing code style (Tailwind or inline styles).
+- NEVER change unrelated code, images, or layout.
+- Build COMPLETE features — no stubs, no TODOs.
+- The code MUST be fully functional.
 
-## CARDINAL RULE: Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
-- Change ONLY what was requested. Don't "improve" anything else.
-- Don't add features that weren't asked for.
-- Don't refactor or restructure code that works.
-- Don't change images, colors, copy, or layout that wasn't mentioned.
-- If the existing code uses section components from /components/sections/, keep using them.
-- If you need functionality a section component doesn't support, write custom inline code.
+## OUTPUT FORMAT — use SEARCH/REPLACE blocks:
 
-## BEFORE YOU WRITE — think step by step:
-1. Read the existing code carefully — understand the current structure
-2. Identify exactly which lines need to change for the requested feature
-3. Plan the state management: what new useState hooks, what event handlers
-4. Implement the COMPLETE feature — not a stub, not a placeholder
-5. Before returning, verify: does the feature ACTUALLY WORK? Can a user
-   interact with it and see results? If not, you're not done.
+For SMALL changes (text, colors, moving elements, simple fixes):
+Use <<<SEARCH>>> and <<<REPLACE>>> blocks. Only include the exact lines that change.
 
-## The code MUST be fully functional. No placeholders. No TODOs. No stubs.
-
-## What "complete" means — build ALL parts:
-- "add to cart" = (1) cart state with useState, (2) "Add to Cart" button INSIDE every existing product card, (3) cart icon with count in nav, (4) cart drawer with items + quantities + remove + total, (5) checkout button. ALL FIVE.
-- "add search" = (1) search input, (2) filter logic on data, (3) live results, (4) "no results" state.
-- "add admin" = (1) password form, (2) admin dashboard with CRUD, (3) logout.
-- "make X work" = wire up REAL onClick/onChange handlers with state changes and visual feedback.
-- "add Stripe" = (1) edge function at /functions/stripe-checkout.js, (2) checkout button that calls it, (3) success/cancel handling.
-
-## Preservation rules
-- PRESERVE all UNRELATED content. Don't touch copy, images, layout, or styling the request didn't mention.
-- NEVER change existing image URLs or {{unsplash:...}} tokens unless explicitly asked.
-- NEVER remove or rename existing useState hooks. Only ADD new hooks.
-- NEVER change existing imports unless adding new ones for the requested feature.
-- RETURN ONLY THE FILES YOU CHANGED. Omit unchanged files.
-- COLOR/theme changes are global: restyle the whole scheme via CSS variables.
-
-## Architecture review — before returning, check:
-- Are ALL parts of the feature present and connected?
-- Does every button have a working onClick handler?
-- Does every state change produce a visible UI update?
-- If you added a cart icon, does clicking it actually open the cart?
-- This concludes a fully working implementation.
-
-## Output format (use EXACTLY this — no JSON):
-Return ONLY the changed files in this format:
+For LARGE changes (adding cart, new sections, major features):
+Return the FULL updated file in markdown fence format.
 
 SUMMARY: one sentence
 
 SUGGESTIONS: suggestion 1 | suggestion 2 | suggestion 3 | suggestion 4
-(4-5 short next-step suggestions separated by |, relevant to what was just built/changed)
+
+<<<SEARCH>>> /App.tsx
+code to find (copy EXACTLY from existing code, enough context to be unique)
+<<<REPLACE>>>
+replacement code
+<<<END>>>
+
+<<<SEARCH>>> /App.tsx
+another section to change
+<<<REPLACE>>>
+replacement
+<<<END>>>
+
+OR for full rewrites:
 
 /App.tsx
 \`\`\`tsx
-full updated file content
+full file content
 \`\`\`
+
+Rules for SEARCH/REPLACE:
+- Copy the SEARCH text EXACTLY from the existing code — every character must match.
+- Include enough surrounding lines (3-5) to make the match unique.
+- You can have multiple SEARCH/REPLACE blocks for the same file.
+- For adding new code (imports, new functions), use a SEARCH that finds the insertion point.
+- For adding imports, search for the FIRST import line and replace with old + new imports.
 
 Only include files you actually changed. Omit unchanged files.`;
 
@@ -761,6 +747,43 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
   const summary = summaryMatch ? summaryMatch[1].trim() : "Done! Check the preview.";
   const sugMatch = cleaned.match(/^SUGGESTIONS:\s*(.+)/im);
   const suggestions = sugMatch ? sugMatch[1].split("|").map(s => s.trim()).filter(Boolean) : [];
+
+  // Strategy 0: Search/Replace blocks — <<<SEARCH>>> /file\n...\n<<<REPLACE>>>\n...\n<<<END>>>
+  const srPattern = /<<<SEARCH>>>\s*(\S+)\n([\s\S]*?)<<<REPLACE>>>\n([\s\S]*?)<<<END>>>/g;
+  const replacements: { file: string; search: string; replace: string }[] = [];
+  let srMatch;
+  while ((srMatch = srPattern.exec(cleaned)) !== null) {
+    replacements.push({ file: srMatch[1].startsWith("/") ? srMatch[1] : "/" + srMatch[1], search: srMatch[2].trimEnd(), replace: srMatch[3].trimEnd() });
+  }
+  if (replacements.length > 0 && existingFiles) {
+    for (const r of replacements) {
+      const source = files[r.file] ?? existingFiles[r.file] ?? "";
+      if (source.includes(r.search)) {
+        files[r.file] = source.replace(r.search, r.replace);
+      } else {
+        // Fuzzy match — trim whitespace from each line and try again
+        const trimmedSearch = r.search.split("\n").map(l => l.trim()).join("\n");
+        const trimmedSource = source.split("\n").map(l => l.trim()).join("\n");
+        if (trimmedSource.includes(trimmedSearch)) {
+          // Find the original lines and replace
+          const lines = source.split("\n");
+          const searchLines = r.search.split("\n").map(l => l.trim());
+          for (let i = 0; i <= lines.length - searchLines.length; i++) {
+            const match = searchLines.every((sl, j) => lines[i + j].trim() === sl);
+            if (match) {
+              const before = lines.slice(0, i);
+              const after = lines.slice(i + searchLines.length);
+              files[r.file] = [...before, r.replace, ...after].join("\n");
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (Object.keys(files).length > 0) {
+      return { summary, files, suggestions, replacements };
+    }
+  }
 
   // Strategy 1: GPT Engineer markdown format — /filename\n```lang\ncode\n```
   const filePattern = /^\/(\S+)\s*\n```[\w]*\n([\s\S]*?)```/gm;
