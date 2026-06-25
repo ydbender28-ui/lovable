@@ -42,16 +42,33 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - App component MUST be the default export.
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
 
-## STYLING — USE TAILWIND CSS (preferred):
+## STYLING — DESIGN SYSTEM + TAILWIND:
 
-Tailwind CDN is pre-loaded. Use className for all styling:
-<div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-<button className="bg-orange-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-700 transition-colors">
-<section className="py-24 px-10 max-w-7xl mx-auto">
-<h1 className="text-6xl font-extrabold tracking-tight">
-<nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+Define ALL colors as CSS variables in /index.css using HSL values, then reference them via Tailwind:
 
-Inline style={{}} also works as fallback. Do NOT use semicolons in style objects.
+In /index.css:
+:root {
+  --background: 40 20% 98%;
+  --foreground: 30 10% 10%;
+  --card: 0 0% 100%;
+  --primary: 25 90% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 15% 94%;
+  --muted: 30 5% 55%;
+  --border: 30 15% 88%;
+  --accent: 25 85% 40%;
+  --radius: 0.75rem;
+}
+
+In JSX, use these semantic tokens — NEVER use direct colors like bg-white, text-gray-900:
+CORRECT: className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]"
+CORRECT: className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
+CORRECT: className="border-[hsl(var(--border))]"
+WRONG:   className="bg-white text-gray-900" ← NEVER do this
+
+This way, changing the theme = changing /index.css variables. Every element updates instantly.
+
+Layout classes (non-color) use regular Tailwind: rounded-xl, p-6, shadow-sm, flex, grid, etc.
 
 Other rules:
 - App component MUST be "export default function App()"
@@ -111,7 +128,7 @@ your code here
 your css here
 \`\`\`
 
-## COMPLETE EXAMPLE (use Tailwind classes like this):
+## COMPLETE EXAMPLE (use semantic design tokens — NEVER direct colors):
 
 SUMMARY: A warm bakery landing page with hero, menu grid, and contact section.
 
@@ -130,14 +147,13 @@ const MENU = [
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-stone-200 px-10">
+    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+      <nav className="sticky top-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur border-b border-[hsl(var(--border))] px-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16">
           <span className="text-xl font-extrabold tracking-tight">Rise & Crust</span>
           <div className="flex gap-8 items-center">
-            <a href="#menu" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">Menu</a>
-            <a href="#about" className="text-sm text-stone-500 hover:text-stone-900 transition-colors">About</a>
-            <a href="#contact" className="bg-stone-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-stone-700 transition-colors">Visit Us</a>
+            <a href="#menu" className="text-sm text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors">Menu</a>
+            <a href="#contact" className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">Visit Us</a>
           </div>
         </div>
       </nav>
@@ -146,25 +162,25 @@ export default function App() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70" />
         <div className="relative z-10 max-w-7xl mx-auto px-10 py-20 text-white">
           <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight max-w-2xl">Baked fresh. Every morning.</h1>
-          <p className="text-lg mt-6 max-w-lg opacity-85">Small-batch sourdough, pastries, and single-origin coffee in the heart of downtown.</p>
+          <p className="text-lg mt-6 max-w-lg opacity-85">Small-batch sourdough and single-origin coffee.</p>
         </div>
       </section>
       <section id="menu" className="py-24 px-10 max-w-7xl mx-auto">
         <h2 className="text-4xl font-bold tracking-tight mb-10">Our Menu</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {MENU.map(item => (
-            <div key={item.id} className="bg-white border border-stone-200 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
+            <div key={item.id} className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
               <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-sm text-stone-500 mt-1">{item.desc}</p>
+              <p className="text-sm text-[hsl(var(--muted))] mt-1">{item.desc}</p>
               <p className="text-lg font-bold mt-3">\${item.price.toFixed(2)}</p>
             </div>
           ))}
         </div>
       </section>
-      <footer className="border-t border-stone-200 py-12 px-10">
+      <footer className="border-t border-[hsl(var(--border))] py-12 px-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="font-bold">Rise & Crust</span>
-          <span className="text-sm text-stone-400">&copy; 2026 All rights reserved.</span>
+          <span className="text-sm text-[hsl(var(--muted))]">&copy; 2026 All rights reserved.</span>
         </div>
       </footer>
     </div>
@@ -175,10 +191,22 @@ export default function App() {
 /index.css
 \`\`\`css
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-body { font-family: 'DM Sans', sans-serif; margin: 0; }
+:root {
+  --background: 40 20% 98%;
+  --foreground: 30 10% 10%;
+  --card: 0 0% 100%;
+  --primary: 25 90% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 15% 94%;
+  --muted: 30 5% 55%;
+  --border: 30 15% 88%;
+  --accent: 25 85% 40%;
+}
+body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+* { box-sizing: border-box; }
 \`\`\`
 
-^^^ Follow this EXACT code style: Tailwind classes, clean structure, real data.
+^^^ ALL colors use CSS variables. To change theme = change :root values. NEVER use bg-white, text-gray-900, etc.
 
 {{DESIGN_INJECTION}}
 
@@ -198,10 +226,9 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - The code MUST be fully functional.
 
 ## COLOR/THEME CHANGES:
-For ANY color, theme, or dark mode request: return the FULL /App.tsx file using the markdown fence format (NOT search/replace — too many changes).
-Change the Tailwind className color values: bg-, text-, border- classes.
-NEVER change /index.css or add CSS overrides — ONLY change className strings in JSX.
-Keep ALL layout, structure, content, images, and functionality identical — only swap color classes.
+Since all colors use CSS variables, changing the theme = changing /index.css ONLY.
+Use search/replace on /index.css to swap the HSL values. Do NOT touch /App.tsx.
+Example: "make it dark green" → change --background: 150 30% 8%; --foreground: 150 10% 95%; --primary: 150 60% 40%; etc.
 
 ## OUTPUT FORMAT — use SEARCH/REPLACE blocks:
 
