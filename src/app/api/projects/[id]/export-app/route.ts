@@ -15,6 +15,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
 
   const { id } = await ctx.params;
+  const url = new URL(_req.url);
+  const format = url.searchParams.get("format");
   const project = await prisma.project.findFirst({
     where: { id, ownerId: session.user.id },
     include: { versions: { orderBy: { createdAt: "desc" }, take: 1 } },
@@ -24,10 +26,49 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!project.versions[0]) return new Response("No generated version yet", { status: 400 });
 
   const files = JSON.parse(project.versions[0].files) as Record<string, string>;
+  const appName = project.name;
+  const pkgName = toPkg(project.name);
+
+  // Source code export — real Vite + React + TypeScript project
+  if (format === "source") {
+    const zip = new JSZip();
+    const root = zip.folder(pkgName)!;
+    const src = root.folder("src")!;
+
+    // Add all project files
+    for (const [path, content] of Object.entries(files)) {
+      const clean = path.replace(/^\//, "");
+      if (clean.endsWith(".css")) {
+        src.file(clean, content);
+      } else {
+        src.file(clean, content);
+      }
+    }
+
+    // Add section components if used
+    const code = Object.values(files).join("\n");
+    if (code.includes("/components/sections/")) {
+      const { SECTION_COMPONENTS } = await import("@/lib/section-components");
+      for (const [path, content] of Object.entries(SECTION_COMPONENTS)) {
+        src.file(path.replace(/^\//, ""), content);
+      }
+    }
+
+    src.file("main.tsx", `import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\nimport './index.css';\n\nReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);`);
+    root.file("index.html", `<!doctype html>\n<html lang="en">\n<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>${appName}</title></head>\n<body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>\n</html>`);
+    root.file("package.json", JSON.stringify({ name: pkgName, private: true, version: "1.0.0", type: "module", scripts: { dev: "vite", build: "tsc && vite build", preview: "vite preview" }, dependencies: { react: "^18.3.1", "react-dom": "^18.3.1", "lucide-react": "^0.400.0", "react-hot-toast": "^2.4.1" }, devDependencies: { "@types/react": "^18.3.0", "@types/react-dom": "^18.3.0", "@vitejs/plugin-react": "^4.3.0", typescript: "^5.5.0", vite: "^5.4.0" } }, null, 2));
+    root.file("tsconfig.json", JSON.stringify({ compilerOptions: { target: "ES2020", useDefineForClassFields: true, lib: ["ES2020", "DOM", "DOM.Iterable"], module: "ESNext", skipLibCheck: true, moduleResolution: "bundler", allowImportingTsExtensions: true, resolveJsonModule: true, isolatedModules: true, noEmit: true, jsx: "react-jsx", strict: true, noUnusedLocals: false, noUnusedParameters: false, noFallthroughCasesInSwitch: true }, include: ["src"] }, null, 2));
+    root.file("vite.config.ts", `import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nexport default defineConfig({ plugins: [react()] });`);
+    root.file("README.md", `# ${appName}\n\nBuilt with [ThatCode](https://thatcode.dev)\n\n## Run locally\n\n\`\`\`bash\nnpm install\nnpm run dev\n\`\`\`\n\n## Build for production\n\n\`\`\`bash\nnpm run build\n\`\`\`\n`);
+
+    const zipBuffer = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
+    return new Response(zipBuffer as BodyInit, {
+      headers: { "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="${pkgName}-source.zip"` },
+    });
+  }
+
   const html = buildStandaloneHtml(files, project.name);
   const appId = `com.thatcode.${toId(project.name)}`;
-  const pkgName = toPkg(project.name);
-  const appName = project.name;
 
   const zip = new JSZip();
   const root = zip.folder(pkgName)!;

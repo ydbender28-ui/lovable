@@ -266,6 +266,240 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
   );
 }`,
 
+"/components/sections/PricingTable.tsx": `import React, { useState } from 'react';
+type Plan = { name: string; price: string; period?: string; features: string[]; cta: string; popular?: boolean };
+export default function PricingTable({ title, subtitle, plans }: { title: string; subtitle?: string; plans: Plan[] }) {
+  return (
+    <section id="pricing" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em' }}>{title}</h2>
+      {subtitle && <p style={{ textAlign:'center', color:'var(--muted,#888)', fontSize:16, marginTop:12, marginBottom:48 }}>{subtitle}</p>}
+      <div style={{ display:'grid', gridTemplateColumns:\`repeat(\${Math.min(plans.length, 3)}, 1fr)\`, gap:24, alignItems:'start' }}>
+        {plans.map((p, i) => (
+          <div key={i} style={{ background: p.popular ? 'var(--accent,#111)' : 'var(--card,#fff)', color: p.popular ? '#fff' : 'var(--text,#111)', border: p.popular ? 'none' : '1px solid var(--border,#eee)', borderRadius:16, padding:32, position:'relative', transform: p.popular ? 'scale(1.05)' : 'none' }}>
+            {p.popular && <span style={{ position:'absolute', top:-12, left:'50%', transform:'translateX(-50%)', background:'var(--accent2,#c2410c)', color:'#fff', fontSize:11, padding:'4px 12px', borderRadius:50, fontWeight:600 }}>Most Popular</span>}
+            <h3 style={{ fontSize:20, fontWeight:700 }}>{p.name}</h3>
+            <div style={{ margin:'16px 0' }}><span style={{ fontSize:40, fontWeight:800 }}>{p.price}</span>{p.period && <span style={{ fontSize:14, opacity:0.7 }}>/{p.period}</span>}</div>
+            <ul style={{ listStyle:'none', padding:0, margin:'24px 0' }}>{p.features.map((f, j) => <li key={j} style={{ fontSize:14, padding:'8px 0', borderBottom:'1px solid ' + (p.popular ? 'rgba(255,255,255,0.1)' : 'var(--border,#eee)') }}>✓ {f}</li>)}</ul>
+            <button style={{ width:'100%', padding:'14px', borderRadius:50, border: p.popular ? 'none' : '1px solid var(--border,#ddd)', background: p.popular ? '#fff' : 'var(--accent,#111)', color: p.popular ? 'var(--accent,#111)' : '#fff', fontSize:14, fontWeight:600, cursor:'pointer' }}>{p.cta}</button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/FAQ.tsx": `import React, { useState } from 'react';
+type FAQItem = { q: string; a: string };
+export default function FAQ({ title, items }: { title: string; items: FAQItem[] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <section id="faq" style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
+      {items.map((item, i) => (
+        <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
+          <button onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--text,#111)', textAlign:'left' }}>
+            {item.q}
+            <span style={{ fontSize:20, transform: open === i ? 'rotate(45deg)' : 'none', transition:'transform 0.2s' }}>+</span>
+          </button>
+          {open === i && <p style={{ padding:'0 0 20px', fontSize:15, lineHeight:1.7, color:'var(--muted,#666)' }}>{item.a}</p>}
+        </div>
+      ))}
+    </section>
+  );
+}`,
+
+"/components/sections/CTA.tsx": `import React from 'react';
+export default function CTA({ title, subtitle, cta, image }: { title: string; subtitle?: string; cta: { text: string; href?: string }; image?: string }) {
+  return (
+    <section style={{ position:'relative', padding:'100px 40px', textAlign:'center', overflow:'hidden' }}>
+      {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
+      <div style={{ position:'relative', zIndex:1, maxWidth:700, margin:'0 auto' }}>
+        <h2 style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, lineHeight:1.1, color: image ? '#fff' : 'var(--text,#111)', letterSpacing:'-0.02em' }}>{title}</h2>
+        {subtitle && <p style={{ fontSize:18, marginTop:16, color: image ? 'rgba(255,255,255,0.8)' : 'var(--muted,#666)' }}>{subtitle}</p>}
+        <a href={cta.href||'#'} style={{ display:'inline-block', marginTop:32, background:'var(--accent,#c2410c)', color:'#fff', padding:'16px 40px', borderRadius:50, fontSize:16, fontWeight:600, textDecoration:'none' }}>{cta.text}</a>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Gallery.tsx": `import React, { useState } from 'react';
+export default function Gallery({ title, images }: { title: string; images: { src: string; alt: string }[] }) {
+  const [selected, setSelected] = useState<number | null>(null);
+  return (
+    <section id="gallery" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
+        {images.map((img, i) => (
+          <div key={i} onClick={() => setSelected(i)} style={{ borderRadius:12, overflow:'hidden', cursor:'pointer', aspectRatio:'4/3' }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}>
+            <img src={img.src} alt={img.alt} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform 0.3s' }} />
+          </div>
+        ))}
+      </div>
+      {selected !== null && (
+        <div onClick={() => setSelected(null)} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+          <img src={images[selected].src} alt={images[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} />
+        </div>
+      )}
+    </section>
+  );
+}`,
+
+"/components/sections/Stats.tsx": `import React from 'react';
+type Stat = { value: string; label: string };
+export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }) {
+  return (
+    <section style={{ padding:'80px 40px', background: dark ? 'var(--accent,#111)' : 'var(--card,#faf9f7)' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:\`repeat(\${Math.min(items.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
+        {items.map((s, i) => (
+          <div key={i}>
+            <p style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, color: dark ? '#fff' : 'var(--accent,#c2410c)', letterSpacing:'-0.02em' }}>{s.value}</p>
+            <p style={{ fontSize:14, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted,#888)', marginTop:8, textTransform:'uppercase', letterSpacing:'0.1em' }}>{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Team.tsx": `import React from 'react';
+type Member = { name: string; role: string; image: string; bio?: string };
+export default function Team({ title, members }: { title: string; members: Member[] }) {
+  return (
+    <section id="team" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:32 }}>
+        {members.map((m, i) => (
+          <div key={i} style={{ textAlign:'center' }}>
+            <img src={m.image} alt={m.name} style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', margin:'0 auto 16px' }} />
+            <h3 style={{ fontSize:18, fontWeight:600 }}>{m.name}</h3>
+            <p style={{ fontSize:13, color:'var(--accent,#c2410c)', fontWeight:500, marginTop:4 }}>{m.role}</p>
+            {m.bio && <p style={{ fontSize:14, color:'var(--muted,#888)', marginTop:8, lineHeight:1.6 }}>{m.bio}</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Newsletter.tsx": `import React, { useState } from 'react';
+export default function Newsletter({ title, subtitle, placeholder }: { title: string; subtitle?: string; placeholder?: string }) {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  return (
+    <section style={{ padding:'80px 40px', background:'var(--accent,#111)', color:'#fff' }}>
+      <div style={{ maxWidth:600, margin:'0 auto', textAlign:'center' }}>
+        <h2 style={{ fontSize:32, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
+        {subtitle && <p style={{ fontSize:16, opacity:0.8, marginTop:12 }}>{subtitle}</p>}
+        {sent ? <p style={{ marginTop:24, fontSize:16, color:'#4ade80' }}>Thanks for subscribing!</p> : (
+          <div style={{ display:'flex', gap:8, marginTop:32, maxWidth:440, margin:'32px auto 0' }}>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={placeholder || 'Enter your email'} style={{ flex:1, padding:'14px 20px', borderRadius:50, border:'none', fontSize:14, outline:'none' }} />
+            <button onClick={() => { if (email.includes('@')) setSent(true); }} style={{ background:'#fff', color:'var(--accent,#111)', padding:'14px 28px', borderRadius:50, border:'none', fontSize:14, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>Subscribe</button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Timeline.tsx": `import React from 'react';
+type Event = { year: string; title: string; desc: string };
+export default function Timeline({ title, events }: { title: string; events: Event[] }) {
+  return (
+    <section style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
+      {events.map((e, i) => (
+        <div key={i} style={{ display:'flex', gap:24, marginBottom:40, position:'relative' }}>
+          <div style={{ width:80, textAlign:'right', flexShrink:0 }}>
+            <span style={{ fontSize:14, fontWeight:700, color:'var(--accent,#c2410c)' }}>{e.year}</span>
+          </div>
+          <div style={{ width:2, background:'var(--border,#eee)', position:'relative', flexShrink:0 }}>
+            <div style={{ width:10, height:10, borderRadius:'50%', background:'var(--accent,#c2410c)', position:'absolute', top:4, left:-4 }} />
+          </div>
+          <div style={{ paddingBottom:8 }}>
+            <h3 style={{ fontSize:17, fontWeight:600 }}>{e.title}</h3>
+            <p style={{ fontSize:14, color:'var(--muted,#888)', marginTop:4, lineHeight:1.6 }}>{e.desc}</p>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}`,
+
+"/components/sections/LogoCloud.tsx": `import React from 'react';
+export default function LogoCloud({ title, logos }: { title?: string; logos: { name: string; image?: string }[] }) {
+  return (
+    <section style={{ padding:'60px 40px', borderTop:'1px solid var(--border,#eee)', borderBottom:'1px solid var(--border,#eee)' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', textAlign:'center' }}>
+        {title && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--muted,#999)', marginBottom:32 }}>{title}</p>}
+        <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:40, alignItems:'center', opacity:0.5 }}>
+          {logos.map((l, i) => l.image
+            ? <img key={i} src={l.image} alt={l.name} style={{ height:28, objectFit:'contain' }} />
+            : <span key={i} style={{ fontSize:18, fontWeight:700, letterSpacing:'-0.02em' }}>{l.name}</span>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/BlogGrid.tsx": `import React from 'react';
+type Post = { title: string; excerpt: string; image: string; date: string; author: string; category?: string };
+export default function BlogGrid({ title, posts }: { title: string; posts: Post[] }) {
+  return (
+    <section id="blog" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:32 }}>
+        {posts.map((p, i) => (
+          <article key={i} style={{ borderRadius:16, overflow:'hidden', border:'1px solid var(--border,#eee)', background:'var(--card,#fff)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-4px)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}>
+            <img src={p.image} alt={p.title} style={{ width:'100%', height:200, objectFit:'cover' }} />
+            <div style={{ padding:24 }}>
+              {p.category && <span style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent,#c2410c)', fontWeight:600 }}>{p.category}</span>}
+              <h3 style={{ fontSize:18, fontWeight:600, marginTop:8, lineHeight:1.3 }}>{p.title}</h3>
+              <p style={{ fontSize:14, color:'var(--muted,#888)', marginTop:8, lineHeight:1.6 }}>{p.excerpt}</p>
+              <div style={{ display:'flex', justifyContent:'space-between', marginTop:16, fontSize:12, color:'var(--muted,#aaa)' }}>
+                <span>{p.author}</span><span>{p.date}</span>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Tabs.tsx": `import React, { useState } from 'react';
+type Tab = { label: string; content: string };
+export default function Tabs({ tabs }: { tabs: Tab[] }) {
+  const [active, setActive] = useState(0);
+  return (
+    <section style={{ padding:'80px 40px', maxWidth:800, margin:'0 auto' }}>
+      <div style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
+        {tabs.map((t, i) => (
+          <button key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--text,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
+        ))}
+      </div>
+      <div style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{tabs[active]?.content}</div>
+    </section>
+  );
+}`,
+
+"/components/sections/Banner.tsx": `import React, { useState } from 'react';
+export default function Banner({ text, cta, href }: { text: string; cta?: string; href?: string }) {
+  const [show, setShow] = useState(true);
+  if (!show) return null;
+  return (
+    <div style={{ background:'var(--accent,#111)', color:'#fff', padding:'10px 40px', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:16 }}>
+      <span>{text}</span>
+      {cta && <a href={href||'#'} style={{ color:'#fff', fontWeight:600, textDecoration:'underline' }}>{cta}</a>}
+      <button onClick={() => setShow(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:16, marginLeft:8 }}>×</button>
+    </div>
+  );
+}`,
+
 };
 
 export const SECTION_COMPONENT_LIST = `
@@ -281,8 +515,20 @@ Import using: import Navbar from '/components/sections/Navbar';
 - Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
 - Contact: <Contact title="Visit us" items={[{label:"Address", value:"123 Main St"}, {label:"Phone", value:"908-783-4220", href:"tel:9087834220"}]} />
 - Footer: <Footer brand="Name" tagline="Tagline" />
-- ShopGrid: <ShopGrid title="Our Menu" items={[{id:1, name:"Espresso", price:3.50, desc:"Rich shot", category:"Coffee", badge:"Popular", image:"{{unsplash:espresso|400x300}}"}]} />
-  → Has built-in Add to Cart buttons, cart drawer with +/- quantity, checkout button. USE THIS instead of MenuGrid when user wants ordering/checkout/cart.
+- ShopGrid: <ShopGrid title="Shop" items={[{id:1, name:"Item", price:3.50, desc:"Desc", category:"Cat", badge:"Popular", image:"{{unsplash:product|400x300}}"}]} />
+  → Built-in cart + checkout. Use instead of MenuGrid for ordering.
+- PricingTable: <PricingTable title="Pricing" plans={[{name:"Pro", price:"$29", period:"mo", features:["Feature 1","Feature 2"], cta:"Get Started", popular:true}]} />
+- FAQ: <FAQ title="FAQ" items={[{q:"Question?", a:"Answer here."}]} />
+- CTA: <CTA title="Ready to start?" subtitle="Join thousands" cta={{text:"Get Started"}} image="{{unsplash:abstract|1600x600}}" />
+- Gallery: <Gallery title="Gallery" images={[{src:"{{unsplash:photo|400x300}}", alt:"Photo"}]} /> → Lightbox on click
+- Stats: <Stats items={[{value:"10K+", label:"Customers"}]} dark={false} />
+- Team: <Team title="Our Team" members={[{name:"John", role:"CEO", image:"{{unsplash:man portrait|200x200}}"}]} />
+- Newsletter: <Newsletter title="Stay Updated" subtitle="Get weekly tips" />
+- Timeline: <Timeline title="Our Journey" events={[{year:"2020", title:"Founded", desc:"Started in a garage"}]} />
+- LogoCloud: <LogoCloud title="Trusted by" logos={[{name:"Acme"},{name:"Globex"}]} />
+- BlogGrid: <BlogGrid title="Blog" posts={[{title:"Post", excerpt:"...", image:"{{unsplash:blog|400x300}}", date:"Jun 2026", author:"Sarah"}]} />
+- Tabs: <Tabs tabs={[{label:"Tab 1", content:"Content here"},{label:"Tab 2", content:"More content"}]} />
+- Banner: <Banner text="Free shipping today!" cta="Shop now" />
 
 RULES:
 - The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
