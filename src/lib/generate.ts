@@ -60,15 +60,18 @@ In /index.css:
   --radius: 0.75rem;
 }
 
-In JSX, use these semantic tokens — NEVER use direct colors like bg-white, text-gray-900:
-CORRECT: className="bg-[hsl(var(--background))] text-[hsl(var(--foreground))]"
-CORRECT: className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"
-CORRECT: className="border-[hsl(var(--border))]"
+In JSX, use these semantic color classes — NEVER use direct colors like bg-white, text-gray-900:
+CORRECT: className="bg-background text-foreground"
+CORRECT: className="bg-primary text-primary-foreground"
+CORRECT: className="bg-card border-border"
+CORRECT: className="text-muted"
 WRONG:   className="bg-white text-gray-900" ← NEVER do this
+WRONG:   className="bg-[hsl(var(--background))]" ← too verbose, use bg-background
 
-This way, changing the theme = changing /index.css variables. Every element updates instantly.
+Available color classes: bg-background, bg-foreground, bg-card, bg-primary, bg-secondary, bg-muted, bg-accent, text-foreground, text-muted, text-primary, text-primary-foreground, border-border
+Layout classes use regular Tailwind: rounded-xl, p-6, shadow-sm, flex, grid, hover:, etc.
 
-Layout classes (non-color) use regular Tailwind: rounded-xl, p-6, shadow-sm, flex, grid, etc.
+Changing the theme = changing /index.css HSL values. Every element updates instantly.
 
 Other rules:
 - App component MUST be "export default function App()"
@@ -147,13 +150,13 @@ const MENU = [
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
-      <nav className="sticky top-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur border-b border-[hsl(var(--border))] px-10">
+    <div className="min-h-screen bg-background text-foreground">
+      <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border px-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between h-16">
           <span className="text-xl font-extrabold tracking-tight">Rise & Crust</span>
           <div className="flex gap-8 items-center">
-            <a href="#menu" className="text-sm text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] transition-colors">Menu</a>
-            <a href="#contact" className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">Visit Us</a>
+            <a href="#menu" className="text-sm text-muted hover:text-foreground transition-colors">Menu</a>
+            <a href="#contact" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">Visit Us</a>
           </div>
         </div>
       </nav>
@@ -169,18 +172,18 @@ export default function App() {
         <h2 className="text-4xl font-bold tracking-tight mb-10">Our Menu</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {MENU.map(item => (
-            <div key={item.id} className="bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
+            <div key={item.id} className="bg-card border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
               <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-sm text-[hsl(var(--muted))] mt-1">{item.desc}</p>
+              <p className="text-sm text-muted mt-1">{item.desc}</p>
               <p className="text-lg font-bold mt-3">\${item.price.toFixed(2)}</p>
             </div>
           ))}
         </div>
       </section>
-      <footer className="border-t border-[hsl(var(--border))] py-12 px-10">
+      <footer className="border-t border-border py-12 px-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="font-bold">Rise & Crust</span>
-          <span className="text-sm text-[hsl(var(--muted))]">&copy; 2026 All rights reserved.</span>
+          <span className="text-sm text-muted">&copy; 2026 All rights reserved.</span>
         </div>
       </footer>
     </div>

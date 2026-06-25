@@ -63,7 +63,29 @@ export default function Preview({
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>App</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwindcss?.config && Object.assign(tailwindcss.config, { theme: { extend: {} } });</script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: 'hsl(var(--card))',
+        'card-foreground': 'hsl(var(--foreground))',
+        primary: 'hsl(var(--primary))',
+        'primary-foreground': 'hsl(var(--primary-foreground))',
+        secondary: 'hsl(var(--secondary))',
+        muted: 'hsl(var(--muted))',
+        accent: 'hsl(var(--accent))',
+        border: 'hsl(var(--border))',
+      },
+      borderRadius: {
+        DEFAULT: 'var(--radius)',
+      }
+    }
+  }
+}
+</script>
 </head>
 <body><div id="root"></div></body>
 </html>`,
