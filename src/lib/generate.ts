@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { UI_COMPONENT_LIST } from "./ui-components";
 import { SECTION_COMPONENT_LIST } from "./section-components";
 import { EXTRA_COMPONENT_LIST } from "./extra-components";
+import { matchDesign, buildDesignContext } from "./designs";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -1391,10 +1392,16 @@ export async function generateProject(
   let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
   const isEdit = !!(existingFiles && Object.keys(existingFiles).length > 0);
 
-  // Only inject a design system for new builds — edits must preserve existing design
-  const pickedDesign = isEdit ? null : pickDesign(prompt);
+  // Design system — 83 categories × 25 moods × 40 palettes = 80,000+ unique combinations
+  const designMatch = isEdit ? null : matchDesign(prompt);
+  const advancedDesignContext = designMatch ? buildDesignContext(designMatch) : "";
+
+  // Fallback to original 8-theme system if no category matched
+  const pickedDesign = (!designMatch && !isEdit) ? pickDesign(prompt) : null;
   const designInjection = isEdit
     ? `EDITING AN EXISTING APP — DO NOT apply any new design system. Read the existing code and match its exact colors, fonts, spacing, and visual style. Your only job is to add/change what was requested.`
+    : designMatch
+    ? advancedDesignContext
     : `${pickedDesign!.description}
 
 In /index.css, define EXACTLY these CSS variables:
