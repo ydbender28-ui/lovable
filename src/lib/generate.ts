@@ -174,6 +174,18 @@ Other rules:
 - Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
 - Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
 
+## EVERY BUTTON MUST WORK — NO DEAD BUTTONS:
+- Mobile hamburger menu: use useState to toggle open/close. Clicking it MUST show/hide the menu.
+- "Add to Cart" buttons: use useState for cart array. Clicking MUST add the item and update the cart count.
+- Nav links: use smooth scroll with document.getElementById(id)?.scrollIntoView({behavior:'smooth'}).
+- Form submit buttons: use onSubmit with e.preventDefault(), show success message with useState.
+- Modal/drawer open/close: use useState boolean. Clicking MUST toggle visibility.
+- Tab buttons: use useState for activeTab. Clicking MUST switch displayed content.
+- Accordion/FAQ: use useState for openIndex. Clicking MUST expand/collapse.
+- Quantity +/- buttons: MUST update the count with useState.
+- NEVER create a button without an onClick handler. NEVER leave onClick as an empty function.
+- Test every interaction mentally before outputting — if a user clicks it, something MUST happen.
+
 ## CONTENT — write like a creative director, not an AI:
 - Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".
 - Tagline: SHORT, PUNCHY, HUMAN. Max 6 words. "Coffee worth waking up for." NOT "Experience Excellence" or "Your Journey Starts Here."
@@ -315,6 +327,11 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
+- EVERY button MUST have a working onClick handler. No dead buttons.
+- When adding interactive features (cart, modal, tabs, accordion, form), include ALL useState hooks, handlers, and conditional rendering.
+- If adding "Add to Cart": include useState for cart items, handler to add/remove, cart count in nav, and a cart drawer/modal.
+- If adding a form: include onSubmit with e.preventDefault(), form validation, and success feedback.
+- If adding tabs: include useState for activeTab, onClick to switch, and conditional content rendering.
 
 ## COLOR/THEME CHANGES:
 First, check the existing code to determine which color system it uses:
