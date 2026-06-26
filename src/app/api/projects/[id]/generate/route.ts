@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateProject, generateQuickEdit, smartRoute, estimateCost, MODELS } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
+import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
 
 export const maxDuration = 300;
 
@@ -101,6 +102,18 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     : null;
 
 
+  // Smart defaults from learning system — auto-include features users always add
+  let smartPrompt = prompt;
+  if (!hasExisting) {
+    const category = detectCategory(prompt);
+    const [defaults, mistakes] = await Promise.all([
+      getSmartDefaults(prompt).catch(() => null),
+      getRecentMistakes(category).catch(() => null),
+    ]);
+    if (defaults) smartPrompt = `${prompt}\n\n${defaults}`;
+    if (mistakes) smartPrompt = `${smartPrompt}\n\n${mistakes}`;
+  }
+
   // Quick edit disabled — full pipeline with search/replace is more reliable
   const useQuickEdit = false;
 
@@ -126,7 +139,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       const result = useQuickEdit
         ? await generateQuickEdit(prompt, existingFiles, onToken, onStatus)
         : await generateProject(
-            prompt, existingFiles, envVars, onToken, onStatus,
+            smartPrompt, existingFiles, envVars, onToken, onStatus,
             imageBase64 ?? null, imageMimeType,
             finalRoute.model.model, customKnowledge, projectHistory
           );
