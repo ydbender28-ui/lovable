@@ -1637,8 +1637,18 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     parsed = parseOutput(text, existingFiles);
 
     if (!parsed) {
-      const preview = text.slice(0, 500).replace(/\n/g, " ");
-      throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
+      // Last resort: if the response contains what looks like JSX/TSX code, treat it as a full App.tsx rewrite
+      if (text.includes("export default function") || text.includes("export default function App")) {
+        const codeMatch = text.match(/(?:```(?:tsx?|jsx?)?\n)?([\s\S]*export default function[\s\S]*)$/);
+        if (codeMatch) {
+          const code = codeMatch[1].replace(/```\s*$/, "").trim();
+          parsed = { summary: "Applied changes.", files: { "/App.tsx": code }, suggestions: [] };
+        }
+      }
+      if (!parsed) {
+        const preview = text.slice(0, 500).replace(/\n/g, " ");
+        throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
+      }
     }
 
     // ── Retry failed replacements (one attempt) ──
