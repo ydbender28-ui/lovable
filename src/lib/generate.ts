@@ -157,20 +157,29 @@ Other rules:
 
 ## Quality standards (make it look like a $10,000 site):
 - Typography: Google Font pair. Headlines 48-72px, weight 800, tight letter-spacing. Body 16-18px, line-height 1.6.
-- Layout: max-width 1200px centered. Sections 80-100px vertical padding. CSS Grid for cards.
-- Hero: min-height 85vh, background image with dark gradient overlay, white text.
-- Nav: sticky top, white/blur background, z-index 100.
-- Cards: white bg, border-radius 12-16px, subtle shadow, hover lift effect.
-- Buttons: solid fill, padding 14px 28px, border-radius 8-50px, cursor pointer, hover effect.
+- Layout: max-width 1200px centered. Sections 80-120px vertical padding. CSS Grid for cards.
+- Hero: TWO options — A) Split layout: text left (60%), image right (40%) for services/SaaS. B) Full-bleed image with gradient overlay for restaurants/hotels. Pick what fits.
+- Nav: sticky top, bg-white/80 backdrop-blur, logo left, links + pill CTA button right.
+- Cards: rounded-2xl, border, hover:-translate-y-1 hover:shadow-xl, transition-all duration-300. Images inside: rounded-xl h-48 object-cover.
+- Buttons: px-6 py-3 rounded-full for primary CTA. hover:scale-[1.02] shadow-lg. Active: scale-[0.98].
 - Colors: warm, cohesive palette. Use CSS variables in :root. NOT generic blue/purple.
-- Images: use {{unsplash:specific descriptive query|WxH}} for EVERY image. Dimensions REQUIRED. Examples:
-  Hero: {{unsplash:artisan coffee shop interior warm lighting|1600x900}}
-  Card: {{unsplash:latte art close up|400x300}}
+- Sections: VARY the layout for every section. Never repeat the same grid. Alternate bg colors between sections.
+- Images: use {{unsplash:VERY SPECIFIC descriptive query|WxH}} for EVERY image. Be ultra-specific:
+  Hero: {{unsplash:artisan coffee shop interior warm moody lighting|1600x900}}
+  Card: {{unsplash:espresso shot crema close up|400x300}}
   Portrait: {{unsplash:smiling woman professional headshot|200x200}}
   NEVER use bare {{unsplash:query}} without |WxH — it will break.
 - Data: 8-12+ items for lists/menus. Real-sounding names, prices, descriptions.
 - Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
 - Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
+
+## CONTENT — write like a creative director, not an AI:
+- Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".
+- Tagline: SHORT, PUNCHY, HUMAN. Max 6 words. "Coffee worth waking up for." NOT "Experience Excellence" or "Your Journey Starts Here."
+- Descriptions: conversational, specific. "We roast every batch in-house, every Tuesday." NOT "Premium quality products."
+- Menu items: creative names. "The Midnight Roast — dark, smoky, unapologetic" NOT "Dark Roast — A delicious dark roast coffee."
+- Testimonials: specific, believable. "I've been coming here every morning since 2019. The cortado is unreal." NOT "Great service!"
+- NEVER start with "Welcome to" or "Discover" or "Experience" or "Elevate".
 
 ## 50+ pre-built components available (import from /components/sections/):
 ${SECTION_COMPONENT_LIST}
@@ -931,12 +940,29 @@ async function generateWithGoogle(
 }
 
 
-// ─── Unsplash image resolution ────────────────────────────────────────────────
+// ─── Image resolution ────────────────────────────────────────────────────────
 // Resolves {{unsplash:<query>|<w>x<h>}} tokens in generated code with real photos.
-// Three-tier fallback: Unsplash API → LoremFlickr → picsum.photos (always loads).
+// Four-tier fallback: Pexels API → Unsplash API → LoremFlickr → picsum.photos.
 
 const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY;
+const PEXELS_KEY = process.env.PEXELS_API_KEY;
 const UNSPLASH_TOKEN = /\{\{unsplash:([^}|]+?)(?:\|(\d+)x(\d+))?\}\}/g;
+
+async function fetchPexelsPhoto(query: string): Promise<string | null> {
+  if (!PEXELS_KEY) return null;
+  try {
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape`;
+    const r = await fetch(url, { headers: { Authorization: PEXELS_KEY }, signal: AbortSignal.timeout(4000) });
+    if (!r.ok) return null;
+    const data = await r.json();
+    const photos = data.photos ?? [];
+    if (photos.length === 0) return null;
+    const pick = photos[Math.floor(Math.random() * Math.min(3, photos.length))];
+    return pick.src?.large2x || pick.src?.large || null;
+  } catch {
+    return null;
+  }
+}
 
 async function fetchUnsplashPool(query: string): Promise<string[]> {
   if (!UNSPLASH_KEY) return [];
@@ -985,13 +1011,19 @@ async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
   }
   if (queries.size === 0) return files;
 
+  // Try Pexels first (200 req/hr), then Unsplash (50 req/hr), then fallbacks
+  const pexelsPhotos = new Map<string, string | null>();
   const pools = new Map<string, string[]>();
   const flickrOk = new Map<string, boolean>();
   await Promise.all(
     [...queries].map(async (q) => {
-      const pool = await fetchUnsplashPool(q);
-      pools.set(q, pool);
-      if (pool.length === 0) flickrOk.set(q, await returnsImage(flickrUrl(q, 600, 400, 0)));
+      const pexelsUrl = await fetchPexelsPhoto(q);
+      pexelsPhotos.set(q, pexelsUrl);
+      if (!pexelsUrl) {
+        const pool = await fetchUnsplashPool(q);
+        pools.set(q, pool);
+        if (pool.length === 0) flickrOk.set(q, await returnsImage(flickrUrl(q, 600, 400, 0)));
+      }
     }),
   );
 
@@ -1002,6 +1034,11 @@ async function resolveImages(files: ProjectFiles): Promise<ProjectFiles> {
       const q = qRaw.trim();
       const w = ws ? parseInt(ws, 10) : 1200;
       const h = hs ? parseInt(hs, 10) : 800;
+
+      // Try Pexels first
+      const pexels = pexelsPhotos.get(q);
+      if (pexels) return pexels;
+
       const pool = pools.get(q) ?? [];
       const i = counters.get(q) ?? 0;
       counters.set(q, i + 1);
