@@ -1181,8 +1181,8 @@ function fuzzyFindRegion(source: string, search: string): { start: number; end: 
   const windowSize = searchLines.length;
   for (let i = 0; i <= sourceLines.length - windowSize; i++) {
     // Check candidate window [i, i + windowSize + slack)
-    // Allow up to 2 extra lines (blank lines the AI may have omitted)
-    for (let slack = 0; slack <= 2; slack++) {
+    // Allow up to 4 extra lines (blank lines the AI may have omitted)
+    for (let slack = 0; slack <= 4; slack++) {
       const candidateEnd = Math.min(i + windowSize + slack, sourceLines.length);
       const candidateLines = sourceLines.slice(i, candidateEnd).map(l => l.trim()).filter(l => l.length > 0);
 
@@ -1199,9 +1199,9 @@ function fuzzyFindRegion(source: string, search: string): { start: number; end: 
         }
       }
 
-      // Require at least 80% of search lines to match
+      // Require at least 60% of search lines to match (lowered from 80% to catch more edits)
       const score = matches / searchLines.length;
-      if (score >= 0.8 && score > bestScore) {
+      if (score >= 0.6 && score > bestScore) {
         bestScore = score;
         bestStart = i;
         bestEnd = candidateEnd;
