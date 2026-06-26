@@ -117,8 +117,10 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
-- App component MUST be the default export.
-- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
+- App component MUST be the default export: "export default function App()"
+- Put ALL components in /App.tsx. Define helper components ABOVE the App function in the SAME file. NEVER import from ./components/ or any local file that doesn't exist.
+- Only import from: react, lucide-react, react-hot-toast, or /components/sections/ (pre-built library).
+- NEVER import from a file you didn't create. If you need a component, define it in /App.tsx.
 
 ## STYLING — DESIGN SYSTEM + TAILWIND:
 
