@@ -169,6 +169,7 @@ Other rules:
   Card: {{unsplash:espresso shot crema close up|400x300}}
   Portrait: {{unsplash:smiling woman professional headshot|200x200}}
   NEVER use bare {{unsplash:query}} without |WxH — it will break.
+- Menu/product cards MUST have images: each card gets an <img> with {{unsplash:specific item close up|400x300}}. Example: a coffee menu card should have {{unsplash:espresso shot crema close up|400x300}} above the item name and price. NEVER make menu cards text-only.
 - Data: 8-12+ items for lists/menus. Real-sounding names, prices, descriptions.
 - Interactions: hover effects on all clickable elements. Smooth transitions (0.2-0.3s).
 - Cart (if needed): cart icon with count in the NAVBAR, slide-out drawer from right, +/- quantity, total, checkout button.
