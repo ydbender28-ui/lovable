@@ -87,7 +87,16 @@ tailwind.config = {
 }
 </script>
 </head>
-<body><div id="root"></div></body>
+<body><div id="root"></div>
+<script>
+// Global error handler — prevent blank screens from component errors
+window.addEventListener('error', function(e) {
+  if (document.getElementById('root').innerHTML === '') {
+    document.getElementById('root').innerHTML = '<div style="padding:40px;font-family:sans-serif"><h2>Something went wrong</h2><p style="color:#666">Click "Fix error" above to resolve</p></div>';
+  }
+});
+</script>
+</body>
 </html>`,
     ...UI_COMPONENTS,
     ...SECTION_COMPONENTS,
