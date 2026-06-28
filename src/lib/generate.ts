@@ -1577,101 +1577,119 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
   // New builds: Code + Style + Images run in PARALLEL
   // Edits: Code agent outputs COMPLETE file (no search/replace parsing needed)
 
-  if (!isEdit) {
-    // ── NEW BUILD: Parallel agents ──
-    onStatus?.("Planning your site…");
+  // ── TOOL-USE PIPELINE — like Lovable, like DevForge ──
+  // AI calls edit_file(path, content) with structured data. No text parsing needed.
 
-    const codePrompt = `${userContent}\n\nIMPORTANT: Output ONLY the /App.tsx file content. No /index.css — that will be generated separately.\nReturn format:\nSUMMARY: one sentence\n\nSUGGESTIONS: suggestion1 | suggestion2 | suggestion3\n\n/App.tsx\n\`\`\`tsx\nyour complete code\n\`\`\``;
-    const cssPrompt = `Generate /index.css for: ${prompt}\n\n${designInjection}\n\nReturn ONLY the CSS code. Include: Google Font import, :root CSS variables, body styles, smooth scroll. No explanation.`;
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const toolUseFiles: ProjectFiles = {};
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let summary = "";
 
-    onStatus?.("Building components…");
+  const toolMessages: Anthropic.MessageParam[] = [{
+    role: "user",
+    content: isEdit
+      ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n${prompt}`
+      : userContent,
+  }];
 
-    // PHASE 1: Haiku builds structure + Style Agent — both fast, run in PARALLEL
-    const [codeResult, cssResult] = await Promise.all([
-      // Code Agent — Haiku for SPEED (structure, layout, state management)
-      generateWithAnthropic(
-        "claude-haiku-4-5-20251001", 12000, codePrompt, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
-      ).catch(err => {
-        console.error("Code agent failed:", err.message);
-        return { text: "", stopped: true, inputTokens: 0, outputTokens: 0 };
-      }),
-      // Style Agent — Haiku for speed
-      (async () => {
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        const res = await client.messages.create({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 2000,
-          system: "Generate CSS only. No explanation. Include Google Font import, :root variables, body styles.",
-          messages: [{ role: "user", content: cssPrompt }],
-        });
-        const cssText = (res.content[0] as { type: string; text: string }).text;
-        return cssText.replace(/```css\n?/g, "").replace(/```\n?/g, "").trim();
-      })().catch(() => ""),
-    ]);
-
-    text = codeResult.text;
-    stopped = codeResult.stopped;
-    inputTokens = codeResult.inputTokens;
-    outputTokens = codeResult.outputTokens;
-
-    // If Style Agent produced CSS, inject it into the parsed output later
-    if (cssResult && typeof cssResult === "string" && cssResult.length > 50) {
-      (globalThis as any).__generatedCss = cssResult;
-    }
-
-    onStatus?.("Polishing…");
-
-    if (stopped) {
-      throw new Error(
-        `Response was cut off (output limit). ` +
-        "Try breaking your request into steps — build the basics first, then add features one at a time."
-      );
-    }
-  } else {
-    // ── EDIT: Full file output (no search/replace) ──
-    // The Code agent receives existing files and outputs the COMPLETE updated file
-    onStatus?.("Making changes…");
-
-    const editSystemPrompt = `You are editing a React + TypeScript app. Do EXACTLY what the user asks.
-CRITICAL RULES:
-- Output the COMPLETE updated /App.tsx file — not a diff, not search/replace blocks.
+  const toolSystemPrompt = isEdit
+    ? `You are editing a React + TypeScript app. Do EXACTLY what the user asks.
+RULES:
+- Use the edit_file tool to output COMPLETE file contents.
 - Keep ALL existing functionality intact unless told to change it.
 - EVERY button must have a working onClick handler with useState.
 - ONLY import from: react, lucide-react, react-hot-toast. Nothing else.
-- NEVER say "already implemented". ALWAYS output the full updated code.
-- If the user asks to add something that exists, improve it or add more to it.
+- NEVER say "already implemented". ALWAYS call edit_file with updated code.
+- Start with a brief one-sentence description of what you'll change.`
+    : SYSTEM_PROMPT;
 
-Output format:
-SUMMARY: one sentence about what you changed
+  const model = isEdit ? "claude-haiku-4-5-20251001" : "claude-haiku-4-5-20251001";
 
-/App.tsx
-\`\`\`tsx
-complete updated code here
-\`\`\`
+  onStatus?.(isEdit ? "Making changes…" : "Building your site…");
 
-Only include /index.css if you changed styles.`;
+  for (let iteration = 0; iteration < 5; iteration++) {
+    const response = await client.messages.create({
+      model,
+      max_tokens: 16000,
+      system: [{ type: "text", text: toolSystemPrompt, cache_control: { type: "ephemeral" } }],
+      tools: EDIT_TOOLS,
+      tool_choice: iteration === 0 ? { type: "any" } : { type: "auto" },
+      messages: toolMessages,
+    });
 
-    try {
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-        "claude-haiku-4-5-20251001", 16000,
-        `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n${prompt}`,
-        editSystemPrompt, tokenCallback, null, undefined
-      ));
-    } catch {
-      throw new Error("Edit failed. Please try again.");
+    totalInputTokens += response.usage.input_tokens;
+    totalOutputTokens += response.usage.output_tokens;
+
+    // Extract text and tool calls
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const block of response.content) {
+      if (block.type === "text") {
+        text += block.text;
+        onToken?.(block.text);
+        if (!summary) summary = block.text.slice(0, 200);
+      }
+      if (block.type === "tool_use") {
+        const input = block.input as { path: string; content: string };
+        const filePath = input.path.startsWith("/") ? input.path : "/" + input.path;
+        toolUseFiles[filePath] = input.content;
+        onStatus?.(`Writing ${filePath}…`);
+        onToken?.(`\nEdited ${filePath}`);
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: block.id,
+          content: `Done: ${filePath}`,
+        });
+      }
     }
 
-    if (stopped) {
-      // Retry with Sonnet if Haiku was cut off
-      text = "";
-      lastStatusIdx = -1;
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-        "claude-sonnet-4-6", 32000,
-        `Current files:\n${existingSection}${envSection}\n\n${prompt}`,
-        editSystemPrompt, tokenCallback, null, undefined
-      ));
-    }
+    if (toolResults.length === 0 || response.stop_reason !== "tool_use") break;
+
+    toolMessages.push({ role: "assistant", content: response.content });
+    toolMessages.push({ role: "user", content: toolResults });
   }
+
+  inputTokens = totalInputTokens;
+  outputTokens = totalOutputTokens;
+
+  // If tool use produced files, skip text parsing entirely
+  if (Object.keys(toolUseFiles).length > 0) {
+    const summaryMatch = text.match(/^(.{5,200}?)(?:\.|$)/m);
+    const parsedSummary = summaryMatch ? summaryMatch[1].trim() : summary || "Done.";
+    const suggestionsMatch = text.match(/suggest|recommend|could also|try adding/i);
+
+    // Merge with existing files for edits
+    const mergedFiles = isEdit && existingFiles
+      ? { ...existingFiles, ...toolUseFiles }
+      : toolUseFiles;
+
+    // Resolve images
+    const resolvedFiles = await resolveImages(mergedFiles);
+
+    // Track conversation
+    const changedFiles = Object.keys(toolUseFiles);
+    conversationState.messages.push({ role: "assistant", content: parsedSummary, filesChanged: changedFiles });
+    conversationState.recentlyCreatedFiles.push(...changedFiles);
+    if (isEdit) {
+      conversationState.edits.push({ timestamp: Date.now(), userRequest: prompt, editType: editIntent, filesChanged: changedFiles });
+    }
+    trimConversationState();
+
+    return {
+      files: resolvedFiles,
+      summary: parsedSummary,
+      suggestions: [],
+      modelUsed: model,
+      complexity,
+      complexityReasons,
+      inputTokens,
+      outputTokens,
+      estimatedCostUsd: estimateCost(model, inputTokens, outputTokens),
+    };
+  }
+
+  // Fallback: if tool use produced no files, try text parsing
+  stopped = false;
 
   // ── Parse results ──
   let parsed: ParsedOutput | null;
