@@ -118,9 +118,11 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
 - App component MUST be the default export: "export default function App()"
-- Put ALL components in /App.tsx. Define helper components ABOVE the App function in the SAME file. NEVER import from ./components/ or any local file that doesn't exist.
-- Only import from: react, lucide-react, react-hot-toast, or /components/sections/ (pre-built library).
-- NEVER import from a file you didn't create. If you need a component, define it in /App.tsx.
+- Put ALL components in /App.tsx. Define helper components ABOVE the App function in the SAME file.
+- ONLY import from: react, lucide-react, react-hot-toast. NOTHING ELSE.
+- DO NOT import from /components/sections/ — write all sections inline in App.tsx instead.
+- DO NOT import from any local file. Everything goes in ONE file: /App.tsx.
+- If you need a Navbar, Hero, Footer — write them as functions in /App.tsx, not imports.
 
 ## STYLING — DESIGN SYSTEM + TAILWIND:
 
@@ -197,11 +199,8 @@ Other rules:
 - Testimonials: specific, believable. "I've been coming here every morning since 2019. The cortado is unreal." NOT "Great service!"
 - NEVER start with "Welcome to" or "Discover" or "Experience" or "Elevate".
 
-## 50+ pre-built components available (import from /components/sections/):
-${SECTION_COMPONENT_LIST}
-
-## Additional UI components:
-${EXTRA_COMPONENT_LIST}
+## DO NOT use pre-built components. Write ALL sections inline in /App.tsx.
+## This ensures everything works and nothing breaks from missing imports.
 
 ## Stripe checkout (when user asks for payments):
 Add a checkout button that calls ThatCode's Stripe proxy:
@@ -329,7 +328,7 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - NEVER change unrelated code, images, or layout.
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
-- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
+- ONLY import from: react, lucide-react, react-hot-toast. Nothing else. Write all components inline.
 - EVERY button MUST have a working onClick handler. No dead buttons.
 - When adding interactive features (cart, modal, tabs, accordion, form), include ALL useState hooks, handlers, and conditional rendering.
 - If adding "Add to Cart": include useState for cart items, handler to add/remove, cart count in nav, and a cart drawer/modal.
@@ -809,7 +808,7 @@ const SYSTEM_EDIT_TOOLS = `You are editing an existing React + TypeScript app. T
 - NEVER change unrelated code, images, or layout.
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
-- Only import from: react, lucide-react, react-hot-toast, or /components/sections/.
+- ONLY import from: react, lucide-react, react-hot-toast. Nothing else. Write all components inline.
 
 ## HOW TO MAKE EDITS:
 Use the edit_file tool to modify existing files, or create_file for new files.
