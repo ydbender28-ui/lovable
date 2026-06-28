@@ -4,17 +4,18 @@
 export const SECTION_COMPONENTS: Record<string, string> = {
 
 "/components/sections/Navbar.tsx": `import React, { useState } from 'react';
-export default function Navbar({ brand, links, cta, onNavigate }: { brand: string; links: string[]; cta?: string; onNavigate?: (page: string) => void }) {
+export default function Navbar({ brand, links, cta, onNavigate }: { brand: string; links: any[]; cta?: string; onNavigate?: (page: string) => void }) {
   const [open, setOpen] = useState(false);
+  const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
   const handleClick = (l: string) => (e: React.MouseEvent) => {
-    if (onNavigate) { e.preventDefault(); onNavigate(l.toLowerCase()); }
+    if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); }
   };
   return (
     <nav style={{ position:'sticky', top:0, zIndex:100, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #eee', padding:'0 40px' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
         <div style={{ display:'flex', gap:32, alignItems:'center' }}>
-          {links.map(l => <a key={l} href={\`#\${l.toLowerCase()}\`} onClick={handleClick(l)} style={{ fontSize:14, color:'#555', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#555'}>{l}</a>)}
+          {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase()}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#555', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#555'}>{String(l)}</a>)}
           {cta && <a href="#contact" onClick={handleClick('contact')} style={{ background:'#111', color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:600, textDecoration:'none', cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#333'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#111'}>{cta}</a>}
         </div>
       </div>
