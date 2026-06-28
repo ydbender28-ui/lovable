@@ -1708,6 +1708,37 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
+    // Fix duplicate component/function declarations (common in search/replace edits)
+    for (const [path, code] of Object.entries(parsed.files)) {
+      if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+      const declarations = new Map<string, number>();
+      const lines = code.split("\n");
+      const duplicateLines: number[] = [];
+      lines.forEach((line, i) => {
+        const match = line.match(/^(?:export\s+)?(?:const|function|class)\s+(\w+)/);
+        if (match) {
+          const name = match[1];
+          if (declarations.has(name)) {
+            // Find the end of this duplicate declaration and mark for removal
+            let braceCount = 0;
+            let started = false;
+            for (let j = i; j < lines.length; j++) {
+              braceCount += (lines[j].match(/\{/g) || []).length;
+              braceCount -= (lines[j].match(/\}/g) || []).length;
+              duplicateLines.push(j);
+              if (braceCount > 0) started = true;
+              if (started && braceCount <= 0) break;
+            }
+          } else {
+            declarations.set(name, i);
+          }
+        }
+      });
+      if (duplicateLines.length > 0) {
+        parsed.files[path] = lines.filter((_, i) => !duplicateLines.includes(i)).join("\n");
+      }
+    }
+
     // Fix common JSX syntax errors in ALL files
     for (const [path, code] of Object.entries(parsed.files)) {
       let fixed = code;
