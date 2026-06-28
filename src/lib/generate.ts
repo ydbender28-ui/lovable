@@ -181,7 +181,7 @@ SECTIONS: className="py-20 md:py-28 bg-background" alternating with "bg-secondar
 CARDS: className="bg-card rounded-2xl border border-border overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
 CARD IMAGES: className="w-full h-48 object-cover"
 BUTTONS: className="px-8 py-3.5 rounded-full font-semibold text-sm bg-primary text-primary-foreground hover:opacity-90 transition-all"
-IMAGES: ALWAYS use className="w-full h-48 object-cover rounded-xl". NEVER leave images unsized.
+IMAGES: Card images: className="w-full h-48 object-cover rounded-xl". Hero images: className="w-full h-[500px] object-cover". NEVER leave images unsized — every img MUST have a height class (h-48, h-64, h-[500px], etc).
 - Images: use {{unsplash:VERY SPECIFIC descriptive query|WxH}} for EVERY image. Be ultra-specific:
   Hero: {{unsplash:artisan coffee shop interior warm moody lighting|1600x900}}
   Card: {{unsplash:espresso shot crema close up|400x300}}
