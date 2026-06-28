@@ -202,6 +202,7 @@ IMAGES: ALWAYS use className="w-full h-48 object-cover rounded-xl". NEVER leave 
 - Quantity +/- buttons: MUST update the count with useState.
 - NEVER create a button without an onClick handler. NEVER leave onClick as an empty function.
 - Test every interaction mentally before outputting — if a user clicks it, something MUST happen.
+- NEVER use apostrophes inside single-quoted strings. Use double quotes for strings with apostrophes: "We'll be in touch" not 'We'll be in touch'. Or use backticks: \`We'll be in touch\`.
 
 ## CONTENT — write like a creative director, not an AI:
 - Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".
@@ -1811,13 +1812,18 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       parsed.files["/App.tsx"] = fixedApp;
     }
 
-    // Fix apostrophes breaking single-quoted strings: 'We'll' → `We'll`
+    // Fix apostrophes breaking single-quoted strings
     for (const [path, code] of Object.entries(parsed.files)) {
       if (!path.match(/\.(tsx?|jsx?)$/)) continue;
-      // Replace single-quoted strings that contain apostrophes with backtick template literals
       let fixed = code;
-      // Match patterns like toast.success('...'), alert('...'), content: '...'
-      fixed = fixed.replace(/([(,=]\s*)'((?:[^'\\]|\\.)*(?:n't|'ll|'re|'ve|'s|'d|'m)(?:[^'\\]|\\.)*)'/g, '$1`$2`');
+      // Simple approach: find any single-quoted string and if it has an odd number of single quotes
+      // between opening/closing, it's broken. Replace ALL single-quoted toast/alert messages with double quotes.
+      fixed = fixed.replace(/toast\.\w+\('([^;]*)'\)/g, (match) => match.replace(/'/g, (q, idx) => idx === match.indexOf("'") || idx === match.lastIndexOf("'") ? '"' : "\\'"));
+      // Broader fix: any string content with contractions
+      fixed = fixed.replace(/'([^']{0,500})'/g, (match, inner) => {
+        if (inner.match(/\w'(ll|re|ve|t|s|d|m)\b/)) return `"${inner}"`;
+        return match;
+      });
       if (fixed !== code) parsed.files[path] = fixed;
     }
 
