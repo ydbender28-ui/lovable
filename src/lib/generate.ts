@@ -1678,6 +1678,19 @@ RULES:
       let fixed = code;
       // Fix apostrophes
       fixed = fixed.replace(/(\w)'(ll|re|ve|t|s|d|m)\b/g, "$1’$2");
+      // Inject inline background/color on the root div of App component
+      if (path === "/App.tsx") {
+        // Find the first <div in the return statement and add inline styles
+        fixed = fixed.replace(
+          /return\s*\(\s*(<div)/,
+          'return (<div style={{backgroundColor:"hsl(var(--background))",color:"hsl(var(--foreground))",minHeight:"100vh"}}'
+        );
+        // Also fix any <nav to have proper background
+        fixed = fixed.replace(
+          /<nav\s+className=/g,
+          '<nav style={{backgroundColor:"hsla(var(--card),0.9)",backdropFilter:"blur(12px)",borderBottom:"1px solid hsl(var(--border))"}} className='
+        );
+      }
       // Strip section component imports
       fixed = fixed.replace(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g, "");
       // Fix double semicolons
