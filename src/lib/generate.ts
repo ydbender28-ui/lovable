@@ -1904,12 +1904,17 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
   // ── Build Validator ──
   // Remove files that conflict with Sandpack's built-in files
   // Remove ALL entry point files — Sandpack has its own
+  const keysToDelete: string[] = [];
   for (const key of Object.keys(parsed.files)) {
     if (key.match(/\/?index\.(tsx?|jsx?)$/) || key.match(/\/?main\.(tsx?|jsx?)$/)) {
-      if (key !== "/index.css") { // Keep index.css
-        delete parsed.files[key];
+      if (!key.endsWith(".css")) {
+        keysToDelete.push(key);
       }
     }
+  }
+  for (const key of keysToDelete) {
+    delete parsed.files[key];
+    console.log("[BUILD VALIDATOR] Deleted conflicting file:", key);
   }
 
   // Check for common issues before showing preview
