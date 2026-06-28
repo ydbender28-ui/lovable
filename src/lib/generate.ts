@@ -1904,25 +1904,9 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
-    // STRIP all imports from /components/sections/ — they cause "Element type is invalid" errors
-    // The AI keeps importing these despite prompt rules, so we remove them post-generation
+    // Section component imports are now ALLOWED — don't strip them
     let fixedApp = parsed.files["/App.tsx"] ?? appCode;
-    const sectionImports = fixedApp.match(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g);
-    if (sectionImports) {
-      for (const imp of sectionImports) {
-        fixedApp = fixedApp.replace(imp, "");
-      }
-      // Also remove any JSX that references the imported components (they'll be undefined)
-      // Extract component names from the imports
-      for (const imp of sectionImports) {
-        const nameMatch = imp.match(/import\s+(\w+)/);
-        if (nameMatch) {
-          const compName = nameMatch[1];
-          // Replace <ComponentName .../> and <ComponentName>...</ComponentName> with a placeholder div
-          fixedApp = fixedApp.replace(new RegExp(`<${compName}\\s[^>]*/>`, 'g'), `<div className="py-20 px-6 text-center text-gray-400">Section placeholder</div>`);
-          fixedApp = fixedApp.replace(new RegExp(`<${compName}\\s[^>]*>[\\s\\S]*?</${compName}>`, 'g'), `<div className="py-20 px-6 text-center text-gray-400">Section placeholder</div>`);
-        }
-      }
+    if (false) { // disabled
       parsed.files["/App.tsx"] = fixedApp;
     }
 
