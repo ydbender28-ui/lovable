@@ -1901,10 +1901,14 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
 
   // ── Build Validator ──
   // Remove files that conflict with Sandpack's built-in files
-  delete parsed.files["/index.tsx"];
-  delete parsed.files["/index.ts"];
-  delete parsed.files["/main.tsx"];
-  delete parsed.files["/main.ts"];
+  // Remove ALL entry point files — Sandpack has its own
+  for (const key of Object.keys(parsed.files)) {
+    if (key.match(/\/?index\.(tsx?|jsx?)$/) || key.match(/\/?main\.(tsx?|jsx?)$/)) {
+      if (key !== "/index.css") { // Keep index.css
+        delete parsed.files[key];
+      }
+    }
+  }
 
   // Check for common issues before showing preview
   const appCode = parsed.files["/App.tsx"] ?? "";
