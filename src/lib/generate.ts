@@ -1713,33 +1713,39 @@ RULES:
       toolUseFiles[path] = fixed;
     }
 
-    // Append CSS utility classes to index.css so Tailwind custom classes render
+    // Parse CSS variables and create HARDCODED utility classes
     if (toolUseFiles["/index.css"]) {
+      const css = toolUseFiles["/index.css"];
+      // Extract HSL values from :root
+      const vars: Record<string, string> = {};
+      const varMatches = css.matchAll(/--(\w[\w-]*)\s*:\s*([^;]+)/g);
+      for (const m of varMatches) {
+        const name = m[1].trim();
+        const val = m[2].trim();
+        if (val && !val.includes('rem') && !val.includes('px')) {
+          vars[name] = val;
+        }
+      }
+
+      // Build hardcoded utility classes from actual values
+      const hsl = (name: string) => vars[name] ? `hsl(${vars[name]})` : '';
       toolUseFiles["/index.css"] += `
-/* Force background and text colors on everything */
-body, #root, #app, [data-reactroot], main, .App {
-  background-color: hsl(var(--background)) !important;
-  color: hsl(var(--foreground)) !important;
-  min-height: 100vh;
-}
-nav, header { background-color: hsla(var(--card), 0.9) !important; backdrop-filter: blur(12px); }
-button, [role="button"], a[href] { cursor: pointer; }
-img { max-width: 100%; height: auto; }
+/* FORCE STYLES — hardcoded from :root values */
+body, #root, #app, [data-reactroot], main { background-color: ${hsl('background') || '#faf8f5'}; color: ${hsl('foreground') || '#1c1109'}; min-height: 100vh; }
+nav, header { background-color: ${hsl('card') || '#ffffff'}; backdrop-filter: blur(12px); border-bottom: 1px solid ${hsl('border') || '#e8dfd5'}; }
 img:not([class*="h-"]) { max-height: 500px; object-fit: cover; width: 100%; }
-/* Utility classes for Sandpack Tailwind compatibility */
-.bg-background { background-color: hsl(var(--background)) !important; }
-.bg-foreground { background-color: hsl(var(--foreground)) !important; }
-.bg-card { background-color: hsl(var(--card)) !important; }
-.bg-primary { background-color: hsl(var(--primary)) !important; }
-.bg-secondary { background-color: hsl(var(--secondary)) !important; }
-.bg-muted { background-color: hsl(var(--muted)) !important; }
-.bg-accent { background-color: hsl(var(--accent)) !important; }
-.text-foreground { color: hsl(var(--foreground)) !important; }
-.text-muted { color: hsl(var(--muted)) !important; }
-.text-primary { color: hsl(var(--primary)) !important; }
-.text-primary-foreground { color: hsl(var(--primary-foreground)) !important; }
-.text-card-foreground { color: hsl(var(--foreground)) !important; }
-.border-border { border-color: hsl(var(--border)) !important; }
+.bg-background { background-color: ${hsl('background') || '#faf8f5'} !important; }
+.bg-foreground { background-color: ${hsl('foreground') || '#1c1109'} !important; }
+.bg-card { background-color: ${hsl('card') || '#ffffff'} !important; }
+.bg-primary { background-color: ${hsl('primary') || '#6b3a2a'} !important; }
+.bg-secondary { background-color: ${hsl('secondary') || '#f5ebe0'} !important; }
+.bg-muted { background-color: ${hsl('muted') || '#7c6b5d'} !important; }
+.bg-accent { background-color: ${hsl('accent') || '#b45309'} !important; }
+.text-foreground { color: ${hsl('foreground') || '#1c1109'} !important; }
+.text-muted { color: ${hsl('muted') || '#7c6b5d'} !important; }
+.text-primary { color: ${hsl('primary') || '#6b3a2a'} !important; }
+.text-primary-foreground { color: ${hsl('primary-foreground') || '#ffffff'} !important; }
+.border-border { border-color: ${hsl('border') || '#e8dfd5'} !important; }
 `;
     }
 
