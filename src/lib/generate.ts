@@ -1676,14 +1676,40 @@ RULES:
     for (const [path, code] of Object.entries(toolUseFiles)) {
       if (!path.match(/\.(tsx?|jsx?)$/)) continue;
       let fixed = code;
-      // Fix apostrophes: replace ALL contractions in the entire file
-      // We'll → We'll, then single quotes work fine
-      // Simpler: just replace common contractions with escaped versions
-      fixed = fixed.replace(/(\w)'(ll|re|ve|t|s|d|m)\b/g, "$1’$2"); // Use Unicode right single quote
+      // Fix apostrophes
+      fixed = fixed.replace(/(\w)'(ll|re|ve|t|s|d|m)\b/g, "$1’$2");
       // Strip section component imports
       fixed = fixed.replace(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g, "");
       // Fix double semicolons
       fixed = fixed.replace(/;;\s*/g, ";\n");
+      // Convert Tailwind custom color classes to inline styles
+      // bg-primary → style with hsl(var(--primary))
+      const colorMap: Record<string, string> = {
+        'bg-background': 'background:hsl(var(--background))',
+        'bg-foreground': 'background:hsl(var(--foreground))',
+        'bg-card': 'background:hsl(var(--card))',
+        'bg-primary': 'background:hsl(var(--primary))',
+        'bg-secondary': 'background:hsl(var(--secondary))',
+        'bg-muted': 'background:hsl(var(--muted))',
+        'bg-accent': 'background:hsl(var(--accent))',
+        'text-foreground': 'color:hsl(var(--foreground))',
+        'text-muted': 'color:hsl(var(--muted))',
+        'text-primary': 'color:hsl(var(--primary))',
+        'text-primary-foreground': 'color:hsl(var(--primary-foreground))',
+        'text-card-foreground': 'color:hsl(var(--foreground))',
+        'border-border': 'borderColor:hsl(var(--border))',
+      };
+      for (const [cls, styleProp] of Object.entries(colorMap)) {
+        const regex = new RegExp(`className="([^"]*?)\\b${cls.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b([^"]*?)"`, 'g');
+        fixed = fixed.replace(regex, (match, before, after) => {
+          const remainingClasses = (before + after).trim();
+          const [prop, val] = styleProp.split(':');
+          // Check if element already has a style prop
+          return `className="${remainingClasses}" style={{${prop}: '${val}'}}`;
+        });
+      }
+      // Merge multiple style props on same element
+      fixed = fixed.replace(/style=\{\{([^}]+)\}\}\s*style=\{\{([^}]+)\}\}/g, 'style={{$1, $2}}');
       toolUseFiles[path] = fixed;
     }
 
