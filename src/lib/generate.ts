@@ -121,6 +121,8 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - App component MUST be "export default function App()"
 - Import from: react, lucide-react, react-hot-toast, or /components/sections/ (pre-built library).
 - Define helper components in /App.tsx above the App function if needed.
+- NEVER create index.tsx, index.ts, main.tsx, or main.ts — the app entry point already exists.
+- Only output /App.tsx and /index.css. Nothing else.
 
 ## STYLING — DESIGN SYSTEM + TAILWIND:
 
