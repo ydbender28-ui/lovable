@@ -1674,11 +1674,10 @@ RULES:
     for (const [path, code] of Object.entries(toolUseFiles)) {
       if (!path.match(/\.(tsx?|jsx?)$/)) continue;
       let fixed = code;
-      // Fix apostrophes in strings: 'We'll' breaks single quotes
-      fixed = fixed.replace(/'([^']{0,500})'/g, (match: string, inner: string) => {
-        if (/\w'(ll|re|ve|t|s|d|m)\b/.test(inner)) return `"${inner}"`;
-        return match;
-      });
+      // Fix apostrophes: replace ALL contractions in the entire file
+      // We'll → We'll, then single quotes work fine
+      // Simpler: just replace common contractions with escaped versions
+      fixed = fixed.replace(/(\w)'(ll|re|ve|t|s|d|m)\b/g, "$1’$2"); // Use Unicode right single quote
       // Strip section component imports
       fixed = fixed.replace(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g, "");
       // Fix double semicolons
