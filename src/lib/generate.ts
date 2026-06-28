@@ -1593,9 +1593,11 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
   // New builds: Code + Style + Images run in PARALLEL
   // Edits: Code agent outputs COMPLETE file (no search/replace parsing needed)
 
-  // ── TOOL-USE PIPELINE — like Lovable, like DevForge ──
-  // AI calls edit_file(path, content) with structured data. No text parsing needed.
+  // ── TEXT-BASED GENERATION (proven to work with Sandpack) ──
+  // Reverted to text-based because tool-use output doesn't use Sandpack's Tailwind config correctly
+  const useToolPipeline = false;
 
+  if (useToolPipeline) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const toolUseFiles: ProjectFiles = {};
   let totalInputTokens = 0;
@@ -1783,6 +1785,38 @@ img:not([class*="h-"]) { max-height: 500px; object-fit: cover; width: 100%; }
 
   // Fallback: if tool use produced no files, try text parsing
   stopped = false;
+  } // end useToolPipeline
+
+  // Text-based generation (the original, working approach)
+  if (!useToolPipeline) {
+    try {
+      if (modelOpt.provider === "anthropic") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
+      } else if (modelOpt.provider === "openai") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+      } else if (modelOpt.provider === "google") {
+        ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
+      }
+    } catch {
+      const fallback = MODELS["claude-sonnet-4-6"];
+      if (modelOpt.provider !== "anthropic") {
+        text = ""; lastStatusIdx = -1;
+        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
+        modelOpt = { ...fallback };
+      } else {
+        throw new Error("Generation failed. Please try again.");
+      }
+    }
+    if (stopped && modelOpt.model !== "claude-sonnet-4-6") {
+      const sonnet = MODELS["claude-sonnet-4-6"];
+      text = ""; lastStatusIdx = -1;
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(sonnet.model, sonnet.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
+      modelOpt = { ...sonnet };
+    }
+    if (stopped) {
+      throw new Error("Response was cut off. Try breaking your request into steps.");
+    }
+  }
 
   // ── Parse results ──
   let parsed: ParsedOutput | null;
