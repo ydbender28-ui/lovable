@@ -1586,11 +1586,11 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
 
     onStatus?.("Building components…");
 
-    // Run Code Agent (Sonnet) + Style Agent (Haiku) in PARALLEL
+    // PHASE 1: Haiku builds structure + Style Agent — both fast, run in PARALLEL
     const [codeResult, cssResult] = await Promise.all([
-      // Code Agent — Sonnet for quality
+      // Code Agent — Haiku for SPEED (structure, layout, state management)
       generateWithAnthropic(
-        "claude-sonnet-4-6", 16000, codePrompt, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
+        "claude-haiku-4-5-20251001", 12000, codePrompt, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
       ).catch(err => {
         console.error("Code agent failed:", err.message);
         return { text: "", stopped: true, inputTokens: 0, outputTokens: 0 };
@@ -1616,8 +1616,57 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
 
     // If Style Agent produced CSS, inject it into the parsed output later
     if (cssResult && typeof cssResult === "string" && cssResult.length > 50) {
-      // Store CSS to merge after parsing
       (globalThis as any).__generatedCss = cssResult;
+    }
+
+    // PHASE 2: Sonnet ENHANCES the content only (creative names, taglines, descriptions)
+    // This is fast because it only rewrites text, not code structure
+    if (!stopped && text.length > 500) {
+      onStatus?.("Enhancing content…");
+      try {
+        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const enhanceRes = await client.messages.create({
+          model: "claude-sonnet-4-6",
+          max_tokens: 4000,
+          system: `You are a creative director reviewing a website. Your ONLY job is to improve the TEXT CONTENT — not the code structure.
+
+REWRITE these elements to sound like a human copywriter wrote them:
+1. Business name — make it unique and memorable (2-3 words). NOT "[Type] Haven/House/Studio".
+2. Tagline — short, punchy, max 6 words. NOT "Experience Excellence" or "Welcome to".
+3. Menu/service item names — creative and specific. "The Midnight Roast" not "Dark Roast".
+4. Descriptions — conversational, specific. NOT "Premium quality products".
+5. Testimonials — specific and believable. NOT "Great service, highly recommend".
+6. Section headings — punchy and unexpected. NOT "Our Services" or "About Us".
+
+Return the improved text as a JSON object mapping old text → new text.
+Format: {"old text here": "new creative text here", ...}
+Only include text that needs improvement. Skip text that's already good.
+Return ONLY the JSON, no explanation.`,
+          messages: [{ role: "user", content: `Review this website code and improve the text content:\n\n${text.slice(0, 8000)}` }],
+        });
+        const enhanceText = (enhanceRes.content[0] as { type: string; text: string }).text.trim();
+
+        // Parse the JSON replacements
+        try {
+          const jsonMatch = enhanceText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const replacements = JSON.parse(jsonMatch[0]) as Record<string, string>;
+            let enhancedText = text;
+            for (const [oldText, newText] of Object.entries(replacements)) {
+              if (oldText.length > 3 && newText.length > 3 && oldText !== newText) {
+                enhancedText = enhancedText.replace(oldText, newText);
+              }
+            }
+            text = enhancedText;
+            inputTokens += enhanceRes.usage.input_tokens;
+            outputTokens += enhanceRes.usage.output_tokens;
+          }
+        } catch {
+          // JSON parse failed — use original text, no harm done
+        }
+      } catch {
+        // Enhancement failed — use original text, still good
+      }
     }
 
     onStatus?.("Polishing…");
