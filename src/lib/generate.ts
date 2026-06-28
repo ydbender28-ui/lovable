@@ -1573,66 +1573,111 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
     }
   };
 
-  // ── Tool-based edits (disabled for now — text-based is more stable) ──
-  // TODO: Re-enable once tool-use streaming is verified on Vercel
-  const toolEditFiles: ProjectFiles | null = null;
+  // ── MULTI-AGENT PIPELINE ──
+  // New builds: Code + Style + Images run in PARALLEL
+  // Edits: Code agent outputs COMPLETE file (no search/replace parsing needed)
 
-  // Text-based flow: new builds, non-Anthropic providers, or tool-edit fallback
-  if (!toolEditFiles) {
-    try {
-      if (modelOpt.provider === "anthropic") {
-        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType));
-      } else if (modelOpt.provider === "openai") {
-        ({ stopped, inputTokens, outputTokens } = await generateWithOpenAI(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
-      } else if (modelOpt.provider === "google") {
-        ({ stopped, inputTokens, outputTokens } = await generateWithGoogle(modelOpt.model, modelOpt.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback));
-      }
-    } catch {
-      // Provider failed — silently fall back to Claude Sonnet
-      const fallback = MODELS["claude-sonnet-4-6"];
-      if (modelOpt.provider !== "anthropic") {
-        text = "";
-        lastStatusIdx = -1;
-        ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-          fallback.model, fallback.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
-        ));
-        modelOpt = { ...fallback };
-      } else {
-        throw new Error("Generation failed. Please try again.");
-      }
+  if (!isEdit) {
+    // ── NEW BUILD: Parallel agents ──
+    onStatus?.("Planning your site…");
+
+    const codePrompt = `${userContent}\n\nIMPORTANT: Output ONLY the /App.tsx file content. No /index.css — that will be generated separately.\nReturn format:\nSUMMARY: one sentence\n\nSUGGESTIONS: suggestion1 | suggestion2 | suggestion3\n\n/App.tsx\n\`\`\`tsx\nyour complete code\n\`\`\``;
+    const cssPrompt = `Generate /index.css for: ${prompt}\n\n${designInjection}\n\nReturn ONLY the CSS code. Include: Google Font import, :root CSS variables, body styles, smooth scroll. No explanation.`;
+
+    onStatus?.("Building components…");
+
+    // Run Code Agent (Sonnet) + Style Agent (Haiku) in PARALLEL
+    const [codeResult, cssResult] = await Promise.all([
+      // Code Agent — Sonnet for quality
+      generateWithAnthropic(
+        "claude-sonnet-4-6", 16000, codePrompt, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
+      ).catch(err => {
+        console.error("Code agent failed:", err.message);
+        return { text: "", stopped: true, inputTokens: 0, outputTokens: 0 };
+      }),
+      // Style Agent — Haiku for speed
+      (async () => {
+        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const res = await client.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 2000,
+          system: "Generate CSS only. No explanation. Include Google Font import, :root variables, body styles.",
+          messages: [{ role: "user", content: cssPrompt }],
+        });
+        const cssText = (res.content[0] as { type: string; text: string }).text;
+        return cssText.replace(/```css\n?/g, "").replace(/```\n?/g, "").trim();
+      })().catch(() => ""),
+    ]);
+
+    text = codeResult.text;
+    stopped = codeResult.stopped;
+    inputTokens = codeResult.inputTokens;
+    outputTokens = codeResult.outputTokens;
+
+    // If Style Agent produced CSS, inject it into the parsed output later
+    if (cssResult && typeof cssResult === "string" && cssResult.length > 50) {
+      // Store CSS to merge after parsing
+      (globalThis as any).__generatedCss = cssResult;
     }
 
-    // If output was cut off and we're not already on Sonnet, retry with Sonnet
-    if (stopped && modelOpt.model !== "claude-sonnet-4-6") {
-      const sonnet = MODELS["claude-sonnet-4-6"];
-      text = "";
-      lastStatusIdx = -1;
-      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
-        sonnet.model, sonnet.maxTokens, userContent, SYSTEM_PROMPT, tokenCallback, imageBase64, imageMimeType
-      ));
-      modelOpt = { ...sonnet };
-    }
+    onStatus?.("Polishing…");
 
     if (stopped) {
       throw new Error(
-        `Response was cut off (${modelOpt.displayName} hit its output limit). ` +
+        `Response was cut off (output limit). ` +
         "Try breaking your request into steps — build the basics first, then add features one at a time."
       );
+    }
+  } else {
+    // ── EDIT: Full file output (no search/replace) ──
+    // The Code agent receives existing files and outputs the COMPLETE updated file
+    onStatus?.("Making changes…");
+
+    const editSystemPrompt = `You are editing a React + TypeScript app. Do EXACTLY what the user asks.
+CRITICAL RULES:
+- Output the COMPLETE updated /App.tsx file — not a diff, not search/replace blocks.
+- Keep ALL existing functionality intact unless told to change it.
+- EVERY button must have a working onClick handler with useState.
+- ONLY import from: react, lucide-react, react-hot-toast. Nothing else.
+- NEVER say "already implemented". ALWAYS output the full updated code.
+- If the user asks to add something that exists, improve it or add more to it.
+
+Output format:
+SUMMARY: one sentence about what you changed
+
+/App.tsx
+\`\`\`tsx
+complete updated code here
+\`\`\`
+
+Only include /index.css if you changed styles.`;
+
+    try {
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
+        "claude-haiku-4-5-20251001", 16000,
+        `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n${prompt}`,
+        editSystemPrompt, tokenCallback, null, undefined
+      ));
+    } catch {
+      throw new Error("Edit failed. Please try again.");
+    }
+
+    if (stopped) {
+      // Retry with Sonnet if Haiku was cut off
+      text = "";
+      lastStatusIdx = -1;
+      ({ stopped, inputTokens, outputTokens } = await generateWithAnthropic(
+        "claude-sonnet-4-6", 32000,
+        `Current files:\n${existingSection}${envSection}\n\n${prompt}`,
+        editSystemPrompt, tokenCallback, null, undefined
+      ));
     }
   }
 
   // ── Parse results ──
   let parsed: ParsedOutput | null;
 
-  if (toolEditFiles && Object.keys(toolEditFiles).length > 0) {
-    // Tool-based edit succeeded — extract summary from the text response
-    const summaryMatch = text.match(/^(.{10,150}?)(?:\.|$)/m);
-    parsed = {
-      summary: summaryMatch ? summaryMatch[1].trim() : "Edit applied successfully.",
-      files: toolEditFiles,
-      suggestions: [],
-    };
-  } else {
+  {
     parsed = parseOutput(text, existingFiles);
 
     if (!parsed) {
@@ -1649,6 +1694,13 @@ border-radius: ${pickedDesign!.radius} everywhere.`;
         throw new Error(`Could not parse response. Raw output starts with: ${preview}`);
       }
     }
+
+    // Merge CSS from Style Agent (parallel generation)
+    const generatedCss = (globalThis as any).__generatedCss;
+    if (generatedCss && !parsed.files["/index.css"]) {
+      parsed.files["/index.css"] = generatedCss;
+    }
+    (globalThis as any).__generatedCss = undefined;
 
     // ── Retry failed replacements (one attempt) ──
     if (isEdit && parsed.failedReplacements && parsed.failedReplacements.length > 0 && existingFiles) {
