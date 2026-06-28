@@ -1904,9 +1904,17 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
-    // Section component imports are ALLOWED for styled output
+    // Strip imports from INVALID paths (not /components/sections/ which is valid)
     if (parsed) {
       let fixedApp = parsed.files["/App.tsx"] ?? appCode;
+      // Remove imports from /components/ui/ and other non-existent paths
+      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\/components\/ui\/[^'"]+['"];?\n?/g, "");
+      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\.\/components\/[^'"]+['"];?\n?/g, "");
+      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\.\/[^'"]+['"];?\n?/g, (match) => {
+        // Keep valid imports (react, lucide-react, react-hot-toast, /components/sections/)
+        if (match.includes("react") || match.includes("lucide") || match.includes("toast") || match.includes("/components/sections/")) return match;
+        return ""; // Strip everything else
+      });
       parsed.files["/App.tsx"] = fixedApp;
     }
 
