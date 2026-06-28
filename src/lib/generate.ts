@@ -1713,6 +1713,26 @@ RULES:
       toolUseFiles[path] = fixed;
     }
 
+    // Append CSS utility classes to index.css so Tailwind custom classes render
+    if (toolUseFiles["/index.css"]) {
+      toolUseFiles["/index.css"] += `
+/* Utility classes for Sandpack Tailwind compatibility */
+.bg-background { background-color: hsl(var(--background)) !important; }
+.bg-foreground { background-color: hsl(var(--foreground)) !important; }
+.bg-card { background-color: hsl(var(--card)) !important; }
+.bg-primary { background-color: hsl(var(--primary)) !important; }
+.bg-secondary { background-color: hsl(var(--secondary)) !important; }
+.bg-muted { background-color: hsl(var(--muted)) !important; }
+.bg-accent { background-color: hsl(var(--accent)) !important; }
+.text-foreground { color: hsl(var(--foreground)) !important; }
+.text-muted { color: hsl(var(--muted)) !important; }
+.text-primary { color: hsl(var(--primary)) !important; }
+.text-primary-foreground { color: hsl(var(--primary-foreground)) !important; }
+.text-card-foreground { color: hsl(var(--foreground)) !important; }
+.border-border { border-color: hsl(var(--border)) !important; }
+`;
+    }
+
     // Merge with existing files for edits
     const mergedFiles = isEdit && existingFiles
       ? { ...existingFiles, ...toolUseFiles }
