@@ -1669,7 +1669,22 @@ RULES:
   if (Object.keys(toolUseFiles).length > 0) {
     const summaryMatch = text.match(/^(.{5,200}?)(?:\.|$)/m);
     const parsedSummary = summaryMatch ? summaryMatch[1].trim() : summary || "Done.";
-    const suggestionsMatch = text.match(/suggest|recommend|could also|try adding/i);
+
+    // Post-process tool-use files — fix common AI code issues
+    for (const [path, code] of Object.entries(toolUseFiles)) {
+      if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+      let fixed = code;
+      // Fix apostrophes in strings: 'We'll' breaks single quotes
+      fixed = fixed.replace(/'([^']{0,500})'/g, (match: string, inner: string) => {
+        if (/\w'(ll|re|ve|t|s|d|m)\b/.test(inner)) return `"${inner}"`;
+        return match;
+      });
+      // Strip section component imports
+      fixed = fixed.replace(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g, "");
+      // Fix double semicolons
+      fixed = fixed.replace(/;;\s*/g, ";\n");
+      toolUseFiles[path] = fixed;
+    }
 
     // Merge with existing files for edits
     const mergedFiles = isEdit && existingFiles
