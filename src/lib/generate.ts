@@ -1811,6 +1811,16 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       parsed.files["/App.tsx"] = fixedApp;
     }
 
+    // Fix apostrophes breaking single-quoted strings: 'We'll' → `We'll`
+    for (const [path, code] of Object.entries(parsed.files)) {
+      if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+      // Replace single-quoted strings that contain apostrophes with backtick template literals
+      let fixed = code;
+      // Match patterns like toast.success('...'), alert('...'), content: '...'
+      fixed = fixed.replace(/([(,=]\s*)'((?:[^'\\]|\\.)*(?:n't|'ll|'re|'ve|'s|'d|'m)(?:[^'\\]|\\.)*)'/g, '$1`$2`');
+      if (fixed !== code) parsed.files[path] = fixed;
+    }
+
     // Fix duplicate component/function declarations (common in search/replace edits)
     for (const [path, code] of Object.entries(parsed.files)) {
       if (!path.match(/\.(tsx?|jsx?)$/)) continue;
