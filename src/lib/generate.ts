@@ -161,27 +161,28 @@ Other rules:
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/
 - Every { must have matching }. Every ( must have matching ).
 
-## STYLING — USE THESE SEMANTIC TAILWIND CLASSES (they are pre-configured):
+## STYLING — USE INLINE STYLES for colors + Tailwind for layout:
 
-Available color classes — USE THESE, not inline styles:
-- bg-background, bg-foreground, bg-card, bg-primary, bg-secondary, bg-muted, bg-accent
-- text-foreground, text-muted, text-primary, text-primary-foreground
-- border-border
-CORRECT: className="bg-primary text-primary-foreground"
-CORRECT: className="bg-background text-foreground"
-WRONG: style={{background: 'var(--primary)'}} ← NEVER do this
+For ALL colors, use inline style with hsl(var(--name)):
+style={{background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))'}}
+style={{background: 'hsl(var(--background))', color: 'hsl(var(--foreground))'}}
+style={{background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))'}}
+style={{color: 'hsl(var(--muted))'}}
 
-EXACT PATTERNS TO COPY:
-NAV: className="fixed top-0 w-full z-50 bg-card/80 backdrop-blur-lg border-b border-border"
-HERO: className="min-h-screen flex items-center pt-16 bg-background" with grid lg:grid-cols-2
-HEADINGS: className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground"
-SUBHEADING: className="text-sm uppercase tracking-[0.2em] font-semibold text-primary mb-2"
-BODY TEXT: className="text-lg leading-relaxed text-muted"
-SECTIONS: className="py-20 md:py-28 bg-background" alternating with "bg-secondary"
-CARDS: className="bg-card rounded-2xl border border-border overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
-CARD IMAGES: className="w-full h-48 object-cover"
-BUTTONS: className="px-8 py-3.5 rounded-full font-semibold text-sm bg-primary text-primary-foreground hover:opacity-90 transition-all"
-IMAGES: Card images: className="w-full h-48 object-cover rounded-xl". Hero images: className="w-full h-[500px] object-cover". NEVER leave images unsized — every img MUST have a height class (h-48, h-64, h-[500px], etc).
+For layout, spacing, sizing — use Tailwind className:
+"fixed top-0 w-full z-50 backdrop-blur-lg"
+"min-h-screen flex items-center pt-16 grid lg:grid-cols-2 gap-12"
+"text-5xl md:text-6xl font-extrabold tracking-tight"
+"px-8 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-all"
+"rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+"py-20 md:py-28 max-w-7xl mx-auto px-6"
+
+COMBINE both on every element:
+<nav className="fixed top-0 w-full z-50 backdrop-blur-lg" style={{background: 'hsla(var(--card), 0.8)', borderBottom: '1px solid hsl(var(--border))'}}>
+<button className="px-8 py-3.5 rounded-full font-semibold" style={{background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))'}}>
+<section className="py-20" style={{background: 'hsl(var(--secondary))'}}>
+
+IMAGES: Card: className="w-full h-48 object-cover". Hero: className="w-full h-[500px] object-cover". EVERY img needs a height class.
 - Images: use {{unsplash:VERY SPECIFIC descriptive query|WxH}} for EVERY image. Be ultra-specific:
   Hero: {{unsplash:artisan coffee shop interior warm moody lighting|1600x900}}
   Card: {{unsplash:espresso shot crema close up|400x300}}
