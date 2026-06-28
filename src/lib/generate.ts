@@ -128,7 +128,7 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 
 Define ALL colors as CSS variables in /index.css using HSL values, then reference them via Tailwind:
 
-In /index.css:
+In /index.css you MUST use RAW HSL VALUES (no hsl() wrapper, no hex):
 :root {
   --background: 40 20% 98%;
   --foreground: 30 10% 10%;
@@ -141,6 +141,7 @@ In /index.css:
   --accent: 25 85% 40%;
   --radius: 0.75rem;
 }
+CRITICAL: Values MUST be "H S% L%" format like "25 90% 48%". NOT hex (#6b3a2a). NOT hsl(25, 90%, 48%). Just the raw numbers.
 
 In JSX, use these semantic color classes — NEVER use direct colors like bg-white, text-gray-900:
 CORRECT: className="bg-background text-foreground"
