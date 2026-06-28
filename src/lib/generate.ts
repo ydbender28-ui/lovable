@@ -1899,7 +1899,13 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
     }
   }
 
-  // ── Build Validator (like open-lovable) ──
+  // ── Build Validator ──
+  // Remove files that conflict with Sandpack's built-in files
+  delete parsed.files["/index.tsx"];
+  delete parsed.files["/index.ts"];
+  delete parsed.files["/main.tsx"];
+  delete parsed.files["/main.ts"];
+
   // Check for common issues before showing preview
   const appCode = parsed.files["/App.tsx"] ?? "";
   if (!isEdit && !appCode) {
