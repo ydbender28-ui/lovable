@@ -160,23 +160,27 @@ Other rules:
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/
 - Every { must have matching }. Every ( must have matching ).
 
-## Quality standards — COPY THESE EXACT TAILWIND PATTERNS:
+## STYLING — USE THESE SEMANTIC TAILWIND CLASSES (they are pre-configured):
 
-NAV: <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100"><div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+Available color classes — USE THESE, not inline styles:
+- bg-background, bg-foreground, bg-card, bg-primary, bg-secondary, bg-muted, bg-accent
+- text-foreground, text-muted, text-primary, text-primary-foreground
+- border-border
+CORRECT: className="bg-primary text-primary-foreground"
+CORRECT: className="bg-background text-foreground"
+WRONG: style={{background: 'var(--primary)'}} ← NEVER do this
 
-HERO (split): <section className="min-h-screen flex items-center pt-16"><div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center py-20">
-- Left side: subtitle className="text-sm uppercase tracking-[0.2em] font-semibold mb-4" + h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.08]" + p className="mt-6 text-lg leading-relaxed max-w-lg text-gray-500"
-- Right side: img className="w-full rounded-3xl shadow-2xl object-cover aspect-[4/3]"
-
-SECTIONS: className="py-20 md:py-28" with max-w-7xl mx-auto px-6. Alternate bg-white and bg-gray-50.
-
-SECTION HEADINGS: <p className="text-sm uppercase tracking-[0.2em] font-semibold text-primary mb-2">Label</p><h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">Title</h2>
-
-CARDS: <div className="rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"><img className="w-full h-48 object-cover" /><div className="p-6">
-
-BUTTONS: Primary: className="px-8 py-3.5 rounded-full font-semibold text-sm bg-primary text-white hover:scale-[1.02] hover:shadow-lg transition-all duration-200"
-
-IMAGES: ALWAYS use className="w-full h-48 object-cover rounded-xl" on card images. NEVER let images be unsized.
+EXACT PATTERNS TO COPY:
+NAV: className="fixed top-0 w-full z-50 bg-card/80 backdrop-blur-lg border-b border-border"
+HERO: className="min-h-screen flex items-center pt-16 bg-background" with grid lg:grid-cols-2
+HEADINGS: className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground"
+SUBHEADING: className="text-sm uppercase tracking-[0.2em] font-semibold text-primary mb-2"
+BODY TEXT: className="text-lg leading-relaxed text-muted"
+SECTIONS: className="py-20 md:py-28 bg-background" alternating with "bg-secondary"
+CARDS: className="bg-card rounded-2xl border border-border overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+CARD IMAGES: className="w-full h-48 object-cover"
+BUTTONS: className="px-8 py-3.5 rounded-full font-semibold text-sm bg-primary text-primary-foreground hover:opacity-90 transition-all"
+IMAGES: ALWAYS use className="w-full h-48 object-cover rounded-xl". NEVER leave images unsized.
 - Images: use {{unsplash:VERY SPECIFIC descriptive query|WxH}} for EVERY image. Be ultra-specific:
   Hero: {{unsplash:artisan coffee shop interior warm moody lighting|1600x900}}
   Card: {{unsplash:espresso shot crema close up|400x300}}
