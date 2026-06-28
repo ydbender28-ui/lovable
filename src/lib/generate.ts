@@ -1904,9 +1904,9 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
-    // Section component imports are now ALLOWED — don't strip them
-    let fixedApp = parsed.files["/App.tsx"] ?? appCode;
-    if (false) { // disabled
+    // Section component imports are ALLOWED for styled output
+    if (parsed) {
+      let fixedApp = parsed.files["/App.tsx"] ?? appCode;
       parsed.files["/App.tsx"] = fixedApp;
     }
 
