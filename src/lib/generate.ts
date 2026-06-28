@@ -1716,6 +1716,16 @@ RULES:
     // Append CSS utility classes to index.css so Tailwind custom classes render
     if (toolUseFiles["/index.css"]) {
       toolUseFiles["/index.css"] += `
+/* Force background and text colors on everything */
+body, #root, #app, [data-reactroot], main, .App {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  min-height: 100vh;
+}
+nav, header { background-color: hsla(var(--card), 0.9) !important; backdrop-filter: blur(12px); }
+button, [role="button"], a[href] { cursor: pointer; }
+img { max-width: 100%; height: auto; }
+img:not([class*="h-"]) { max-height: 500px; object-fit: cover; width: 100%; }
 /* Utility classes for Sandpack Tailwind compatibility */
 .bg-background { background-color: hsl(var(--background)) !important; }
 .bg-foreground { background-color: hsl(var(--foreground)) !important; }
