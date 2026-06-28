@@ -118,11 +118,9 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
 - App component MUST be the default export: "export default function App()"
-- Put ALL components in /App.tsx. Define helper components ABOVE the App function in the SAME file.
-- ONLY import from: react, lucide-react, react-hot-toast. NOTHING ELSE.
-- DO NOT import from /components/sections/ — write all sections inline in App.tsx instead.
-- DO NOT import from any local file. Everything goes in ONE file: /App.tsx.
-- If you need a Navbar, Hero, Footer — write them as functions in /App.tsx, not imports.
+- App component MUST be "export default function App()"
+- Import from: react, lucide-react, react-hot-toast, or /components/sections/ (pre-built library).
+- Define helper components in /App.tsx above the App function if needed.
 
 ## STYLING — DESIGN SYSTEM + TAILWIND:
 
@@ -214,8 +212,11 @@ IMAGES: Card: className="w-full h-48 object-cover". Hero: className="w-full h-[5
 - Testimonials: specific, believable. "I've been coming here every morning since 2019. The cortado is unreal." NOT "Great service!"
 - NEVER start with "Welcome to" or "Discover" or "Experience" or "Elevate".
 
-## DO NOT use pre-built components. Write ALL sections inline in /App.tsx.
-## This ensures everything works and nothing breaks from missing imports.
+## 50+ pre-built components available (import from /components/sections/):
+${SECTION_COMPONENT_LIST}
+
+## Additional UI components:
+${EXTRA_COMPONENT_LIST}
 
 ## Stripe checkout (when user asks for payments):
 Add a checkout button that calls ThatCode's Stripe proxy:
