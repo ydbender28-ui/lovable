@@ -204,6 +204,20 @@ IMAGES: Card: className="w-full h-48 object-cover". Hero: className="w-full h-[5
 - Test every interaction mentally before outputting — if a user clicks it, something MUST happen.
 - NEVER use apostrophes inside single-quoted strings. Use double quotes for strings with apostrophes: "We'll be in touch" not 'We'll be in touch'. Or use backticks: \`We'll be in touch\`.
 
+## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
+- import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact"]} cta="Order Now" />
+  CRITICAL: links must be string[] like ["Menu","About"] — NOT objects
+- import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
+- import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
+- import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
+- import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
+- import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
+- import Footer from '/components/sections/Footer' → <Footer brand="Name" tagline="Tagline" links={["Menu","About"]} />
+- import FAQ from '/components/sections/FAQ' → <FAQ title="FAQ" items={[{q:"Question?",a:"Answer."}]} />
+- import Stats from '/components/sections/Stats' → <Stats items={[{value:"100+",label:"Customers"}]} />
+- DO NOT import from /components/ui/ — those don't exist
+- ALWAYS pass the exact prop types shown above — wrong types cause crashes
+
 ## CONTENT — write like a creative director, not an AI:
 - Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".
 - Tagline: SHORT, PUNCHY, HUMAN. Max 6 words. "Coffee worth waking up for." NOT "Experience Excellence" or "Your Journey Starts Here."
