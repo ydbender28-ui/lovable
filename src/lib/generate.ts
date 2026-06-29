@@ -216,8 +216,11 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - NEVER use apostrophes inside single-quoted strings. Use double quotes for strings with apostrophes: "We'll be in touch" not 'We'll be in touch'. Or use backticks: \`We'll be in touch\`.
 
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
-- import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact"]} cta="Order Now" />
-  CRITICAL: links must be string[] like ["Menu","About"] — NOT objects
+- import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
+  CRITICAL: links must be string[] like ["Menu","About"] — NOT objects. ALWAYS include 3-5 links. NEVER leave links empty.
+  CRITICAL: Navbar goes ABOVE Hero as a separate component — NEVER put nav inside the Hero or overlay it with position:absolute.
+  WRONG: <div style={{position:'absolute',top:0}}><nav>...</nav></div> inside Hero
+  CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" /><Hero ... />
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
