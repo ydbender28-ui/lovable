@@ -188,7 +188,10 @@ COMBINE both on every element:
 <button className="px-8 py-3.5 rounded-full font-semibold" style={{background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))'}}>
 <section className="py-20" style={{background: 'hsl(var(--secondary))'}}>
 
-IMAGES: Card: className="w-full h-48 object-cover". Hero: className="w-full h-[500px] object-cover". EVERY img needs a height class.
+IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up the layout:
+- Card image: style={{width:'100%', height:220, objectFit:'cover'}} — ALWAYS, no exceptions
+- Hero image: style={{width:'100%', height:'65vh', objectFit:'cover'}} — ALWAYS, no exceptions
+- NEVER render an img without a height. An img with only width:'100%' will display at full natural height (1000px+) and break the page.
 - Images: use {{unsplash:VERY SPECIFIC descriptive query|WxH}} for EVERY image. Be ultra-specific:
   Hero: {{unsplash:artisan coffee shop interior warm moody lighting|1600x900}}
   Card: {{unsplash:espresso shot crema close up|400x300}}

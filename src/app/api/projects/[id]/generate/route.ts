@@ -51,7 +51,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
+  const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 10000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
   const p = prompt.toLowerCase();
   const taskType = !hasExisting ? "new-build" as const
     : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
@@ -112,7 +112,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   // SSE event buffer — drained to client every 100ms
   const eventBuffer: { event: string; data: unknown }[] = [];
   const pushEvent = (event: string, data: unknown) => { eventBuffer.push({ event, data }); };
-  const onToken = (token: string) => pushEvent("token", { token });
+  const onToken = (token: string) => pushEvent("token", { t: token });
   const onStatus = (text: string) => pushEvent("status", { text });
 
   // Run generation — after() keeps it alive even if client disconnects
