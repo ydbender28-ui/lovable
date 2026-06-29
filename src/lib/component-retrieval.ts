@@ -87,7 +87,7 @@ export async function getRelevantComponents(prompt: string): Promise<string> {
 
     const examples = components
       .slice(0, 3)
-      .map(c => `### ${c.component_name} (${c.category}, ★${c.quality_score})\n\`\`\`tsx\n${c.tsx_code.slice(0, 800)}\n\`\`\``)
+      .map(c => `### ${c.component_name} (${c.category}, ★${c.quality_score})\n\`\`\`tsx\n${c.tsx_code.slice(0, 300)}\n\`\`\``)
       .join('\n\n')
 
     return `## Real-World Component Examples (scraped from live sites, quality ≥7):
