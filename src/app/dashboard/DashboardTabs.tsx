@@ -153,6 +153,10 @@ export default function DashboardTabs({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: trimmed }),
     });
+    if (!res.ok) {
+      setLoading(false);
+      return;
+    }
     const project = await res.json();
     router.push(`/projects/${project.id}?prompt=${encodeURIComponent(trimmed)}`);
   }

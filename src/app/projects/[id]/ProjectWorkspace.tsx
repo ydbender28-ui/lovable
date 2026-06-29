@@ -332,9 +332,8 @@ export default function ProjectWorkspace({
     setIframeError(msg);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, files]);
-  const [autoFixCountdown, setAutoFixCountdown] = useState<number | null>(null);
-  const autoFixTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoFixCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [autoFixAttempt, setAutoFixAttempt] = useState(0);
+  const MAX_AUTO_FIX = 3;
   const [activeTab, setActiveTab] = useState<"preview" | "code" | "console">("preview");
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [publishSlug, setPublishSlug] = useState<string | null>(initialPublishSlug ?? null);
@@ -802,31 +801,21 @@ export default function ProjectWorkspace({
     function onMessage(e: MessageEvent) {
       if (e.data?.type === "preview-error") {
         const err = e.data.error as string;
-        setIframeError(err);
-        // Auto-fix: start 4-second countdown then fix automatically
-        if (autoFixTimerRef.current) clearTimeout(autoFixTimerRef.current);
-        if (autoFixCountdownRef.current) clearInterval(autoFixCountdownRef.current);
-        setAutoFixCountdown(4);
-        autoFixCountdownRef.current = setInterval(() => {
-          setAutoFixCountdown((n) => {
-            if (n === null || n <= 1) {
-              clearInterval(autoFixCountdownRef.current!);
-              autoFixCountdownRef.current = null;
-              return null;
-            }
-            return n - 1;
-          });
-        }, 1000);
-        autoFixTimerRef.current = setTimeout(() => {
+        setAutoFixAttempt(prev => {
+          if (prev >= MAX_AUTO_FIX) {
+            setIframeError(err);
+            return prev;
+          }
+          const attempt = prev + 1;
           setIframeError(null);
-          setAutoFixCountdown(null);
           runGenerate(
-            `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${err}`,
+            `There is a JS runtime error (auto-fix attempt ${attempt}/${MAX_AUTO_FIX}). Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${err}`,
             undefined,
             "claude-sonnet-4-6",
             true
           );
-        }, 4000);
+          return attempt;
+        });
       }
       // Admin "Save to Site" button in generated apps sends TC_SAVE_STATE
       if (e.data?.type === "TC_SAVE_STATE" && e.data?.state) {
@@ -1392,6 +1381,7 @@ export default function ProjectWorkspace({
               streamAccum.current = "";
               if (streamUpdateTimer.current) { clearTimeout(streamUpdateTimer.current); streamUpdateTimer.current = null; }
               setFiles(payload.files);
+              setAutoFixAttempt(0);
               justSaved.current = true;
               // Auto preview switching based on prompt keywords
               const pl = text.toLowerCase();
@@ -2435,21 +2425,23 @@ export default function ProjectWorkspace({
             </div>
           </div>
         )}
+        {autoFixAttempt > 0 && loading && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200 shrink-0">
+            <span className="text-xs text-amber-700">Fixing… (attempt {autoFixAttempt}/{MAX_AUTO_FIX})</span>
+          </div>
+        )}
         {iframeError && !loading && (
           <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-b border-red-200 shrink-0">
             <span className="text-xs text-red-600 truncate flex-1">Error: {iframeError.slice(0, 120)}</span>
-            {autoFixCountdown != null ? (
-              <span className="text-xs text-red-400 whitespace-nowrap">Fixing in {autoFixCountdown}s…</span>
-            ) : (
-              <button onClick={() => {
-                const fixPrompt = `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${iframeError}`;
-                setIframeError(null);
-                runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
-              }} className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium hover:bg-red-700 transition-colors whitespace-nowrap">
-                Fix error
-              </button>
-            )}
-            <button onClick={() => setIframeError(null)} className="text-red-400 hover:text-red-600 text-sm">✕</button>
+            <button onClick={() => {
+              const fixPrompt = `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${iframeError}`;
+              setIframeError(null);
+              setAutoFixAttempt(0);
+              runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);
+            }} className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium hover:bg-red-700 transition-colors whitespace-nowrap">
+              Try to Fix
+            </button>
+            <button onClick={() => { setIframeError(null); setAutoFixAttempt(0); }} className="text-red-400 hover:text-red-600 text-sm">✕</button>
           </div>
         )}
         {hasFiles ? (

@@ -1395,6 +1395,151 @@ function parseOutput(text: string, existingFiles?: ProjectFiles | null): ParsedO
   }
 }
 
+// ─── Server-side validation + auto-fix loop ─────────────────────────────────
+
+function validateFiles(files: ProjectFiles): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const appCode = files["/App.tsx"] ?? "";
+
+  if (!appCode || appCode.length < 100) {
+    errors.push("App.tsx is missing or nearly empty");
+  }
+
+  if (appCode && !appCode.includes("export default")) {
+    errors.push("App.tsx is missing 'export default'");
+  }
+
+  // Unbalanced braces
+  for (const [path, code] of Object.entries(files)) {
+    if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+    const opens = (code.match(/\{/g) || []).length;
+    const closes = (code.match(/\}/g) || []).length;
+    if (Math.abs(opens - closes) > 2) {
+      errors.push(`${path}: unbalanced braces (${opens} open, ${closes} close)`);
+    }
+    const openParens = (code.match(/\(/g) || []).length;
+    const closeParens = (code.match(/\)/g) || []).length;
+    if (Math.abs(openParens - closeParens) > 2) {
+      errors.push(`${path}: unbalanced parentheses (${openParens} open, ${closeParens} close)`);
+    }
+  }
+
+  // Invalid local imports — referencing files that don't exist in the project
+  for (const [path, code] of Object.entries(files)) {
+    if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+    const localImports = [...code.matchAll(/import\s+.*from\s+['"](\.\/[^'"]+)['"]/g)];
+    for (const m of localImports) {
+      const importPath = m[1];
+      const resolved = "/" + importPath.replace(/^\.\//, "");
+      const candidates = [resolved, resolved + ".tsx", resolved + ".ts", resolved + "/index.tsx", resolved + "/index.ts"];
+      if (!candidates.some(c => files[c])) {
+        errors.push(`${path}: imports '${importPath}' but that file doesn't exist`);
+      }
+    }
+  }
+
+  // Truncation detection
+  for (const [path, code] of Object.entries(files)) {
+    if (!path.match(/\.(tsx?|jsx?)$/)) continue;
+    if (/[,(\{<]\s*$/.test(code.trim())) {
+      errors.push(`${path}: appears truncated (ends with open syntax)`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+async function autoFixServerSide(
+  files: ProjectFiles,
+  errors: string[],
+  originalPrompt: string,
+  onToken: (t: string) => void,
+  onStatus?: (text: string) => void,
+): Promise<{ files: ProjectFiles; inputTokens: number; outputTokens: number }> {
+  const errorList = errors.map(e => `- ${e}`).join("\n");
+  const fileList = Object.entries(files)
+    .filter(([p]) => p.match(/\.(tsx?|jsx?|css)$/))
+    .map(([p, c]) => `${p}\n\`\`\`\n${c}\n\`\`\``)
+    .join("\n\n");
+
+  const fixPrompt = `The generated code has these errors:\n${errorList}\n\nFix ALL errors. Return the COMPLETE corrected files. Do not change any functionality — only fix the structural issues.\n\nCurrent files:\n${fileList}`;
+
+  let fixText = "";
+  let fixInputTokens = 0, fixOutputTokens = 0;
+
+  ({ inputTokens: fixInputTokens, outputTokens: fixOutputTokens } = await generateWithAnthropic(
+    "claude-sonnet-4-6", 32000, fixPrompt,
+    "You are fixing broken React code. Return complete corrected files in markdown fence format. Fix ONLY the listed errors.",
+    (t) => { fixText += t; onToken(t); },
+  ));
+
+  const parsed = parseOutput(fixText, files);
+  if (parsed && Object.keys(parsed.files).length > 0) {
+    onStatus?.("Applied auto-fix");
+    return { files: parsed.files, inputTokens: fixInputTokens, outputTokens: fixOutputTokens };
+  }
+
+  return { files: {}, inputTokens: fixInputTokens, outputTokens: fixOutputTokens };
+}
+
+// ─── UI polish pass (new builds only) ────────────────────────────────────────
+
+async function polishCheck(
+  files: ProjectFiles,
+  onToken: (t: string) => void,
+  onStatus?: (text: string) => void,
+): Promise<{ files: ProjectFiles; inputTokens: number; outputTokens: number }> {
+  onStatus?.("Polishing UI…");
+
+  const appCode = files["/App.tsx"] ?? "";
+  const cssCode = files["/index.css"] ?? "";
+
+  const polishPrompt = `Review this React app for UI polish issues. Check:
+1. Mobile responsiveness — are there md: or lg: breakpoints?
+2. Consistent spacing — padding/margin patterns
+3. Button hover states — do buttons have hover: classes?
+4. Image sizing — do all <img> tags have width/height constraints?
+5. Color contrast — are text colors readable on backgrounds?
+
+Only return fixes as SEARCH/REPLACE blocks. If the app is already polished, return just "SUMMARY: No polish needed" with no edits.
+
+/App.tsx
+\`\`\`tsx
+${appCode.slice(0, 15000)}
+\`\`\`
+
+/index.css
+\`\`\`css
+${cssCode}
+\`\`\``;
+
+  let polishText = "";
+  let polishInput = 0, polishOutput = 0;
+
+  const hasGoogle = !!process.env.GOOGLE_AI_API_KEY;
+  if (hasGoogle) {
+    ({ inputTokens: polishInput, outputTokens: polishOutput } = await generateWithGoogle(
+      "gemini-2.5-flash", 8000, polishPrompt,
+      "You are a UI polish reviewer. Return SEARCH/REPLACE blocks for fixes, or 'SUMMARY: No polish needed' if the UI is already good. Be minimal — only fix real issues.",
+      (t) => { polishText += t; },
+    ));
+  } else {
+    ({ inputTokens: polishInput, outputTokens: polishOutput } = await generateWithAnthropic(
+      "claude-haiku-4-5-20251001", 8000, polishPrompt,
+      "You are a UI polish reviewer. Return SEARCH/REPLACE blocks for fixes, or 'SUMMARY: No polish needed' if the UI is already good. Be minimal — only fix real issues.",
+      (t) => { polishText += t; },
+    ));
+  }
+
+  const parsed = parseOutput(polishText, files);
+  if (parsed && Object.keys(parsed.files).length > 0) {
+    onStatus?.("Applied UI polish");
+    return { files: parsed.files, inputTokens: polishInput, outputTokens: polishOutput };
+  }
+
+  return { files: {}, inputTokens: polishInput, outputTokens: polishOutput };
+}
+
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 export interface GenerateResult {
@@ -2088,9 +2233,46 @@ complete file here
   }
 
   // For edits: merge returned files with existing (AI only returns changed files)
-  const finalFiles = isEdit && existingFiles
+  let finalFiles = isEdit && existingFiles
     ? { ...existingFiles, ...resolvedFiles }
     : resolvedFiles;
+
+  // ── Server-side auto-fix loop ──
+  // Validate generated code and retry up to 3 times before sending to client
+  for (let fixAttempt = 0; fixAttempt < 3; fixAttempt++) {
+    const validation = validateFiles(finalFiles);
+    if (validation.valid) break;
+    onStatus?.(`Fixing issues (attempt ${fixAttempt + 1}/3)…`);
+    try {
+      const fix = await autoFixServerSide(
+        finalFiles, validation.errors, prompt,
+        onToken ?? (() => {}), onStatus,
+      );
+      inputTokens += fix.inputTokens;
+      outputTokens += fix.outputTokens;
+      if (Object.keys(fix.files).length > 0) {
+        finalFiles = { ...finalFiles, ...fix.files };
+      } else {
+        break; // Fix produced nothing — stop retrying
+      }
+    } catch {
+      break; // Fix call failed — stop retrying
+    }
+  }
+
+  // ── UI polish pass (new builds only) ──
+  if (!isEdit) {
+    try {
+      const polish = await polishCheck(finalFiles, onToken ?? (() => {}), onStatus);
+      inputTokens += polish.inputTokens;
+      outputTokens += polish.outputTokens;
+      if (Object.keys(polish.files).length > 0) {
+        finalFiles = { ...finalFiles, ...polish.files };
+      }
+    } catch {
+      // Polish failed — continue with unpolished output
+    }
+  }
 
   // ── Update conversation state ──
   const changedFiles = Object.keys(parsed.files);

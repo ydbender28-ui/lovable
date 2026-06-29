@@ -5,6 +5,7 @@ import { generateProject, generateQuickEdit, smartRoute, estimateCost, MODELS } 
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
+import { buildSpec } from "@/lib/spec-builder";
 
 export const maxDuration = 300;
 
@@ -49,15 +50,25 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  // Skip classifier entirely — use inline heuristics instead of burning 1-2s on a Haiku call
+  // Task classification + model routing — Claude for architecture/reliability, Gemini for speed
   const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
+  const geminiModel = process.env.GOOGLE_AI_API_KEY
+    ? { model: "gemini-2.5-flash", displayName: "Gemini 2.5 Flash", provider: "google" as const, maxTokens: 16000, costPer1kInput: 0.00015, costPer1kOutput: 0.0035 }
+    : sonnetModel;
   const p = prompt.toLowerCase();
   const taskType = !hasExisting ? "new-build" as const
     : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
     : /\b(fix|bug|error|broken|crash)\b/.test(p) ? "bugfix" as const
     : /\b(add|create|build|implement|make|cart|checkout|search|auth|login)\b/.test(p) ? "feature" as const
     : "content" as const;
-  const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : sonnetModel, modelReason: "inline" };
+  const modelForTask: Record<string, { model: string; displayName: string; provider: "anthropic" | "google"; maxTokens: number; costPer1kInput: number; costPer1kOutput: number }> = {
+    "new-build": sonnetModel,
+    "feature": sonnetModel,
+    "bugfix": sonnetModel,
+    "style": geminiModel,
+    "content": geminiModel,
+  };
+  const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : (modelForTask[taskType] ?? sonnetModel), modelReason: "inline" };
 
   // Save user message in background — don't block generation
   prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }).catch(() => {});
@@ -112,6 +123,20 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     ]);
     if (defaults) smartPrompt = `${prompt}\n\n${defaults}`;
     if (mistakes) smartPrompt = `${smartPrompt}\n\n${mistakes}`;
+
+    // Spec builder — enhance prompt + architecture plan (5s timeout)
+    try {
+      const spec = await Promise.race([
+        buildSpec(prompt),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+      ]);
+      if (spec) {
+        smartPrompt = spec.enhancedPrompt;
+        if (defaults) smartPrompt += `\n\n${defaults}`;
+        if (mistakes) smartPrompt += `\n\n${mistakes}`;
+        if (spec.componentPlan) smartPrompt += `\n\n## Architecture Plan\n${spec.componentPlan}`;
+      }
+    } catch { /* spec builder failed — continue with raw prompt */ }
   }
 
   // Quick edit disabled — full pipeline with search/replace is more reliable
