@@ -1377,6 +1377,10 @@ export default function ProjectWorkspace({
               }
             }
             else if (eventLine === "status") setLoadingStatus(payload.text);
+            else if (eventLine === "file_update") {
+              // Live preview update as each file is written by the agent
+              setFiles(prev => ({ ...prev, [payload.path]: payload.content }));
+            }
             else if (eventLine === "done") {
               streamAccum.current = "";
               if (streamUpdateTimer.current) { clearTimeout(streamUpdateTimer.current); streamUpdateTimer.current = null; }

@@ -1,7 +1,8 @@
 import { after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateProject, generateQuickEdit, smartRoute, estimateCost, MODELS } from "@/lib/generate";
+import { estimateCost, MODELS } from "@/lib/generate";
+import { agentGenerate } from "@/lib/agent-generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
@@ -29,7 +30,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const { id } = await ctx.params;
   const body = await req.json();
-  const { prompt, envVars: bodyEnvVars, imageBase64, imageMimeType, forceModel } = body;
+  const { prompt, envVars: bodyEnvVars, forceModel } = body;
 
   if (!prompt || typeof prompt !== "string") {
     return new Response("Prompt is required", { status: 400 });
@@ -50,27 +51,15 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  // Task classification + model routing — Claude for architecture/reliability, Gemini for speed
   const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 32000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
-  const geminiModel = process.env.GOOGLE_AI_API_KEY
-    ? { model: "gemini-2.5-flash", displayName: "Gemini 2.5 Flash", provider: "google" as const, maxTokens: 16000, costPer1kInput: 0.00015, costPer1kOutput: 0.0035 }
-    : sonnetModel;
   const p = prompt.toLowerCase();
   const taskType = !hasExisting ? "new-build" as const
     : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
     : /\b(fix|bug|error|broken|crash)\b/.test(p) ? "bugfix" as const
     : /\b(add|create|build|implement|make|cart|checkout|search|auth|login)\b/.test(p) ? "feature" as const
     : "content" as const;
-  const modelForTask: Record<string, { model: string; displayName: string; provider: "anthropic" | "google"; maxTokens: number; costPer1kInput: number; costPer1kOutput: number }> = {
-    "new-build": sonnetModel,
-    "feature": sonnetModel,
-    "bugfix": sonnetModel,
-    "style": geminiModel,
-    "content": geminiModel,
-  };
-  const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : (modelForTask[taskType] ?? sonnetModel), modelReason: "inline" };
+  const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : sonnetModel };
 
-  // Save user message in background — don't block generation
   prisma.message.create({ data: { projectId: id, role: "user", content: prompt } }).catch(() => {});
 
   const estimatedCredits = ESTIMATED_CREDITS[finalRoute.taskType] ?? 2;
@@ -89,31 +78,9 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     const raw = project.envVars;
     storedEnv = JSON.parse(isEncrypted(raw) ? decrypt(raw) : raw);
   }
-  let envVars = bodyEnvVars ?? storedEnv;
-  // Auto-inject Supabase functions URL if project has Supabase
-  if (project.supabaseProjectId) {
-    envVars = {
-      ...(envVars ?? {}),
-      SUPABASE_URL: project.supabaseUrl ?? "",
-      SUPABASE_ANON_KEY: project.supabaseAnonKey ?? "",
-      SUPABASE_FUNCTIONS_URL: `https://${project.supabaseProjectId}.supabase.co/functions/v1`,
-    };
-  }
-  const knowledge: Array<{ title: string; content: string }> = JSON.parse(project.knowledge || "[]");
-  const customKnowledge = knowledge.length > 0
-    ? knowledge.map(k => `## ${k.title}\n${k.content}`).join("\n\n")
-    : null;
+  const envVars = bodyEnvVars ?? storedEnv;
 
-  const recentMsgs = (project.messages ?? []).reverse();
-  const projectHistory = recentMsgs.length > 2
-    ? recentMsgs
-        .map(m => `${m.role === "user" ? "User" : "AI"}: ${m.content.slice(0, 200)}`)
-        .join("\n")
-        .slice(0, 3000)
-    : null;
-
-
-  // Smart defaults from learning system — auto-include features users always add
+  // Enhance prompt with learning system and spec builder for new builds
   let smartPrompt = prompt;
   if (!hasExisting) {
     const category = detectCategory(prompt);
@@ -124,7 +91,6 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     if (defaults) smartPrompt = `${prompt}\n\n${defaults}`;
     if (mistakes) smartPrompt = `${smartPrompt}\n\n${mistakes}`;
 
-    // Spec builder — enhance prompt + architecture plan (5s timeout)
     try {
       const spec = await Promise.race([
         buildSpec(prompt),
@@ -139,51 +105,29 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     } catch { /* spec builder failed — continue with raw prompt */ }
   }
 
-  // Quick edit disabled — full pipeline with search/replace is more reliable
-  const useQuickEdit = false;
+  // SSE event buffer — drained to client every 100ms
+  const eventBuffer: { event: string; data: unknown }[] = [];
+  const pushEvent = (event: string, data: unknown) => { eventBuffer.push({ event, data }); };
+  const onStatus = (text: string) => pushEvent("status", { text });
+  const onFileWrite = (path: string, content: string) => pushEvent("file_update", { path, content });
 
-  // Token buffer for streaming to client
-  const tokenBuffer: string[] = [];
-  let tokenCount = 0;
-
-  const onToken = (token: string) => {
-    tokenCount++;
-    // Buffer tokens in batches for efficiency
-    if (tokenCount % 5 === 0) {
-      tokenBuffer.push(token);
-    }
-  };
-
-  const onStatus = (text: string) => {
-    tokenBuffer.push(`__STATUS__${text}`);
-  };
-
-  // Run generation in after() — survives client disconnect on Vercel
+  // Run generation — after() keeps it alive even if client disconnects
   const genPromise = (async () => {
     try {
-      const result = useQuickEdit
-        ? await generateQuickEdit(prompt, existingFiles, onToken, onStatus)
-        : await generateProject(
-            smartPrompt, existingFiles, envVars, onToken, onStatus,
-            imageBase64 ?? null, imageMimeType,
-            finalRoute.model.model, customKnowledge, projectHistory
-          );
-
-      // Merge AI output with existing files — AI may only return changed files
-      const finalFiles = existingFiles ? { ...existingFiles, ...result.files } : result.files;
+      const result = await agentGenerate(smartPrompt, existingFiles, onStatus, onFileWrite);
 
       const wasPublished = !!project.publishSlug;
       const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
-      const newHtml = wasPublished ? buildStandaloneHtml(finalFiles, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
+      const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
 
-      const actualCost = estimateCost(result.modelUsed ?? finalRoute.model.model, result.inputTokens ?? 0, result.outputTokens ?? 0);
+      const actualCost = estimateCost(result.modelUsed, result.inputTokens, result.outputTokens);
       const actualCredits = costToCredits(actualCost);
 
       await Promise.all([
         prisma.version.create({
           data: {
             projectId: id,
-            files: JSON.stringify(finalFiles),
+            files: JSON.stringify(result.files),
             modelUsed: result.modelUsed,
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
@@ -202,18 +146,16 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           : Promise.resolve(),
       ]);
 
-      return { result: { ...result, files: finalFiles }, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
+      return { result, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
-      await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } });
+      await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } }).catch(() => {});
       return { error: message };
     }
   })();
 
-  // Register with after() so Vercel keeps the function alive even if client disconnects
   after(async () => { await genPromise; });
 
-  // Stream progress to client while connected
   const encoder = new TextEncoder();
   let streamOpen = true;
 
@@ -231,24 +173,19 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         creditsRemaining: currentCredits,
       });
 
-      // Stream tokens to client while generation runs
-      const tokenInterval = setInterval(() => {
-        while (tokenBuffer.length > 0 && streamOpen) {
-          const item = tokenBuffer.shift()!;
-          if (item.startsWith("__STATUS__")) {
-            send("status", { text: item.slice(10) });
-          } else {
-            send("token", { t: item });
-          }
+      const drainInterval = setInterval(() => {
+        while (eventBuffer.length > 0 && streamOpen) {
+          const item = eventBuffer.shift()!;
+          send(item.event, item.data);
         }
       }, 100);
 
       const outcome = await genPromise;
-      clearInterval(tokenInterval);
-      // Flush remaining tokens
-      while (tokenBuffer.length > 0 && streamOpen) {
-        const item = tokenBuffer.shift()!;
-        if (item.startsWith("__STATUS__")) send("status", { text: item.slice(10) });
+      clearInterval(drainInterval);
+
+      while (eventBuffer.length > 0 && streamOpen) {
+        const item = eventBuffer.shift()!;
+        send(item.event, item.data);
       }
 
       if ("error" in outcome) {
@@ -257,7 +194,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         send("done", {
           files: outcome.result.files,
           summary: outcome.result.summary,
-          suggestions: outcome.result.suggestions || [],
+          suggestions: [],
           tempMessageId: `msg-${Date.now()}`,
           liveUpdated: outcome.wasPublished,
           creditsUsed: outcome.actualCredits,
