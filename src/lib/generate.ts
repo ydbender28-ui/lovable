@@ -207,7 +207,7 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - "Add to Cart" buttons: use useState for cart array. Clicking MUST add the item and update the cart count.
 - Nav links: use smooth scroll with document.getElementById(id)?.scrollIntoView({behavior:'smooth'}).
 - Form submit buttons: use onSubmit with e.preventDefault(), show success message with useState.
-- Modal/drawer open/close: use useState boolean, DEFAULT VALUE MUST BE **false** (closed). NEVER initialize a modal/drawer/overlay as true. Only ONE modal can be open at a time — use a single `const [activeModal, setActiveModal] = useState<string|null>(null)` string instead of multiple booleans when you have more than one modal.
+- Modal/drawer open/close: use useState boolean, DEFAULT VALUE MUST BE false (closed). NEVER initialize a modal/drawer/overlay as true. Only ONE modal can be open at a time — use a single activeModal string state (e.g. useState null) instead of multiple booleans when you have more than one modal.
 - Tab buttons: use useState for activeTab. Clicking MUST switch displayed content.
 - Accordion/FAQ: use useState for openIndex. Clicking MUST expand/collapse.
 - Quantity +/- buttons: MUST update the count with useState.
