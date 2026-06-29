@@ -1,8 +1,7 @@
 import { after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { estimateCost, MODELS } from "@/lib/generate";
-import { agentGenerate } from "@/lib/agent-generate";
+import { generateProject, estimateCost, MODELS } from "@/lib/generate";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
@@ -113,13 +112,16 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   // SSE event buffer — drained to client every 100ms
   const eventBuffer: { event: string; data: unknown }[] = [];
   const pushEvent = (event: string, data: unknown) => { eventBuffer.push({ event, data }); };
+  const onToken = (token: string) => pushEvent("token", { token });
   const onStatus = (text: string) => pushEvent("status", { text });
-  const onFileWrite = (path: string, content: string) => pushEvent("file_update", { path, content });
 
   // Run generation — after() keeps it alive even if client disconnects
   const genPromise = (async () => {
     try {
-      const result = await agentGenerate(smartPrompt, existingFiles, onStatus, onFileWrite);
+      const result = await generateProject(
+        smartPrompt, existingFiles, envVars, onToken, onStatus,
+        null, undefined, finalRoute.model.model, null, null
+      );
 
       const wasPublished = !!project.publishSlug;
       const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
