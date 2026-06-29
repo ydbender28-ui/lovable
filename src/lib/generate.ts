@@ -2272,8 +2272,8 @@ complete file here
     }
   }
 
-  // ── UI polish pass (new builds only) ──
-  if (!isEdit) {
+  // ── UI polish pass disabled — layout rules in main prompt handle this ──
+  if (false && !isEdit) {
     try {
       const polish = await polishCheck(finalFiles, onToken ?? (() => {}), onStatus);
       inputTokens += polish.inputTokens;
