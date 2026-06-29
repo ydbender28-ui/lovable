@@ -26,7 +26,7 @@ export default function Navbar({ brand, links, cta, onNavigate }: { brand: strin
 "/components/sections/Hero.tsx": `import React from 'react';
 export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?: string; title: string; subtitle: string; cta1?: { text: string; href?: string }; cta2?: { text: string; href?: string }; image: string }) {
   return (
-    <section style={{ position:'relative', minHeight:'85vh', display:'flex', alignItems:'center', overflow:'hidden' }}>
+    <section style={{ position:'relative', minHeight:'65vh', display:'flex', alignItems:'center', overflow:'hidden' }}>
       <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))' }} />
       <div style={{ position:'relative', zIndex:1, maxWidth:1200, margin:'0 auto', padding:'80px 40px', color:'#fff' }}>

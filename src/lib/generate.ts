@@ -118,11 +118,17 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
 - App component MUST be the default export: "export default function App()"
-- App component MUST be "export default function App()"
 - Import from: react, lucide-react, react-hot-toast, or /components/sections/ (pre-built library).
 - Define helper components in /App.tsx above the App function if needed.
 - NEVER create index.tsx, index.ts, main.tsx, or main.ts — the app entry point already exists.
 - Only output /App.tsx and /index.css. Nothing else.
+
+## LAYOUT RULES — every section must look polished:
+- EVERY content section (not full-bleed hero): wrap in <div style={{maxWidth:1200, margin:'0 auto', padding:'0 40px'}}>
+- Hero images: ALWAYS constrained height. Use the Hero component OR set style={{height:'65vh', objectFit:'cover', width:'100%'}}. NEVER let an image render at natural/unconstrained height.
+- Stats rows: ALWAYS horizontal flex — style={{display:'flex', gap:48, flexWrap:'wrap'}}. NEVER stack stats vertically.
+- Section padding: style={{padding:'80px 40px'}} on every section. Never let content touch the edge of the screen.
+- Buttons: ALWAYS have visible background OR border. Never an invisible/unstyled button.
 
 ## STYLING — DESIGN SYSTEM + TAILWIND:
 
