@@ -549,7 +549,7 @@ export const MODELS: Record<string, ModelOption> = {
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 32000,
+    displayName: "Claude Sonnet", maxTokens: 10000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
