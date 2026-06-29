@@ -1935,16 +1935,22 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
       for (let i = 0; i < opens - closes; i++) fixed += "\n}";
       parsed.files["/App.tsx"] = fixed;
     }
-    // Strip imports from INVALID paths (not /components/sections/ which is valid)
+    // Strip ALL invalid imports — only allow known-good ones
     if (parsed) {
       let fixedApp = parsed.files["/App.tsx"] ?? appCode;
-      // Remove imports from /components/ui/ and other non-existent paths
-      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\/components\/ui\/[^'"]+['"];?\n?/g, "");
-      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\.\/components\/[^'"]+['"];?\n?/g, "");
-      fixedApp = fixedApp.replace(/import\s+.*from\s+['"]\.\/[^'"]+['"];?\n?/g, (match) => {
-        // Keep valid imports (react, lucide-react, react-hot-toast, /components/sections/)
-        if (match.includes("react") || match.includes("lucide") || match.includes("toast") || match.includes("/components/sections/")) return match;
-        return ""; // Strip everything else
+      const VALID_SECTIONS = ['Banner','BlogGrid','CTA','Contact','FAQ','Features','Footer','Gallery','Hero','LogoCloud','MenuGrid','Navbar','Newsletter','PricingTable','ShopGrid','SplitSection','Stats','Tabs','Team','Testimonials','Timeline'];
+      // Check every import line
+      fixedApp = fixedApp.replace(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"];?\n?/g, (match, name, path) => {
+        // Always keep: react, lucide-react, react-hot-toast
+        if (path === 'react' || path.includes('lucide') || path.includes('toast')) return match;
+        // Keep valid section components
+        if (path.includes('/components/sections/')) {
+          const compName = path.split('/').pop()?.replace('.tsx','').replace('.ts','') || '';
+          if (VALID_SECTIONS.includes(compName)) return match;
+          return ''; // Invalid section component — strip it
+        }
+        // Strip everything else (./components/ui/, ./anything, etc)
+        return '';
       });
       parsed.files["/App.tsx"] = fixedApp;
     }
