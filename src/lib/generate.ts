@@ -283,61 +283,41 @@ You have 16000 tokens. A full website fits in 8000-12000 tokens. Do NOT pad outp
 - Reuse patterns instead of copy-pasting nearly identical blocks
 - The goal is a COMPLETE, working site — not an exhaustive one
 
-## COMPLETE EXAMPLE (use semantic design tokens — NEVER direct colors):
+## COMPLETE EXAMPLE — USE PRE-BUILT COMPONENTS, NOT CUSTOM LAYOUTS:
 
-SUMMARY: A warm bakery landing page with hero, menu grid, and contact section.
+This is how a bakery site should be built. Notice: NO custom nav, NO custom section layouts — just components with data props.
+
+SUMMARY: A warm artisan bakery landing page with hero, menu, and contact.
 
 SUGGESTIONS: Add online ordering | Add customer reviews | Add dark mode | Add gallery | Add newsletter
 
 /App.tsx
 \`\`\`tsx
-import React, { useState } from 'react';
-import { MapPin, Clock } from 'lucide-react';
-
-const MENU = [
-  { id: 1, name: "Sourdough Loaf", price: 8.50, desc: "72-hour fermented, crispy crust", cat: "Bread" },
-  { id: 2, name: "Almond Croissant", price: 5.25, desc: "Twice-baked with frangipane", cat: "Pastry" },
-  { id: 3, name: "Espresso", price: 3.50, desc: "Bold, rich single shot", cat: "Coffee" },
-];
+import React from 'react';
+import Navbar from '/components/sections/Navbar';
+import Hero from '/components/sections/Hero';
+import MenuGrid from '/components/sections/MenuGrid';
+import Testimonials from '/components/sections/Testimonials';
+import Contact from '/components/sections/Contact';
+import Footer from '/components/sections/Footer';
 
 export default function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border px-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-16">
-          <span className="text-xl font-extrabold tracking-tight">Rise & Crust</span>
-          <div className="flex gap-8 items-center">
-            <a href="#menu" className="text-sm text-muted hover:text-foreground transition-colors">Menu</a>
-            <a href="#contact" className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity">Visit Us</a>
-          </div>
-        </div>
-      </nav>
-      <section className="relative min-h-[85vh] flex items-center">
-        <img src="{{unsplash:artisan bakery warm morning light|1600x900}}" alt="Bakery" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70" />
-        <div className="relative z-10 max-w-7xl mx-auto px-10 py-20 text-white">
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.05] tracking-tight max-w-2xl">Baked fresh. Every morning.</h1>
-          <p className="text-lg mt-6 max-w-lg opacity-85">Small-batch sourdough and single-origin coffee.</p>
-        </div>
-      </section>
-      <section id="menu" className="py-24 px-10 max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold tracking-tight mb-10">Our Menu</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {MENU.map(item => (
-            <div key={item.id} className="bg-card border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all">
-              <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-sm text-muted mt-1">{item.desc}</p>
-              <p className="text-lg font-bold mt-3">\${item.price.toFixed(2)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-      <footer className="border-t border-border py-12 px-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <span className="font-bold">Rise & Crust</span>
-          <span className="text-sm text-muted">&copy; 2026 All rights reserved.</span>
-        </div>
-      </footer>
+      <Navbar brand="Rise & Crust" links={["Menu","About","Contact"]} cta="Visit Us" />
+      <Hero tag="Est. 2018" title="Baked fresh. Every morning." subtitle="Small-batch sourdough and single-origin coffee, made with love." cta1={{text:"See Menu",href:"#menu"}} cta2={{text:"Find Us",href:"#contact"}} image="{{unsplash:artisan bakery warm morning light|1600x900}}" />
+      <MenuGrid title="Our Menu" items={[
+        {name:"Sourdough Loaf",price:"$8.50",desc:"72-hour fermented, crispy crust",category:"Bread",badge:"Bestseller"},
+        {name:"Almond Croissant",price:"$5.25",desc:"Twice-baked with frangipane",category:"Pastry"},
+        {name:"Espresso",price:"$3.50",desc:"Bold, rich single shot",category:"Coffee"},
+        {name:"Avocado Toast",price:"$12",desc:"Sourdough, smashed avo, chili flakes",category:"Food"},
+      ]} />
+      <Testimonials title="What people say" items={[
+        {quote:"Best sourdough in the city — worth the trip.",name:"Sarah M.",role:"Regular",image:"{{unsplash:smiling woman portrait|200x200}}"},
+        {quote:"The almond croissants are life-changing.",name:"James K.",role:"Food blogger",image:"{{unsplash:man smiling portrait|200x200}}"},
+      ]} />
+      <Contact title="Find Us" items={[{label:"Address",value:"42 Bread Lane, Brooklyn NY"},{label:"Hours",value:"Tue–Sun 7am–3pm"},{label:"Phone",value:"(718) 555-0142",href:"tel:7185550142"}]} />
+      <Footer brand="Rise & Crust" tagline="Baked with love since 2018." />
     </div>
   );
 }
@@ -361,7 +341,7 @@ body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--back
 * { box-sizing: border-box; }
 \`\`\`
 
-^^^ ALL colors use CSS variables. To change theme = change :root values. NEVER use bg-white, text-gray-900, etc.
+^^^ This App.tsx is ~35 lines. A full site using components should be 40-80 lines. If yours is >150 lines, you're writing too much custom code. USE THE COMPONENTS.
 
 {{DESIGN_INJECTION}}
 
@@ -556,7 +536,7 @@ export const MODELS: Record<string, ModelOption> = {
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 16000,
+    displayName: "Claude Sonnet", maxTokens: 8000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
