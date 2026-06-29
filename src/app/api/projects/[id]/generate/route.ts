@@ -7,6 +7,7 @@ import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
 import { buildSpec } from "@/lib/spec-builder";
+import { buildWebsiteKnowledge } from "@/lib/website-knowledge";
 
 export const maxDuration = 300;
 
@@ -80,7 +81,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   }
   const envVars = bodyEnvVars ?? storedEnv;
 
-  // Enhance prompt with learning system and spec builder for new builds
+  // Enhance prompt with learning system, spec builder, and website knowledge for new builds
   let smartPrompt = prompt;
   if (!hasExisting) {
     const category = detectCategory(prompt);
@@ -103,6 +104,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         if (spec.componentPlan) smartPrompt += `\n\n## Architecture Plan\n${spec.componentPlan}`;
       }
     } catch { /* spec builder failed — continue with raw prompt */ }
+
+    // Inject website pattern knowledge (layout, sections, design tone)
+    const websiteKnowledge = buildWebsiteKnowledge(prompt);
+    smartPrompt += `\n\n${websiteKnowledge}`;
   }
 
   // SSE event buffer — drained to client every 100ms

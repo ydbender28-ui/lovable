@@ -1,37 +1,56 @@
 import { auth } from "@/lib/auth";
+import Anthropic from "@anthropic-ai/sdk";
 
-export const maxDuration = 120;
-import { GoogleGenAI } from "@google/genai";
+export const maxDuration = 30;
+
+const CLARIFIER_PROMPT = `You are ThatCode's intent clarifier. Decide if a build request needs one clarifying question before generating.
+
+Rules:
+- Proceed immediately if the request mentions a specific domain, product, industry, or feature
+- Ask ONE question only if the request is so vague that any answer would be wildly different (e.g. "build an app" with zero context)
+- Never ask about colors, fonts, or copy — make smart defaults
+- Ask about: core functionality, target audience, business model, or key differentiator
+
+Respond with JSON only:
+{
+  "action": "proceed" | "clarify",
+  "question": "string (only if action=clarify — make it specific and helpful)",
+  "understanding": "one sentence of what you understood"
+}
+
+Examples:
+- "build a coffee shop landing page" → {"action":"proceed","understanding":"A landing page for a coffee shop with menu, hours, and atmosphere"}
+- "build an app" → {"action":"clarify","question":"What does your app do — what's the core problem it solves for users?","understanding":"A generic app request with no domain"}
+- "saas for project management" → {"action":"proceed","understanding":"A SaaS landing page for a project management tool"}
+- "make me a website" → {"action":"clarify","question":"What kind of business or project is this website for?","understanding":"A website with no specified domain or purpose"}`;
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
 
   const { prompt } = await req.json();
-  if (!prompt) return Response.json({ vague: false });
+  if (!prompt) return Response.json({ action: "proceed", vague: false, understanding: "" });
 
   try {
-    const client = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-    const res = await client.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: { maxOutputTokens: 5 },
-      contents: [{
-        role: "user",
-        parts: [{ text: `You are deciding if an app request needs clarification. Answer only YES or NO.
-
-Say YES only if the request has NO subject/domain at all — literally just generic words like "make an app" or "build a website" or "create a tool".
-
-Say NO (build it) if the request mentions ANY specific thing: a product name, industry, company type, feature, or domain. When in doubt, say NO.
-
-NO examples (build immediately): "salesforce app", "create salesforce", "crm", "e-commerce", "fitness tracker", "portfolio", "todo list", "dashboard", "inventory system", "booking app", "restaurant menu"
-YES examples (needs clarification): "make an app", "build me something", "create a website", "build a tool"
-
-Request: "${prompt}"` }],
-      }],
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const res = await client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 150,
+      system: CLARIFIER_PROMPT,
+      messages: [{ role: "user", content: prompt }],
     });
-    const answer = res.text?.trim().toUpperCase() ?? "NO";
-    return Response.json({ vague: answer.startsWith("YES") });
+
+    const raw = (res.content[0] as { type: string; text: string }).text.trim();
+    const cleaned = raw.replace(/^```json\n?/m, "").replace(/^```\n?/m, "").replace(/```$/m, "").trim();
+    const result = JSON.parse(cleaned);
+
+    return Response.json({
+      action: result.action ?? "proceed",
+      question: result.question,
+      understanding: result.understanding ?? "",
+      vague: result.action === "clarify", // backward compat
+    });
   } catch {
-    return Response.json({ vague: false });
+    return Response.json({ action: "proceed", vague: false, understanding: "" });
   }
 }

@@ -444,7 +444,7 @@ export default function ProjectWorkspace({
   type ProactiveSuggestion = { title: string; description: string; prompt: string };
   type FlowState =
     | { type: "idle" }
-    | { type: "clarify"; pendingPrompt: string; answers: Record<string, string> }
+    | { type: "clarify"; pendingPrompt: string; answers: Record<string, string>; question?: string }
     | { type: "apikeys"; pendingPrompt: string; needed: typeof API_DETECTORS; keyValues: Record<string, string> }
     | { type: "designpick"; pendingPrompt: string; directions: DesignDirection[] }
     | { type: "architect"; pendingPrompt: string; plan: ArchitectPlan }
@@ -1140,14 +1140,28 @@ export default function ProjectWorkspace({
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    // Plan before build — show clarifying questions for brand new projects
+    // Plan before build — smart clarifier for brand new projects
     const isNewProject = Object.keys(files).length === 0 && flow.type === "idle";
     if (isNewProject && !architectMode) {
       setMessages(prev => {
         if (prev.some(m => m.content === trimmed)) return prev;
         return [...prev, { id: `tmp-${Date.now()}`, role: "user", content: trimmed }];
       });
-      setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {} });
+      // Check if we need to ask a clarifying question
+      try {
+        const vagueRes = await fetch("/api/check-vague", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: trimmed }),
+        });
+        const vagueData = await vagueRes.json();
+        if (vagueData.action === "clarify" && vagueData.question) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {}, question: vagueData.question } as any);
+          return;
+        }
+        // Proceed directly — no clarification needed
+      } catch { /* fall through to build */ }
+      runGenerate(trimmed);
       return;
     }
 
@@ -1823,13 +1837,44 @@ export default function ProjectWorkspace({
   }
 
   function ClarifyCard() {
+    const [answer, setAnswer] = useState("");
+    if (flow.type !== "clarify") return null;
+    const f = flow;
+
+    // Smart clarifier mode — AI asked a specific question
+    if (f.question) {
+      function submitAnswer(skip = false) {
+        const full = skip || !answer.trim()
+          ? f.pendingPrompt
+          : `${f.pendingPrompt}\n\nAdditional context: ${answer.trim()}`;
+        setFlow({ type: "idle" });
+        runGenerate(full);
+      }
+      return (
+        <div className="rounded-xl border border-[#e5e5e5] bg-white p-4 max-w-[92%] space-y-3 shadow-sm">
+          <p className="text-sm text-[#333]">{f.question}</p>
+          <input
+            value={answer}
+            onChange={e => setAnswer(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && submitAnswer()}
+            placeholder="Type your answer..."
+            autoFocus
+            className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-xs text-[#333] placeholder:text-[#aaa] focus:outline-none focus:border-[#c2410c]/40"
+          />
+          <div className="flex gap-2">
+            <button onClick={() => submitAnswer()} className="rounded-full bg-[#111] text-white px-4 py-2 text-xs font-medium hover:bg-[#333] transition-colors">Build it</button>
+            <button onClick={() => submitAnswer(true)} className="text-xs text-[#999] hover:text-[#333] px-3 py-2 transition-colors">Skip, just build</button>
+          </div>
+        </div>
+      );
+    }
+
+    // Fallback: generic style/page selector (used if clarifier didn't run)
     const [style, setStyle] = useState("");
     const [pages, setPages] = useState<string[]>([]);
     const [extra, setExtra] = useState("");
     const styleOpts = ["Minimal & clean", "Bold & modern", "Warm & earthy", "Dark & sleek", "Playful & colorful"];
     const pageOpts = ["Home", "About", "Menu / Products", "Contact", "Pricing"];
-    if (flow.type !== "clarify") return null;
-    const f = flow;
     function togglePage(p: string) {
       setPages(prev => prev.includes(p) ? prev.filter(x => x !== p) : prev.length >= 3 ? prev : [...prev, p]);
     }
