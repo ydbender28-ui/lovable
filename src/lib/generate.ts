@@ -207,7 +207,7 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - "Add to Cart" buttons: use useState for cart array. Clicking MUST add the item and update the cart count.
 - Nav links: use smooth scroll with document.getElementById(id)?.scrollIntoView({behavior:'smooth'}).
 - Form submit buttons: use onSubmit with e.preventDefault(), show success message with useState.
-- Modal/drawer open/close: use useState boolean. Clicking MUST toggle visibility.
+- Modal/drawer open/close: use useState boolean, DEFAULT VALUE MUST BE **false** (closed). NEVER initialize a modal/drawer/overlay as true. Only ONE modal can be open at a time — use a single `const [activeModal, setActiveModal] = useState<string|null>(null)` string instead of multiple booleans when you have more than one modal.
 - Tab buttons: use useState for activeTab. Clicking MUST switch displayed content.
 - Accordion/FAQ: use useState for openIndex. Clicking MUST expand/collapse.
 - Quantity +/- buttons: MUST update the count with useState.
@@ -223,6 +223,7 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
   CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" /><Hero ... />
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
+  CRITICAL: For ANY menu, product list, or card grid — ALWAYS use MenuGrid. NEVER build a custom card grid from scratch.
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
 - import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
