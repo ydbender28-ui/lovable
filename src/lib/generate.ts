@@ -276,6 +276,13 @@ your code here
 your css here
 \`\`\`
 
+## TOKEN BUDGET — BE CONCISE:
+You have 16000 tokens. A full website fits in 8000-12000 tokens. Do NOT pad output.
+- Avoid repeating similar items more than 3-4 times (e.g. 4 menu cards is enough, not 12)
+- Do NOT write verbose comments — no line comments at all
+- Reuse patterns instead of copy-pasting nearly identical blocks
+- The goal is a COMPLETE, working site — not an exhaustive one
+
 ## COMPLETE EXAMPLE (use semantic design tokens — NEVER direct colors):
 
 SUMMARY: A warm bakery landing page with hero, menu grid, and contact section.
@@ -549,7 +556,7 @@ export const MODELS: Record<string, ModelOption> = {
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 10000,
+    displayName: "Claude Sonnet", maxTokens: 16000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
