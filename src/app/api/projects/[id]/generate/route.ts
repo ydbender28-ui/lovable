@@ -6,7 +6,8 @@ import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
 import { buildSpec } from "@/lib/spec-builder";
-import { buildWebsiteKnowledge } from "@/lib/website-knowledge";
+import { buildWebsiteKnowledge } from "@/lib/website-knowledge"
+import { getRelevantComponents } from "@/lib/component-retrieval";
 
 export const maxDuration = 300;
 
@@ -107,6 +108,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     // Inject website pattern knowledge (layout, sections, design tone)
     const websiteKnowledge = buildWebsiteKnowledge(prompt);
     smartPrompt += `\n\n${websiteKnowledge}`;
+
+    // Inject real-world component examples from Supabase (vector search)
+    const realExamples = await getRelevantComponents(prompt).catch(() => '');
+    if (realExamples) smartPrompt += `\n\n${realExamples}`;
   }
 
   // SSE event buffer — drained to client every 100ms
