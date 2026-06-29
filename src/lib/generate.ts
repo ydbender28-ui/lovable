@@ -339,6 +339,8 @@ export default function App() {
 }
 body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); }
 * { box-sizing: border-box; }
+/* Hard cap: card images never exceed 260px. Hero images use explicit height class. */
+img:not(.hero-img) { max-height: 260px; width: 100%; object-fit: cover; display: block; }
 \`\`\`
 
 ^^^ This App.tsx is ~35 lines. A full site using components should be 40-80 lines. If yours is >150 lines, you're writing too much custom code. USE THE COMPONENTS.
