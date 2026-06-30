@@ -1514,7 +1514,7 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
           {subtitle&&<p style={{color:'#888',fontSize:17,maxWidth:560,margin:'0 auto'}}>{subtitle}</p>}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:24}}>
+        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : \`repeat(\${cols},1fr)\`,gap:24}}>
           {safeItems.map((s,i)=>(
             <div key={i} style={{background:'#fff',borderRadius:20,padding:32,border:'1px solid #f0f0f0',position:'relative',transition:\`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`,opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
               {s.badge&&<span style={{position:'absolute',top:20,right:20,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.badge}</span>}
@@ -1790,7 +1790,7 @@ export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, a
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section style={{padding:'80px 40px',background:bg,color:fg}}>
+    <section style={{padding: isMobile ? '48px 20px' : '80px 40px',background:bg,color:fg}}>
       <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 12px'}}>{title}</h2>
         {subtitle&&<p style={{fontSize:17,color:dark?'rgba(255,255,255,0.6)':'#888',margin:'0 0 48px'}}>{subtitle}</p>}
@@ -1866,7 +1866,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={sectionRef as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={sectionRef as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <style>{\`@keyframes baHandlePulse { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.15)} }\`}</style>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
@@ -2062,7 +2062,7 @@ export default function IconFeatures({ title, subtitle, items, accentColor, colu
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px',color:fg}}>{title}</h2>}
           {subtitle&&<p style={{color:dark?'rgba(255,255,255,0.55)':'#888',fontSize:17,maxWidth:540,margin:'0 auto'}}>{subtitle}</p>}
         </div>}
-        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:32}}>
+        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : \`repeat(\${cols},1fr)\`,gap:32}}>
           {safeItems.map((f,i)=>(
             <div key={i} style={{textAlign:'center',padding:'32px 16px'}}>
               <div style={{width:64,height:64,borderRadius:20,background:dark?'rgba(255,255,255,0.08)':\`\${accent}14\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,margin:'0 auto 20px'}}>{f.icon}</div>
@@ -2226,7 +2226,7 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
   return (
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:bg,color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
-        {stats&&<div style={{display:'grid',gridTemplateColumns:\`repeat(\${stats.length},1fr)\`,gap:32,marginBottom:quotes?60:0}}>
+        {stats&&<div style={{display:'grid',gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : \`repeat(\${stats.length},1fr)\`,gap:32,marginBottom:quotes?60:0}}>
           {stats.map((s,i)=>(
             <div key={i} style={{textAlign:'center'}}>
               {s.icon&&<div style={{fontSize:32,marginBottom:8}}>{s.icon}</div>}
