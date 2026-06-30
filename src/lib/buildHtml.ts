@@ -380,6 +380,14 @@ export function buildStandaloneHtml(
   ${seoMeta?.description ? `<meta name="twitter:description" content="${seoMeta.description}">` : ''}
   ${seoMeta?.ogImage ? `<meta name="twitter:image" content="${seoMeta.ogImage}">` : ''}
   ${publishSlug ? `<link rel="canonical" href="https://thatcode.dev/app/${publishSlug}">` : ''}
+  <script>
+(function() {
+  try {
+    var data = { projectId: '${projectId || ''}', slug: '${publishSlug || ''}', ref: document.referrer, ua: navigator.userAgent.slice(0, 100), ts: Date.now() };
+    fetch('https://thatcode.dev/api/analytics/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), keepalive: true }).catch(function() {});
+  } catch(e) {}
+})();
+</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>${styles}</style>
 </head>
@@ -494,6 +502,10 @@ export function buildStandaloneHtml(
       try{window.parent.postMessage({type:'TC_VISUAL_CLICK',desc:desc,tag:tag,text:text},'*');}catch(err){}
     },true);
   </script>
+  ${!hideBadge ? `<!-- Share widget - only on free tier -->
+  <div id="tc-share" style="position:fixed;bottom:16px;left:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+    <button onclick="navigator.share ? navigator.share({title:document.title,url:location.href}) : navigator.clipboard.writeText(location.href).then(function(){var b=document.getElementById('tc-share-btn');b.textContent='\\u2713 Copied!';setTimeout(function(){b.textContent='Share'},2000)})" id="tc-share-btn" style="background:rgba(0,0,0,0.7);color:#fff;border:none;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;backdrop-filter:blur(8px);">Share</button>
+  </div>` : ''}
   ${thatcodeBadge(hideBadge)}
   ${editButton(projectId)}
 </body>

@@ -253,11 +253,11 @@ function CodeViewer({ files, devMode, onSaveFiles, onLineRef }: {
 
 export default function ProjectWorkspace({
   projectId, projectName, initialMessages, initialFiles, initialPublishSlug, initialPrompt, initialCredits,
-  userPlan, initialIsPrivate,
+  userPlan, initialIsPrivate, initialVisitCount,
 }: {
   projectId: string; projectName: string; initialMessages: Message[];
   initialFiles: ProjectFiles; initialPublishSlug?: string | null; initialPrompt?: string;
-  initialCredits?: number | null; userPlan?: string; initialIsPrivate?: boolean;
+  initialCredits?: number | null; userPlan?: string; initialIsPrivate?: boolean; initialVisitCount?: number;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [files, setFiles] = useState<ProjectFiles>(initialFiles);
@@ -2679,6 +2679,9 @@ export default function ProjectWorkspace({
               </button>
               <a href={publishUrl} target="_blank" rel="noreferrer"
                 className="text-xs rounded-lg border border-green-500/30 bg-green-500/10 text-green-600 px-3 py-1.5 hover:bg-green-500/20 transition-colors">Live ↗</a>
+              {(initialVisitCount ?? 0) > 0 && (
+                <span style={{ fontSize: 12, color: '#9090a0' }} className="hidden sm:inline">👁 {initialVisitCount} views</span>
+              )}
               <button onClick={() => navigator.clipboard.writeText(publishUrl ?? "")}
                 className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] px-2 py-1.5 hover:bg-white/10 hidden sm:block">Copy</button>
               <button onClick={handleUnpublish} className="text-xs text-[#9090a0] hover:text-red-400 px-1 py-1.5 transition-colors">×</button>

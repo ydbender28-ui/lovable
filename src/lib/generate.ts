@@ -208,8 +208,7 @@ Add a MetaTags component as the first child of your App div:
 Import it: import MetaTags from '/components/sections/MetaTags';
 
 ## Technical rules:
-- Styling: Tailwind className for layout/spacing/sizing. Inline style={{}} for colors that reference CSS variables (e.g. style={{background:'hsl(var(--primary))'}}).
-- Tailwind CDN is pre-loaded — all Tailwind classes work out of the box.
+- Styling: use CSS custom properties (var(--bg), var(--primary), etc.) and inline style={{}} for ALL colors. NEVER use Tailwind CSS classes for colors.
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
 - Return /App.tsx (all code) and /index.css (Google Fonts + CSS vars only).
@@ -240,8 +239,7 @@ Examples of correct usage:
 <div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, padding:32}}>
 <h2 style={{color:'var(--fg)', fontSize:38, fontWeight:800, letterSpacing:'-0.02em'}}>
 
-Tailwind utility classes are also available for layout/spacing:
-className="flex items-center gap-4 max-w-6xl mx-auto"
+NEVER use Tailwind CSS classes (no className="bg-white text-gray-900 p-4" etc.) — use inline styles with CSS variables only.
 
 Other rules:
 - App component MUST be "export default function App()"
@@ -926,7 +924,7 @@ body { overflow-x: hidden; }
 const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.js (Supabase Edge Functions, Deno runtime).`;
 
 // Separate edit prompt — search/replace format for surgical edits
-const SYSTEM_EDIT = `You are making SURGICAL edits to an existing React app. Tailwind CSS is available.
+const SYSTEM_EDIT = `You are making SURGICAL edits to an existing React app. Use CSS variables (var(--primary), var(--bg), etc.) and inline styles — NEVER Tailwind CSS classes.
 
 ## GOLDEN RULE: PRESERVE EVERYTHING NOT EXPLICITLY ASKED TO CHANGE
 The user's existing site took effort to build. Your job is a SCALPEL, not a sledgehammer.
@@ -959,16 +957,9 @@ If user says "make it dark mode":
 2. DO NOT rewrite App.tsx.
 
 ## COLOR/THEME CHANGES — detailed:
-First, check the existing code to determine which color system it uses:
-
-CASE A — Code uses CSS variables like var(--primary), var(--bg), var(--fg) or bg-[hsl(var(--background))]:
-Change /index.css ONLY. Swap the values in :root. Do NOT touch /App.tsx at all.
+All apps use CSS variables. Change /index.css ONLY — swap the values in :root.
 Example: "make it dark green" → --bg: #0a1a0f; --fg: #f0fff4; --primary: #86efac;
-
-CASE B — Code uses hardcoded Tailwind classes like bg-white, bg-stone-50, text-gray-900:
-You MUST return the FULL /App.tsx file with all color classes swapped to the new theme.
-Also update /index.css if it has color variables.
-Keep ALL layout, structure, content, images, and functionality identical — only swap color/bg/text/border classes.
+Do NOT touch /App.tsx for color changes.
 
 ## ADDING A SECTION:
 If user says "add a FAQ section":

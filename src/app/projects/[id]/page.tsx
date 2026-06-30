@@ -65,6 +65,7 @@ export default async function ProjectPage({
       initialCredits={user?.plan === "owner" ? null : (user?.credits ?? 50)}
       userPlan={user?.plan ?? "free"}
       initialIsPrivate={project.isPrivate}
+      initialVisitCount={project.visitCount}
     />
   );
 }
