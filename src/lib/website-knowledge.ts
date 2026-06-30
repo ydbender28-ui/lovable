@@ -119,12 +119,5 @@ export function matchPattern(prompt: string): WebsitePattern {
 
 export function buildWebsiteKnowledge(prompt: string): string {
   const p = matchPattern(prompt)
-  return `## Website Best Practices (${p.category})
-**Layout**: ${p.layout}
-**Section order**: ${p.sections.join(" → ")}
-**Design tone**: ${p.designTone}
-**Colors**: ${p.colorApproach}
-**Hero pattern**: ${p.heroPattern}
-**Must include**: ${p.mustHave.join(", ")}
-**Avoid**: ${p.avoid.join(", ")}`
+  return `## Site guidance (${p.category}): ${p.designTone} | Colors: ${p.colorApproach} | Must: ${p.mustHave.slice(0,2).join(", ")} | Avoid: ${p.avoid.slice(0,2).join(", ")}`
 }

@@ -89,11 +89,11 @@ export async function getSimilarBuilds(embedding: number[]): Promise<string> {
     const builds = await res.json() as { prompt: string; app_tsx: string; similarity: number }[]
     if (!builds?.length) return ''
 
-    const examples = builds.map((b, i) =>
-      `### Past Build Example ${i + 1} (similarity: ${(b.similarity * 100).toFixed(0)}%)\nPrompt: "${b.prompt.slice(0, 100)}"\n\`\`\`tsx\n${b.app_tsx.slice(0, 600)}\n\`\`\``
-    ).join('\n\n')
+    const examples = builds.map((b) =>
+      `- "${b.prompt.slice(0, 80)}": ${b.app_tsx.slice(0, 200)}...`
+    ).join('\n')
 
-    return `## Similar Past Builds (real user builds that scored well — use as structural reference):\n${examples}`
+    return `## Similar past builds (structural reference):\n${examples}`
   } catch {
     return ''
   }

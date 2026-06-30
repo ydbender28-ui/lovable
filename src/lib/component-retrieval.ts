@@ -86,14 +86,11 @@ export async function getRelevantComponents(prompt: string): Promise<string> {
     if (!components || components.length === 0) return ''
 
     const examples = components
-      .slice(0, 3)
-      .map(c => `### ${c.component_name} (${c.category}, ★${c.quality_score})\n\`\`\`tsx\n${c.tsx_code.slice(0, 300)}\n\`\`\``)
-      .join('\n\n')
+      .slice(0, 2)
+      .map(c => `- ${c.component_name} (${c.category}): ${c.tsx_code.slice(0, 120)}...`)
+      .join('\n')
 
-    return `## Real-World Component Examples (scraped from live sites, quality ≥7):
-Use these as inspiration for layout patterns, spacing, and visual style. Adapt them — don't copy verbatim.
-
-${examples}`
+    return `## Scraped UI inspiration (adapt, don't copy):\n${examples}`
   } catch {
     return ''
   }
