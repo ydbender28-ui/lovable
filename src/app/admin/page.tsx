@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +25,21 @@ export default async function AdminPage() {
     include: { project: { select: { name: true, deletedAt: true, owner: { select: { email: true } } } } },
   });
 
-  const users = await prisma.user.findMany({ select: { id: true, email: true, createdAt: true } });
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+    select: { id: true, email: true, plan: true, credits: true, createdAt: true },
+  });
+
+  const totalProjects = await prisma.project.count({ where: { deletedAt: null } });
+  const publishedProjects = await prisma.project.count({ where: { publishSlug: { not: null }, deletedAt: null } });
+  const planCounts = await prisma.user.groupBy({ by: ["plan"], _count: true });
+
+  const recentProjects = await prisma.project.findMany({
+    where: { deletedAt: null },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: { id: true, name: true, createdAt: true, publishSlug: true, owner: { select: { email: true } } },
+  });
 
   // Aggregate by model
   const byModel: Record<string, { count: number; inputTokens: number; outputTokens: number; cost: number }> = {};
@@ -44,24 +59,47 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-[#f6f6f8] text-[#17171c] p-8">
       <div className="max-w-5xl mx-auto space-y-10">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">ThatCode Admin</h1>
-          <p className="text-[#71717f] text-sm">Usage and cost overview</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">ThatCode Admin</h1>
+            <p className="text-[#71717f] text-sm">Usage and cost overview</p>
+          </div>
+          <Link href="/dashboard" className="text-xs text-[#71717f] hover:text-[#17171c] transition-colors">← Dashboard</Link>
         </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Total users", value: users.length },
-            { label: "Total generations", value: versions.length },
-            { label: "Total cost", value: fmt(totalCost) },
-            { label: "Avg cost/gen", value: versions.length ? fmt(totalCost / versions.length) : "$0" },
-          ].map(({ label, value }) => (
-            <div key={label} className="rounded-xl border border-[#ececf1] bg-white p-4">
+            { label: "Total users", value: users.length, color: "#3b82f6" },
+            { label: "Total projects", value: totalProjects, color: "#8b5cf6" },
+            { label: "Published sites", value: publishedProjects, color: "#10b981" },
+            { label: "Total builds", value: versions.length, color: "#6a1ff7" },
+            { label: "Total cost", value: fmt(totalCost), color: "#f59e0b" },
+            { label: "Avg cost/build", value: versions.length ? fmt(totalCost / versions.length) : "$0", color: "#ef4444" },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="rounded-xl border border-[#ececf1] bg-white p-4" style={{ borderLeft: `3px solid ${color}` }}>
               <p className="text-xs text-[#71717f] mb-1">{label}</p>
               <p className="text-xl font-semibold">{value}</p>
             </div>
           ))}
+        </div>
+
+        {/* Plan breakdown */}
+        <div>
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Plan breakdown</h2>
+          <div className="flex flex-wrap gap-3">
+            {planCounts.map(({ plan, _count }) => {
+              const colors: Record<string, string> = { free: "#6b7280", pro: "#3b82f6", team: "#8b5cf6", owner: "#f59e0b" };
+              const color = colors[plan] ?? "#6b7280";
+              return (
+                <div key={plan} className="flex items-center gap-2 rounded-lg border border-[#ececf1] bg-white px-4 py-2">
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
+                  <span className="text-sm font-medium capitalize">{plan}</span>
+                  <span className="text-sm text-[#71717f] font-mono">{_count}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Routing logic explainer */}
@@ -194,22 +232,72 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        {/* Users */}
+        {/* Recent Users */}
         <div>
-          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Users ({users.length})</h2>
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Recent signups ({users.length} total)</h2>
           <div className="rounded-xl border border-[#ececf1] overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
                 <tr>
                   <th className="text-left px-4 py-3">Email</th>
-                  <th className="text-right px-4 py-3">Signed up</th>
+                  <th className="text-left px-4 py-3">Plan</th>
+                  <th className="text-right px-4 py-3">Credits</th>
+                  <th className="text-right px-4 py-3">Joined</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ececf1]">
-                {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-[#fbfbfc]">
-                    <td className="px-4 py-3">{u.email}</td>
-                    <td className="px-4 py-3 text-right text-[#71717f]">{new Date(u.createdAt).toLocaleDateString()}</td>
+                {users.map((u) => {
+                  const planColors: Record<string, string> = { free: "#6b7280", pro: "#3b82f6", team: "#8b5cf6", owner: "#f59e0b" };
+                  const planColor = planColors[u.plan] ?? "#6b7280";
+                  return (
+                    <tr key={u.id} className="hover:bg-[#fbfbfc]">
+                      <td className="px-4 py-3">{u.email}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" style={{ background: `${planColor}18`, color: planColor }}>
+                          {u.plan}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-[#71717f] font-mono">{u.credits.toFixed(1)}</td>
+                      <td className="px-4 py-3 text-right text-[#71717f]">
+                        {new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Recent Projects */}
+        <div>
+          <h2 className="text-sm font-semibold text-[#71717f] mb-3">Recent projects</h2>
+          <div className="rounded-xl border border-[#ececf1] overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-[#fbfbfc] text-[#71717f] text-xs uppercase">
+                <tr>
+                  <th className="text-left px-4 py-3">Name</th>
+                  <th className="text-left px-4 py-3">Owner</th>
+                  <th className="text-left px-4 py-3">Published</th>
+                  <th className="text-right px-4 py-3">Created</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#ececf1]">
+                {recentProjects.map((p) => (
+                  <tr key={p.id} className="hover:bg-[#fbfbfc]">
+                    <td className="px-4 py-3 font-medium truncate max-w-[200px]">
+                      <a href={`/projects/${p.id}`} className="hover:text-[#6a1ff7] transition-colors">{p.name}</a>
+                    </td>
+                    <td className="px-4 py-3 text-[#71717f] text-xs truncate max-w-[160px]">{p.owner.email}</td>
+                    <td className="px-4 py-3">
+                      {p.publishSlug
+                        ? <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-600">live</span>
+                        : <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500">draft</span>
+                      }
+                    </td>
+                    <td className="px-4 py-3 text-right text-[#71717f] text-xs">
+                      {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </td>
                   </tr>
                 ))}
               </tbody>
