@@ -40,5 +40,21 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const topRageClicks = Object.entries(rageMap).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([el, count]) => ({ el, count }));
 
-  return NextResponse.json({ pageviews, clicks, rageclicks, formSubmits, daily, topRageClicks });
+  // Daily visit counts (last 30 days)
+  let dailyVisits: { date: string; count: number }[] = [];
+  try {
+    const siteVisits = await (prisma as any).siteVisit.findMany({
+      where: { projectId: id },
+      orderBy: { date: 'asc' },
+      take: 30,
+    });
+    dailyVisits = siteVisits.map((v: { date: string; count: number }) => ({ date: v.date, count: v.count }));
+  } catch { /* model may not exist in older envs */ }
+
+  return NextResponse.json({
+    pageviews, clicks, rageclicks, formSubmits, daily, topRageClicks,
+    totalVisits: project.visitCount ?? 0,
+    isPublished: !!project.publishSlug,
+    dailyVisits,
+  });
 }

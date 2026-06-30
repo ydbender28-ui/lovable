@@ -3328,6 +3328,32 @@ export default function ProjectWorkspace({
             {analyticsLoading && <p className="text-xs text-[#9090a0]">Loading…</p>}
             {analyticsData && !analyticsLoading && (
               <div className="space-y-4">
+                {analyticsData.isPublished ? (
+                  <div className="bg-[#f0f0f5] rounded-xl p-4 text-center">
+                    <p className="text-3xl font-bold text-[#6a1ff7]">{(analyticsData.totalVisits ?? 0).toLocaleString()}</p>
+                    <p className="text-[11px] text-[#9090a0] mt-0.5">Total site visits</p>
+                  </div>
+                ) : (
+                  <div className="bg-[#f0f0f5] rounded-xl p-3 text-center">
+                    <p className="text-xs text-[#9090a0]">Publish your site to start tracking visits</p>
+                  </div>
+                )}
+                {analyticsData.isPublished && analyticsData.dailyVisits && analyticsData.dailyVisits.length > 0 && (() => {
+                  const todayStr = new Date().toISOString().split("T")[0];
+                  const maxCnt = Math.max(1, ...analyticsData.dailyVisits!.map((v) => v.count));
+                  return (
+                    <div>
+                      <p className="text-[10px] font-semibold text-[#9090a0] mb-2">Daily visits (last 30 days)</p>
+                      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 60 }}>
+                        {analyticsData.dailyVisits!.map((v) => (
+                          <div key={v.date} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }} title={`${v.date}: ${v.count}`}>
+                            <div style={{ width: "100%", borderRadius: 2, height: `${Math.max(3, (v.count / maxCnt) * 56)}px`, background: v.date === todayStr ? "#6a1ff7" : "#d4d4e8", transition: "height 0.3s" }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { label: "Pageviews", value: analyticsData.pageviews, color: "text-blue-300" },

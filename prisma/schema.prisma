@@ -18,7 +18,8 @@ model User {
   plan            String            @default("free")
   referralCode    String?           @unique
   referredBy      String?
-  referralCount   Int               @default(0)
+  referralCount      Int               @default(0)
+  onboardingComplete Boolean           @default(false)
   agents          Agent[]
   projects        Project[]
   ownedWorkspaces Workspace[]
