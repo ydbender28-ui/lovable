@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       where: { ownerId: session.user.id },
       orderBy: { updatedAt: "desc" },
     }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true, plan: true, onboardingComplete: true } }),
   ]);
 
   const projectsWithVersion = projects.map((p) => ({
@@ -79,6 +79,7 @@ export default async function DashboardPage() {
           projects={projectsWithVersion}
           agents={agents}
           credits={user?.plan === "owner" ? null : (user?.credits ?? 100)}
+          showOnboarding={!user?.onboardingComplete}
         />
       </main>
     </div>

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProjectCard from "./ProjectCard";
 import NewAgentButton from "./NewAgentButton";
+import Onboarding from "@/components/Onboarding";
+import SearchModal from "@/components/SearchModal";
 
 interface Project {
   id: string;
@@ -101,10 +103,12 @@ export default function DashboardTabs({
   projects,
   agents,
   credits: initialCredits,
+  showOnboarding: initialShowOnboarding = false,
 }: {
   projects: Project[];
   agents: Agent[];
   credits: number | null;
+  showOnboarding?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -117,6 +121,20 @@ export default function DashboardTabs({
   const [credits, setCredits] = useState(initialCredits);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<"all" | "published" | "drafts">("all");
+  const [showOnboarding, setShowOnboarding] = useState(initialShowOnboarding && projects.length === 0);
+
+  async function handleOnboardingComplete(onboardingPrompt: string) {
+    setShowOnboarding(false);
+    setLoading(true);
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: onboardingPrompt }),
+    });
+    if (!res.ok) { setLoading(false); return; }
+    const project = await res.json();
+    router.push(`/projects/${project.id}?prompt=${encodeURIComponent(onboardingPrompt)}`);
+  }
 
   useEffect(() => {
     if (searchParams.get("buy") === "1") {
@@ -165,6 +183,9 @@ export default function DashboardTabs({
 
   return (
     <div>
+      {/* Onboarding overlay for brand-new users */}
+      {showOnboarding && <Onboarding onComplete={handleOnboardingComplete} />}
+
       {/* Purchase success toast */}
       {purchaseToast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-green-400/30 bg-green-950/90 px-4 py-3 text-sm text-green-200 shadow-xl backdrop-blur">

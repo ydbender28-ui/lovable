@@ -16,6 +16,7 @@ model User {
   labsFlags       String            @default("[]")
   credits         Float             @default(100)
   plan            String            @default("free")
+  stripeCustomerId String?          @unique
   referralCode    String?           @unique
   referredBy      String?
   referralCount      Int               @default(0)
