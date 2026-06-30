@@ -918,7 +918,56 @@ body { overflow-x: hidden; }
 - Stats numbers: make them large (font-size: clamp(40px, 6vw, 72px)) and colored with accentColor
 - Testimonial cards: add a colored top border or left accent: \`borderTop: \`3px solid \${accentColor}\`\`
 - Icons in features: use colored circle backgrounds: \`background: \${accentColor}20, color: \${accentColor}\`
-- Dividers between sections: use \`<div style={{ height: 2, background: \`linear-gradient(90deg, transparent, \${accentColor}40, transparent)\` }} />\``;
+- Dividers between sections: use \`<div style={{ height: 2, background: \`linear-gradient(90deg, transparent, \${accentColor}40, transparent)\` }} />\`
+
+## CREATIVE VARIATION — Every site must look unique
+
+### Layout variation — DO NOT use the same card grid layout every time:
+Mix these layouts throughout a site:
+- 3-column card grid (classic)
+- 2-column grid with large left card
+- Horizontal scrolling row (overflow-x: auto)
+- Masonry-style grid using CSS columns
+- Alternating left/right sections (ImageText/SplitSection)
+- Full-width feature bands
+- Centered content with large typography
+
+### Section background variation — Alternate through these:
+- var(--bg) — base
+- var(--card) — slight contrast
+- linear-gradient(135deg, var(--primary)08, var(--bg)) — subtle tint
+- var(--primary) with white text — bold accent section
+- Dark overlay: #0a0a12 with light text — for dramatic contrast
+
+At least 2 different background treatments MUST appear in every site.
+
+### Hero variation — Each site should use a DIFFERENT hero layout:
+Pick one that fits the business; don't default to the same one every time.
+Consider: centered text only, split layout, full-bleed image, dark gradient, colorful gradient.
+
+### Typography variation — Don't use the same font sizes:
+- Some sections: massive headline (80-120px)
+- Some sections: medium with much more body text
+- Some sections: label + small headline + body
+Mix these for visual rhythm.
+
+### Icon and emoji usage:
+- Use emojis as icons in ServiceCards, Features, FAQ
+- Use Lucide icons for more technical sites (SaaS, tech)
+- Choose icons that are specific to the business (🍕 for pizza, ✈️ for travel, 💊 for pharmacy)
+
+### Color accent touches:
+- Colored left border on blockquotes/testimonials
+- Colored underline on section headings
+- Gradient text on the hero headline (use CSS background-clip: text)
+- Colored icon backgrounds in features (10% opacity primary color)
+
+### UNIQUENESS RULE:
+Before outputting, ask yourself: "Does this look like a generic template?" If yes, add at least ONE of:
+- An unexpected section (Countdown for urgency, Awards for credibility, SocialProof for trust)
+- A bold color section in the middle of the page
+- A full-width image or video break
+- A unique stat that makes the business stand out`;
 
 // Edge functions instructions — only injected when Supabase is enabled
 const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.js (Supabase Edge Functions, Deno runtime).`;

@@ -49,13 +49,17 @@ HERO VARIANT SELECTION:
 - ALWAYS include backgroundImage param for HeroCentered: "https://source.unsplash.com/1600x900/?[business-keywords]"
 - ALWAYS include a stats array for HeroSplit: [{value: "...", label: "..."}] with 3 believable stats
 
-VARIETY RULES:
-- For every build, include at least one "surprise" section not in the default plan for that type. Choose from: VideoSection, Countdown, Awards, SocialProof, AppDownload, QuoteBlock. Pick whichever fits the business best.
+VARIETY RULES (all MUST be followed):
+- For every build, include at least one "surprise" section not in the default plan for that type. Choose from: VideoSection, Countdown, Awards, SocialProof, AppDownload, QuoteBlock, TrustBadges, ProductSpotlight. Pick whichever fits the business best.
 - Never use the exact same section list twice — vary order of non-critical middle sections slightly.
 - ALWAYS place Contact or MapSection BEFORE Footer (never after).
-- StickyBar must appear immediately AFTER Navbar (before Hero) for time-sensitive businesses: restaurants, salons, spas, event venues.
+- StickyBar must appear immediately AFTER Navbar for time-sensitive businesses: restaurants, salons, spas, event venues.
 - Banner goes ABOVE Hero only when there is a promotion, sale, or urgent announcement.
-- MenuGrid = food menus. ShopGrid = product stores. Never use both.
+- MenuGrid = food menus only. ShopGrid = product stores only. Never use both.
+- Add DarkModeToggle for: SaaS, tech, gym, bar/nightclub, photography, creative portfolio.
+- Add MetaTags ALWAYS as first child after the opening App div.
+- RANDOMIZE: for every 3rd build, swap the position of two middle sections (e.g., put Testimonials before ServiceCards).
+- Pick at least ONE full-width dramatic section: HeroVideo/HeroCentered with background image, or a dark Stats section.
 
 FEATURE SPECIFICITY RULES:
 - Return 3-5 features that are concrete and specific to THIS business, not generic.
