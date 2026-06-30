@@ -427,6 +427,9 @@ export default function ProjectWorkspace({
   // Keyboard shortcuts tooltip
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  // Quick Add section panel
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+
   // Monetize
   const [showMonetize, setShowMonetize] = useState(false);
   const [monetizeDesc, setMonetizeDesc] = useState("");
@@ -2282,6 +2285,47 @@ export default function ProjectWorkspace({
                 <span>{s.label}</span>
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Quick Add Section panel */}
+        {Object.keys(files).length > 0 && !loading && (
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => setShowQuickAdd(!showQuickAdd)}
+              style={{
+                background: 'none', border: '1px solid var(--border, #e5e5e5)', borderRadius: 8,
+                color: 'var(--muted, #9090a0)', cursor: 'pointer', fontSize: 12, padding: '4px 10px',
+                width: '100%', textAlign: 'left',
+              }}
+            >
+              {showQuickAdd ? '▲' : '▼'} Quick Add Section
+            </button>
+            {showQuickAdd && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                {['FAQ', 'Team', 'Gallery', 'Pricing', 'Newsletter', 'Testimonials', 'Stats', 'Timeline', 'Video', 'Map', 'Blog', 'Contact'].map(section => (
+                  <button
+                    key={section}
+                    onClick={() => {
+                      setPrompt(`Add a ${section} section`);
+                      setShowQuickAdd(false);
+                      setTimeout(() => {
+                        document.querySelector<HTMLButtonElement>('[data-submit-btn]')?.click();
+                      }, 100);
+                    }}
+                    style={{
+                      padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border, #e5e5e5)',
+                      background: 'var(--bg, #fff)', color: 'var(--fg, #333)', cursor: 'pointer',
+                      fontSize: 12, transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = '#6a1ff7')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border, #e5e5e5)')}
+                  >
+                    + {section}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

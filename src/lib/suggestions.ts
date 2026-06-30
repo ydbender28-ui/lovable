@@ -6,6 +6,19 @@ export interface Suggestion {
   icon: string;      // emoji
 }
 
+const ALL_SECTIONS = [
+  'FAQ', 'Testimonials', 'Gallery', 'Team', 'Pricing', 'Blog',
+  'Contact', 'Newsletter', 'Stats', 'Timeline', 'Video', 'Map',
+  'Booking', 'Shop', 'Portfolio', 'Partners', 'Awards', 'Countdown'
+];
+
+export function getMissingSections(appTsx: string): string[] {
+  return ALL_SECTIONS.filter(section => {
+    const pattern = new RegExp(`<${section}|import.*${section}`, 'i');
+    return !pattern.test(appTsx);
+  }).slice(0, 6);
+}
+
 export function generateSuggestions(
   files: Record<string, string>,
   originalPrompt: string
@@ -73,6 +86,19 @@ export function generateSuggestions(
   // Always offer style options
   suggestions.push({ icon: '✨', label: 'Make it pop more', prompt: 'Make the design more bold and eye-catching: bigger hero text, more vibrant colors, stronger contrast, more visual hierarchy' });
   suggestions.push({ icon: '🔤', label: 'Add more content', prompt: 'Expand the site with more detailed content: more specific descriptions, additional sections, and richer data for each section' });
+
+  // Add section-specific chips based on what's missing
+  const sectionCount = (files['/App.tsx'] || '').match(/<[A-Z][a-zA-Z]+\s/g)?.length ?? 0;
+  if (sectionCount < 12) {
+    const missing = getMissingSections(files['/App.tsx'] || '');
+    missing.slice(0, 3).forEach(section => {
+      suggestions.push({
+        icon: '+',
+        label: `Add ${section} section`,
+        prompt: `Add a ${section} section to the site`,
+      });
+    });
+  }
 
   // Return top 5 most relevant
   return suggestions.slice(0, 5);
