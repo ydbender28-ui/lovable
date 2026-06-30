@@ -684,6 +684,42 @@ export default function App() {
 
 /index.css
 \`\`\`css
+/* === BASE RESET === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body, system-ui, sans-serif);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+img, video { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; font-size: inherit; }
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* === TYPOGRAPHY SCALE === */
+h1 { font-size: clamp(36px, 6vw, 80px); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; }
+h2 { font-size: clamp(28px, 4vw, 52px); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+h3 { font-size: clamp(20px, 3vw, 32px); font-weight: 700; line-height: 1.2; }
+p { line-height: 1.7; }
+
+/* === FOCUS STYLES === */
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+
+/* === SELECTION === */
+::selection { background: var(--primary); color: var(--primary-fg); }
+
+/* === UTILITY === */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 :root {
   --background: 40 20% 98%;
@@ -696,12 +732,12 @@ export default function App() {
   --border: 30 15% 88%;
   --accent: 25 85% 40%;
 }
-body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); overflow-x: hidden; }
-* { box-sizing: border-box; }
-img { max-width: 100%; height: auto; }
+body { font-family: 'DM Sans', sans-serif; }
 /* Hard cap: card images never exceed 260px. Hero images use explicit height class. */
 img:not(.hero-img) { max-height: 260px; width: 100%; object-fit: cover; display: block; }
 \`\`\`
+
+In /index.css, ALWAYS start with the base reset above, then the Google Font @import, then the :root { --variables }.
 
 ^^^ This App.tsx uses 9 sections, a unique business name, a dark SocialProof section for contrast, and a BeforeAfter for surprise. A full site using components should be 40-80 lines. If yours is >150 lines, you're writing too much custom code. USE THE COMPONENTS.
 
@@ -3157,6 +3193,27 @@ complete file here
     }
 
     finalFiles['/index.css'] = css;
+  }
+
+  // Ensure base CSS reset is present
+  if (finalFiles['/index.css'] && !finalFiles['/index.css'].includes('box-sizing: border-box')) {
+    const baseReset = `*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--fg); line-height: 1.6; overflow-x: hidden; }
+img, video { max-width: 100%; height: auto; display: block; }
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+::selection { background: var(--primary); color: var(--primary-fg); }
+h1 { font-size: clamp(36px, 6vw, 80px); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; }
+h2 { font-size: clamp(28px, 4vw, 52px); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+h3 { font-size: clamp(20px, 3vw, 32px); font-weight: 700; }
+
+`;
+    finalFiles['/index.css'] = baseReset + finalFiles['/index.css'];
   }
 
   // ── Quality check ──
