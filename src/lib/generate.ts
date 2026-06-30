@@ -214,6 +214,8 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - NEVER create a button without an onClick handler. NEVER leave onClick as an empty function.
 - Test every interaction mentally before outputting — if a user clicks it, something MUST happen.
 - NEVER use apostrophes inside single-quoted strings. Use double quotes for strings with apostrophes: "We'll be in touch" not 'We'll be in touch'. Or use backticks: \`We'll be in touch\`.
+- NEVER use Map(), Set(), or WeakMap() without the new keyword. Always: new Map(), new Set().
+- NEVER use class syntax or constructors in JSX files. Use plain objects and arrays instead.
 
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
 - import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
