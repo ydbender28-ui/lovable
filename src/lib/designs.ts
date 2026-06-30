@@ -224,6 +224,119 @@ const INDUSTRY_DEFAULTS = {
   automotive:   { moods: ['bold','dark','industrial','modern','sporty'], palettes: ['charcoal','dark_red','midnight','crimson','slate'] },
 }
 
+// ─── TYPOGRAPHY SYSTEM ──────────────────────────────────────────────────────
+
+interface FontPairing {
+  name: string;
+  heading: string;
+  body: string;
+  googleImport: string;
+  headingStyle: string;
+  bodyStyle: string;
+  moods: string[];
+}
+
+const FONT_PAIRINGS: FontPairing[] = [
+  {
+    name: "Modern Luxury",
+    heading: "Playfair Display",
+    body: "Lato",
+    googleImport: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap",
+    headingStyle: "font-family: 'Playfair Display', serif; letter-spacing: -0.02em;",
+    bodyStyle: "font-family: 'Lato', sans-serif; letter-spacing: 0.01em;",
+    moods: ["luxury", "elegant", "sophisticated", "upscale"]
+  },
+  {
+    name: "Clean Tech",
+    heading: "Inter",
+    body: "Inter",
+    googleImport: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap",
+    headingStyle: "font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.03em;",
+    bodyStyle: "font-family: 'Inter', sans-serif; font-weight: 400;",
+    moods: ["modern", "minimal", "tech", "startup", "saas"]
+  },
+  {
+    name: "Editorial",
+    heading: "Merriweather",
+    body: "Source Sans 3",
+    googleImport: "https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Source+Sans+3:wght@300;400;600&display=swap",
+    headingStyle: "font-family: 'Merriweather', serif; letter-spacing: -0.01em;",
+    bodyStyle: "font-family: 'Source Sans 3', sans-serif;",
+    moods: ["professional", "editorial", "law", "medical", "corporate"]
+  },
+  {
+    name: "Warm Friendly",
+    heading: "Nunito",
+    body: "Nunito",
+    googleImport: "https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap",
+    headingStyle: "font-family: 'Nunito', sans-serif; font-weight: 800;",
+    bodyStyle: "font-family: 'Nunito', sans-serif; font-weight: 400;",
+    moods: ["friendly", "playful", "childcare", "community", "wellness"]
+  },
+  {
+    name: "Bold Impact",
+    heading: "Oswald",
+    body: "Open Sans",
+    googleImport: "https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap",
+    headingStyle: "font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 0.05em;",
+    bodyStyle: "font-family: 'Open Sans', sans-serif;",
+    moods: ["bold", "fitness", "sport", "energy", "gym", "contractor"]
+  },
+  {
+    name: "Creative Studio",
+    heading: "Space Grotesk",
+    body: "DM Sans",
+    googleImport: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap",
+    headingStyle: "font-family: 'Space Grotesk', sans-serif; font-weight: 700;",
+    bodyStyle: "font-family: 'DM Sans', sans-serif;",
+    moods: ["creative", "design", "agency", "portfolio", "art"]
+  },
+  {
+    name: "Classic Hospitality",
+    heading: "Cormorant Garamond",
+    body: "Raleway",
+    googleImport: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Raleway:wght@300;400;500;600&display=swap",
+    headingStyle: "font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 0.02em;",
+    bodyStyle: "font-family: 'Raleway', sans-serif; font-weight: 300;",
+    moods: ["hotel", "restaurant", "hospitality", "fine dining", "spa", "resort"]
+  },
+  {
+    name: "Urban Street",
+    heading: "Bebas Neue",
+    body: "Roboto",
+    googleImport: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;500&display=swap",
+    headingStyle: "font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em;",
+    bodyStyle: "font-family: 'Roboto', sans-serif;",
+    moods: ["urban", "streetwear", "music", "nightlife", "bar", "club"]
+  },
+  {
+    name: "Nature Organic",
+    heading: "Crimson Text",
+    body: "Cabin",
+    googleImport: "https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&family=Cabin:wght@400;500;600&display=swap",
+    headingStyle: "font-family: 'Crimson Text', serif; letter-spacing: 0.01em;",
+    bodyStyle: "font-family: 'Cabin', sans-serif;",
+    moods: ["organic", "natural", "eco", "wellness", "yoga", "garden", "farm"]
+  },
+  {
+    name: "Retail Modern",
+    heading: "Poppins",
+    body: "Poppins",
+    googleImport: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap",
+    headingStyle: "font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: -0.01em;",
+    bodyStyle: "font-family: 'Poppins', sans-serif; font-weight: 400;",
+    moods: ["retail", "ecommerce", "shop", "boutique", "fashion", "beauty"]
+  },
+];
+
+export function matchFontPairing(mood: string, category: string): FontPairing {
+  const combined = (mood + ' ' + category).toLowerCase();
+  for (const pairing of FONT_PAIRINGS) {
+    if (pairing.moods.some(m => combined.includes(m))) return pairing;
+  }
+  return FONT_PAIRINGS[1]; // default: Clean Tech / Inter
+}
+
 // ─── MATCHING ENGINE ────────────────────────────────────────────────────────
 
 export function matchDesign(prompt: string) {
@@ -285,12 +398,18 @@ export function buildDesignContext(match: ReturnType<typeof matchDesign>) {
   if (!match) return ''
   const { category, mood, palette } = match
 
+  const moodKey = Object.entries(MOODS).find(([, v]) => v === mood)?.[0] || ''
+  const fontPairing = matchFontPairing(moodKey, category.id)
+
   return `
 DESIGN SYSTEM — Follow this exactly:
 Style: ${mood.desc}
 
-In /index.css, define EXACTLY these CSS variables:
-@import url('https://fonts.googleapis.com/css2?family=${mood.headingFont.replace(/ /g, '+')}:wght@400;700;800&family=${mood.bodyFont.replace(/ /g, '+')}:wght@400;500;600&display=swap');
+TYPOGRAPHY:
+Font pairing: ${fontPairing.name} (${fontPairing.heading} + ${fontPairing.body})
+
+In /index.css, define EXACTLY these CSS variables (Google font import MUST be the very first line):
+@import url('${fontPairing.googleImport}');
 :root {
   --bg: ${palette.bg};
   --fg: ${palette.fg};
@@ -303,8 +422,8 @@ In /index.css, define EXACTLY these CSS variables:
   --accent: ${palette.accent};
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: '${mood.bodyFont}', sans-serif; background: var(--bg); color: var(--fg); }
-h1,h2,h3 { font-family: '${mood.headingFont}', serif; }
+body { ${fontPairing.bodyStyle} background: var(--bg); color: var(--fg); }
+h1,h2,h3 { ${fontPairing.headingStyle} }
 
 Use var(--primary) for buttons/CTAs, var(--bg) for backgrounds, var(--fg) for text, var(--card) for cards, var(--border) for borders.
 Pass accentColor="var(--primary)" to ALL section components (Navbar, Hero, ServiceCards, Reviews, etc.).
