@@ -3,61 +3,141 @@
 
 export const SECTION_COMPONENTS: Record<string, string> = {
 
-"/components/sections/Navbar.tsx": `import React, { useState, useEffect } from 'react';
-export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigate, cartCount: cartCountProp, onCartClick, accentColor }: { brand: string; links: any[]; cta?: string; ctaHref?: string; showCart?: boolean; onNavigate?: (page: string) => void; cartCount?: number; onCartClick?: () => void; accentColor?: string }) {
+"/components/sections/Navbar.tsx": `import React, { useState, useEffect, useRef } from 'react';
+interface NavLink { label: string; href?: string; }
+interface NavbarProps { brand?: string; logo?: string; logoImage?: string; links?: any[]; cta?: any; ctaHref?: string; showCart?: boolean; onNavigate?: (page: string) => void; cartCount?: number; onCartClick?: () => void; accentColor?: string; }
+export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, showCart, onNavigate, cartCount: cartCountProp, onCartClick, accentColor }: NavbarProps) {
   const accent = accentColor || '#111';
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
   const [cartCount, setCartCount] = useState(cartCountProp ?? 0);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
-  const cartOpenerRef = React.useRef<(() => void) | null>(null);
-  useEffect(() => { const h = () => setScrolled(window.scrollY > 10); window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h); }, []);
-  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
+  const cartOpenerRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => { entries.forEach(entry => { if (entry.isIntersecting) setActiveSection(entry.target.id); }); },
+      { threshold: 0.5, rootMargin: '-100px 0px -50% 0px' }
+    );
+    document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; };
+    window.addEventListener('cartupdate', h);
+    return () => window.removeEventListener('cartupdate', h);
+  }, []);
   const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpenerRef.current) cartOpenerRef.current(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
-  const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
-  const handleClick = (l: string) => (e: React.MouseEvent) => {
-    setMobileOpen(false);
-    if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); return; }
-    const slug = String(l).toLowerCase().replace(/\s+/g, '-');
-    const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer' };
+  const brandName = logo || brand || '';
+  const logoSrc = logoImage || (brandName.startsWith('http') ? brandName : '');
+  const rawLinks = Array.isArray(links) ? links : [];
+  const navLinks: NavLink[] = rawLinks.map(l => typeof l === 'string' ? { label: l } : { label: l?.label || l?.name || l?.text || String(l), href: l?.href });
+  const ctaLink: NavLink | null = cta ? (typeof cta === 'string' ? { label: cta, href: ctaHref || '#contact' } : { label: cta.label || cta.text || cta.name || String(cta), href: cta.href || ctaHref || '#contact' }) : null;
+  const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer' };
+  const handleClick = (label: string, href?: string) => (e: React.MouseEvent) => {
+    if (onNavigate) { e.preventDefault(); onNavigate(label.toLowerCase()); return; }
+    if (href && href !== '#' && !href.startsWith('#')) { return; }
+    e.preventDefault();
+    const slug = label.toLowerCase().replace(/\s+/g, '-');
     let el: HTMLElement | null = document.getElementById(slug) || document.getElementById(slug.replace(/-/g,'')) || document.getElementById(aliases[slug] || slug);
-    if (!el) {
-      const secs = document.querySelectorAll('section, [id]');
-      for (const s of secs) {
-        const h = s.querySelector('h1,h2,h3');
-        if (h && h.textContent && h.textContent.toLowerCase().includes(String(l).toLowerCase())) { el = s as HTMLElement; break; }
-      }
-    }
-    if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    if (!el) { const secs = document.querySelectorAll('section, [id]'); for (const s of secs) { const h = s.querySelector('h1,h2,h3'); if (h && h.textContent && h.textContent.toLowerCase().includes(label.toLowerCase())) { el = s as HTMLElement; break; } } }
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+  const isActive = (label: string) => { const slug = label.toLowerCase().replace(/\s+/g, '-'); return activeSection === slug || activeSection === (aliases[slug] || slug); };
   return (
-    <nav role="navigation" aria-label="Main navigation" style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding: isMobile ? '0 20px' : '0 40px', transition:'background 0.2s' }}>
-      <a href="#main-content" style={{ position:'absolute', top:'-40px', left:0, background:accent, color:'#fff', padding:'8px 16px', zIndex:9999, borderRadius:'0 0 4px 0', transition:'top 0.2s', textDecoration:'none', fontSize:14, fontWeight:600 }} onFocus={e => e.currentTarget.style.top='0'} onBlur={e => e.currentTarget.style.top='-40px'}>Skip to main content</a>
-      <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
-        <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
-        {isMobile ? (
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            {showCart && <button type="button" aria-label={\`Cart \${cartCount}\`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'7px 12px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:14, fontWeight:600, color:'#111' }}>🛒{cartCount > 0 && <span style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}</button>}
-            <button type="button" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} onClick={() => setMobileOpen(!mobileOpen)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#111', padding:'4px 8px', lineHeight:1 }}>{mobileOpen ? '✕' : '☰'}</button>
-          </div>
-        ) : (
+    <>
+      <a href="#main-content" style={{ position:'fixed', top:'-40px', left:0, background:accent, color:'#fff', padding:'8px 16px', zIndex:9999, borderRadius:'0 0 4px 0', transition:'top 0.2s', textDecoration:'none', fontSize:14, fontWeight:600 }} onFocus={e => e.currentTarget.style.top='0'} onBlur={e => e.currentTarget.style.top='-40px'}>Skip to main content</a>
+      <nav role="navigation" aria-label="Main navigation" style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+        height: scrolled ? 60 : 80,
+        background: scrolled ? 'rgba(255,255,255,0.92)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(0,0,0,0.08)' : 'none',
+        boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.08)' : 'none',
+        transition: 'all 0.3s ease',
+        padding: isMobile ? '0 20px' : '0 40px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
+          {logoSrc ? <img src={logoSrc} alt={brandName} style={{ height: scrolled ? 32 : 40, width:'auto', transition:'height 0.3s ease', objectFit:'contain' }} /> : <span style={{ fontSize:20, fontWeight:800, color:'#111', letterSpacing:'-0.02em' }}>{brandName}</span>}
+        </a>
+        {!isMobile ? (
           <div style={{ display:'flex', gap:28, alignItems:'center' }}>
-            {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#666', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#666'}>{String(l)}</a>)}
-            {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:700, textDecoration:'none', cursor:'pointer', transition:'opacity 0.2s', letterSpacing:'-0.01em' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
+            {navLinks.map((l, i) => (
+              <a key={i} href={l.href || \`#\${l.label.toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(l.label, l.href)}
+                style={{ fontSize:14, color: isActive(l.label) ? accent : '#555', textDecoration:'none', fontWeight: isActive(l.label) ? 700 : 500, cursor:'pointer', transition:'color 0.2s', position:'relative', paddingBottom:2 }}
+                onMouseOver={e=>(e.currentTarget as HTMLElement).style.color=accent}
+                onMouseOut={e=>(e.currentTarget as HTMLElement).style.color=isActive(l.label) ? accent : '#555'}>
+                {l.label}
+                {isActive(l.label) && <span style={{ position:'absolute', bottom:-4, left:0, right:0, height:2, background:accent, borderRadius:1 }} />}
+              </a>
+            ))}
+            {ctaLink && (
+              <button onClick={handleClick(ctaLink.label, ctaLink.href)} style={{
+                background: accent, color: '#fff', border: 'none',
+                padding: '10px 22px', borderRadius: 30, cursor: 'pointer',
+                fontWeight: 700, fontSize: 15, letterSpacing: '0.01em',
+                transition: 'opacity 0.2s, transform 0.15s',
+                boxShadow: \`0 4px 14px \${accent}50\`,
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.9'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = ''; }}>
+                {ctaLink.label}
+              </button>
+            )}
             {showCart && <button type="button" aria-label={\`Shopping cart, \${cartCount} item\${cartCount!==1?'s':''}\`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#e5e5e5'}>
               🛒 {cartCount > 0 && <span aria-hidden="true" style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
             </button>}
           </div>
+        ) : (
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {showCart && <button type="button" aria-label={\`Cart \${cartCount}\`} onClick={handleCartClick} style={{ background:'none', border:'1.5px solid #e5e5e5', padding:'7px 12px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:14, fontWeight:600, color:'#111' }}>🛒{cartCount > 0 && <span style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}</button>}
+            <button type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)} style={{ background:'none', border:'none', cursor:'pointer', padding:8, display:'flex', flexDirection:'column', gap:5, alignItems:'center', justifyContent:'center' }}>
+              <span style={{ display:'block', width:22, height:2, background:'#111', borderRadius:2, transition:'all 0.25s', transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+              <span style={{ display:'block', width:22, height:2, background:'#111', borderRadius:2, transition:'all 0.25s', opacity: menuOpen ? 0 : 1 }} />
+              <span style={{ display:'block', width:22, height:2, background:'#111', borderRadius:2, transition:'all 0.25s', transform: menuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+            </button>
+          </div>
         )}
-      </div>
-      {isMobile && mobileOpen && (
-        <div style={{ borderTop:'1px solid #f0f0f0', padding:'8px 0 20px', display:'flex', flexDirection:'column' }}>
-          {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:16, color:'#333', textDecoration:'none', fontWeight:500, padding:'13px 0', borderBottom:'1px solid #f5f5f5', cursor:'pointer' }}>{String(l)}</a>)}
-          {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'14px 24px', borderRadius:50, fontSize:15, fontWeight:700, textDecoration:'none', textAlign:'center', marginTop:16, display:'block' }}>{cta}</a>}
+      </nav>
+      {isMobile && (
+        <div style={{
+          position: 'fixed', top: menuOpen ? 60 : -500, left: 0, right: 0,
+          background: 'var(--card, #fff)', borderBottom: '1px solid var(--border, #eee)',
+          padding: '20px 24px 24px', transition: 'top 0.3s ease',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 999,
+          display: 'flex', flexDirection: 'column', gap: 4,
+        }}>
+          {navLinks.map((link, i) => (
+            <button key={i} onClick={(e) => { handleClick(link.label, link.href)(e); setMenuOpen(false); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '12px 16px',
+                borderRadius: 8, textAlign: 'left', fontSize: 17, fontWeight: isActive(link.label) ? 700 : 500,
+                color: isActive(link.label) ? accent : 'var(--fg, #111)', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--muted, #f5f5f5)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'none'}>
+              {link.label}
+            </button>
+          ))}
+          {ctaLink && (
+            <button onClick={(e) => { handleClick(ctaLink.label, ctaLink.href)(e); setMenuOpen(false); }} style={{
+              marginTop: 8, background: accent, color: '#fff', border: 'none',
+              padding: '14px 24px', borderRadius: 30, cursor: 'pointer', fontWeight: 700, fontSize: 16
+            }}>{ctaLink.label}</button>
+          )}
         </div>
       )}
-    </nav>
+    </>
   );
 }`,
 
