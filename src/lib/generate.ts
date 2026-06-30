@@ -177,12 +177,18 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - NEVER use Map(), Set(), or WeakMap() without the new keyword. Always: new Map(), new Set().
 - NEVER use class syntax or constructors in JSX files. Use plain objects and arrays instead.
 
+## ⛔ CRITICAL — READ THIS BEFORE WRITING ANY CODE:
+NEVER write a custom navbar. NEVER write a custom menu/product grid. NEVER write a custom cart button outside of Navbar.
+If you write any of these from scratch, the build FAILS. Use the pre-built components below — they handle all layout, cart, hover, and responsiveness automatically.
+
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
 - import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
   CRITICAL: links must be string[] like ["Menu","About"] — NOT objects. ALWAYS include 3-5 links. NEVER leave links empty.
   CRITICAL: Navbar goes ABOVE Hero as a separate component — NEVER put nav inside the Hero or overlay it with position:absolute.
-  WRONG: <div style={{position:'absolute',top:0}}><nav>...</nav></div> inside Hero
-  CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" /><Hero ... />
+  CRITICAL: The Navbar already has a 🛒 cart button built in. NEVER add another cart button anywhere in the page.
+  WRONG: <nav className="flex justify-between p-4">...</nav>  ← writing a custom navbar is FORBIDDEN
+  WRONG: <button onClick={()=>setCartOpen(true)}>Cart</button> anywhere outside Navbar ← FORBIDDEN
+  CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" />
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
   !!!ABSOLUTE RULE!!! For ANY menu, food list, product list, or card grid — you MUST use <MenuGrid>. Writing a custom <div> or <ul> list of items is FORBIDDEN.
@@ -1541,14 +1547,16 @@ export async function generateProject(
 
   // Layout variety — different section order / hero style each build
   const LAYOUT_VARIANTS = [
-    "Lead with a big bold STATS section right after the hero. Then menu/products. Then testimonials. Then FAQ.",
-    "Use a SPLIT hero (text left, image right). Put testimonials BEFORE the menu/products section.",
-    "Use a full-bleed dark hero with centered text. Add a Features section before the menu. End with a bold CTA section.",
-    "Lead with hero, then a 3-column Features grid, then menu/products, then a quote/testimonial banner, then contact.",
-    "Use a minimal hero with large typography (no background image). Products/menu first, then social proof, then FAQ.",
-    "Lead with hero + a scrolling logo cloud. Then features. Then menu/products. Then testimonials in a dark band.",
-    "Split layout: hero with video-style overlay. Stats bar below hero. Then menu/products as the main focus.",
-    "Minimal: hero, immediately into menu/products grid, then one strong testimonial, then contact. No filler sections.",
+    "Stats-first: Hero → bold STATS bar (4 numbers) → Menu/Products → Testimonials → FAQ → Contact.",
+    "Story-first: Hero → SplitSection (brand story, image right) → Menu/Products → Stats → Footer.",
+    "Social-proof-first: Hero → LogoCloud (press mentions) → Features → Menu/Products → Testimonials → CTA.",
+    "Features-first: Hero → 3-column Features grid → Menu/Products → single bold Testimonial quote → Contact.",
+    "Minimal: Hero (no bg image, giant typography) → Menu/Products → one Testimonials row → Contact. Clean and fast.",
+    "Dark band: Hero → Stats (dark={true}) → Menu/Products → Testimonials → Newsletter (dark band) → Footer.",
+    "Gallery-forward: Hero → Gallery (4 photos) → Menu/Products → Team → Contact.",
+    "FAQ-heavy: Hero → Features → Menu/Products → FAQ (6+ questions) → CTA → Footer.",
+    "Timeline story: Hero → Timeline (brand history) → Features → Menu/Products → Testimonials → Contact.",
+    "Banner-led: Banner (promo) → Hero → Menu/Products → Stats → Testimonials → Newsletter → Footer.",
   ];
   const layoutVariant = isEdit ? "" : LAYOUT_VARIANTS[Math.floor(Math.random() * LAYOUT_VARIANTS.length)];
 
