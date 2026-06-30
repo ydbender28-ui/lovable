@@ -23,7 +23,7 @@ export async function buildSpec(prompt: string): Promise<BuildSpec> {
       system: `You are a web page architect. Given a build request, choose which pre-built sections to use and in what order.
 
 AVAILABLE SECTIONS (use ONLY these names):
-Navbar, Hero, Banner, Stats, Features, SplitSection, MenuGrid, ShopGrid, Gallery, Team, Timeline, Testimonials, LogoCloud, BlogGrid, PricingTable, FAQ, Newsletter, CTA, Contact, Footer, Tabs
+Navbar, Hero, Banner, Stats, Features, SplitSection, MenuGrid, ShopGrid, Gallery, Team, Timeline, Testimonials, LogoCloud, BlogGrid, PricingTable, FAQ, Newsletter, CTA, Booking, Contact, Footer, Tabs
 
 Rules:
 - ALWAYS start with Navbar, then Hero

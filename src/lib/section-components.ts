@@ -581,6 +581,88 @@ export default function Tabs({ tabs }: { tabs: Tab[] }) {
   );
 }`,
 
+"/components/sections/Booking.tsx": `import React, { useState } from 'react';
+export default function Booking({ title, subtitle, fields, cta }: { title: string; subtitle?: string; fields?: string[]; cta?: string }) {
+  const accent = 'var(--accent, #c2410c)';
+  const defaultFields = fields || ['name', 'email', 'date', 'time', 'guests', 'notes'];
+  const [form, setForm] = useState<Record<string,string>>({});
+  const [sent, setSent] = useState(false);
+  const inp: React.CSSProperties = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, fontFamily:'inherit', outline:'none', background:'#fff', boxSizing:'border-box', transition:'border-color 0.2s, box-shadow 0.2s', color:'#111' };
+  const lbl: React.CSSProperties = { fontSize:13, fontWeight:600, color:'#444', display:'block', marginBottom:6 };
+  const fieldDefs: Record<string,{label:string;type:string;placeholder:string}> = {
+    name:    { label:'Full Name',        type:'text',   placeholder:'Jane Smith' },
+    email:   { label:'Email Address',    type:'email',  placeholder:'jane@example.com' },
+    phone:   { label:'Phone Number',     type:'tel',    placeholder:'(555) 123-4567' },
+    date:    { label:'Preferred Date',   type:'date',   placeholder:'' },
+    time:    { label:'Preferred Time',   type:'select', placeholder:'' },
+    guests:  { label:'Number of Guests', type:'select', placeholder:'' },
+    service: { label:'Service',          type:'select', placeholder:'' },
+    notes:   { label:'Special Requests', type:'textarea', placeholder:'Allergies, occasions, preferences...' },
+    message: { label:'Message',          type:'textarea', placeholder:'Tell us more...' },
+    company: { label:'Company',          type:'text',   placeholder:'Acme Inc.' },
+  };
+  const timeSlots = ['9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM'];
+  const guestOptions = ['1 guest','2 guests','3 guests','4 guests','5 guests','6 guests','7-10 guests','10+ guests'];
+  const onFocus = (e: React.FocusEvent<HTMLElement>) => { (e.target as HTMLElement).style.borderColor = accent; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${accent}22`; };
+  const onBlur  = (e: React.FocusEvent<HTMLElement>) => { (e.target as HTMLElement).style.borderColor = '#e5e5e5'; (e.target as HTMLElement).style.boxShadow = 'none'; };
+  if (sent) return (
+    <section id="booking" style={{ padding:'100px 40px', background:'#fafafa' }}>
+      <div style={{ maxWidth:560, margin:'0 auto', background:'#fff', borderRadius:24, padding:60, textAlign:'center', boxShadow:'0 8px 40px rgba(0,0,0,0.08)' }}>
+        <div style={{ width:64, height:64, borderRadius:'50%', background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', fontSize:28 }}>✓</div>
+        <h3 style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>You're all set!</h3>
+        <p style={{ color:'#666', fontSize:16 }}>We'll confirm your booking shortly.</p>
+        <button onClick={() => setSent(false)} style={{ marginTop:24, background:'none', border:'1.5px solid #ddd', borderRadius:50, padding:'10px 28px', fontSize:14, cursor:'pointer', color:'#666' }}>Book again</button>
+      </div>
+    </section>
+  );
+  return (
+    <section id="booking" style={{ padding:'100px 40px', background:'#fafafa' }}>
+      <div style={{ maxWidth:640, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:12 }}>{title}</h2>
+          {subtitle && <p style={{ color:'#666', fontSize:17 }}>{subtitle}</p>}
+        </div>
+        <div style={{ background:'#fff', borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.07)' }}>
+          <div style={{ display:'grid', gridTemplateColumns: defaultFields.includes('date') && defaultFields.includes('time') ? '1fr 1fr' : '1fr', gap:20 }}>
+            {defaultFields.map(f => {
+              const def = fieldDefs[f] || { label: f, type:'text', placeholder:'' };
+              if (def.type === 'textarea') return (
+                <div key={f} style={{ gridColumn:'1 / -1' }}>
+                  <label style={lbl}>{def.label}</label>
+                  <textarea value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} rows={3} style={{...inp, resize:'none'}} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+              );
+              if (def.type === 'select' && f === 'time') return (
+                <div key={f}><label style={lbl}>{def.label}</label>
+                  <select value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                    <option value="">Select time</option>
+                    {timeSlots.map(t=><option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              );
+              if (def.type === 'select' && f === 'guests') return (
+                <div key={f}><label style={lbl}>{def.label}</label>
+                  <select value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                    <option value="">Select guests</option>
+                    {guestOptions.map(g=><option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+              );
+              return (
+                <div key={f} style={{ gridColumn: (f==='name'||f==='email') && defaultFields.includes('email') ? 'auto' : defaultFields.includes('date') ? '1 / -1' : 'auto' }}>
+                  <label style={lbl}>{def.label}</label>
+                  <input type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={() => { if (form.name || form.email) setSent(true); }} style={{ marginTop:28, width:'100%', background:accent, color:'#fff', border:'none', borderRadius:50, padding:'16px 36px', fontSize:16, fontWeight:700, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta || 'Confirm Booking →'}</button>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
 "/components/sections/Banner.tsx": `import React, { useState } from 'react';
 export default function Banner({ text, cta, href }: { text: string; cta?: string; href?: string }) {
   const [show, setShow] = useState(true);
@@ -624,6 +706,8 @@ Import using: import Navbar from '/components/sections/Navbar';
 - BlogGrid: <BlogGrid title="Blog" posts={[{title:"Post", excerpt:"...", image:"{{unsplash:blog|400x300}}", date:"Jun 2026", author:"Sarah"}]} />
 - Tabs: <Tabs tabs={[{label:"Tab 1", content:"Content here"},{label:"Tab 2", content:"More content"}]} />
 - Banner: <Banner text="Free shipping today!" cta="Shop now" />
+- Booking: <Booking title="Reserve a Table" subtitle="Book online in seconds" fields={["name","email","date","time","guests","notes"]} cta="Confirm Reservation →" />
+  → Fully styled reservation/booking form. Use for restaurants, spas, salons, services. NEVER write a custom booking form.
 
 RULES:
 - The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
