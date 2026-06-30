@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { STARTER_TEMPLATES } from "@/lib/templates";
 
 interface Template {
   id: string;
@@ -14,7 +15,19 @@ interface Template {
   prompt: string;
 }
 
-const TEMPLATES: Template[] = [
+// Business website starter templates (from lib/templates.ts) mapped to local format
+const WEBSITE_TEMPLATES: Template[] = STARTER_TEMPLATES.map((t) => ({
+  id: t.id,
+  name: t.name,
+  desc: t.description,
+  category: t.category,
+  emoji: t.emoji,
+  accent: t.previewColor,
+  tags: t.tags,
+  prompt: t.prompt,
+}));
+
+const APP_TEMPLATES: Template[] = [
   // E-Commerce
   {
     id: "ecommerce-store",
@@ -218,15 +231,28 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-const CATEGORIES = ["All", ...Array.from(new Set(TEMPLATES.map((t) => t.category)))];
+// Combined: business website starters first, then app templates
+const TEMPLATES: Template[] = [...WEBSITE_TEMPLATES, ...APP_TEMPLATES];
+
+type TemplateType = "all" | "websites" | "apps";
 
 export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
   const router = useRouter();
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
+  const [templateType, setTemplateType] = useState<TemplateType>("websites");
 
-  const filtered = TEMPLATES.filter((t) => {
+  const sourceTemplates =
+    templateType === "websites"
+      ? WEBSITE_TEMPLATES
+      : templateType === "apps"
+      ? APP_TEMPLATES
+      : TEMPLATES;
+
+  const typeCategories = ["All", ...Array.from(new Set(sourceTemplates.map((t) => t.category)))];
+
+  const filtered = sourceTemplates.filter((t) => {
     const matchCat = category === "All" || t.category === category;
     const q = search.toLowerCase();
     const matchSearch = !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tags.some((tag) => tag.includes(q));
@@ -254,6 +280,33 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <div>
+      {/* Type tabs: Starter Websites / App Templates */}
+      <div className="mb-6 flex justify-center">
+        <div className="inline-flex rounded-xl p-1" style={{ background: "#ececf1" }}>
+          {(["websites", "apps", "all"] as TemplateType[]).map((type) => {
+            const labels: Record<TemplateType, string> = {
+              websites: "🌐 Starter Websites",
+              apps: "⚙️ App Templates",
+              all: "All",
+            };
+            return (
+              <button
+                key={type}
+                onClick={() => { setTemplateType(type); setCategory("All"); }}
+                className="rounded-lg px-4 py-2 text-sm font-medium transition-all"
+                style={
+                  templateType === type
+                    ? { background: "#ffffff", color: "#17171c", boxShadow: "0 1px 4px rgba(0,0,0,0.12)" }
+                    : { color: "#71717f" }
+                }
+              >
+                {labels[type]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Search + filter */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
         <input
@@ -266,7 +319,7 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
           onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.09)")}
         />
         <div className="flex flex-wrap gap-1.5">
-          {CATEGORIES.map((c) => (
+          {typeCategories.map((c) => (
             <button
               key={c}
               onClick={() => setCategory(c)}
@@ -280,6 +333,7 @@ export default function TemplateGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
               {c}
             </button>
           ))}
+
         </div>
       </div>
 
