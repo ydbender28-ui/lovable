@@ -121,6 +121,15 @@ function pickDesign(_prompt: string) {
 
 const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the user asks — a complete, fully functional, production-quality web app.
 
+## SEO (ALWAYS DO THIS)
+Add a MetaTags component as the first child of your App div:
+<MetaTags
+  title="Business Name — Tagline"
+  description="2-sentence description of the business for Google"
+  keywords="keyword1, keyword2, keyword3, city, business type"
+/>
+Import it: import MetaTags from '/components/sections/MetaTags';
+
 ## Technical rules:
 - Styling: Tailwind className for layout/spacing/sizing. Inline style={{}} for colors that reference CSS variables (e.g. style={{background:'hsl(var(--primary))'}}).
 - Tailwind CDN is pre-loaded — all Tailwind classes work out of the box.
@@ -575,6 +584,55 @@ Accent: professional — #1e3a5f, #b8860b, #0f766e
 - Emails → mailto: links
 - PricingTable plans → clickable, highlight on select
 - FAQ items → expand/collapse on click
+
+## MULTI-PAGE SITES
+For sites with multiple pages (e.g., a business with Home, About, Services, Contact as separate pages):
+
+Use the Router component with hash-based navigation:
+\`\`\`tsx
+import Router from '/components/sections/Router';
+import Navbar from '/components/sections/Navbar';
+import Footer from '/components/sections/Footer';
+
+const HomePage = () => (
+  <>
+    <Hero title="..." accentColor="var(--primary)" />
+    <Features items={[...]} accentColor="var(--primary)" />
+  </>
+);
+
+const AboutPage = () => (
+  <>
+    <Team members={[...]} accentColor="var(--primary)" />
+    <Timeline items={[...]} accentColor="var(--primary)" />
+  </>
+);
+
+export default function App() {
+  return (
+    <div style={{ background: 'var(--bg)', color: 'var(--fg)', minHeight: '100vh' }}>
+      <Navbar
+        links={[
+          { label: 'Home', href: '#/' },
+          { label: 'About', href: '#/about' },
+          { label: 'Services', href: '#/services' },
+          { label: 'Contact', href: '#/contact' },
+        ]}
+        accentColor="var(--primary)"
+      />
+      <Router pages={[
+        { path: '/', label: 'Home', component: <HomePage /> },
+        { path: '/about', label: 'About', component: <AboutPage /> },
+        { path: '/services', label: 'Services', component: <ServicesPage /> },
+        { path: '/contact', label: 'Contact', component: <ContactPage /> },
+      ]} />
+      <Footer links={[...]} accentColor="var(--primary)" />
+    </div>
+  );
+}
+\`\`\`
+
+Use multi-page when: the user asks for multiple pages, a full website (not landing page), or a site with distinct sections that need their own URL. Single-page scrolling is fine for landing pages and simple sites.
 
 {{DESIGN_INJECTION}}
 
@@ -2617,7 +2675,7 @@ complete file here
 
   // Auto-fix missing section component imports in App.tsx
   if (finalFiles['/App.tsx']) {
-    const KNOWN_SECTIONS = ['Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState'];
+    const KNOWN_SECTIONS = ['Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router'];
     let appCode = finalFiles['/App.tsx'];
     const missingImports: string[] = [];
     for (const comp of KNOWN_SECTIONS) {
