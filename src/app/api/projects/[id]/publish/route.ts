@@ -167,6 +167,18 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
   const baseDomain = process.env.PUBLISH_DOMAIN ?? "thatcode.dev";
   const url = `https://${slug}.${baseDomain}`;
 
+  // Fire-and-forget thumbnail capture after publish
+  setTimeout(async () => {
+    try {
+      const { captureScreenshot } = await import('@/lib/thumbnail');
+      const siteUrl = `${process.env.NEXTAUTH_URL || 'https://thatcode.dev'}/s/${slug}`;
+      const thumbnail = await captureScreenshot(siteUrl);
+      if (thumbnail) {
+        await prisma.project.update({ where: { id }, data: { thumbnail } }).catch(() => {});
+      }
+    } catch { /* best effort */ }
+  }, 3000);
+
   return NextResponse.json({ url, customDomain, slug, vercelCname, domainError, functionsUrl });
 }
 

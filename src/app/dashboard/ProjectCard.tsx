@@ -14,6 +14,7 @@ interface Props {
     visitCount: number;
     hasVersion: boolean;
     isPrivate: boolean;
+    thumbnail?: string | null;
   };
 }
 
@@ -76,7 +77,20 @@ export default function ProjectCard({ project }: Props) {
       <Link href={`/projects/${project.id}`} className="block">
         {/* Thumbnail */}
         <div className="relative overflow-hidden" style={{ height: 140, borderRadius: "12px 12px 0 0" }}>
-          {project.hasVersion ? (
+          {project.thumbnail ? (
+            <>
+              <img
+                src={project.thumbnail}
+                alt={project.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              <div
+                className="absolute inset-x-0 bottom-0 h-12"
+                style={{ background: "linear-gradient(to bottom, transparent, #f6f6f8)" }}
+              />
+            </>
+          ) : project.hasVersion ? (
             <>
               <iframe
                 src={`/api/projects/${project.id}/preview`}

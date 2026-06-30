@@ -21,6 +21,7 @@ export default async function DashboardPage() {
         publishedAt: true,
         visitCount: true,
         isPrivate: true,
+        thumbnail: true,
         versions: { select: { id: true }, take: 1 },
       },
     }),
@@ -34,6 +35,7 @@ export default async function DashboardPage() {
   const projectsWithVersion = projects.map((p) => ({
     ...p,
     hasVersion: p.versions.length > 0,
+    thumbnail: p.thumbnail ?? null,
   }));
 
   return (
