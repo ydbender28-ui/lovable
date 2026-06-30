@@ -664,14 +664,15 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
 }`,
 
 "/components/sections/Banner.tsx": `import React, { useState } from 'react';
-export default function Banner({ text, cta, href }: { text: string; cta?: string; href?: string }) {
+export default function Banner({ text, cta, href, emoji }: { text: string; cta?: string; href?: string; emoji?: string }) {
   const [show, setShow] = useState(true);
   if (!show) return null;
   return (
-    <div style={{ background:'var(--accent,#111)', color:'#fff', padding:'10px 40px', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:16 }}>
-      <span>{text}</span>
-      {cta && <a href={href||'#'} style={{ color:'#fff', fontWeight:600, textDecoration:'underline' }}>{cta}</a>}
-      <button onClick={() => setShow(false)} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.6)', cursor:'pointer', fontSize:16, marginLeft:8 }}>×</button>
+    <div style={{ background:'var(--accent,#111)', color:'#fff', padding:'11px 24px', display:'flex', alignItems:'center', justifyContent:'center', gap:12, position:'relative' }}>
+      {emoji && <span style={{ fontSize:16 }}>{emoji}</span>}
+      <span style={{ fontSize:13, fontWeight:600, letterSpacing:'0.01em' }}>{text}</span>
+      {cta && <a href={href||'#'} style={{ color:'#fff', fontWeight:800, fontSize:13, textDecoration:'none', background:'rgba(255,255,255,0.18)', padding:'4px 14px', borderRadius:50, marginLeft:4, transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.28)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.18)'}>{cta} →</a>}
+      <button onClick={() => setShow(false)} style={{ position:'absolute', right:16, background:'none', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 4px' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#fff'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.5)'}>×</button>
     </div>
   );
 }`,
