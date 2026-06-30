@@ -318,6 +318,126 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
 - Footer: Now supports columns prop for multi-column layout, socials prop for social media icons, email/phone/address props for contact info, and showNewsletter prop. Always pass these to make the footer look complete.
   Example: <Footer logo="Business Name" tagline="Short description" columns={[{heading:"Services",links:[{label:"Service 1",href:"#"},{label:"Service 2",href:"#"}]},{heading:"Company",links:[{label:"About",href:"#"},{label:"Contact",href:"#"}]}]} phone="(555) 123-4567" email="hello@business.com" socials={[{platform:"instagram",href:"#"},{platform:"facebook",href:"#"}]} accentColor="var(--primary)" />
 
+## COMPONENT USAGE EXAMPLES — Copy these patterns exactly
+
+### HeroCentered (for sites with beautiful imagery)
+\`\`\`tsx
+<HeroCentered
+  title="San Francisco's Premier Spa Experience"
+  subtitle="Luxury treatments that restore your body and soul"
+  ctaText="Book Your Treatment"
+  ctaHref="#booking"
+  secondaryCtaText="View Services"
+  secondaryCtaHref="#services"
+  backgroundImage="https://source.unsplash.com/1600x900/?luxury,spa,wellness"
+  accentColor="var(--primary)"
+  badge="★ 4.9 Stars · 500+ Reviews"
+/>
+\`\`\`
+
+### HeroSplit (for SaaS, agencies, professional services)
+\`\`\`tsx
+<HeroSplit
+  title="Close 3x More Deals With AI Sales Tools"
+  subtitle="The CRM that works as hard as you do"
+  description="Join 12,000+ sales teams who've replaced Salesforce with our AI-powered platform."
+  ctaText="Start Free Trial"
+  ctaHref="#pricing"
+  secondaryCtaText="Watch Demo"
+  image="https://source.unsplash.com/800x600/?dashboard,software,technology"
+  accentColor="var(--primary)"
+  stats={[
+    { value: "3.2x", label: "More Deals Closed" },
+    { value: "47%", label: "Less Admin Work" },
+    { value: "12K+", label: "Happy Teams" }
+  ]}
+/>
+\`\`\`
+
+### Footer (always use full props)
+\`\`\`tsx
+<Footer
+  logo="Serenity Spa"
+  tagline="Luxury wellness treatments in the heart of Beverly Hills"
+  columns={[
+    { heading: "Services", links: [
+      { label: "Massage Therapy", href: "#services" },
+      { label: "Facials & Skincare", href: "#services" },
+      { label: "Couples Treatments", href: "#services" },
+      { label: "Membership", href: "#pricing" }
+    ]},
+    { heading: "Company", links: [
+      { label: "About Us", href: "#about" },
+      { label: "Our Team", href: "#team" },
+      { label: "Reviews", href: "#reviews" },
+      { label: "Contact", href: "#contact" }
+    ]}
+  ]}
+  phone="(310) 555-0182"
+  email="hello@serenityspa.com"
+  address="9200 Wilshire Blvd, Beverly Hills, CA 90212"
+  socials={[
+    { platform: "instagram", href: "https://instagram.com" },
+    { platform: "facebook", href: "https://facebook.com" }
+  ]}
+  accentColor="var(--primary)"
+  showNewsletter={true}
+/>
+\`\`\`
+
+### ServiceCards (with all fields)
+\`\`\`tsx
+<ServiceCards
+  title="Our Services"
+  subtitle="Everything you need, all in one place"
+  items={[
+    { title: "Swedish Massage", description: "Gentle full-body relaxation massage. 60 or 90 minutes.", price: "From $95", icon: "💆" },
+    { title: "Deep Tissue Massage", description: "Targets muscle knots and chronic tension. Ideal for athletes.", price: "From $115", icon: "💪" },
+    { title: "HydraFacial", description: "3-step facial cleansing, exfoliation, and hydration treatment.", price: "From $150", icon: "✨" }
+  ]}
+  accentColor="var(--primary)"
+/>
+\`\`\`
+
+### Team (with photos from Unsplash)
+\`\`\`tsx
+<Team
+  title="Meet Our Expert Team"
+  members={[
+    { name: "Dr. Emily Chen", role: "Head Esthetician", bio: "15 years experience, certified in advanced skincare", image: "https://source.unsplash.com/400x400/?woman,professional,portrait" },
+    { name: "Marcus Williams", role: "Massage Therapist", bio: "Sports massage specialist, 8 years experience", image: "https://source.unsplash.com/400x400/?man,professional,headshot" },
+    { name: "Sofia Rodriguez", role: "Nail Technician", bio: "Nail artist and educator, certified in gel techniques", image: "https://source.unsplash.com/400x400/?woman,beauty,professional" }
+  ]}
+  accentColor="var(--primary)"
+/>
+\`\`\`
+
+### Reviews (real-sounding content)
+\`\`\`tsx
+<Reviews
+  title="What Our Clients Say"
+  items={[
+    { name: "Sarah Mitchell", rating: 5, text: "Absolutely incredible experience. The hot stone massage melted away months of stress. I've been to spas across the world and this is genuinely world-class.", location: "Beverly Hills, CA" },
+    { name: "James Chen", rating: 5, text: "The HydraFacial transformed my skin. Came in with acne scars and left with the most glowing complexion I've had in years. Worth every penny.", location: "West Hollywood, CA" },
+    { name: "Rachel Torres", rating: 5, text: "Brought my mom here for her birthday and she cried it was so good. The couples treatment room is stunning. This is our new tradition.", location: "Santa Monica, CA" }
+  ]}
+  accentColor="var(--primary)"
+/>
+\`\`\`
+
+### PricingTable (with recommended tier)
+\`\`\`tsx
+<PricingTable
+  title="Choose Your Plan"
+  plans={[
+    { name: "Starter", price: "$29/mo", description: "Perfect for freelancers", features: ["5 projects", "10GB storage", "Email support", "Basic analytics"], cta: "Get Started" },
+    { name: "Pro", price: "$79/mo", description: "For growing teams", features: ["Unlimited projects", "100GB storage", "Priority support", "Advanced analytics", "Team collaboration", "Custom domain"], cta: "Start Free Trial", recommended: true },
+    { name: "Enterprise", price: "$199/mo", description: "For large organizations", features: ["Everything in Pro", "500GB storage", "24/7 phone support", "SSO/SAML", "Dedicated account manager", "SLA guarantee"], cta: "Contact Sales" }
+  ]}
+  accentColor="var(--primary)"
+/>
+\`\`\`
+
 ## ADMIN DASHBOARD BUILDS — use these components:
 
 When the user asks for "admin", "dashboard", "CRM", "backend", "management panel", "analytics", or "internal tool":
