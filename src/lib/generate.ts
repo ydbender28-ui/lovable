@@ -2376,6 +2376,29 @@ complete file here
     }
   }
 
+  // Inject bold design CSS: force accent color var + section background alternation
+  if (finalFiles['/App.tsx'] && finalFiles['/index.css']) {
+    // Extract accent color from App.tsx (look for accentColor="#..." pattern)
+    const accentMatch = finalFiles['/App.tsx'].match(/accentColor=["']([^"']+)["']/);
+    const accentHex = accentMatch?.[1] || null;
+
+    let css = finalFiles['/index.css'];
+
+    // Inject --accent CSS variable if we found an accent color and it's not already defined
+    if (accentHex && !css.includes('--accent:')) {
+      css = css.replace(':root {', `:root {\n  --accent: ${accentHex};`);
+    }
+
+    // Add alternating section backgrounds via CSS custom property --bg
+    // All section components use background:'var(--bg,#fff)' so this propagates automatically
+    if (!css.includes('section:nth-child')) {
+      const tintHex = accentHex ? `${accentHex}18` : '#f5f3ff';
+      css += `\n\n/* Bold design: alternating section backgrounds */\nsection:nth-child(4n+2) { --bg: ${tintHex}; }\nsection:nth-child(4n+3) { --bg: #f4f4f5; }\nsection:nth-child(4n+4) { --bg: #0f0f0f; color: #fff; }\nsection:nth-child(4n+4) h1, section:nth-child(4n+4) h2, section:nth-child(4n+4) h3, section:nth-child(4n+4) h4 { color: #fff; }\nsection:nth-child(4n+4) p { color: rgba(255,255,255,0.72); }`;
+    }
+
+    finalFiles['/index.css'] = css;
+  }
+
   return {
     files: finalFiles,
     summary: parsed.summary,

@@ -730,10 +730,11 @@ export default function Banner({ text, cta, href, emoji }: { text: string; cta?:
 
 "/components/sections/Reviews.tsx": `import React, { useState } from 'react';
 type Review = { name: string; rating: number; text: string; date?: string; avatar?: string; source?: string };
-export default function Reviews({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Review[]; accentColor?: string }) {
+export default function Reviews({ title, subtitle, items, reviews, accentColor }: { title: string; subtitle?: string; items?: Review[]; reviews?: Review[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || reviews || []).filter(Boolean);
   const stars = (n: number) => Array.from({length:5},(_,i)=><span key={i} style={{color:i<n?'#f59e0b':'#e5e7eb',fontSize:16}}>★</span>);
-  const avg = (items.reduce((s,r)=>s+r.rating,0)/items.length).toFixed(1);
+  const avg = safeItems.length > 0 ? (safeItems.reduce((s,r)=>s+(r.rating||5),0)/safeItems.length).toFixed(1) : '5.0';
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -746,7 +747,7 @@ export default function Reviews({ title, subtitle, items, accentColor }: { title
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:24}}>
-          {items.map((r,i)=>(
+          {safeItems.map((r,i)=>(
             <div key={i} style={{background:'#fafafa',borderRadius:20,padding:28,border:'1px solid #f0f0f0',transition:'box-shadow 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.boxShadow='none'}>
               <div style={{display:'flex',gap:4,marginBottom:12}}>{stars(r.rating)}</div>
               <p style={{fontSize:14,lineHeight:1.7,color:'#444',margin:'0 0 20px',fontStyle:'italic'}}>"{r.text}"</p>
@@ -818,10 +819,11 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
 }`,
 
 "/components/sections/ServiceCards.tsx": `import React from 'react';
-type Service = { title: string; desc: string; price?: string; icon?: string; badge?: string; features?: string[] };
-export default function ServiceCards({ title, subtitle, items, accentColor, columns }: { title: string; subtitle?: string; items: Service[]; accentColor?: string; columns?: number }) {
+type Service = { title: string; desc?: string; description?: string; price?: string; icon?: string; badge?: string; features?: string[] };
+export default function ServiceCards({ title, subtitle, items, services, accentColor, columns }: { title: string; subtitle?: string; items?: Service[]; services?: Service[]; accentColor?: string; columns?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const cols = columns || (items.length <= 3 ? items.length : items.length <= 6 ? 3 : 4);
+  const safeItems = (items || services || []).filter(Boolean);
+  const cols = columns || (safeItems.length <= 3 ? Math.max(1,safeItems.length) : safeItems.length <= 6 ? 3 : 4);
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fafafa)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -830,12 +832,12 @@ export default function ServiceCards({ title, subtitle, items, accentColor, colu
           {subtitle&&<p style={{color:'#888',fontSize:17,maxWidth:560,margin:'0 auto'}}>{subtitle}</p>}
         </div>
         <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:24}}>
-          {items.map((s,i)=>(
+          {safeItems.map((s,i)=>(
             <div key={i} style={{background:'#fff',borderRadius:20,padding:32,border:'1px solid #f0f0f0',position:'relative',transition:'all 0.2s'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 48px rgba(0,0,0,0.1)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
               {s.badge&&<span style={{position:'absolute',top:20,right:20,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.badge}</span>}
               {s.icon&&<div style={{fontSize:36,marginBottom:16}}>{s.icon}</div>}
               <h3 style={{fontSize:20,fontWeight:700,margin:'0 0 8px',letterSpacing:'-0.01em'}}>{s.title}</h3>
-              <p style={{color:'#888',fontSize:14,lineHeight:1.6,margin:'0 0 16px'}}>{s.desc}</p>
+              <p style={{color:'#888',fontSize:14,lineHeight:1.6,margin:'0 0 16px'}}>{s.desc||s.description||''}</p>
               {s.features&&<ul style={{listStyle:'none',padding:0,margin:'0 0 20px'}}>{s.features.map((f,j)=><li key={j} style={{fontSize:13,color:'#555',padding:'4px 0',display:'flex',gap:8,alignItems:'center'}}><span style={{color:accent,fontWeight:800}}>✓</span>{f}</li>)}</ul>}
               {s.price&&<div style={{fontSize:22,fontWeight:900,color:accent,letterSpacing:'-0.02em'}}>{s.price}</div>}
             </div>
@@ -1078,17 +1080,28 @@ export default function TrustBadges({ items, title, accentColor }: { items: Badg
   );
 }`,
 
-"/components/sections/BeforeAfter.tsx": `import React, { useState, useRef } from 'react';
+"/components/sections/BeforeAfter.tsx": `import React, { useState, useRef, useCallback } from 'react';
 type Item = { title?: string; before: string; after: string; beforeLabel?: string; afterLabel?: string };
 export default function BeforeAfter({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Item[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const [pos, setPos] = useState<number[]>(items.map(()=>50));
-  const dragging = useRef<number|null>(null);
-  const handle = (e: React.MouseEvent<HTMLDivElement>, i: number) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.min(95,Math.max(5,((e.clientX-rect.left)/rect.width)*100));
-    setPos(p=>p.map((v,j)=>j===i?pct:v));
+  const safeItems = items || [];
+  const [pos, setPos] = useState<number[]>(safeItems.map(()=>50));
+  const activeIdx = useRef<number|null>(null);
+  const containerRefs = useRef<(HTMLDivElement|null)[]>([]);
+  const calcPct = useCallback((clientX: number, el: HTMLDivElement) => {
+    const rect = el.getBoundingClientRect();
+    return Math.min(95, Math.max(5, ((clientX - rect.left) / rect.width) * 100));
+  }, []);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>, i: number) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    activeIdx.current = i;
+    setPos(p => p.map((v,j) => j===i ? calcPct(e.clientX, e.currentTarget) : v));
   };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>, i: number) => {
+    if (activeIdx.current !== i) return;
+    setPos(p => p.map((v,j) => j===i ? calcPct(e.clientX, e.currentTarget) : v));
+  };
+  const onPointerUp = () => { activeIdx.current = null; };
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -1096,20 +1109,20 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>}
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>}
-        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${items.length},1fr)\`,gap:24}}>
-          {items.map((item,i)=>(
+        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${Math.max(1,safeItems.length)},1fr)\`,gap:24}}>
+          {safeItems.map((item,i)=>(
             <div key={i}>
               {item.title&&<h3 style={{fontSize:16,fontWeight:700,textAlign:'center',marginBottom:12}}>{item.title}</h3>}
-              <div style={{position:'relative',borderRadius:16,overflow:'hidden',cursor:'ew-resize',userSelect:'none',aspectRatio:'4/3'}} onMouseMove={e=>handle(e,i)} onMouseDown={()=>dragging.current=i} onMouseUp={()=>dragging.current=null}>
+              <div ref={el=>containerRefs.current[i]=el} style={{position:'relative',borderRadius:16,overflow:'hidden',cursor:'ew-resize',userSelect:'none',aspectRatio:'4/3',touchAction:'none'}} onPointerDown={e=>onPointerDown(e,i)} onPointerMove={e=>onPointerMove(e,i)} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
                 <img src={item.after} alt="after" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
                 <div style={{position:'absolute',inset:0,overflow:'hidden',width:\`\${pos[i]}%\`}}>
                   <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:\`\${10000/pos[i]}%\`,maxWidth:'none',height:'100%',objectFit:'cover'}} />
                 </div>
-                <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)'}}>
+                <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)',pointerEvents:'none'}}>
                   <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
                 </div>
-                <div style={{position:'absolute',bottom:12,left:12,background:'rgba(0,0,0,0.55)',color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50}}>{item.beforeLabel||'Before'}</div>
-                <div style={{position:'absolute',bottom:12,right:12,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50}}>{item.afterLabel||'After'}</div>
+                <div style={{position:'absolute',bottom:12,left:12,background:'rgba(0,0,0,0.55)',color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50,pointerEvents:'none'}}>{item.beforeLabel||'Before'}</div>
+                <div style={{position:'absolute',bottom:12,right:12,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50,pointerEvents:'none'}}>{item.afterLabel||'After'}</div>
               </div>
             </div>
           ))}
