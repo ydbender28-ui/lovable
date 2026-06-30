@@ -17,7 +17,7 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
     if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); return; }
     const slug = String(l).toLowerCase().replace(/\s+/g, '-');
     // Try id match (exact, then no-hyphens, then common aliases)
-    const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', faq:'faq', location:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop' };
+    const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer' };
     let el: HTMLElement | null = document.getElementById(slug) || document.getElementById(slug.replace(/-/g,'')) || document.getElementById(aliases[slug] || slug);
     // Fallback: find a section whose h2/h3 text contains the link text
     if (!el) {

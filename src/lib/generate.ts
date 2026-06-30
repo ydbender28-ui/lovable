@@ -412,7 +412,8 @@ const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwin
 - NEVER change unrelated code, images, or layout.
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
-- ONLY import from: react, lucide-react, react-hot-toast. Nothing else. Write all components inline.
+- PRESERVE all existing /components/sections/* imports — NEVER remove or replace them.
+- PRESERVE all existing sections the user did not ask to change.
 - EVERY button MUST have a working onClick handler. No dead buttons.
 - When adding interactive features (cart, modal, tabs, accordion, form), include ALL useState hooks, handlers, and conditional rendering.
 - If adding "Add to Cart": include useState for cart items, handler to add/remove, cart count in nav, and a cart drawer/modal.
@@ -888,11 +889,11 @@ const SYSTEM_EDIT_TOOLS = `You are editing an existing React + TypeScript app. T
 
 ## RULES:
 - Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
-- Match the existing code style (Tailwind or inline styles).
-- NEVER change unrelated code, images, or layout.
+- NEVER rewrite the whole file — only change what the user asked to change.
+- PRESERVE all existing imports, especially /components/sections/* imports — do NOT remove or replace them.
+- PRESERVE all existing sections/components the user did not ask to change.
 - Build COMPLETE features — no stubs, no TODOs.
 - The code MUST be fully functional.
-- ONLY import from: react, lucide-react, react-hot-toast. Nothing else. Write all components inline.
 
 ## HOW TO MAKE EDITS:
 Use the edit_file tool to modify existing files, or create_file for new files.
@@ -1909,10 +1910,7 @@ RULES:
       if (!path.match(/\.(tsx?|jsx?)$/)) continue;
       let fixed = code;
       // Fix apostrophes
-      fixed = fixed.replace(/(\w)'(ll|re|ve|t|s|d|m)\b/g, "$1’$2");
-      // No inline injection — use CSS utility classes instead
-      // Strip section component imports
-      fixed = fixed.replace(/import\s+.*from\s+['"]\.?\/components\/sections\/[^'"]+['"];?\n?/g, "");
+      fixed = fixed.replace(/(\w)’(ll|re|ve|t|s|d|m)\b/g, "$1’$2");
       // Fix double semicolons
       fixed = fixed.replace(/;;\s*/g, ";\n");
       // Convert Tailwind custom color classes to inline styles
@@ -2378,7 +2376,7 @@ complete file here
     // Auto-inject scroll anchor ids for navbar links.
     // Maps each section component → the id the Navbar will link to.
     const SECTION_IDS: Record<string, string> = {
-      ServiceCards: 'services', Booking: 'booking', Reviews: 'reviews',
+      ServiceCards: 'services', Booking: 'booking', Reviews: 'reviews', SplitSection: 'about',
       MenuGrid: 'menu', ShopGrid: 'shop', Gallery: 'gallery', Portfolio: 'portfolio',
       Team: 'team', Timeline: 'timeline', Testimonials: 'testimonials',
       PricingTable: 'pricing', FAQ: 'faq', Contact: 'contact', MapSection: 'location',
