@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DeleteProjectButton from "./DeleteProjectButton";
 
 interface Props {
@@ -34,8 +35,23 @@ function getProjectColor(id: string): string {
 export default function ProjectCard({ project }: Props) {
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const router = useRouter();
 
   useEffect(() => setMounted(true), []);
+
+  async function handleDuplicate(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDuplicating(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/duplicate`, { method: "POST" });
+      const data = await res.json();
+      if (data.id) router.push(`/projects/${data.id}`);
+    } catch {
+      setDuplicating(false);
+    }
+  }
 
   const color = getProjectColor(project.id);
   const initials = project.name.slice(0, 2).toUpperCase();
@@ -191,6 +207,14 @@ export default function ProjectCard({ project }: Props) {
             Visit ↗
           </a>
         )}
+        <button
+          onClick={handleDuplicate}
+          disabled={duplicating}
+          className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[#f6f6f8]"
+          style={{ borderColor: "#ececf1", color: "#71717f", opacity: duplicating ? 0.6 : 1 }}
+        >
+          {duplicating ? "Copying…" : "Duplicate"}
+        </button>
       </div>
     </div>
   );
