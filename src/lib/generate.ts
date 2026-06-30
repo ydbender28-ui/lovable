@@ -3049,12 +3049,43 @@ complete file here
       Countdown: 'offer', TrustBadges: 'trust', VideoSection: 'video',
       DashboardStats: 'stats', DataTable: 'data', ActivityFeed: 'activity', OrdersTable: 'orders',
       UserManagement: 'users', KanbanBoard: 'tasks', CalendarWidget: 'calendar', AnalyticsPanel: 'analytics',
+      // Admin components
+      DashboardShell: 'dashboard', RevenueChart: 'revenue', AdminSidebar: 'sidebar',
+      NotificationCenter: 'notifications', FormBuilder: 'forms', FileManager: 'files',
+      QuickActions: 'actions',
+      // Micro components
+      PricingCard: 'pricing', TestimonialCard: 'testimonials', FeatureCard: 'features',
+      StatBadge: 'stats', ImageCard: 'gallery', ProfileCard: 'team', AlertBanner: 'alert',
+      ProgressBar: 'progress', CountdownTimer: 'countdown', VideoEmbed: 'video',
+      MapEmbed: 'map', SocialLinks: 'social', NewsletterInline: 'newsletter',
+      RatingStars: 'reviews', Breadcrumbs: 'nav', TabsInline: 'tabs',
+      AccordionItem: 'faq', ImageGalleryGrid: 'gallery', CallToActionBanner: 'cta',
+      EmptyState: 'empty',
+      // Hero variants
+      HeroCentered: 'hero', HeroSplit: 'hero', HeroVideo: 'hero',
+      // Utility — no anchor needed (empty string = skip)
+      MetaTags: '', DarkModeToggle: '', Router: '',
+      // Specialty components
+      LoginForm: 'login', SignupForm: 'signup', ChatWidget: 'chat',
+      CheckoutForm: 'checkout', ProductDetail: 'product', BlogPost: 'blog',
+      JobListing: 'jobs', RestaurantReservation: 'reservation', PropertyListing: 'properties',
+      DoctorProfile: 'doctor', MenuCategory: 'menu', PackageComparison: 'comparison',
+      IntegrationGrid: 'integrations', MegaMenu: 'menu', PressKit: 'press',
+      ReferralProgram: 'referral', MembershipTiers: 'membership', EventDetail: 'events',
+      FilterBar: 'filter', CartDrawer: 'cart',
+      CookieBanner: '', LoadingScreen: '',  // no anchor needed
+      SearchBar: 'search', PricingToggle: 'pricing', ForgotPassword: 'forgot',
+      // Coming soon components
+      ComingSoon: 'coming-soon', MaintenanceMode: 'maintenance', StickyContactBar: 'contact',
+      PopupModal: '',  // no anchor needed
+      InteractiveMap: 'map', TestimonialsCarousel: 'testimonials', ImageCompare: 'compare',
+      VideoTestimonial: 'testimonials', AffiliatePartners: 'partners', StatsCounter: 'stats',
     };
     for (const [comp, anchorId] of Object.entries(SECTION_IDS)) {
-      // Only inject anchor if component is used and no element already has that id
+      // Only inject anchor if component is used, has a non-empty anchor id, and no element already has that id
       const compUsed = new RegExp(`<${comp}[\\s/>]`).test(appCode);
-      const idAlreadySet = new RegExp(`id=["']${anchorId}["']`).test(appCode);
-      if (compUsed && !idAlreadySet) {
+      const idAlreadySet = anchorId ? new RegExp(`id=["']${anchorId}["']`).test(appCode) : false;
+      if (compUsed && anchorId && !idAlreadySet) {
         // Inject <div id="anchorId" style={{position:'relative',top:-64}} /> just before the component
         appCode = appCode.replace(
           new RegExp(`([ \\t]*)(<${comp}[\\s/>])`),

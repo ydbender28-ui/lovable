@@ -44,7 +44,7 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
   const rawLinks = Array.isArray(links) ? links : [];
   const navLinks: NavLink[] = rawLinks.map(l => typeof l === 'string' ? { label: l } : { label: l?.label || l?.name || l?.text || String(l), href: l?.href });
   const ctaLink: NavLink | null = cta ? (typeof cta === 'string' ? { label: cta, href: ctaHref || '#contact' } : { label: cta.label || cta.text || cta.name || String(cta), href: cta.href || ctaHref || '#contact' }) : null;
-  const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer' };
+  const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer', dashboard:'dashboard', kanban:'kanban', orders:'orders', users:'users', analytics:'analytics', integrations:'integrations', comparison:'comparison', membership:'membership', reservation:'reservation' };
   const handleClick = (label: string, href?: string) => (e: React.MouseEvent) => {
     if (onNavigate) { e.preventDefault(); onNavigate(label.toLowerCase()); return; }
     if (href && href !== '#' && !href.startsWith('#')) { return; }
@@ -1192,6 +1192,8 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
     setSent(true);
     setSubmitting(false);
   };
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   const inp: React.CSSProperties = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, fontFamily:'inherit', outline:'none', background:'#fff', boxSizing:'border-box', transition:'border-color 0.2s, box-shadow 0.2s', color:'#111' };
   const lbl: React.CSSProperties = { fontSize:13, fontWeight:600, color:'#444', display:'block', marginBottom:6 };
   const fieldDefs: Record<string,{label:string;type:string;placeholder:string}> = {
@@ -1859,7 +1861,7 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:24}}>
           {safeItems.map((loc,i)=>(
             <div key={i} style={{background:'#fafafa',borderRadius:20,overflow:'hidden',border:'1px solid #f0f0f0',transition:'box-shadow 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.boxShadow='none'}>
-              {loc.image&&<img src={loc.image} alt={loc.name} style={{width:'100%',height:180,objectFit:'cover',display:'block'}}/>}
+              {loc.image&&<img src={loc.image} alt={loc.name} style={{width:'100%',height:180,objectFit:'cover',display:'block'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>}
               <div style={{padding:24}}>
                 <h3 style={{fontSize:18,fontWeight:700,margin:'0 0 8px'}}>{loc.name}</h3>
                 <p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📍 {loc.address}</p>
@@ -1893,7 +1895,7 @@ export default function QuoteBlock({ quote, author, role, image, accentColor, da
         <div style={{fontSize:80,lineHeight:0.8,color:dark?'rgba(255,255,255,0.2)':accent,marginBottom:24,fontFamily:'Georgia,serif'}}>"</div>
         <blockquote style={{fontSize:28,fontWeight:700,lineHeight:1.4,letterSpacing:'-0.02em',color:fg,margin:'0 0 40px',fontStyle:'italic'}}>{quote}</blockquote>
         {(author||image)&&<div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14}}>
-          {image&&<img src={image} alt={author||''} style={{width:52,height:52,borderRadius:50,objectFit:'cover'}}/>}
+          {image&&<img src={image} alt={author||''} style={{width:52,height:52,borderRadius:50,objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>}
           <div style={{textAlign:'left'}}>
             {author&&<div style={{fontWeight:800,fontSize:16,color:fg}}>{author}</div>}
             {role&&<div style={{fontSize:13,color:dark?'rgba(255,255,255,0.6)':'#999'}}>{role}</div>}
@@ -2024,7 +2026,7 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
         <div style={{display:'grid',gridTemplateColumns:showDesc?\`repeat(auto-fill,minmax(240px,1fr))\`:\`repeat(auto-fill,minmax(160px,1fr))\`,gap:showDesc?24:16,alignItems:'center'}}>
           {safeItems.map((p,i)=>(
             <a key={i} href={p.url||'#'} style={{textDecoration:'none',display:'flex',flexDirection:showDesc?'column':'row',alignItems:'center',gap:12,padding:showDesc?24:16,borderRadius:16,border:'1.5px solid #f0f0f0',background:'#fafafa',transition:'all 0.2s',color:'inherit'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.borderColor=accent;(e.currentTarget as HTMLElement).style.background='#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.borderColor='#f0f0f0';(e.currentTarget as HTMLElement).style.background='#fafafa'}}>
-              {p.logo?<img src={p.logo} alt={p.name} style={{height:36,objectFit:'contain',filter:'grayscale(1)',transition:'filter 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.filter='none'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.filter='grayscale(1)'}/>:<div style={{fontWeight:800,fontSize:16,color:'#bbb'}}>{p.name}</div>}
+              {p.logo?<img src={p.logo} alt={p.name} style={{height:36,objectFit:'contain',filter:'grayscale(1)',transition:'filter 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.filter='none'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.filter='grayscale(1)'} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }}/>:<div style={{fontWeight:800,fontSize:16,color:'#bbb'}}>{p.name}</div>}
               {showDesc&&<div><div style={{fontWeight:700,fontSize:14}}>{p.name}</div>{p.desc&&<p style={{fontSize:13,color:'#888',margin:'4px 0 0'}}>{p.desc}</p>}</div>}
             </a>
           ))}
@@ -2056,7 +2058,7 @@ export default function Awards({ title, subtitle, items, accentColor }: { title?
         <div style={{display:'flex',flexWrap:'wrap',gap:20,justifyContent:'center'}}>
           {safeItems.map((a,i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'16px 24px',background:'#fff',borderRadius:16,border:'1.5px solid #f0f0f0',boxShadow:'0 2px 12px rgba(0,0,0,0.04)'}}>
-              {a.image?<img src={a.image} alt={a.title} style={{height:48,objectFit:'contain'}}/>:<div style={{fontSize:32}}>{a.icon||'🏆'}</div>}
+              {a.image?<img src={a.image} alt={a.title} style={{height:48,objectFit:'contain'}} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }}/>:<div style={{fontSize:32}}>{a.icon||'🏆'}</div>}
               <div><div style={{fontWeight:700,fontSize:15,color:'#222'}}>{a.title}</div>{(a.org||a.year)&&<div style={{fontSize:12,color:'#aaa'}}>{[a.org,a.year].filter(Boolean).join(' · ')}</div>}</div>
             </div>
           ))}
@@ -2096,7 +2098,7 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
             <div key={i} style={{background:'rgba(255,255,255,0.1)',borderRadius:20,padding:28,backdropFilter:'blur(8px)'}}>
               <p style={{fontSize:15,lineHeight:1.7,margin:'0 0 20px',fontStyle:'italic',opacity:0.9}}>"{q.text}"</p>
               <div style={{display:'flex',alignItems:'center',gap:10}}>
-                {q.image?<img src={q.image} alt={q.author} style={{width:36,height:36,borderRadius:50,objectFit:'cover'}}/>:<div style={{width:36,height:36,borderRadius:50,background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{q.author[0]}</div>}
+                {q.image?<img src={q.image} alt={q.author} style={{width:36,height:36,borderRadius:50,objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>:<div style={{width:36,height:36,borderRadius:50,background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{q.author[0]}</div>}
                 <span style={{fontWeight:700,fontSize:14}}>{q.author}</span>
               </div>
             </div>
@@ -2126,7 +2128,7 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
           return (
             <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:left?'ltr':'rtl'}}>
               <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 16px 64px rgba(0,0,0,0.1)',direction:'ltr',position:'relative'}}>
-                <img src={b.image} alt={b.title} style={{width:'100%',aspectRatio:'4/3',objectFit:'cover',display:'block'}}/>
+                <img src={b.image} alt={b.title} style={{width:'100%',aspectRatio:'4/3',objectFit:'cover',display:'block'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>
                 {b.badge&&<span style={{position:'absolute',top:16,left:16,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 12px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{b.badge}</span>}
               </div>
               <div style={{direction:'ltr'}}>
@@ -2226,7 +2228,7 @@ export default function ImageCard({ image, category, title, excerpt, cta, href, 
   return (
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, overflow: 'hidden', fontFamily: 'inherit' }}>
       <div style={{ width: '100%', paddingBottom: '56.25%', position: 'relative', overflow: 'hidden' }}>
-        <img src={image} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={image} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
         {category && <span style={{ position: 'absolute', top: 12, left: 12, background: 'hsl(var(--primary))', color: '#fff', borderRadius: 999, padding: '3px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</span>}
       </div>
       <div style={{ padding: 20 }}>
