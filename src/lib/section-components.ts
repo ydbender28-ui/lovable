@@ -90,9 +90,8 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
   return (
     <section id="menu" style={{ padding:'80px 40px', background:'#faf9f7' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+        <div style={{ marginBottom:8 }}>
           <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
-          {cartCount > 0 && <button onClick={() => setCartOpen(true)} style={{ background:accent, color:'#fff', border:'none', borderRadius:50, padding:'10px 24px', fontWeight:600, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}>🛒 Cart ({cartCount}) · \${cartTotal.toFixed(2)}</button>}
         </div>
         {subtitle && <p style={{ color:'#666', fontSize:16, marginBottom:32 }}>{subtitle}</p>}
         <div style={{ display:'flex', gap:8, marginBottom:40, flexWrap:'wrap' }}>
