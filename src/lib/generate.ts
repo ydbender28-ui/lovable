@@ -2374,6 +2374,32 @@ complete file here
       appCode = appCode.slice(0, lastImportEnd) + importLines + '\n' + appCode.slice(lastImportEnd);
       finalFiles['/App.tsx'] = appCode;
     }
+
+    // Auto-inject scroll anchor ids for navbar links.
+    // Maps each section component → the id the Navbar will link to.
+    const SECTION_IDS: Record<string, string> = {
+      ServiceCards: 'services', Booking: 'booking', Reviews: 'reviews',
+      MenuGrid: 'menu', ShopGrid: 'shop', Gallery: 'gallery', Portfolio: 'portfolio',
+      Team: 'team', Timeline: 'timeline', Testimonials: 'testimonials',
+      PricingTable: 'pricing', FAQ: 'faq', Contact: 'contact', MapSection: 'location',
+      HoursTable: 'hours', StepProcess: 'process', Features: 'features',
+      Stats: 'stats', LogoCloud: 'partners', BlogGrid: 'blog', Newsletter: 'newsletter',
+      AppDownload: 'download', BeforeAfter: 'results', EventsList: 'events',
+      Countdown: 'offer', TrustBadges: 'trust', VideoSection: 'video',
+    };
+    for (const [comp, anchorId] of Object.entries(SECTION_IDS)) {
+      // Only inject anchor if component is used and no element already has that id
+      const compUsed = new RegExp(`<${comp}[\\s/>]`).test(appCode);
+      const idAlreadySet = new RegExp(`id=["']${anchorId}["']`).test(appCode);
+      if (compUsed && !idAlreadySet) {
+        // Inject <div id="anchorId" style={{position:'relative',top:-64}} /> just before the component
+        appCode = appCode.replace(
+          new RegExp(`([ \\t]*)(<${comp}[\\s/>])`),
+          `$1<div id="${anchorId}" style={{position:'relative',top:-64}} />\n$1$2`
+        );
+      }
+    }
+    finalFiles['/App.tsx'] = appCode;
   }
 
   // Inject bold design CSS: force accent color var + section background alternation

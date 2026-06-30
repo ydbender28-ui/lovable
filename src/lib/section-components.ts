@@ -13,7 +13,22 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
   useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
   const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpenerRef.current) cartOpenerRef.current(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
   const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
-  const handleClick = (l: string) => (e: React.MouseEvent) => { if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); } };
+  const handleClick = (l: string) => (e: React.MouseEvent) => {
+    if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); return; }
+    const slug = String(l).toLowerCase().replace(/\s+/g, '-');
+    // Try id match (exact, then no-hyphens, then common aliases)
+    const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', faq:'faq', location:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop' };
+    let el: HTMLElement | null = document.getElementById(slug) || document.getElementById(slug.replace(/-/g,'')) || document.getElementById(aliases[slug] || slug);
+    // Fallback: find a section whose h2/h3 text contains the link text
+    if (!el) {
+      const secs = document.querySelectorAll('section, [id]');
+      for (const s of secs) {
+        const h = s.querySelector('h1,h2,h3');
+        if (h && h.textContent && h.textContent.toLowerCase().includes(String(l).toLowerCase())) { el = s as HTMLElement; break; }
+      }
+    }
+    if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  };
   return (
     <nav style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding:'0 40px', transition:'background 0.2s' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
