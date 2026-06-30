@@ -2340,6 +2340,26 @@ complete file here
   }
   trimConversationState();
 
+  // Auto-fix missing section component imports in App.tsx
+  if (finalFiles['/App.tsx']) {
+    const KNOWN_SECTIONS = ['Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs'];
+    let appCode = finalFiles['/App.tsx'];
+    const missingImports: string[] = [];
+    for (const comp of KNOWN_SECTIONS) {
+      const used = new RegExp(`<${comp}[\\s/>]`).test(appCode);
+      const imported = new RegExp(`import\\s+${comp}\\s+from`).test(appCode);
+      if (used && !imported) missingImports.push(comp);
+    }
+    if (missingImports.length > 0) {
+      const importLines = missingImports.map(c => `import ${c} from '/components/sections/${c}';`).join('\n');
+      // Insert after last existing section import, or at top after React import
+      const lastImportIdx = appCode.lastIndexOf("import ");
+      const lastImportEnd = appCode.indexOf('\n', lastImportIdx) + 1;
+      appCode = appCode.slice(0, lastImportEnd) + importLines + '\n' + appCode.slice(lastImportEnd);
+      finalFiles['/App.tsx'] = appCode;
+    }
+  }
+
   return {
     files: finalFiles,
     summary: parsed.summary,
