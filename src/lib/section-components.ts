@@ -825,7 +825,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
   );
 }`,
 
-"/components/sections/PricingTable.tsx": `import React, { useState } from 'react';
+"/components/sections/PricingTable.tsx": `import React, { useState, useEffect } from 'react';
 type Plan = { name: string; price: string; yearlyPrice?: string; period?: string; features: string[]; cta: string; ctaHref?: string; popular?: boolean; desc?: string };
 export default function PricingTable({ title, subtitle, plans, accentColor }: { title: string; subtitle?: string; plans: Plan[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -839,8 +839,10 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="pricing" style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} id="pricing" style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -926,7 +928,7 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
   );
 }`,
 
-"/components/sections/Gallery.tsx": `import React, { useState } from 'react';
+"/components/sections/Gallery.tsx": `import React, { useState, useEffect } from 'react';
 export default function Gallery({ title, images, items }: { title: string; images?: { src: string; alt: string }[]; items?: { src?: string; image?: string; alt?: string; caption?: string }[] }) {
   const rawList = images || items || [];
   const safeImages = rawList.filter(Boolean).map((img: any) => ({ src: img.src || img.image || '', alt: img.alt || img.caption || '' }));
@@ -938,8 +940,10 @@ export default function Gallery({ title, images, items }: { title: string; image
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="gallery" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} id="gallery" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
         {safeImages.map((img, i) => (
@@ -1013,8 +1017,10 @@ export default function Team({ title, members, items, accentColor }: { title: st
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="team" style={{ padding:'80px 40px', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} id="team" style={{ padding: isMobile ? '48px 20px' : '80px 40px', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
         <h2 style={{ fontSize:38, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:56 }}>{title}</h2>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:32 }}>
@@ -1059,7 +1065,7 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
   );
 }`,
 
-"/components/sections/Timeline.tsx": `import React from 'react';
+"/components/sections/Timeline.tsx": `import React, { useState, useEffect } from 'react';
 type Event = { year: string; title: string; desc: string };
 export default function Timeline({ title, events, items }: { title: string; events?: Event[]; items?: Event[] }) {
   const safeEvents = ((events || items || [])).filter(Boolean);
@@ -1070,8 +1076,10 @@ export default function Timeline({ title, events, items }: { title: string; even
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       {safeEvents.map((e, i) => (
         <div key={i} style={{ display:'flex', gap:24, marginBottom:40, position:'relative' }}>
@@ -1172,7 +1180,7 @@ export default function Tabs({ tabs }: { tabs: Tab[] }) {
   );
 }`,
 
-"/components/sections/Booking.tsx": `import React, { useState } from 'react';
+"/components/sections/Booking.tsx": `import React, { useState, useEffect } from 'react';
 export default function Booking({ title, subtitle, fields, cta }: { title: string; subtitle?: string; fields?: string[]; cta?: string }) {
   const accent = 'var(--accent, #c2410c)';
   const defaultFields = fields || ['name', 'email', 'date', 'time', 'guests', 'notes'];
@@ -1213,7 +1221,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
   const onFocus = (e: React.FocusEvent<HTMLElement>) => { (e.target as HTMLElement).style.borderColor = accent; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(194,65,12,0.13)'; };
   const onBlur  = (e: React.FocusEvent<HTMLElement>) => { (e.target as HTMLElement).style.borderColor = '#e5e5e5'; (e.target as HTMLElement).style.boxShadow = 'none'; };
   if (sent) return (
-    <section id="booking" style={{ padding:'100px 40px', background:'#fafafa' }}>
+    <section id="booking" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background:'#fafafa' }}>
       <div style={{ maxWidth:560, margin:'0 auto', background:'#fff', borderRadius:24, padding:60, textAlign:'center', boxShadow:'0 8px 40px rgba(0,0,0,0.08)' }}>
         <div style={{ width:64, height:64, borderRadius:'50%', background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', fontSize:28 }}>✓</div>
         <h3 style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>You're all set!</h3>
@@ -1223,7 +1231,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
     </section>
   );
   return (
-    <section id="booking" style={{ padding:'100px 40px', background:'#fafafa' }}>
+    <section id="booking" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background:'#fafafa' }}>
       <div style={{ maxWidth:640, margin:'0 auto' }}>
         <div style={{ textAlign:'center', marginBottom:48 }}>
           <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:12 }}>{title}</h2>
@@ -1284,7 +1292,7 @@ export default function Banner({ text, cta, href, emoji }: { text: string; cta?:
   );
 }`,
 
-"/components/sections/Reviews.tsx": `import React, { useState } from 'react';
+"/components/sections/Reviews.tsx": `import React, { useState, useEffect } from 'react';
 type Review = { name: string; rating: number; text: string; date?: string; avatar?: string; source?: string };
 export default function Reviews({ title, subtitle, items, reviews, accentColor }: { title: string; subtitle?: string; items?: Review[]; reviews?: Review[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1298,8 +1306,10 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor }
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12}}>
@@ -1326,7 +1336,7 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor }
   );
 }`,
 
-"/components/sections/MapSection.tsx": `import React from 'react';
+"/components/sections/MapSection.tsx": `import React, { useState, useEffect } from 'react';
 type Hour = { day: string; hours: string; closed?: boolean };
 export default function MapSection({ title, address, phone, email, hours, mapUrl, accentColor }: { title?: string; address: string; phone?: string; email?: string; hours?: Hour[]; mapUrl?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1339,8 +1349,10 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',marginBottom:48,textAlign:'center'}}>{title}</h2>}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'start'}}>
@@ -1438,8 +1450,10 @@ export default function StepProcess({ title, subtitle, steps, accentColor, layou
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1473,8 +1487,10 @@ export default function VideoSection({ title, subtitle, videoUrl, thumbnail, acc
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:960,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>}
@@ -1543,8 +1559,10 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1000,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1583,8 +1601,10 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:40}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1621,8 +1641,10 @@ export default function EventsList({ title, subtitle, items, accentColor, layout
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{marginBottom:48}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>
@@ -1772,7 +1794,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
   );
 }`,
 
-"/components/sections/HoursTable.tsx": `import React from 'react';
+"/components/sections/HoursTable.tsx": `import React, { useState, useEffect } from 'react';
 type Hour = { day: string; open?: string; close?: string; closed?: boolean };
 export default function HoursTable({ title, hours, note, accentColor }: { title?: string; hours: Hour[]; note?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1819,8 +1841,10 @@ export default function ProductSpotlight({ title, subtitle, description, image, 
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:imageLeft?'rtl':'ltr'}}>
         <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.1)',position:'relative',direction:'ltr'}}>
           <img src={image} alt={title} style={{width:'100%',display:'block',aspectRatio:'4/3',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
@@ -1851,8 +1875,10 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1988,8 +2014,10 @@ export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Bl
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:maxWidth||720,margin:'0 auto'}}>
         {safeBlocks.map((b,i)=>{
           if(b.type==='h2')return<h2 key={i} style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 16px'}}>{b.content}</h2>;
@@ -2016,8 +2044,10 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>}
@@ -2248,7 +2278,7 @@ export default function ProfileCard({ name, role, image, bio, twitter, linkedin,
   return (
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, textAlign: 'center', fontFamily: 'inherit' }}>
       <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px', border: \`3px solid \${accent}\` }}>
-        {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 22 }}>{initials}</div>}
+        {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} /> : <div style={{ width: '100%', height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 22 }}>{initials}</div>}
       </div>
       <div style={{ fontWeight: 700, fontSize: 17 }}>{name}</div>
       <div style={{ color: accent, fontSize: 13, fontWeight: 600, marginTop: 2 }}>{role}</div>
@@ -2339,7 +2369,7 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
         <iframe src={getEmbed()} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} allow="autoplay; fullscreen" allowFullScreen title={title} />
       ) : (
         <button type="button" aria-label="Play video" style={{ position: 'absolute', inset: 0, cursor: 'pointer', background: 'none', border: 'none', padding: 0, width: '100%', height: '100%' }} onClick={() => setPlaying(true)}>
-          {thumbnail && <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+          {thumbnail && <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
               <div style={{ width: 0, height: 0, borderTop: '14px solid transparent', borderBottom: '14px solid transparent', borderLeft: '22px solid #fff', marginLeft: 4 }} />
@@ -2500,13 +2530,13 @@ export default function ImageGalleryGrid({ images, columns }: { images: { url: s
           <div key={i} onClick={() => setLightbox(i)} style={{ borderRadius: 10, overflow: 'hidden', cursor: 'pointer', aspectRatio: '1/1', position: 'relative', transition: 'opacity 0.2s' }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.85'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
-            <img src={img.url} alt={img.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src={img.url} alt={img.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
           </div>
         ))}
       </div>
       {lightbox !== null && (
         <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-          <img src={images[lightbox].url} alt={images[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} />
+          <img src={images[lightbox].url} alt={images[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
           {images[lightbox].caption && <p style={{ color: '#fff', marginTop: 14, fontSize: 14, opacity: 0.8 }}>{images[lightbox].caption}</p>}
           <div style={{ display: 'flex', gap: 16, marginTop: 16 }} onClick={e => e.stopPropagation()}>
             <button type="button" aria-label="Previous image" onClick={() => setLightbox(l => l !== null && l > 0 ? l - 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'<'}</button>
@@ -3241,7 +3271,7 @@ export default function FileManager({ files = DEFAULT, accentColor }: Props) {
             {filt.map((f, i) => (
               <div key={i} onClick={() => tog(i)} style={{ borderRadius: 10, border: '2px solid ' + (sel.has(i) ? accent : 'var(--border, #e5e7eb)'), overflow: 'hidden', cursor: 'pointer', background: sel.has(i) ? accent + '08' : 'var(--bg, #f9fafb)' }}>
                 <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {f.url ? <img src={f.url} alt={f.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 36 }}>{FI[f.type]||FI.default}</span>}
+                  {f.url ? <img src={f.url} alt={f.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} /> : <span style={{ fontSize: 36 }}>{FI[f.type]||FI.default}</span>}
                 </div>
                 <div style={{ padding: '8px 10px' }}>
                   <div style={{ fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
