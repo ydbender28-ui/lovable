@@ -2191,19 +2191,16 @@ ${failedFiles.map(f => `${f}\n\`\`\`tsx\nfull corrected content\n\`\`\``).join("
     // Strip ALL invalid imports — only allow known-good ones
     if (parsed) {
       let fixedApp = parsed.files["/App.tsx"] ?? appCode;
-      const VALID_SECTIONS = ['Banner','BlogGrid','CTA','Contact','FAQ','Features','Footer','Gallery','Hero','LogoCloud','MenuGrid','Navbar','Newsletter','PricingTable','ShopGrid','SplitSection','Stats','Tabs','Team','Testimonials','Timeline'];
-      // Check every import line
+      const VALID_SECTIONS = ['AppDownload','Awards','Banner','BeforeAfter','BlogGrid','Booking','CTA','Comparison','Contact','Countdown','EventsList','FAQ','Features','Footer','Gallery','Hero','HoursTable','IconFeatures','ImageText','LocationCards','LogoCloud','MapSection','MenuGrid','Navbar','Newsletter','Partners','Portfolio','PricingTable','ProductSpotlight','QuoteBlock','Reviews','RichText','ServiceCards','ShopGrid','SocialProof','SplitSection','Stats','StepProcess','StickyBar','Tabs','Team','Testimonials','Timeline','TrustBadges','VideoHero','VideoSection'];
+      // Check every import line — PRESERVE all /components/sections/* imports
       fixedApp = fixedApp.replace(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"];?\n?/g, (match, name, path) => {
         // Always keep: react, lucide-react, react-hot-toast
         if (path === 'react' || path.includes('lucide') || path.includes('toast')) return match;
-        // Keep valid section components
-        if (path.includes('/components/sections/')) {
-          const compName = path.split('/').pop()?.replace('.tsx','').replace('.ts','') || '';
-          if (VALID_SECTIONS.includes(compName)) return match;
-          return ''; // Invalid section component — strip it
-        }
-        // Strip everything else (./components/ui/, ./anything, etc)
-        return '';
+        // PRESERVE all /components/sections/* imports — these are our pre-built library
+        if (path.includes('/components/sections/')) return match;
+        // Strip only clearly invalid relative imports (./components/ui/, etc.)
+        if (path.startsWith('./') || path.startsWith('../')) return '';
+        return match;
       });
       parsed.files["/App.tsx"] = fixedApp;
     }

@@ -67,12 +67,13 @@ export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?
 "/components/sections/Features.tsx": `import React from 'react';
 type Feature = { icon?: string; title: string; desc: string };
 export default function Features({ tag, title, items }: { tag?: string; title: string; items: Feature[] }) {
+  const safeItems = (items || []).filter(Boolean);
   return (
     <section style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
       {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:8 }}>{tag}</p>}
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:32 }}>
-        {items.map((f, i) => (
+        {safeItems.map((f, i) => (
           <div key={i} style={{ background:'#fff', border:'1px solid #eee', borderRadius:16, padding:32, transition:'transform 0.2s, box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 8px 30px rgba(0,0,0,0.08)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
             {f.icon && <div style={{ fontSize:28, marginBottom:16 }}>{f.icon}</div>}
             <h3 style={{ fontSize:18, fontWeight:600, marginBottom:8 }}>{f.title}</h3>
@@ -194,11 +195,12 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
 "/components/sections/Testimonials.tsx": `import React from 'react';
 type Testimonial = { quote: string; name: string; role: string; image?: string };
 export default function Testimonials({ title, items }: { title: string; items: Testimonial[] }) {
+  const safeItems = (items || []).filter(Boolean);
   return (
     <section style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:32 }}>
-        {items.map((t, i) => (
+        {safeItems.map((t, i) => (
           <div key={i} style={{ background:'#faf9f7', borderRadius:16, padding:32 }}>
             <p style={{ fontSize:16, lineHeight:1.7, color:'#333', fontStyle:'italic', marginBottom:24 }}>"{t.quote}"</p>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -275,6 +277,7 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
 "/components/sections/Footer.tsx": `import React from 'react';
 export default function Footer({ brand, tagline, links, year }: { brand: string; tagline?: string; links?: string[]; year?: number }) {
   const y = year || new Date().getFullYear();
+  const safeLinks = (links || []).filter(Boolean);
   return (
     <footer style={{ borderTop:'1px solid #eee', padding:'48px 40px' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:24 }}>
@@ -282,6 +285,13 @@ export default function Footer({ brand, tagline, links, year }: { brand: string;
           <p style={{ fontWeight:700, fontSize:16 }}>{brand}</p>
           {tagline && <p style={{ fontSize:14, color:'#888', marginTop:4 }}>{tagline}</p>}
         </div>
+        {safeLinks.length > 0 && (
+          <div style={{ display:'flex', gap:24, flexWrap:'wrap' }}>
+            {safeLinks.map((l, i) => (
+              <a key={i} href={\`#\${String(l).toLowerCase().replace(/\\s+/g,'-')}\`} style={{ fontSize:14, color:'#888', textDecoration:'none', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#888'}>{l}</a>
+            ))}
+          </div>
+        )}
         <p style={{ fontSize:13, color:'#999' }}>© {y} {brand}. All rights reserved.</p>
       </div>
     </footer>
@@ -447,11 +457,12 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
 "/components/sections/FAQ.tsx": `import React, { useState } from 'react';
 type FAQItem = { q: string; a: string };
 export default function FAQ({ title, items }: { title: string; items: FAQItem[] }) {
+  const safeItems = (items || []).filter(Boolean);
   const [open, setOpen] = useState<number | null>(null);
   return (
     <section id="faq" style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
-      {items.map((item, i) => (
+      {safeItems.map((item, i) => (
         <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
           <button onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--text,#111)', textAlign:'left' }}>
             {item.q}
@@ -479,13 +490,15 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
 }`,
 
 "/components/sections/Gallery.tsx": `import React, { useState } from 'react';
-export default function Gallery({ title, images }: { title: string; images: { src: string; alt: string }[] }) {
+export default function Gallery({ title, images, items }: { title: string; images?: { src: string; alt: string }[]; items?: { src?: string; image?: string; alt?: string; caption?: string }[] }) {
+  const rawList = images || items || [];
+  const safeImages = rawList.filter(Boolean).map((img: any) => ({ src: img.src || img.image || '', alt: img.alt || img.caption || '' }));
   const [selected, setSelected] = useState<number | null>(null);
   return (
     <section id="gallery" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
-        {images.map((img, i) => (
+        {safeImages.map((img, i) => (
           <div key={i} onClick={() => setSelected(i)} style={{ borderRadius:12, overflow:'hidden', cursor:'pointer', aspectRatio:'4/3' }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}>
@@ -495,7 +508,7 @@ export default function Gallery({ title, images }: { title: string; images: { sr
       </div>
       {selected !== null && (
         <div onClick={() => setSelected(null)} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-          <img src={images[selected].src} alt={images[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} />
+          <img src={safeImages[selected].src} alt={safeImages[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} />
         </div>
       )}
     </section>
@@ -505,10 +518,11 @@ export default function Gallery({ title, images }: { title: string; images: { sr
 "/components/sections/Stats.tsx": `import React from 'react';
 type Stat = { value: string; label: string };
 export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }) {
+  const safeItems = (items || []).filter(Boolean);
   return (
     <section style={{ padding:'80px 40px', background: dark ? 'var(--accent,#111)' : 'var(--card,#faf9f7)' }}>
-      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:\`repeat(\${Math.min(items.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
-        {items.map((s, i) => (
+      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:\`repeat(\${Math.min(safeItems.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
+        {safeItems.map((s, i) => (
           <div key={i}>
             <p style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, color: dark ? '#fff' : 'var(--accent,#c2410c)', letterSpacing:'-0.02em' }}>{s.value}</p>
             <p style={{ fontSize:14, color: dark ? 'rgba(255,255,255,0.7)' : 'var(--muted,#888)', marginTop:8, textTransform:'uppercase', letterSpacing:'0.1em' }}>{s.label}</p>
@@ -565,11 +579,12 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
 
 "/components/sections/Timeline.tsx": `import React from 'react';
 type Event = { year: string; title: string; desc: string };
-export default function Timeline({ title, events }: { title: string; events: Event[] }) {
+export default function Timeline({ title, events, items }: { title: string; events?: Event[]; items?: Event[] }) {
+  const safeEvents = ((events || items || [])).filter(Boolean);
   return (
     <section style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
-      {events.map((e, i) => (
+      {safeEvents.map((e, i) => (
         <div key={i} style={{ display:'flex', gap:24, marginBottom:40, position:'relative' }}>
           <div style={{ width:80, textAlign:'right', flexShrink:0 }}>
             <span style={{ fontSize:14, fontWeight:700, color:'var(--accent,#c2410c)' }}>{e.year}</span>
@@ -589,12 +604,13 @@ export default function Timeline({ title, events }: { title: string; events: Eve
 
 "/components/sections/LogoCloud.tsx": `import React from 'react';
 export default function LogoCloud({ title, logos }: { title?: string; logos: { name: string; image?: string }[] }) {
+  const safeLogos = (logos || []).filter(Boolean);
   return (
     <section style={{ padding:'60px 40px', borderTop:'1px solid var(--border,#eee)', borderBottom:'1px solid var(--border,#eee)' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', textAlign:'center' }}>
         {title && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--muted,#999)', marginBottom:32 }}>{title}</p>}
         <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:40, alignItems:'center', opacity:0.5 }}>
-          {logos.map((l, i) => l.image
+          {safeLogos.map((l, i) => l.image
             ? <img key={i} src={l.image} alt={l.name} style={{ height:28, objectFit:'contain' }} />
             : <span key={i} style={{ fontSize:18, fontWeight:700, letterSpacing:'-0.02em' }}>{l.name}</span>
           )}
@@ -606,12 +622,13 @@ export default function LogoCloud({ title, logos }: { title?: string; logos: { n
 
 "/components/sections/BlogGrid.tsx": `import React from 'react';
 type Post = { title: string; excerpt: string; image: string; date: string; author: string; category?: string };
-export default function BlogGrid({ title, posts }: { title: string; posts: Post[] }) {
+export default function BlogGrid({ title, posts, items }: { title: string; posts?: Post[]; items?: Post[] }) {
+  const safePosts = ((posts || items || [])).filter(Boolean);
   return (
     <section id="blog" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:32 }}>
-        {posts.map((p, i) => (
+        {safePosts.map((p, i) => (
           <article key={i} style={{ borderRadius:16, overflow:'hidden', border:'1px solid var(--border,#eee)', background:'var(--card,#fff)' }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-4px)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}>
@@ -634,15 +651,16 @@ export default function BlogGrid({ title, posts }: { title: string; posts: Post[
 "/components/sections/Tabs.tsx": `import React, { useState } from 'react';
 type Tab = { label: string; content: string };
 export default function Tabs({ tabs }: { tabs: Tab[] }) {
+  const safeTabs = (tabs || []).filter(Boolean);
   const [active, setActive] = useState(0);
   return (
     <section style={{ padding:'80px 40px', maxWidth:800, margin:'0 auto' }}>
       <div style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
-        {tabs.map((t, i) => (
+        {safeTabs.map((t, i) => (
           <button key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--text,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
         ))}
       </div>
-      <div style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{tabs[active]?.content}</div>
+      <div style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{safeTabs[active]?.content}</div>
     </section>
   );
 }`,
@@ -756,7 +774,7 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor }
         <div style={{textAlign:'center',marginBottom:56}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12}}>
             <span style={{fontSize:48,fontWeight:900,letterSpacing:'-0.03em'}}>{avg}</span>
-            <div><div style={{display:'flex',gap:2}}>{stars(5)}</div><p style={{fontSize:12,color:'#999',margin:'2px 0 0'}}>from {items.length} reviews</p></div>
+            <div><div style={{display:'flex',gap:2}}>{stars(5)}</div><p style={{fontSize:12,color:'#999',margin:'2px 0 0'}}>from {safeItems.length} reviews</p></div>
           </div>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
@@ -1255,7 +1273,8 @@ export default function QuoteBlock({ quote, author, role, image, accentColor, da
 type Feature = { icon: string; title: string; desc: string };
 export default function IconFeatures({ title, subtitle, items, accentColor, columns, dark }: { title?: string; subtitle?: string; items: Feature[]; accentColor?: string; columns?: number; dark?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const cols = columns || (items.length <= 3 ? items.length : items.length <= 4 ? 4 : items.length <= 6 ? 3 : 4);
+  const safeItems = (items || []).filter(Boolean);
+  const cols = columns || (safeItems.length <= 3 ? Math.max(1, safeItems.length) : safeItems.length <= 4 ? 4 : safeItems.length <= 6 ? 3 : 4);
   const bg = dark ? '#0f0f0f' : 'var(--bg,#fff)';
   const fg = dark ? '#fff' : '#111';
   return (
@@ -1266,7 +1285,7 @@ export default function IconFeatures({ title, subtitle, items, accentColor, colu
           {subtitle&&<p style={{color:dark?'rgba(255,255,255,0.55)':'#888',fontSize:17,maxWidth:540,margin:'0 auto'}}>{subtitle}</p>}
         </div>}
         <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:32}}>
-          {items.map((f,i)=>(
+          {safeItems.map((f,i)=>(
             <div key={i} style={{textAlign:'center',padding:'32px 16px'}}>
               <div style={{width:64,height:64,borderRadius:20,background:dark?'rgba(255,255,255,0.08)':\`\${accent}14\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,margin:'0 auto 20px'}}>{f.icon}</div>
               <h3 style={{fontSize:17,fontWeight:700,margin:'0 0 8px',color:fg}}>{f.title}</h3>
