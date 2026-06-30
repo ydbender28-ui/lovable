@@ -176,20 +176,58 @@ export default function Testimonials({ title, items }: { title: string; items: T
   );
 }`,
 
-"/components/sections/Contact.tsx": `import React from 'react';
-type ContactInfo = { label: string; value: string; href?: string };
+"/components/sections/Contact.tsx": `import React, { useState } from 'react';
+type ContactInfo = { label: string; value: string; href?: string; icon?: string };
 export default function Contact({ title, subtitle, items }: { title: string; subtitle?: string; items: ContactInfo[] }) {
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [sent, setSent] = useState(false);
+  const accent = 'var(--accent, #c2410c)';
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid #e5e5e5', fontSize: 14, fontFamily: 'inherit', outline: 'none', background: '#fafafa', boxSizing: 'border-box', transition: 'border-color 0.2s' };
   return (
-    <section id="contact" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
-      <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:12 }}>{title}</h2>
-      {subtitle && <p style={{ color:'#666', fontSize:16, marginBottom:48 }}>{subtitle}</p>}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:32 }}>
-        {items.map((c, i) => (
-          <div key={i}>
-            <h3 style={{ fontSize:14, textTransform:'uppercase', letterSpacing:'0.1em', color:'#999', marginBottom:8 }}>{c.label}</h3>
-            {c.href ? <a href={c.href} style={{ fontSize:16, color:'#111', textDecoration:'none' }}>{c.value}</a> : <p style={{ fontSize:16, color:'#111' }}>{c.value}</p>}
+    <section id="contact" style={{ padding: '100px 40px', background: '#fff' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>{title}</h2>
+        {subtitle && <p style={{ color: '#666', fontSize: 16, marginBottom: 56 }}>{subtitle}</p>}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 80, alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            {items.map((c, i) => (
+              <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                {c.icon && <span style={{ fontSize: 20, marginTop: 2 }}>{c.icon}</span>}
+                <div>
+                  <p style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#aaa', marginBottom: 4 }}>{c.label}</p>
+                  {c.href ? <a href={c.href} style={{ fontSize: 16, color: '#111', textDecoration: 'none', fontWeight: 500 }}>{c.value}</a> : <p style={{ fontSize: 16, color: '#111', fontWeight: 500, margin: 0 }}>{c.value}</p>}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+          <div>
+            {sent ? (
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 16, padding: 40, textAlign: 'center' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: '#166534' }}>Message sent!</h3>
+                <p style={{ color: '#4ade80', marginTop: 8 }}>We'll get back to you soon.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Your Name</label>
+                    <input value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Jane Smith" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Email Address</label>
+                    <input type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="jane@example.com" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Message</label>
+                  <textarea value={form.message} onChange={e => setForm(p => ({...p, message: e.target.value}))} placeholder="Tell us how we can help..." rows={5} style={{ ...inputStyle, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                </div>
+                <button onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'}>Send Message →</button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -569,7 +607,8 @@ Import using: import Navbar from '/components/sections/Navbar';
 - MenuGrid: <MenuGrid title="Our Menu" items={[{name:"Espresso", price:"$3.50", desc:"Rich shot", category:"Coffee", badge:"Popular"}]} />
 - SplitSection: <SplitSection tag="Our story" title="Heading" text="Paragraph..." image="{{unsplash:...|800x600}}" reverse={false} />
 - Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
-- Contact: <Contact title="Visit us" items={[{label:"Address", value:"123 Main St"}, {label:"Phone", value:"908-783-4220", href:"tel:9087834220"}]} />
+- Contact: <Contact title="Get in touch" subtitle="We'd love to hear from you." items={[{icon:"📍", label:"Address", value:"123 Main St"},{icon:"📞", label:"Phone", value:"(555) 123-4567", href:"tel:5551234567"},{icon:"✉️", label:"Email", value:"hello@brand.com", href:"mailto:hello@brand.com"},{icon:"🕐", label:"Hours", value:"Mon–Fri 9am–6pm"}]} />
+  → Has a styled contact form (name, email, message) built-in on the right + contact info on the left. DO NOT write your own form.
 - Footer: <Footer brand="Name" tagline="Tagline" />
 - ShopGrid: <ShopGrid title="Shop" items={[{id:1, name:"Item", price:3.50, desc:"Desc", category:"Cat", badge:"Popular", image:"{{unsplash:product|400x300}}"}]} />
   → Built-in cart + checkout. Use instead of MenuGrid for ordering.
