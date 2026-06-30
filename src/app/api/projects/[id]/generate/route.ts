@@ -8,6 +8,7 @@ import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learn
 import { buildSpec } from "@/lib/spec-builder";
 import { buildWebsiteKnowledge } from "@/lib/website-knowledge"
 import { getRelevantComponents } from "@/lib/component-retrieval";
+import { getBuilderConfig, saveUserBuild, getSimilarBuilds } from "@/lib/builder-config";
 
 export const maxDuration = 300;
 
@@ -112,6 +113,27 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     // Inject real-world component examples from Supabase (vector search)
     const realExamples = await getRelevantComponents(prompt).catch(() => '');
     if (realExamples) smartPrompt += `\n\n${realExamples}`;
+
+    // Inject similar past user builds + dynamic prompt additions from training agent
+    const [builderConfig, embedRes] = await Promise.all([
+      getBuilderConfig().catch(() => ({ additions: '', forbidden: '' })),
+      fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'text-embedding-3-small', input: prompt.slice(0, 2000) }),
+        signal: AbortSignal.timeout(5000),
+      }).then(r => r.json()).catch(() => null),
+    ]);
+
+    const promptEmbedding: number[] | null = embedRes?.data?.[0]?.embedding ?? null;
+
+    if (promptEmbedding) {
+      const similarBuilds = await getSimilarBuilds(promptEmbedding).catch(() => '');
+      if (similarBuilds) smartPrompt += `\n\n${similarBuilds}`;
+    }
+
+    if (builderConfig.additions) smartPrompt += `\n\n## Builder Improvements (learned from training):\n${builderConfig.additions}`;
+    if (builderConfig.forbidden) smartPrompt += `\n\n## Additional Forbidden Patterns:\n${builderConfig.forbidden}`;
   }
 
   // SSE event buffer — drained to client every 100ms
@@ -157,6 +179,26 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           ? prisma.user.update({ where: { id: session.user.id }, data: { credits: { decrement: actualCredits } } })
           : Promise.resolve(),
       ]);
+
+      // Save build to Supabase for future RAG + training (fire-and-forget)
+      if (!hasExisting && result.files['/App.tsx']) {
+        const buildEmbedRes = await fetch('https://api.openai.com/v1/embeddings', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'text-embedding-3-small', input: prompt.slice(0, 2000) }),
+          signal: AbortSignal.timeout(5000),
+        }).then(r => r.json()).catch(() => null);
+        const buildEmbedding: number[] | null = buildEmbedRes?.data?.[0]?.embedding ?? null;
+        saveUserBuild(
+          prompt,
+          result.files['/App.tsx'],
+          detectCategory(prompt),
+          0, // quality scored by training agent later
+          result.modelUsed,
+          0,
+          buildEmbedding,
+        ).catch(() => {});
+      }
 
       return { result, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
