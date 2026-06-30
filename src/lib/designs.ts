@@ -429,7 +429,32 @@ Use var(--primary) for buttons/CTAs, var(--bg) for backgrounds, var(--fg) for te
 Pass accentColor="var(--primary)" to ALL section components (Navbar, Hero, ServiceCards, Reviews, etc.).
 border-radius everywhere: ${mood.radius}.
 Hero image: {{unsplash:${category.heroQuery}|1600x900}}
-Card images: {{unsplash:${category.cardQuery}|400x300}}`
+Card images: {{unsplash:${category.cardQuery}|400x300}}
+
+VISUAL EFFECTS — use these CSS patterns to make the site look premium:
+
+/* Glass card effect */
+.glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; }
+
+/* For dark themes, use this instead */
+.glass-dark { background: rgba(0,0,0,0.3); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+
+/* Gradient text */
+.gradient-text { background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* Glow button */
+.glow-btn { box-shadow: 0 0 30px rgba(var(--primary-rgb), 0.4); }
+
+/* Noise texture overlay (subtle) */
+.noise::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,..."); opacity: 0.03; pointer-events: none; }
+
+USE THESE PATTERNS:
+- Hero section: gradient background from var(--primary) to var(--accent) at 135deg, or a dark overlay on image
+- Cards: subtle box-shadow: 0 4px 24px rgba(0,0,0,0.08) on hover → 0 12px 40px rgba(0,0,0,0.15)
+- Primary buttons: gradient background + box-shadow glow
+- Section dividers: use SVG wave dividers or angled cuts (clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%))
+- Stats section: colored gradient backgrounds behind stat cards
+- Testimonials: subtle gradient border or left-accent line`
 }
 
 export { CATEGORIES, MOODS, PALETTES }
