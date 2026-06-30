@@ -198,6 +198,13 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 6. NEVER write a custom delivery/dine-in/pickup toggle or order-type selector — if needed, build it as a clean styled toggle inside App.tsx using useState, with pill buttons and proper styling. No ZIP code inputs, no ugly form elements.
 9. NEVER add floating action buttons, fixed-position buttons, or sticky order-tracker widgets (like "Track My Order Live") — these look unprofessional and clutter the UI. If order tracking is needed, put it as a section or a link in the Navbar.
 10. Banner goes ABOVE Hero, right after Navbar — NEVER place Banner below the hero or floating over content.
+11. ALL phone numbers MUST be wrapped in <a href="tel:+1XXXXXXXXXX"> — clicking a phone number must open the dialer.
+12. ALL email addresses MUST be wrapped in <a href="mailto:..."> — clicking must open email.
+13. ALL CTA buttons and links that say "Book Now", "Reserve", "Contact Us", "Get Started" MUST link to an actual section with a matching id. If <Banner cta="Book Now" href="#booking" />, then somewhere on page there MUST be a section with id="booking".
+14. Section IDs MUST match exactly: if you use id="booking" in App.tsx, the Banner/CTA href must be "#booking" — not "#book", "#reservations", or "#contact".
+15. If Navbar has a cart icon and you are NOT building a shop/restaurant, remove the cart — do NOT include cart functionality on non-commerce sites.
+16. EVERY interactive button must DO something: Book Now scrolls to booking, Call Now opens dialer, Get Directions opens maps, Select Plan highlights the plan.
+17. Design must be BOLD and DISTINCTIVE — use the full accent color for hero backgrounds, gradients, or large graphic elements. NEVER use plain white/gray backgrounds throughout. Make it feel premium, not like a template.
 7. NEVER use <input type="date"> or <input type="time"> anywhere — ugly native pickers. Use styled <select> dropdowns instead.
 8. For reservation/booking forms: build directly in App.tsx as a styled card component. Use this exact pattern for inputs:
    const inp = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, outline:'none', background:'#fff', boxSizing:'border-box' as const, fontFamily:'inherit' };

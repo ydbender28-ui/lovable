@@ -387,22 +387,45 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
 }`,
 
 "/components/sections/PricingTable.tsx": `import React, { useState } from 'react';
-type Plan = { name: string; price: string; period?: string; features: string[]; cta: string; popular?: boolean };
-export default function PricingTable({ title, subtitle, plans }: { title: string; subtitle?: string; plans: Plan[] }) {
+type Plan = { name: string; price: string; yearlyPrice?: string; period?: string; features: string[]; cta: string; ctaHref?: string; popular?: boolean; desc?: string };
+export default function PricingTable({ title, subtitle, plans, accentColor }: { title: string; subtitle?: string; plans: Plan[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const [billing, setBilling] = useState<'monthly'|'yearly'>('monthly');
+  const [selected, setSelected] = useState<number|null>(plans.findIndex(p=>p.popular) ?? null);
+  const hasYearly = plans.some(p=>p.yearlyPrice);
   return (
-    <section id="pricing" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
-      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em' }}>{title}</h2>
-      {subtitle && <p style={{ textAlign:'center', color:'var(--muted,#888)', fontSize:16, marginTop:12, marginBottom:48 }}>{subtitle}</p>}
-      <div style={{ display:'grid', gridTemplateColumns:\`repeat(\${Math.min(plans.length, 3)}, 1fr)\`, gap:24, alignItems:'start' }}>
-        {plans.map((p, i) => (
-          <div key={i} style={{ background: p.popular ? 'var(--accent,#111)' : 'var(--card,#fff)', color: p.popular ? '#fff' : 'var(--text,#111)', border: p.popular ? 'none' : '1px solid var(--border,#eee)', borderRadius:16, padding:32, position:'relative', transform: p.popular ? 'scale(1.05)' : 'none' }}>
-            {p.popular && <span style={{ position:'absolute', top:-12, left:'50%', transform:'translateX(-50%)', background:'var(--accent2,#c2410c)', color:'#fff', fontSize:11, padding:'4px 12px', borderRadius:50, fontWeight:600 }}>Most Popular</span>}
-            <h3 style={{ fontSize:20, fontWeight:700 }}>{p.name}</h3>
-            <div style={{ margin:'16px 0' }}><span style={{ fontSize:40, fontWeight:800 }}>{p.price}</span>{p.period && <span style={{ fontSize:14, opacity:0.7 }}>/{p.period}</span>}</div>
-            <ul style={{ listStyle:'none', padding:0, margin:'24px 0' }}>{p.features.map((f, j) => <li key={j} style={{ fontSize:14, padding:'8px 0', borderBottom:'1px solid ' + (p.popular ? 'rgba(255,255,255,0.1)' : 'var(--border,#eee)') }}>✓ {f}</li>)}</ul>
-            <button style={{ width:'100%', padding:'14px', borderRadius:50, border: p.popular ? 'none' : '1px solid var(--border,#ddd)', background: p.popular ? '#fff' : 'var(--accent,#111)', color: p.popular ? 'var(--accent,#111)' : '#fff', fontSize:14, fontWeight:600, cursor:'pointer' }}>{p.cta}</button>
-          </div>
-        ))}
+    <section id="pricing" style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:48}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16,marginBottom:hasYearly?28:0}}>{subtitle}</p>}
+          {hasYearly&&<div style={{display:'inline-flex',background:'#f5f5f5',borderRadius:50,padding:4,gap:0}}>
+            <button onClick={()=>setBilling('monthly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='monthly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='monthly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>Monthly</button>
+            <button onClick={()=>setBilling('yearly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='yearly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='yearly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>
+              Yearly <span style={{fontSize:11,background:'#dcfce7',color:'#16a34a',padding:'2px 6px',borderRadius:50,marginLeft:4,fontWeight:700}}>Save 20%</span>
+            </button>
+          </div>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${Math.min(plans.length,3)},1fr)\`,gap:20,alignItems:'start'}}>
+          {(plans||[]).map((p,i)=>{
+            const isSelected = selected===i;
+            const price = billing==='yearly'&&p.yearlyPrice ? p.yearlyPrice : p.price;
+            return (
+              <div key={i} onClick={()=>setSelected(i)} style={{background:p.popular?accent:'#fff',color:p.popular?'#fff':'#111',border:isSelected&&!p.popular?\`2px solid \${accent}\`:'2px solid '+(p.popular?accent:'#f0f0f0'),borderRadius:20,padding:32,position:'relative',cursor:'pointer',transition:'all 0.2s',boxShadow:isSelected?'0 16px 48px rgba(0,0,0,0.12)':'0 2px 12px rgba(0,0,0,0.04)',transform:p.popular?'scale(1.03)':'none'}}>
+                {p.popular&&<span style={{position:'absolute',top:-14,left:'50%',transform:'translateX(-50%)',background:'#fff',color:accent,fontSize:11,padding:'4px 14px',borderRadius:50,fontWeight:800,border:\`2px solid \${accent}\`,whiteSpace:'nowrap'}}>Most Popular</span>}
+                <h3 style={{fontSize:19,fontWeight:800,margin:'0 0 6px'}}>{p.name}</h3>
+                {p.desc&&<p style={{fontSize:13,opacity:0.7,margin:'0 0 16px'}}>{p.desc}</p>}
+                <div style={{margin:'16px 0 24px'}}><span style={{fontSize:44,fontWeight:900,letterSpacing:'-0.03em'}}>{price}</span>{p.period&&<span style={{fontSize:14,opacity:0.6}}>/{p.period}</span>}</div>
+                <ul style={{listStyle:'none',padding:0,margin:'0 0 28px'}}>
+                  {(p.features||[]).map((f,j)=><li key={j} style={{fontSize:14,padding:'8px 0',borderBottom:'1px solid '+(p.popular?'rgba(255,255,255,0.15)':'#f5f5f5'),display:'flex',gap:8,alignItems:'center'}}>
+                    <span style={{color:p.popular?'rgba(255,255,255,0.8)':'#22c55e',fontWeight:700,fontSize:15}}>✓</span>{f}
+                  </li>)}
+                </ul>
+                <a href={p.ctaHref||'#contact'} onClick={e=>e.stopPropagation()} style={{display:'block',width:'100%',padding:'13px',borderRadius:50,border:p.popular?'2px solid rgba(255,255,255,0.5)':'2px solid '+accent,background:p.popular?'rgba(255,255,255,0.15)':'transparent',color:p.popular?'#fff':accent,fontSize:14,fontWeight:800,cursor:'pointer',textAlign:'center',textDecoration:'none',transition:'all 0.2s',boxSizing:'border-box'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.background=p.popular?'rgba(255,255,255,0.25)':accent;(e.currentTarget as HTMLElement).style.color=p.popular?'#fff':'#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.background=p.popular?'rgba(255,255,255,0.15)':'transparent';(e.currentTarget as HTMLElement).style.color=p.popular?'#fff':accent}}>{p.cta}</a>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -745,25 +768,50 @@ export default function Reviews({ title, subtitle, items, accentColor }: { title
 type Hour = { day: string; hours: string; closed?: boolean };
 export default function MapSection({ title, address, phone, email, hours, mapUrl, accentColor }: { title?: string; address: string; phone?: string; email?: string; hours?: Hour[]; mapUrl?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const embedUrl = mapUrl || \`https://maps.google.com/maps?q=\${encodeURIComponent(address)}&output=embed\`;
+  const mapsLink = \`https://www.google.com/maps/search/?api=1&query=\${encodeURIComponent(address)}\`;
+  const staticImg = \`https://maps.googleapis.com/maps/api/staticmap?center=\${encodeURIComponent(address)}&zoom=15&size=600x400&markers=color:red%7C\${encodeURIComponent(address)}&key=AIzaSyD-placeholder\`;
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',marginBottom:48,textAlign:'center'}}>{title}</h2>}
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'start'}}>
-          <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 4px 32px rgba(0,0,0,0.1)',height:420}}>
-            <iframe src={embedUrl} width="100%" height="100%" style={{border:'none',display:'block'}} loading="lazy" />
-          </div>
+          <a href={mapsLink} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',display:'block',borderRadius:24,overflow:'hidden',boxShadow:'0 4px 32px rgba(0,0,0,0.1)',height:420,background:'#e8e8e8',position:'relative',cursor:'pointer'}}>
+            <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#e8f0e8 0%,#d4e4d4 50%,#c8dcc8 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16}}>
+              <div style={{width:64,height:64,borderRadius:50,background:accent,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,boxShadow:'0 8px 24px rgba(0,0,0,0.2)'}}>📍</div>
+              <div style={{textAlign:'center',padding:'0 24px'}}>
+                <div style={{fontWeight:800,fontSize:18,color:'#222',marginBottom:6}}>View on Google Maps</div>
+                <div style={{fontSize:14,color:'#555',lineHeight:1.5}}>{address}</div>
+              </div>
+              <div style={{background:accent,color:'#fff',padding:'10px 24px',borderRadius:50,fontSize:13,fontWeight:700}}>Open Maps →</div>
+            </div>
+          </a>
           <div style={{paddingTop:8}}>
             <div style={{marginBottom:32}}>
               <div style={{display:'flex',gap:14,alignItems:'flex-start',marginBottom:20}}>
-                <span style={{fontSize:22,flexShrink:0}}>📍</span>
-                <div><div style={{fontWeight:700,fontSize:16,marginBottom:4}}>Address</div><p style={{color:'#666',fontSize:15,lineHeight:1.6,margin:0}}>{address}</p></div>
+                <div style={{width:44,height:44,borderRadius:12,background:\`\${accent}15\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>📍</div>
+                <div><div style={{fontWeight:700,fontSize:15,marginBottom:4}}>Address</div><p style={{color:'#666',fontSize:14,lineHeight:1.6,margin:0}}>{address}</p></div>
               </div>
-              {phone&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}><span style={{fontSize:22}}>📞</span><div><div style={{fontWeight:700,fontSize:16,marginBottom:2}}>Phone</div><a href={\`tel:\${phone}\`} style={{color:accent,textDecoration:'none',fontSize:15}}>{phone}</a></div></div>}
-              {email&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}><span style={{fontSize:22}}>✉️</span><div><div style={{fontWeight:700,fontSize:16,marginBottom:2}}>Email</div><a href={\`mailto:\${email}\`} style={{color:accent,textDecoration:'none',fontSize:15}}>{email}</a></div></div>}
+              {phone&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}>
+                <div style={{width:44,height:44,borderRadius:12,background:\`\${accent}15\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>📞</div>
+                <div><div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Phone</div><a href={\`tel:\${phone.replace(/\s/g,'')}\`} style={{color:accent,textDecoration:'none',fontSize:14,fontWeight:600}}>{phone}</a></div>
+              </div>}
+              {email&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}>
+                <div style={{width:44,height:44,borderRadius:12,background:\`\${accent}15\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>✉️</div>
+                <div><div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Email</div><a href={\`mailto:\${email}\`} style={{color:accent,textDecoration:'none',fontSize:14,fontWeight:600}}>{email}</a></div>
+              </div>}
             </div>
-            {hours&&hours.length>0&&<div><div style={{fontWeight:800,fontSize:18,marginBottom:16}}>Hours</div><div style={{background:'#fafafa',borderRadius:16,padding:20}}>{hours.map((h,i)=>{const isToday=new Date().toLocaleDateString('en',{weekday:'long'})===h.day;return(<div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:i<hours.length-1?'1px solid #f0f0f0':'none'}}><span style={{fontWeight:isToday?800:500,color:isToday?accent:'#444',fontSize:14}}>{h.day}</span><span style={{fontSize:14,color:h.closed?'#e53e3e':isToday?accent:'#666',fontWeight:isToday?700:400}}>{h.closed?'Closed':h.hours}</span></div>);})}</div></div>}
+            {hours&&hours.length>0&&<div>
+              <div style={{fontWeight:800,fontSize:17,marginBottom:14}}>Hours</div>
+              <div style={{background:'#fafafa',borderRadius:16,padding:20,border:'1px solid #f0f0f0'}}>
+                {hours.map((h,i)=>{
+                  const isToday=new Date().toLocaleDateString('en-US',{weekday:'long'})===h.day;
+                  return(<div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 0',borderBottom:i<hours.length-1?'1px solid #f0f0f0':'none',background:isToday?'rgba(0,0,0,0.02)':'transparent'}}>
+                    <span style={{fontWeight:isToday?800:500,color:isToday?accent:'#444',fontSize:14}}>{h.day}{isToday?' ✦':''}</span>
+                    <span style={{fontSize:14,color:h.closed?'#ef4444':isToday?accent:'#666',fontWeight:isToday?700:400}}>{h.closed?'Closed':h.hours}</span>
+                  </div>);
+                })}
+              </div>
+            </div>}
           </div>
         </div>
       </div>
