@@ -99,10 +99,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
       ]);
       if (spec) {
-        smartPrompt = spec.enhancedPrompt;
-        if (defaults) smartPrompt += `\n\n${defaults}`;
-        if (mistakes) smartPrompt += `\n\n${mistakes}`;
-        if (spec.componentPlan) smartPrompt += `\n\n## Architecture Plan\n${spec.componentPlan}`;
+        if (spec.componentPlan) smartPrompt += `\n\nFeatures to include: ${spec.componentPlan}`;
       }
     } catch { /* spec builder failed — continue with raw prompt */ }
 
