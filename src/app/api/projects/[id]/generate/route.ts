@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateProject, estimateCost, MODELS } from "@/lib/generate";
@@ -13,6 +14,15 @@ import { generateSuggestions } from "@/lib/suggestions";
 import { nameFromPrompt, isGenericName } from "@/lib/project-namer";
 
 export const maxDuration = 300;
+
+function isQuestion(prompt: string): boolean {
+  const p = prompt.trim().toLowerCase();
+  return (
+    p.endsWith('?') ||
+    /^(what|how|why|when|where|who|can|does|is|are|will|should|tell me|explain|show me|describe|list)\b/.test(p) ||
+    /\b(help me understand|what does|how does|what is|what are|how do i|how can)\b/.test(p)
+  ) && !/\b(add|create|build|make|change|update|fix|remove|delete|redesign|rebuild|add a|make it)\b/.test(p);
+}
 
 // Pricing: 2.5x AI cost ($0.15 profit per $0.10 spent)
 function costToCredits(aiCostUsd: number): number {
@@ -150,6 +160,45 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   // Run generation — after() keeps it alive even if client disconnects
   const genPromise = (async () => {
     try {
+      // Q&A mode: answer questions directly without rebuilding the site
+      if (isQuestion(prompt) && hasExisting && existingFiles) {
+        const appTsx = existingFiles['/App.tsx'] ?? existingFiles['/App.js'] ?? '';
+        const indexCss = existingFiles['/index.css'] ?? existingFiles['/styles.css'] ?? '';
+        const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const answerRes = await anthropicClient.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 500,
+          system: `You are a helpful assistant for a website builder. The user has a built website and is asking questions about it. Answer helpfully and concisely. Do NOT make changes to the site — just answer the question.
+
+Here is the user's current site code:
+<app_tsx>
+${appTsx.slice(0, 3000)}
+</app_tsx>
+<index_css>
+${indexCss.slice(0, 1000)}
+</index_css>`,
+          messages: [{ role: "user", content: prompt }],
+        });
+        const answer = answerRes.content[0].type === "text" ? answerRes.content[0].text : "I couldn't answer that.";
+        await prisma.message.create({ data: { projectId: id, role: "assistant", content: answer } }).catch(() => {});
+        const aiCost = (answerRes.usage.input_tokens * 0.00000025) + (answerRes.usage.output_tokens * 0.00000125);
+        return {
+          result: {
+            files: existingFiles,
+            summary: answer,
+            modelUsed: "claude-haiku-4-5-20251001",
+            inputTokens: answerRes.usage.input_tokens,
+            outputTokens: answerRes.usage.output_tokens,
+            estimatedCostUsd: aiCost,
+          },
+          actualCredits: 0.01,
+          aiCostUsd: aiCost,
+          creditsAfter: Math.max(0, currentCredits - 0.01),
+          wasPublished: false,
+          isAnswer: true,
+        };
+      }
+
       const result = await generateProject(
         smartPrompt, existingFiles, envVars, onToken, onStatus,
         null, undefined, finalRoute.model.model, null, null
@@ -210,6 +259,21 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           0,
           buildEmbedding,
         ).catch(() => {});
+      }
+
+      // Fire-and-forget thumbnail refresh if site was already published
+      if (wasPublished && project.publishSlug) {
+        const publishSlug = project.publishSlug;
+        setTimeout(async () => {
+          try {
+            const { captureScreenshot } = await import('@/lib/thumbnail');
+            const siteUrl = `${process.env.NEXTAUTH_URL || 'https://thatcode.dev'}/s/${publishSlug}`;
+            const thumbnail = await captureScreenshot(siteUrl);
+            if (thumbnail) {
+              await prisma.project.update({ where: { id }, data: { thumbnail } }).catch(() => {});
+            }
+          } catch { /* best effort */ }
+        }, 3000);
       }
 
       return { result, actualCredits, aiCostUsd: actualCost, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
@@ -287,6 +351,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           creditsUsed: outcome.actualCredits,
           aiCostUsd: outcome.aiCostUsd,
           creditsRemaining: outcome.creditsAfter,
+          isAnswer: (outcome as { isAnswer?: boolean }).isAnswer ?? false,
         });
       }
 

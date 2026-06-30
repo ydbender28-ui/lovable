@@ -1504,6 +1504,16 @@ export default function ProjectWorkspace({
             else if (eventLine === "done") {
               streamAccum.current = "";
               if (streamUpdateTimer.current) { clearTimeout(streamUpdateTimer.current); streamUpdateTimer.current = null; }
+              if (payload.isAnswer) {
+                // Q&A mode: just show the answer, don't touch the preview files
+                if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
+                setMessages((prev) => [...prev, {
+                  id: payload.tempMessageId ?? `msg-${Date.now()}`,
+                  role: "assistant",
+                  content: payload.summary ?? "Here's what I found.",
+                }]);
+                return;
+              }
               setFiles(payload.files);
               setAutoFixAttempt(0);
               justSaved.current = true;
@@ -2424,6 +2434,11 @@ export default function ProjectWorkspace({
             rows={3}
             className="w-full resize-none bg-transparent px-3.5 py-2.5 text-sm text-[#17171c] placeholder:text-[#9090a0] focus:outline-none"
           />
+          {prompt.trim().endsWith('?') && Object.keys(files).length > 0 && (
+            <div style={{ fontSize: 11, color: '#71717f', padding: '0 14px 6px', lineHeight: 1.4 }}>
+              💬 This looks like a question — AI will answer without changing your site
+            </div>
+          )}
           <div className="flex items-center justify-between px-2.5 pb-2.5">
             <div className="flex items-center gap-1 relative">
               {/* + Attach/actions popover */}
