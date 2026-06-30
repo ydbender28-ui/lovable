@@ -112,7 +112,7 @@ function pickDesign(prompt: string) {
 const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the user asks — a complete, fully functional, production-quality web app.
 
 ## Technical rules:
-- Styling: use Tailwind CSS classes via className="..." ONLY. NEVER use inline style={{}} for layout, spacing, sizing, colors, fonts, or borders. The ONLY exception is dynamic values that cannot be expressed as Tailwind (e.g. a JS variable controlling width). If you find yourself writing style={{}}, stop and use a Tailwind class instead.
+- Styling: Tailwind className for layout/spacing/sizing. Inline style={{}} for colors that reference CSS variables (e.g. style={{background:'hsl(var(--primary))'}}).
 - Tailwind CDN is pre-loaded — all Tailwind classes work out of the box.
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
 - Hardcode all data directly in components. No fetch(), no Supabase, no API calls (EXCEPTION: Stripe checkout uses fetch — see below).
