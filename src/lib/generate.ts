@@ -97,11 +97,9 @@ const DESIGN_THEMES = [
 ] as const;
 
 let _lastThemeIdx = -1;
-function pickDesign(prompt: string) {
-  // Use prompt hash as seed but always pick differently from last time
-  let h = 0;
-  for (let i = 0; i < prompt.length; i++) h = ((h << 5) - h + prompt.charCodeAt(i)) | 0;
-  let idx = Math.abs(h) % DESIGN_THEMES.length;
+function pickDesign(_prompt: string) {
+  // Always random — same prompt should produce different designs each build
+  let idx = Math.floor(Math.random() * DESIGN_THEMES.length);
   if (idx === _lastThemeIdx) idx = (idx + 1) % DESIGN_THEMES.length;
   _lastThemeIdx = idx;
   return DESIGN_THEMES[idx];
@@ -1540,16 +1538,30 @@ export async function generateProject(
   let modelOpt = forceModel && MODELS[forceModel] ? MODELS[forceModel] : pickModel(complexity);
   const isEdit = !!(existingFiles && Object.keys(existingFiles).length > 0);
 
+  // Layout variety — different section order / hero style each build
+  const LAYOUT_VARIANTS = [
+    "Lead with a big bold STATS section right after the hero. Then menu/products. Then testimonials. Then FAQ.",
+    "Use a SPLIT hero (text left, image right). Put testimonials BEFORE the menu/products section.",
+    "Use a full-bleed dark hero with centered text. Add a Features section before the menu. End with a bold CTA section.",
+    "Lead with hero, then a 3-column Features grid, then menu/products, then a quote/testimonial banner, then contact.",
+    "Use a minimal hero with large typography (no background image). Products/menu first, then social proof, then FAQ.",
+    "Lead with hero + a scrolling logo cloud. Then features. Then menu/products. Then testimonials in a dark band.",
+    "Split layout: hero with video-style overlay. Stats bar below hero. Then menu/products as the main focus.",
+    "Minimal: hero, immediately into menu/products grid, then one strong testimonial, then contact. No filler sections.",
+  ];
+  const layoutVariant = isEdit ? "" : LAYOUT_VARIANTS[Math.floor(Math.random() * LAYOUT_VARIANTS.length)];
+
   // Design system — 83 categories × 25 moods × 40 palettes = 80,000+ unique combinations
   const designMatch = isEdit ? null : matchDesign(prompt);
   const advancedDesignContext = designMatch ? buildDesignContext(designMatch) : "";
 
   // Fallback to original 8-theme system if no category matched
   const pickedDesign = (!designMatch && !isEdit) ? pickDesign(prompt) : null;
+  const layoutBlock = layoutVariant ? `\n\n## LAYOUT DIRECTION FOR THIS BUILD:\n${layoutVariant}` : "";
   const designInjection = isEdit
     ? `EDITING AN EXISTING APP — DO NOT apply any new design system. Read the existing code and match its exact colors, fonts, spacing, and visual style. Your only job is to add/change what was requested.`
     : designMatch
-    ? advancedDesignContext
+    ? advancedDesignContext + layoutBlock
     : `${pickedDesign!.description}
 
 In /index.css, define EXACTLY these CSS variables:
@@ -1565,7 +1577,7 @@ In /index.css, define EXACTLY these CSS variables:
 
 Use these in inline styles: style={{ background: "var(--accent)", color: "var(--text)" }}
 body background: var(--background). Cards: var(--card). Borders: var(--border).
-border-radius: ${pickedDesign!.radius} everywhere.`;
+border-radius: ${pickedDesign!.radius} everywhere.${layoutBlock}`;
 
   const hasEnvVars = envVars && Object.keys(envVars).length > 0;
   const integrationsBlock = hasEnvVars

@@ -248,9 +248,9 @@ export function matchDesign(prompt: string) {
   // Get industry defaults
   const industry = INDUSTRY_DEFAULTS[bestCat.industry] || INDUSTRY_DEFAULTS.professional
 
-  // Pick mood and palette based on prompt hash for variety
-  let h = 0
-  for (let i = 0; i < prompt.length; i++) h = ((h << 5) - h + prompt.charCodeAt(i)) | 0
+  // Use random seed each call so same prompt never produces the same design twice
+  const r = Math.random()
+  const r2 = Math.random()
 
   // Check for mood hints in prompt
   let mood
@@ -264,18 +264,18 @@ export function matchDesign(prompt: string) {
   else if (elegantHint) mood = MOODS.luxury
   else if (minimalHint) mood = MOODS.minimal
   else {
-    const moodKey = industry.moods[Math.abs(h) % industry.moods.length]
+    const moodKey = industry.moods[Math.floor(r * industry.moods.length)]
     mood = MOODS[moodKey]
   }
 
-  // Pick palette — prefer dark palettes for dark moods
+  // Pick palette randomly from industry palettes — prefer dark palettes for dark moods
   let palette
   if (darkHint) {
     const darkPalettes = PALETTES.filter(p => p.bg.startsWith('#0') || p.bg.startsWith('#1'))
-    palette = darkPalettes[Math.abs(h) % darkPalettes.length]
+    palette = darkPalettes[Math.floor(r * darkPalettes.length)]
   } else {
-    const paletteName = industry.palettes[Math.abs(h >> 4) % industry.palettes.length]
-    palette = PALETTES.find(p => p.name === paletteName) || PALETTES[0]
+    const paletteName = industry.palettes[Math.floor(r2 * industry.palettes.length)]
+    palette = PALETTES.find(p => p.name === paletteName) || PALETTES[Math.floor(r * PALETTES.length)]
   }
 
   return { category: bestCat, mood, palette }
