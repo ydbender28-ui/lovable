@@ -1334,6 +1334,7 @@ export default function ProjectWorkspace({
     setUploadImage(null);
 
     try {
+      const buildStartTime = Date.now();
       const controller = new AbortController();
       abortRef.current = controller;
       const res = await fetch(`/api/projects/${projectId}/generate`, {
@@ -1409,7 +1410,9 @@ export default function ProjectWorkspace({
               else if (/dashboard|admin panel|analytics|desktop/.test(pl)) setPreviewMode("desktop");
               if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
               const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
-              const costNote = payload.creditsUsed != null ? `\n\n💰 Cost: $${Number(payload.creditsUsed).toFixed(4)}` : "";
+              const elapsedSec = ((Date.now() - buildStartTime) / 1000).toFixed(1);
+              const totalChars = payload.files ? Object.values(payload.files as Record<string,string>).reduce((s, v) => s + v.length, 0) : 0;
+              const costNote = payload.creditsUsed != null ? `\n\n💰 Cost: $${Number(payload.creditsUsed).toFixed(4)} · ⏱ ${elapsedSec}s · 📄 ${totalChars.toLocaleString()} chars` : "";
               const summary = silent
                 ? "✓ Error fixed automatically." + (payload.liveUpdated ? "\n\n✓ Live site updated." : "")
                 : (payload.summary ?? "Done! Check the preview.") + costNote + liveNote;
