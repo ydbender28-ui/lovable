@@ -205,6 +205,12 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 12. ALL email addresses MUST be wrapped in <a href="mailto:..."> — clicking must open email.
 13. ALL CTA buttons and links that say "Book Now", "Reserve", "Contact Us", "Get Started" MUST link to an actual section with a matching id. If <Banner cta="Book Now" href="#booking" />, then somewhere on page there MUST be a section with id="booking".
 14. Section IDs MUST match exactly: if you use id="booking" in App.tsx, the Banner/CTA href must be "#booking" — not "#book", "#reservations", or "#contact".
+CRITICAL: The post-processor auto-injects anchor divs before these sections:
+  ServiceCards → id="services", Booking → id="booking", Reviews → id="reviews",
+  MenuGrid → id="menu", PricingTable → id="pricing", Team → id="team",
+  Contact → id="contact", MapSection → id="location", FAQ → id="faq",
+  Gallery → id="gallery", Portfolio → id="portfolio"
+So when using these components, CTA buttons/nav links should use EXACTLY these IDs.
 15. If Navbar has a cart icon and you are NOT building a shop/restaurant, remove the cart — do NOT include cart functionality on non-commerce sites.
 16. EVERY interactive button must DO something: Book Now scrolls to booking, Call Now opens dialer, Get Directions opens maps, Select Plan highlights the plan.
 17. Design must be BOLD and DISTINCTIVE — NOT plain white. Rules:
@@ -339,39 +345,40 @@ You have 16000 tokens. A full website fits in 8000-12000 tokens. Do NOT pad outp
 
 ## COMPLETE EXAMPLE — USE PRE-BUILT COMPONENTS, NOT CUSTOM LAYOUTS:
 
-This is how a bakery site should be built. Notice: NO custom nav, NO custom section layouts — just components with data props.
+This is how a luxury spa site should be built. Notice: 9 sections, unique business name, dark section for contrast, BeforeAfter for surprise, all accentColor props set, anchor IDs from post-processor.
 
-SUMMARY: A warm artisan bakery landing page with hero, menu, and contact.
+SUMMARY: A luxury Beverly Hills wellness studio with full treatment menu, results gallery, and booking.
 
-SUGGESTIONS: Add online ordering | Add customer reviews | Add dark mode | Add gallery | Add newsletter
+SUGGESTIONS: Add loyalty program | Add gift cards | Add seasonal promotions | Add blog | Add video tour
 
 /App.tsx
 \`\`\`tsx
-import React from 'react';
 import Navbar from '/components/sections/Navbar';
 import Hero from '/components/sections/Hero';
-import MenuGrid from '/components/sections/MenuGrid';
-import Testimonials from '/components/sections/Testimonials';
-import Contact from '/components/sections/Contact';
+import StickyBar from '/components/sections/StickyBar';
+import ServiceCards from '/components/sections/ServiceCards';
+import SocialProof from '/components/sections/SocialProof';
+import BeforeAfter from '/components/sections/BeforeAfter';
+import Team from '/components/sections/Team';
+import Reviews from '/components/sections/Reviews';
+import Booking from '/components/sections/Booking';
+import MapSection from '/components/sections/MapSection';
 import Footer from '/components/sections/Footer';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar brand="Rise & Crust" links={["Menu","About","Contact"]} cta="Visit Us" />
-      <Hero tag="Est. 2018" title="Baked fresh. Every morning." subtitle="Small-batch sourdough and single-origin coffee, made with love." cta1={{text:"See Menu",href:"#menu"}} cta2={{text:"Find Us",href:"#contact"}} image="{{unsplash:artisan bakery warm morning light|1600x900}}" />
-      <MenuGrid title="Our Menu" items={[
-        {name:"Sourdough Loaf",price:"$8.50",desc:"72-hour fermented, crispy crust",category:"Bread",badge:"Bestseller"},
-        {name:"Almond Croissant",price:"$5.25",desc:"Twice-baked with frangipane",category:"Pastry"},
-        {name:"Espresso",price:"$3.50",desc:"Bold, rich single shot",category:"Coffee"},
-        {name:"Avocado Toast",price:"$12",desc:"Sourdough, smashed avo, chili flakes",category:"Food"},
-      ]} />
-      <Testimonials title="What people say" items={[
-        {quote:"Best sourdough in the city — worth the trip.",name:"Sarah M.",role:"Regular",image:"{{unsplash:smiling woman portrait|200x200}}"},
-        {quote:"The almond croissants are life-changing.",name:"James K.",role:"Food blogger",image:"{{unsplash:man smiling portrait|200x200}}"},
-      ]} />
-      <Contact title="Find Us" items={[{label:"Address",value:"42 Bread Lane, Brooklyn NY"},{label:"Hours",value:"Tue–Sun 7am–3pm"},{label:"Phone",value:"(718) 555-0142",href:"tel:7185550142"}]} />
-      <Footer brand="Rise & Crust" tagline="Baked with love since 2018." />
+    <div>
+      <StickyBar text="✨ New: Hydrafacial Express — 45 min, $89" cta="Book Now" ctaHref="#booking" showAfterScroll={300} />
+      <Navbar brand="Jade & Ivory Wellness" links={["Services","Results","Team","Reviews","Book"]} cta="Book Now" ctaHref="#booking" accentColor="var(--primary)" />
+      <Hero tag="SINCE 2018 · BEVERLY HILLS" title="Where Science Meets Serenity" subtitle="Award-winning facials, body treatments, and wellness rituals in the heart of Beverly Hills." cta1={{text:"Book a Treatment",href:"#booking"}} cta2={{text:"View Services",href:"#services"}} image="{{unsplash:luxury spa treatment room candles soft lighting|1600x900}}" />
+      <ServiceCards title="Signature Treatments" subtitle="Each service is customized to your skin's unique needs." items={[{title:"Signature HydraFacial",desc:"Deep cleanse + extraction + hydration. Skin transformation in 60 minutes.",price:"From $185",icon:"💎",badge:"Most Popular",features:["60 min","All skin types","No downtime"]},{title:"Vitamin C Brightening",desc:"Targeted treatment to eliminate dark spots and restore radiance.",price:"From $145",icon:"✨",features:["45 min","Visible results in 1 session"]},{title:"Deep Tissue Massage",desc:"Release tension with our signature 90-minute therapeutic massage.",price:"From $165",icon:"🌿",features:["90 min","Swedish or deep tissue"]}]} accentColor="var(--primary)" />
+      <SocialProof stats={[{value:"4,800+",label:"Treatments Performed",icon:"💆"},{value:"4.9★",label:"Average Rating",icon:"⭐"},{value:"98%",label:"Would Recommend",icon:"❤️"},{value:"6+",label:"Years in Beverly Hills",icon:"📍"}]} dark={true} />
+      <BeforeAfter title="Real Results" subtitle="Before and after treatments from our clients." items={[{before:"{{unsplash:dull tired skin texture close up|400x300}}",after:"{{unsplash:glowing healthy skin close up|400x300}}",beforeLabel:"Before",afterLabel:"After 3 Sessions"},{before:"{{unsplash:uneven skin tone texture|400x300}}",after:"{{unsplash:smooth even skin glow|400x300}}",beforeLabel:"Before",afterLabel:"After HydraFacial"}]} accentColor="var(--primary)" />
+      <Team title="Meet Your Estheticians" items={[{name:"Dr. Camille Reyes",role:"Medical Director",image:"{{unsplash:professional woman doctor portrait studio|200x200}}",bio:"Board-certified dermatologist with 14 years specializing in non-invasive rejuvenation."},{name:"Sofia Marchetti",role:"Lead Esthetician",image:"{{unsplash:professional woman esthetician portrait|200x200}}",bio:"HydraFacial and microneedling expert with a passion for visible, lasting transformation."}]} accentColor="var(--primary)" />
+      <Reviews title="What Our Guests Say" items={[{name:"Priya K.",rating:5,text:"The HydraFacial completely transformed my skin. I've tried everything and this is the only thing that actually worked.",date:"March 2025",source:"Google"},{name:"Amanda L.",rating:5,text:"Sofia is an absolute artist. My skin has never looked better. Worth every penny.",date:"February 2025",source:"Yelp"},{name:"Jessica M.",rating:5,text:"The atmosphere alone is worth coming for. The results are beyond anything I expected.",date:"January 2025",source:"Google"}]} accentColor="var(--primary)" />
+      <Booking title="Reserve Your Treatment" accentColor="var(--primary)" />
+      <MapSection title="Visit Us in Beverly Hills" address="9450 Wilshire Blvd, Suite 200, Beverly Hills, CA 90212" phone="(310) 555-0192" email="hello@jadeivorywellness.com" hours={[{day:"Monday",open:"9:00",close:"19:00"},{day:"Tuesday",open:"9:00",close:"19:00"},{day:"Wednesday",open:"9:00",close:"19:00"},{day:"Thursday",open:"9:00",close:"20:00"},{day:"Friday",open:"9:00",close:"20:00"},{day:"Saturday",open:"10:00",close:"18:00"},{day:"Sunday",closed:true}]} accentColor="var(--primary)" />
+      <Footer brand="Jade & Ivory Wellness" tagline="Beverly Hills' Premier Wellness Studio" links={["Services","About","Reviews","Book"]} accentColor="var(--primary)" />
     </div>
   );
 }
@@ -397,7 +404,36 @@ body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--back
 img:not(.hero-img) { max-height: 260px; width: 100%; object-fit: cover; display: block; }
 \`\`\`
 
-^^^ This App.tsx is ~35 lines. A full site using components should be 40-80 lines. If yours is >150 lines, you're writing too much custom code. USE THE COMPONENTS.
+^^^ This App.tsx uses 9 sections, a unique business name, a dark SocialProof section for contrast, and a BeforeAfter for surprise. A full site using components should be 40-80 lines. If yours is >150 lines, you're writing too much custom code. USE THE COMPONENTS.
+
+## SITE QUALITY CHECKLIST — every build must score 9/10+:
+
+### Content quality:
+- Business name must be creative and memorable — NOT "Serenity Spa", "Elite Fitness", "Modern Dental". Use specific, unique names like "Sage & Stone Wellness", "Ironside Athletic Club", "Coastal Crown Dental"
+- Write real, specific copy — NOT "Lorem ipsum" or "We are the best". Write actual service descriptions, real-sounding staff bios, specific pricing
+- Use real addresses (e.g. "2847 Pacific Coast Hwy, Malibu CA 90265") not "123 Main St"
+- Hero headline must be punchy and specific: "Beverly Hills' Most Awarded Facial Studio" not "Welcome to Our Spa"
+
+### Section uniqueness:
+- Every build must use at least 8 sections
+- Pick sections that make sense for the business — a dental office needs Booking, Team, TrustBadges, BeforeAfter. A restaurant needs MenuGrid, Gallery, HoursTable, Reviews
+- At least one section must be non-obvious: use BeforeAfter, Countdown, Awards, VideoSection, or SocialProof to add surprise
+- NEVER use the exact same set of sections for similar businesses
+
+### Visual distinctiveness:
+- Hero must have a large, full-width image (use {{unsplash:...}} with specific query)
+- At least one section must have a dark background
+- Stats sections need real numbers: "4,800+ clients served", "$2.3M in sales", "98.6% satisfaction"
+- Images must be SPECIFIC: not "{{unsplash:spa|400x300}}" but "{{unsplash:luxury hot stone massage warm lighting|400x300}}"
+
+### Working interactions (VERIFY EACH):
+- Every nav link → scrolls to matching section id
+- "Book Now" / "Reserve" → scrolls to Booking section (id="booking")
+- "Order Now" → scrolls to menu (id="menu")
+- Phone numbers → tel: links
+- Emails → mailto: links
+- PricingTable plans → clickable, highlight on select
+- FAQ items → expand/collapse on click
 
 {{DESIGN_INJECTION}}
 
