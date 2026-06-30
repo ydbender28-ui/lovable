@@ -1,4 +1,4 @@
-// Pre-built page section components — injected into every Sandpack project
+﻿// Pre-built page section components — injected into every Sandpack project
 // The AI composes pages by picking sections and passing props (data only, no styling needed)
 
 export const SECTION_COMPONENTS: Record<string, string> = {
@@ -47,8 +47,15 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
 
 "/components/sections/Hero.tsx": `import React from 'react';
 export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?: string; title: string; subtitle: string; cta1?: { text: string; href?: string }; cta2?: { text: string; href?: string }; image: string }) {
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{ position:'relative', minHeight:'65vh', display:'flex', alignItems:'center', overflow:'hidden' }}>
+    <section ref={ref as any} style={{ position:'relative', minHeight:'65vh', display:'flex', alignItems:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))' }} />
       <div style={{ position:'relative', zIndex:1, maxWidth:1200, margin:'0 auto', padding:'80px 40px', color:'#fff' }}>
@@ -56,8 +63,8 @@ export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?
         <h1 style={{ fontSize:'clamp(36px, 6vw, 72px)', fontWeight:800, lineHeight:1.05, maxWidth:700, letterSpacing:'-0.03em' }}>{title}</h1>
         <p style={{ fontSize:18, lineHeight:1.6, maxWidth:500, marginTop:24, opacity:0.85 }}>{subtitle}</p>
         <div style={{ display:'flex', gap:16, marginTop:40, flexWrap:'wrap' }}>
-          {cta1 && <a href={cta1.href||'#'} style={{ background:'var(--accent, #c2410c)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'opacity 0.2s' }}>{cta1.text}</a>}
-          {cta2 && <a href={cta2.href||'#'} style={{ border:'1px solid rgba(255,255,255,0.4)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'background 0.2s' }}>{cta2.text}</a>}
+          {cta1 && <a href={cta1.href||'#'} style={{ background:'var(--accent, #c2410c)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'opacity 0.2s' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta1.text}</a>}
+          {cta2 && <a href={cta2.href||'#'} style={{ border:'1px solid rgba(255,255,255,0.4)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'background 0.2s' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta2.text}</a>}
         </div>
       </div>
     </section>
@@ -68,13 +75,20 @@ export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?
 type Feature = { icon?: string; title: string; desc: string };
 export default function Features({ tag, title, items }: { tag?: string; title: string; items: Feature[] }) {
   const safeItems = (items || []).filter(Boolean);
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+    <section ref={ref as any} style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:8 }}>{tag}</p>}
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:32 }}>
         {safeItems.map((f, i) => (
-          <div key={i} style={{ background:'#fff', border:'1px solid #eee', borderRadius:16, padding:32, transition:'transform 0.2s, box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 8px 30px rgba(0,0,0,0.08)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
+          <div key={i} style={{ background:'#fff', border:'1px solid #eee', borderRadius:16, padding:32, transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
             {f.icon && <div style={{ fontSize:28, marginBottom:16 }}>{f.icon}</div>}
             <h3 style={{ fontSize:18, fontWeight:600, marginBottom:8 }}>{f.title}</h3>
             <p style={{ fontSize:15, color:'#666', lineHeight:1.6 }}>{f.desc}</p>
@@ -197,12 +211,19 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
 type Testimonial = { quote: string; name: string; role: string; image?: string };
 export default function Testimonials({ title, items }: { title: string; items: Testimonial[] }) {
   const safeItems = (items || []).filter(Boolean);
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
+    <section ref={ref as any} style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:32 }}>
         {safeItems.map((t, i) => (
-          <div key={i} style={{ background:'#faf9f7', borderRadius:16, padding:32 }}>
+          <div key={i} style={{ background:'#faf9f7', borderRadius:16, padding:32, transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
             <p style={{ fontSize:16, lineHeight:1.7, color:'#333', fontStyle:'italic', marginBottom:24 }}>"{t.quote}"</p>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
               {t.image && <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />}
@@ -226,8 +247,15 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
   const [sent, setSent] = useState(false);
   const accent = 'var(--accent, #c2410c)';
   const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid #e5e5e5', fontSize: 14, fontFamily: 'inherit', outline: 'none', background: '#fafafa', boxSizing: 'border-box', transition: 'border-color 0.2s' };
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section id="contact" style={{ padding: '100px 40px', background: '#fff' }}>
+    <section ref={ref as any} id="contact" style={{ padding: '100px 40px', background: '#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>{title}</h2>
         {subtitle && <p style={{ color: '#666', fontSize: 16, marginBottom: 56 }}>{subtitle}</p>}
@@ -266,7 +294,7 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
                   <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Message</label>
                   <textarea value={form.message} onChange={e => setForm(p => ({...p, message: e.target.value}))} placeholder="Tell us how we can help..." rows={5} style={{ ...inputStyle, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
                 </div>
-                <button onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'}>Send Message →</button>
+                <button onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>Send Message →</button>
               </div>
             )}
           </div>
@@ -280,8 +308,15 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
 export default function Footer({ brand, tagline, links, year }: { brand: string; tagline?: string; links?: string[]; year?: number }) {
   const y = year || new Date().getFullYear();
   const safeLinks = (links || []).filter(Boolean);
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <footer style={{ borderTop:'1px solid #eee', padding:'48px 40px' }}>
+    <footer ref={ref as any} style={{ borderTop:'1px solid #eee', padding:'48px 40px', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:24 }}>
         <div>
           <p style={{ fontWeight:700, fontSize:16 }}>{brand}</p>
@@ -302,8 +337,15 @@ export default function Footer({ brand, tagline, links, year }: { brand: string;
 
 "/components/sections/SplitSection.tsx": `import React from 'react';
 export default function SplitSection({ tag, title, text, image, reverse }: { tag?: string; title: string; text: string; image: string; reverse?: boolean }) {
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{ maxWidth:1200, margin:'0 auto', padding:'100px 40px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:60, alignItems:'center', direction: reverse ? 'rtl' : 'ltr' }}>
+    <section ref={ref as any} style={{ maxWidth:1200, margin:'0 auto', padding:'100px 40px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:60, alignItems:'center', direction: reverse ? 'rtl' : 'ltr', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ direction:'ltr' }}>
         {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:12 }}>{tag}</p>}
         <h2 style={{ fontSize:36, fontWeight:700, lineHeight:1.15, letterSpacing:'-0.02em', marginBottom:20 }}>{title}</h2>
@@ -1485,6 +1527,417 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
     </section>
   );
 }`,
+
+"/components/sections/PricingCard.tsx": `import React from 'react';
+export default function PricingCard({ name, price, period, desc, features, cta, highlighted, badge, accentColor, onSelect }: { name: string; price: string; period?: string; desc?: string; features: string[]; cta: string; highlighted?: boolean; badge?: string; accentColor?: string; onSelect?: () => void }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  return (
+    <div style={{ border: highlighted ? \`2px solid \${accent}\` : '1px solid hsl(var(--border))', borderRadius: 16, padding: 32, background: highlighted ? accent : 'hsl(var(--card))', color: highlighted ? '#fff' : 'hsl(var(--foreground))', position: 'relative', maxWidth: 360, fontFamily: 'inherit' }}>
+      {badge && <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: highlighted ? '#fff' : accent, color: highlighted ? accent : '#fff', borderRadius: 999, padding: '4px 16px', fontSize: 12, fontWeight: 700 }}>{badge}</span>}
+      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{name}</div>
+      {desc && <div style={{ fontSize: 14, opacity: 0.75, marginBottom: 16 }}>{desc}</div>}
+      <div style={{ fontSize: 52, fontWeight: 800, lineHeight: 1, marginBottom: 4 }}>{price}<span style={{ fontSize: 18, fontWeight: 400 }}>{period ? \`/\${period}\` : ''}</span></div>
+      <ul style={{ listStyle: 'none', margin: '20px 0', padding: 0 }}>
+        {(features || []).map((f, i) => <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, fontSize: 14 }}><span style={{ color: highlighted ? '#fff' : accent }}>✓</span>{f}</li>)}
+      </ul>
+      <button onClick={onSelect} style={{ width: '100%', padding: '12px 0', borderRadius: 10, border: highlighted ? '2px solid #fff' : \`2px solid \${accent}\`, background: highlighted ? '#fff' : accent, color: highlighted ? accent : '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>{cta}</button>
+    </div>
+  );
+}`,
+
+"/components/sections/TestimonialCard.tsx": `import React from 'react';
+export default function TestimonialCard({ text, author, role, rating, accentColor }: { text: string; author: string; role?: string; rating?: number; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const stars = rating ?? 5;
+  const initials = author.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, fontFamily: 'inherit', position: 'relative' }}>
+      <div style={{ fontSize: 64, lineHeight: 0.6, color: accent, opacity: 0.25, fontFamily: 'Georgia, serif', marginBottom: 8 }}>"</div>
+      <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
+        {Array.from({ length: 5 }).map((_, i) => <span key={i} style={{ color: i < stars ? '#f59e0b' : 'hsl(var(--muted))' }}>★</span>)}
+      </div>
+      <p style={{ fontSize: 15, lineHeight: 1.65, color: 'hsl(var(--foreground))', margin: '0 0 20px' }}>{text}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14 }}>{initials}</div>
+        <div><div style={{ fontWeight: 700, fontSize: 14 }}>{author}</div>{role && <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }}>{role}</div>}</div>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/FeatureCard.tsx": `import React from 'react';
+export default function FeatureCard({ icon, title, desc, href, accentColor }: { icon: string; title: string; desc: string; href?: string; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const inner = (
+    <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, fontFamily: 'inherit', transition: 'box-shadow 0.2s, transform 0.2s' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}>
+      <div style={{ fontSize: 36, marginBottom: 16 }}>{icon}</div>
+      <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, color: 'hsl(var(--foreground))' }}>{title}</div>
+      <div style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', lineHeight: 1.6 }}>{desc}</div>
+      {href && <div style={{ marginTop: 16, fontSize: 13, fontWeight: 600, color: accent }}>Learn more →</div>}
+    </div>
+  );
+  return href ? <a href={href} style={{ textDecoration: 'none' }}>{inner}</a> : inner;
+}`,
+
+"/components/sections/StatBadge.tsx": `import React, { useEffect, useState } from 'react';
+export default function StatBadge({ value, label, icon, accentColor }: { value: string; label: string; icon?: string; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const numMatch = value.match(/^([\d,.]+)(.*)/);
+  const numPart = numMatch ? parseFloat(numMatch[1].replace(/,/g, '')) : null;
+  const suffix = numMatch ? numMatch[2] : '';
+  const [display, setDisplay] = useState(numPart !== null ? '0' : value);
+  useEffect(() => {
+    if (numPart === null) return;
+    const steps = 60; const increment = numPart / steps; let current = 0; let step = 0;
+    const t = setInterval(() => {
+      step++; current = Math.min(increment * step, numPart);
+      setDisplay((numPart > 999 ? current.toLocaleString('en', { maximumFractionDigits: 0 }) : current.toFixed(numPart % 1 !== 0 ? 1 : 0)) + suffix);
+      if (step >= steps) clearInterval(t);
+    }, 1200 / steps);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{ textAlign: 'center', padding: '24px 32px', fontFamily: 'inherit' }}>
+      {icon && <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>}
+      <div style={{ fontSize: 48, fontWeight: 800, color: accent, lineHeight: 1, letterSpacing: '-0.03em' }}>{display}</div>
+      <div style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', marginTop: 6, fontWeight: 500 }}>{label}</div>
+    </div>
+  );
+}`,
+
+"/components/sections/ImageCard.tsx": `import React from 'react';
+export default function ImageCard({ image, category, title, excerpt, cta, href, date }: { image: string; category?: string; title: string; excerpt?: string; cta?: string; href?: string; date?: string }) {
+  return (
+    <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, overflow: 'hidden', fontFamily: 'inherit' }}>
+      <div style={{ width: '100%', paddingBottom: '56.25%', position: 'relative', overflow: 'hidden' }}>
+        <img src={image} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {category && <span style={{ position: 'absolute', top: 12, left: 12, background: 'hsl(var(--primary))', color: '#fff', borderRadius: 999, padding: '3px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</span>}
+      </div>
+      <div style={{ padding: 20 }}>
+        {date && <div style={{ fontSize: 12, color: 'hsl(var(--muted-foreground))', marginBottom: 6 }}>{date}</div>}
+        <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, color: 'hsl(var(--foreground))' }}>{title}</div>
+        {excerpt && <p style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', lineHeight: 1.6, margin: '0 0 16px' }}>{excerpt}</p>}
+        {cta && <a href={href || '#'} style={{ fontSize: 13, fontWeight: 600, color: 'hsl(var(--primary))', textDecoration: 'none' }}>{cta} →</a>}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/ProfileCard.tsx": `import React from 'react';
+export default function ProfileCard({ name, role, image, bio, twitter, linkedin, instagram, accentColor }: { name: string; role: string; image?: string; bio?: string; twitter?: string; linkedin?: string; instagram?: string; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, textAlign: 'center', fontFamily: 'inherit' }}>
+      <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px', border: \`3px solid \${accent}\` }}>
+        {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 22 }}>{initials}</div>}
+      </div>
+      <div style={{ fontWeight: 700, fontSize: 17 }}>{name}</div>
+      <div style={{ color: accent, fontSize: 13, fontWeight: 600, marginTop: 2 }}>{role}</div>
+      {bio && <p style={{ fontSize: 13, color: 'hsl(var(--muted-foreground))', lineHeight: 1.6, margin: '12px 0' }}>{bio}</p>}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 12 }}>
+        {twitter && <a href={twitter} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>𝕏</a>}
+        {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>in</a>}
+        {instagram && <a href={instagram} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>📷</a>}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/AlertBanner.tsx": `import React, { useState } from 'react';
+export default function AlertBanner({ type, message, dismissible, accentColor }: { type: 'info'|'success'|'warning'|'error'; message: string; dismissible?: boolean; accentColor?: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  const configs = { info: { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8', icon: 'ℹ️' }, success: { bg: '#f0fdf4', border: '#bbf7d0', color: '#16a34a', icon: '✅' }, warning: { bg: '#fffbeb', border: '#fde68a', color: '#d97706', icon: '⚠️' }, error: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: '❌' } };
+  const c = configs[type];
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: accentColor ? accentColor + '18' : c.bg, border: \`1px solid \${accentColor ? accentColor + '44' : c.border}\`, color: accentColor || c.color, fontFamily: 'inherit', fontSize: 14 }}>
+      <span>{c.icon}</span>
+      <span style={{ flex: 1 }}>{message}</span>
+      {dismissible && <button onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'inherit', padding: 0, lineHeight: 1 }}>✕</button>}
+    </div>
+  );
+}`,
+
+"/components/sections/ProgressBar.tsx": `import React, { useEffect, useState } from 'react';
+export default function ProgressBar({ label, value, max, showPercent, accentColor }: { label?: string; value: number; max?: number; showPercent?: boolean; accentColor?: string }) {
+  const maxVal = max ?? 100;
+  const pct = Math.min(100, Math.max(0, (value / maxVal) * 100));
+  const [width, setWidth] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setWidth(pct), 80); return () => clearTimeout(t); }, [pct]);
+  const color = accentColor || (pct < 30 ? '#ef4444' : pct < 70 ? '#f59e0b' : '#22c55e');
+  return (
+    <div style={{ fontFamily: 'inherit' }}>
+      {(label || showPercent) && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
+        {label && <span>{label}</span>}
+        {showPercent && <span style={{ color }}>{Math.round(pct)}%</span>}
+      </div>}
+      <div style={{ height: 10, borderRadius: 999, background: 'hsl(var(--muted))', overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 999, background: color, width: \`\${width}%\`, transition: 'width 0.9s cubic-bezier(0.4,0,0.2,1)' }} />
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/CountdownTimer.tsx": `import React, { useEffect, useState } from 'react';
+export default function CountdownTimer({ targetDate, title, subtitle, cta, ctaHref, accentColor }: { targetDate: string; title?: string; subtitle?: string; cta?: string; ctaHref?: string; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const calc = () => { const d = new Date(targetDate).getTime() - Date.now(); if (d <= 0) return { days:0, hours:0, minutes:0, seconds:0 }; return { days: Math.floor(d/86400000), hours: Math.floor(d/3600000)%24, minutes: Math.floor(d/60000)%60, seconds: Math.floor(d/1000)%60 }; };
+  const [t, setT] = useState(calc());
+  useEffect(() => { const i = setInterval(() => setT(calc()), 1000); return () => clearInterval(i); }, []);
+  const Box = ({ n, l }: { n: number; l: string }) => (
+    <div style={{ textAlign: 'center', minWidth: 70 }}>
+      <div style={{ background: accent, color: '#fff', borderRadius: 12, padding: '12px 8px', fontSize: 36, fontWeight: 800, lineHeight: 1 }}>{String(n).padStart(2,'0')}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 6, color: 'hsl(var(--muted-foreground))' }}>{l}</div>
+    </div>
+  );
+  return (
+    <div style={{ textAlign: 'center', fontFamily: 'inherit', padding: '32px 0' }}>
+      {title && <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{title}</h2>}
+      {subtitle && <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 24 }}>{subtitle}</p>}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <Box n={t.days} l="Days" /><Box n={t.hours} l="Hours" /><Box n={t.minutes} l="Minutes" /><Box n={t.seconds} l="Seconds" />
+      </div>
+      {cta && <a href={ctaHref || '#'} style={{ display: 'inline-block', marginTop: 28, padding: '12px 28px', borderRadius: 999, background: accent, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: 15 }}>{cta}</a>}
+    </div>
+  );
+}`,
+
+"/components/sections/VideoEmbed.tsx": `import React, { useState } from 'react';
+export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentColor }: { url: string; thumbnail?: string; title?: string; aspectRatio?: '16/9'|'4/3'|'1/1'; autoplay?: boolean; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const [playing, setPlaying] = useState(false);
+  const pad = aspectRatio === '4/3' ? '75%' : aspectRatio === '1/1' ? '100%' : '56.25%';
+  const getEmbed = () => {
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+    const vmMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (ytMatch) return \`https://www.youtube.com/embed/\${ytMatch[1]}?autoplay=1\`;
+    if (vmMatch) return \`https://player.vimeo.com/video/\${vmMatch[1]}?autoplay=1\`;
+    return url;
+  };
+  return (
+    <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', paddingBottom: pad, background: '#000', fontFamily: 'inherit' }}>
+      {playing ? (
+        <iframe src={getEmbed()} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} allow="autoplay; fullscreen" allowFullScreen title={title} />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, cursor: 'pointer' }} onClick={() => setPlaying(true)}>
+          {thumbnail && <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+              <div style={{ width: 0, height: 0, borderTop: '14px solid transparent', borderBottom: '14px solid transparent', borderLeft: '22px solid #fff', marginLeft: 4 }} />
+            </div>
+          </div>
+          {title && <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#fff', fontWeight: 600, fontSize: 15, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>{title}</div>}
+        </div>
+      )}
+    </div>
+  );
+}`,
+
+"/components/sections/MapEmbed.tsx": `import React from 'react';
+export default function MapEmbed({ address, lat, lng, title, accentColor }: { address: string; lat?: number; lng?: number; title?: string; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const mapsUrl = lat && lng ? \`https://www.google.com/maps?q=\${lat},\${lng}\` : \`https://www.google.com/maps/search/\${encodeURIComponent(address)}\`;
+  return (
+    <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, overflow: 'hidden', fontFamily: 'inherit' }}>
+      <div style={{ height: 160, background: 'linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <div style={{ fontSize: 48 }}>📍</div>
+        <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(0,0,0,0.04) 30px, rgba(0,0,0,0.04) 31px), repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,0,0,0.04) 30px, rgba(0,0,0,0.04) 31px)' }} />
+      </div>
+      <div style={{ padding: 20 }}>
+        {title && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{title}</div>}
+        <div style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', marginBottom: 14 }}>{address}</div>
+        <a href={mapsUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, background: accent, color: '#fff', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>Open in Maps</a>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/SocialLinks.tsx": `import React from 'react';
+const ICONS: Record<string, string> = { facebook:'f', instagram:'ig', twitter:'X', tiktok:'tt', youtube:'yt', linkedin:'in', pinterest:'p', snapchat:'sc' };
+export default function SocialLinks({ items, size, accentColor }: { items: { platform: 'facebook'|'instagram'|'twitter'|'tiktok'|'youtube'|'linkedin'|'pinterest'|'snapchat'; url: string }[]; size?: 'sm'|'md'|'lg'; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const dim = size === 'sm' ? 36 : size === 'lg' ? 52 : 44;
+  const fs = size === 'sm' ? 13 : size === 'lg' ? 18 : 15;
+  return (
+    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontFamily: 'inherit' }}>
+      {(items || []).map((item, i) => (
+        <a key={i} href={item.url} target="_blank" rel="noreferrer" style={{ width: dim, height: dim, borderRadius: '50%', border: \`2px solid \${accent}\`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs, color: accent, textDecoration: 'none', transition: 'all 0.2s', background: 'transparent', fontWeight: 700, textTransform: 'uppercase' as const }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = accent; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = accent; }}>
+          {ICONS[item.platform] || item.platform[0].toUpperCase()}
+        </a>
+      ))}
+    </div>
+  );
+}`,
+
+"/components/sections/NewsletterInline.tsx": `import React, { useState } from 'react';
+export default function NewsletterInline({ placeholder, cta, title, onSubmit, accentColor }: { placeholder?: string; cta?: string; title?: string; onSubmit?: (email: string) => void; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const handle = (e: React.FormEvent) => { e.preventDefault(); if (!email) return; onSubmit?.(email); setSubmitted(true); };
+  return (
+    <div style={{ fontFamily: 'inherit' }}>
+      {title && <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{title}</div>}
+      {submitted ? (
+        <div style={{ padding: '12px 20px', borderRadius: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#16a34a', fontSize: 14, fontWeight: 600 }}>You're subscribed!</div>
+      ) : (
+        <form onSubmit={handle} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={placeholder || 'Enter your email'} required style={{ flex: 1, minWidth: 180, height: 42, borderRadius: 8, border: '1px solid hsl(var(--border))', padding: '0 14px', fontSize: 14, outline: 'none', fontFamily: 'inherit', background: 'hsl(var(--background))' }} />
+          <button type="submit" style={{ height: 42, padding: '0 20px', borderRadius: 8, background: accent, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' as const }}>{cta || 'Subscribe'}</button>
+        </form>
+      )}
+    </div>
+  );
+}`,
+
+"/components/sections/RatingStars.tsx": `import React, { useState } from 'react';
+export default function RatingStars({ value, max, interactive, onChange, size, color }: { value: number; max?: number; interactive?: boolean; onChange?: (v: number) => void; size?: number; color?: string }) {
+  const total = max ?? 5;
+  const starColor = color || '#f59e0b';
+  const [hover, setHover] = useState(0);
+  const [current, setCurrent] = useState(value);
+  const display = hover || current;
+  return (
+    <div style={{ display: 'inline-flex', gap: 2 }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <span key={i} onClick={() => { if (interactive) { setCurrent(i+1); onChange?.(i+1); } }}
+          onMouseEnter={() => { if (interactive) setHover(i+1); }}
+          onMouseLeave={() => { if (interactive) setHover(0); }}
+          style={{ fontSize: size || 20, cursor: interactive ? 'pointer' : 'default', color: i < display ? starColor : 'hsl(var(--muted))', transition: 'color 0.15s', lineHeight: 1 }}>★</span>
+      ))}
+    </div>
+  );
+}`,
+
+"/components/sections/Breadcrumbs.tsx": `import React from 'react';
+export default function Breadcrumbs({ items, accentColor }: { items: { label: string; href?: string }[]; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  return (
+    <nav aria-label="breadcrumb" style={{ fontFamily: 'inherit' }}>
+      <ol style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, listStyle: 'none', margin: 0, padding: 0, fontSize: 14 }}>
+        {items.map((item, i) => (
+          <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {i > 0 && <span style={{ color: 'hsl(var(--muted-foreground))' }}>/</span>}
+            {item.href && i < items.length - 1
+              ? <a href={item.href} style={{ color: accent, textDecoration: 'none', fontWeight: 500 }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.textDecoration = 'underline'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.textDecoration = 'none'}>{item.label}</a>
+              : <span style={{ color: i === items.length - 1 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))', fontWeight: i === items.length - 1 ? 600 : 400 }}>{item.label}</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}`,
+
+"/components/sections/TabsInline.tsx": `import React, { useState } from 'react';
+export default function TabsInline({ tabs, defaultTab, accentColor }: { tabs: { label: string; content: React.ReactNode }[]; defaultTab?: number; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const [active, setActive] = useState(defaultTab ?? 0);
+  return (
+    <div style={{ fontFamily: 'inherit' }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: 4, background: 'hsl(var(--muted))', borderRadius: 12, marginBottom: 20, width: 'fit-content' }}>
+        {tabs.map((tab, i) => (
+          <button key={i} onClick={() => setActive(i)} style={{ padding: '7px 18px', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', background: active === i ? accent : 'transparent', color: active === i ? '#fff' : 'hsl(var(--muted-foreground))' }}>{tab.label}</button>
+        ))}
+      </div>
+      <div>{tabs[active]?.content}</div>
+    </div>
+  );
+}`,
+
+"/components/sections/AccordionItem.tsx": `import React, { useState } from 'react';
+export default function AccordionItem({ title, children, defaultOpen, accentColor }: { title: string; children: React.ReactNode; defaultOpen?: boolean; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const [open, setOpen] = useState(defaultOpen ?? false);
+  return (
+    <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 12, overflow: 'hidden', fontFamily: 'inherit', marginBottom: 8 }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: open ? accent + '18' : 'hsl(var(--card))', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: open ? accent : 'hsl(var(--foreground))', textAlign: 'left' as const, transition: 'background 0.2s' }}>
+        <span>{title}</span>
+        <span style={{ fontSize: 18, transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'none', color: accent, display: 'inline-block' }}>v</span>
+      </button>
+      {open && <div style={{ padding: '0 20px 18px', fontSize: 14, color: 'hsl(var(--muted-foreground))', lineHeight: 1.7, background: 'hsl(var(--card))' }}>{children}</div>}
+    </div>
+  );
+}`,
+
+"/components/sections/ImageGalleryGrid.tsx": `import React, { useState, useEffect } from 'react';
+export default function ImageGalleryGrid({ images, columns }: { images: { url: string; caption?: string }[]; columns?: 2|3|4; accentColor?: string }) {
+  const [lightbox, setLightbox] = useState<number|null>(null);
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightbox(null);
+      if (e.key === 'ArrowRight') setLightbox(l => l !== null && l < images.length - 1 ? l + 1 : l);
+      if (e.key === 'ArrowLeft') setLightbox(l => l !== null && l > 0 ? l - 1 : l);
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [images.length]);
+  const cols = columns || 3;
+  return (
+    <>
+      <div style={{ display: 'grid', gridTemplateColumns: \`repeat(\${cols}, 1fr)\`, gap: 8 }}>
+        {images.map((img, i) => (
+          <div key={i} onClick={() => setLightbox(i)} style={{ borderRadius: 10, overflow: 'hidden', cursor: 'pointer', aspectRatio: '1/1', position: 'relative', transition: 'opacity 0.2s' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.85'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
+            <img src={img.url} alt={img.caption || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        ))}
+      </div>
+      {lightbox !== null && (
+        <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+          <img src={images[lightbox].url} alt={images[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} />
+          {images[lightbox].caption && <p style={{ color: '#fff', marginTop: 14, fontSize: 14, opacity: 0.8 }}>{images[lightbox].caption}</p>}
+          <div style={{ display: 'flex', gap: 16, marginTop: 16 }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setLightbox(l => l !== null && l > 0 ? l - 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'<'}</button>
+            <span style={{ color: '#fff', fontSize: 13, alignSelf: 'center' }}>{lightbox + 1} / {images.length}</span>
+            <button onClick={() => setLightbox(l => l !== null && l < images.length - 1 ? l + 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'>'}</button>
+          </div>
+          <button onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>x</button>
+        </div>
+      )}
+    </>
+  );
+}`,
+
+"/components/sections/CallToActionBanner.tsx": `import React from 'react';
+export default function CallToActionBanner({ title, subtitle, cta1, cta1Href, cta2, cta2Href, dark, accentColor }: { title: string; subtitle?: string; cta1: string; cta1Href?: string; cta2?: string; cta2Href?: string; dark?: boolean; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  const bg = dark ? '#111' : accent;
+  return (
+    <div style={{ background: bg, borderRadius: 16, padding: '32px 36px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20, fontFamily: 'inherit' }}>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 14, color: '#fff', opacity: 0.8, marginTop: 6 }}>{subtitle}</div>}
+      </div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <a href={cta1Href || '#'} style={{ padding: '11px 24px', borderRadius: 10, background: '#fff', color: dark ? '#111' : accent, fontWeight: 700, fontSize: 14, textDecoration: 'none', transition: 'opacity 0.2s', display: 'inline-block' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.85'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>{cta1}</a>
+        {cta2 && <a href={cta2Href || '#'} style={{ padding: '11px 24px', borderRadius: 10, border: '2px solid rgba(255,255,255,0.5)', color: '#fff', fontWeight: 700, fontSize: 14, textDecoration: 'none', display: 'inline-block', transition: 'border-color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#fff'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'}>{cta2}</a>}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/EmptyState.tsx": `import React from 'react';
+export default function EmptyState({ icon, title, desc, cta, onAction, accentColor }: { icon?: string; title: string; desc?: string; cta?: string; onAction?: () => void; accentColor?: string }) {
+  const accent = accentColor || 'hsl(var(--primary))';
+  return (
+    <div style={{ textAlign: 'center', padding: '60px 20px', fontFamily: 'inherit' }}>
+      {icon && <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.5 }}>{icon}</div>}
+      <div style={{ fontSize: 20, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 8 }}>{title}</div>
+      {desc && <p style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', margin: '0 auto 24px', maxWidth: 360, lineHeight: 1.6 }}>{desc}</p>}
+      {cta && <button onClick={onAction} style={{ padding: '10px 24px', borderRadius: 10, background: accent, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{cta}</button>}
+    </div>
+  );
+}`,
+
+
 
 };
 
