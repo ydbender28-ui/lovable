@@ -53,7 +53,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
 
   const hasExisting = !!project.versions[0];
 
-  const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 10000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
+  const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 16000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
   const p = prompt.toLowerCase();
   const taskType = !hasExisting ? "new-build" as const
     : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
