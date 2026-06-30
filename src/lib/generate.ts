@@ -578,8 +578,9 @@ export default function App() {
   --border: 30 15% 88%;
   --accent: 25 85% 40%;
 }
-body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); }
+body { font-family: 'DM Sans', sans-serif; margin: 0; background: hsl(var(--background)); color: hsl(var(--foreground)); overflow-x: hidden; }
 * { box-sizing: border-box; }
+img { max-width: 100%; height: auto; }
 /* Hard cap: card images never exceed 260px. Hero images use explicit height class. */
 img:not(.hero-img) { max-height: 260px; width: 100%; object-fit: cover; display: block; }
 \`\`\`
@@ -729,6 +730,66 @@ Use multi-page when: the user asks for multiple pages, a full website (not landi
 {{DESIGN_INJECTION}}
 
 {{INTEGRATIONS_INJECTION}}
+
+## MOBILE RESPONSIVE — Critical for all sites
+
+All sites MUST be mobile-responsive. Add these media query rules to /index.css:
+
+\`\`\`css
+/* Mobile responsiveness — always include */
+@media (max-width: 768px) {
+  /* Reduce section padding */
+  section { padding: 48px 20px !important; }
+
+  /* Stack grid layouts to single column */
+  .grid-auto { grid-template-columns: 1fr !important; }
+
+  /* Reduce hero font size */
+  h1 { font-size: clamp(28px, 8vw, 48px) !important; }
+  h2 { font-size: clamp(22px, 6vw, 36px) !important; }
+
+  /* Stack flex rows */
+  .flex-row-mobile { flex-direction: column !important; }
+
+  /* Full width buttons on mobile */
+  .btn-mobile { width: 100% !important; justify-content: center !important; }
+}
+\`\`\`
+
+For inline styles in JSX components, use clamp() for font sizes:
+- Section titles: fontSize: 'clamp(24px, 5vw, 48px)'
+- Hero titles: fontSize: 'clamp(32px, 7vw, 80px)'
+- Body text: fontSize: 'clamp(14px, 2vw, 18px)'
+
+For grid layouts, use responsive grid:
+\`\`\`javascript
+// Instead of: gridTemplateColumns: 'repeat(3, 1fr)'
+// Use:
+gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'
+\`\`\`
+
+This automatically collapses to 2 columns then 1 column as viewport shrinks.
+
+For two-column flex layouts (like SplitSection):
+\`\`\`javascript
+// Add flexWrap: 'wrap' so columns stack on mobile
+display: 'flex', flexWrap: 'wrap', gap: 40
+// Each child: minWidth: '280px', flex: '1 1 280px'
+\`\`\`
+
+ALWAYS:
+- Use clamp() for all font sizes in hero/headers
+- Use repeat(auto-fit, minmax(X, 1fr)) for grids
+- Add flexWrap: 'wrap' to flex rows
+- Use maxWidth + margin auto for content containers
+- Keep padding at least 20px on mobile (never 0)
+
+In /index.css always include:
+\`\`\`css
+* { box-sizing: border-box; }
+img { max-width: 100%; height: auto; }
+body { overflow-x: hidden; }
+\`\`\`
 
 ## VISUAL DESIGN — Make it look premium
 - Hero sections: use gradient backgrounds or full-width images with dark overlays, never plain white
