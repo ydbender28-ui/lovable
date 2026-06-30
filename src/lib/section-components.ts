@@ -30,14 +30,15 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
     if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   };
   return (
-    <nav style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding:'0 40px', transition:'background 0.2s' }}>
+    <nav role="navigation" aria-label="Main navigation" style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding:'0 40px', transition:'background 0.2s' }}>
+      <a href="#main-content" style={{ position:'absolute', top:'-40px', left:0, background:accent, color:'#fff', padding:'8px 16px', zIndex:9999, borderRadius:'0 0 4px 0', transition:'top 0.2s', textDecoration:'none', fontSize:14, fontWeight:600 }} onFocus={e => e.currentTarget.style.top='0'} onBlur={e => e.currentTarget.style.top='-40px'}>Skip to main content</a>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
         <div style={{ display:'flex', gap:28, alignItems:'center' }}>
           {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#666', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#666'}>{String(l)}</a>)}
           {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:700, textDecoration:'none', cursor:'pointer', transition:'opacity 0.2s', letterSpacing:'-0.01em' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
-          {showCart && <button onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#e5e5e5'}>
-            🛒 {cartCount > 0 && <span style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
+          {showCart && <button type="button" aria-label={`Shopping cart, ${cartCount} item${cartCount!==1?'s':''}`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#e5e5e5'}>
+            🛒 {cartCount > 0 && <span aria-hidden="true" style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
           </button>}
         </div>
       </div>
@@ -130,7 +131,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
         {subtitle && <p style={{ color:'#888', fontSize:16, marginBottom:32 }}>{subtitle}</p>}
         <div style={{ display:'flex', gap:8, marginBottom:40, flexWrap:'wrap' }}>
           {['All', ...cats].map(c => (
-            <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1.5px solid #e5e5e5', background: active===c ? accent : 'transparent', color: active===c ? '#fff' : '#666', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s', letterSpacing:'0.01em' }}>{c}</button>
+            <button type="button" aria-pressed={active===c} key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1.5px solid #e5e5e5', background: active===c ? accent : 'transparent', color: active===c ? '#fff' : '#666', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s', letterSpacing:'0.01em' }}>{c}</button>
           ))}
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(290px, 1fr))', gap:24 }}>
@@ -161,7 +162,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
                 <h2 style={{ fontSize:22, fontWeight:800, margin:0, letterSpacing:'-0.02em' }}>Your Order</h2>
                 <p style={{ fontSize:13, color:'#999', margin:'2px 0 0' }}>{cartCount} {cartCount===1?'item':'items'}</p>
               </div>
-              <button onClick={() => setCartOpen(false)} style={{ background:'#f5f5f5', border:'none', borderRadius:50, width:38, height:38, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center', color:'#666', transition:'background 0.15s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#eee'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#f5f5f5'}>✕</button>
+              <button type="button" aria-label="Close cart" onClick={() => setCartOpen(false)} style={{ background:'#f5f5f5', border:'none', borderRadius:50, width:38, height:38, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center', color:'#666', transition:'background 0.15s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#eee'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#f5f5f5'}>✕</button>
             </div>
             <div style={{ flex:1, overflowY:'auto', padding:'20px 28px' }}>
               {cart.length === 0 && <div style={{ textAlign:'center', padding:'60px 0', color:'#ccc' }}><div style={{ fontSize:48, marginBottom:12 }}>🛍️</div><p style={{ fontSize:15, fontWeight:500 }}>Your cart is empty</p></div>}
@@ -282,19 +283,19 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Your Name</label>
-                    <input value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Jane Smith" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                    <label htmlFor="contact-name" style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Your Name</label>
+                    <input id="contact-name" autoComplete="name" required value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} placeholder="Jane Smith" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Email Address</label>
-                    <input type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="jane@example.com" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                    <label htmlFor="contact-email" style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Email Address</label>
+                    <input id="contact-email" autoComplete="email" required type="email" value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))} placeholder="jane@example.com" style={inputStyle} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
                   </div>
                 </div>
                 <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Message</label>
-                  <textarea value={form.message} onChange={e => setForm(p => ({...p, message: e.target.value}))} placeholder="Tell us how we can help..." rows={5} style={{ ...inputStyle, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
+                  <label htmlFor="contact-message" style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Message</label>
+                  <textarea id="contact-message" value={form.message} onChange={e => setForm(p => ({...p, message: e.target.value}))} placeholder="Tell us how we can help..." rows={5} style={{ ...inputStyle, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
                 </div>
-                <button onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>Send Message →</button>
+                <button type="button" onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>Send Message →</button>
               </div>
             )}
           </div>
@@ -390,12 +391,12 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
               <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
               {subtitle && <p style={{ color:'#666', fontSize:16, marginTop:8 }}>{subtitle}</p>}
             </div>
-            <button onClick={() => setShowCart(true)} style={{ position:'relative', background:'#111', color:'#fff', border:'none', padding:'12px 24px', borderRadius:50, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+            <button type="button" aria-label={`Open cart, ${cartCount} item${cartCount!==1?'s':''}`} onClick={() => setShowCart(true)} style={{ position:'relative', background:'#111', color:'#fff', border:'none', padding:'12px 24px', borderRadius:50, fontSize:14, fontWeight:600, cursor:'pointer' }}>
               Cart {cartCount > 0 && <span style={{ position:'absolute', top:-8, right:-8, background:'var(--accent, #c2410c)', color:'#fff', width:22, height:22, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
             </button>
           </div>
           <div style={{ display:'flex', gap:8, marginBottom:32, flexWrap:'wrap' }}>
-            {cats.map(c => <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border:active===c?'none':'1px solid #ddd', background:active===c?'var(--accent, #c2410c)':'#fff', color:active===c?'#fff':'#555', fontSize:14, cursor:'pointer' }}>{c}</button>)}
+            {cats.map(c => <button type="button" aria-pressed={active===c} key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border:active===c?'none':'1px solid #ddd', background:active===c?'var(--accent, #c2410c)':'#fff', color:active===c?'#fff':'#555', fontSize:14, cursor:'pointer' }}>{c}</button>)}
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24 }}>
             {filtered.map(item => (
@@ -422,7 +423,7 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
           <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:420, background:'#fff', boxShadow:'-8px 0 30px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column' }}>
             <div style={{ padding:'24px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <h2 style={{ fontSize:24, fontWeight:700 }}>Your Cart</h2>
-              <button onClick={() => setShowCart(false)} style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#999' }}>×</button>
+              <button type="button" aria-label="Close cart" onClick={() => setShowCart(false)} style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#999' }}>×</button>
             </div>
             <div style={{ flex:1, overflowY:'auto', padding:24 }}>
               {cart.length === 0 ? <p style={{ color:'#999', textAlign:'center', marginTop:40 }}>Your cart is empty</p> : cart.map(item => (
@@ -484,8 +485,8 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
           {subtitle&&<p style={{color:'#888',fontSize:16,marginBottom:hasYearly?28:0}}>{subtitle}</p>}
           {hasYearly&&<div style={{display:'inline-flex',background:'#f5f5f5',borderRadius:50,padding:4,gap:0}}>
-            <button onClick={()=>setBilling('monthly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='monthly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='monthly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>Monthly</button>
-            <button onClick={()=>setBilling('yearly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='yearly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='yearly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>
+            <button type="button" onClick={()=>setBilling('monthly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='monthly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='monthly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>Monthly</button>
+            <button type="button" onClick={()=>setBilling('yearly')} style={{padding:'8px 20px',borderRadius:50,border:'none',background:billing==='yearly'?'#fff':'transparent',fontWeight:600,fontSize:14,cursor:'pointer',boxShadow:billing==='yearly'?'0 2px 8px rgba(0,0,0,0.1)':'none',transition:'all 0.2s'}}>
               Yearly <span style={{fontSize:11,background:'#dcfce7',color:'#16a34a',padding:'2px 6px',borderRadius:50,marginLeft:4,fontWeight:700}}>Save 20%</span>
             </button>
           </div>}
@@ -532,7 +533,7 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       {safeItems.map((item, i) => (
         <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
-          <button onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--text,#111)', textAlign:'left' }}>
+          <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--text,#111)', textAlign:'left' }}>
             {item.q}
             <span style={{ fontSize:20, transform: open === i ? 'rotate(45deg)' : 'none', transition:'transform 0.2s' }}>+</span>
           </button>
@@ -589,7 +590,7 @@ export default function Gallery({ title, images, items }: { title: string; image
         ))}
       </div>
       {selected !== null && (
-        <div onClick={() => setSelected(null)} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+        <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setSelected(null)} onKeyDown={e => e.key === 'Escape' && setSelected(null)} tabIndex={-1} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <img src={safeImages[selected].src} alt={safeImages[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} />
         </div>
       )}
@@ -686,8 +687,8 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
         {subtitle && <p style={{ fontSize:16, opacity:0.8, marginTop:12 }}>{subtitle}</p>}
         {sent ? <p style={{ marginTop:24, fontSize:16, color:'#4ade80' }}>Thanks for subscribing!</p> : (
           <div style={{ display:'flex', gap:8, marginTop:32, maxWidth:440, margin:'32px auto 0' }}>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={placeholder || 'Enter your email'} style={{ flex:1, padding:'14px 20px', borderRadius:50, border:'none', fontSize:14, outline:'none' }} />
-            <button onClick={() => { if (email.includes('@')) setSent(true); }} style={{ background:'#fff', color:'var(--accent,#111)', padding:'14px 28px', borderRadius:50, border:'none', fontSize:14, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>Subscribe</button>
+            <input id="newsletter-email" type="email" autoComplete="email" aria-label="Email address for newsletter" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={placeholder || 'Enter your email'} style={{ flex:1, padding:'14px 20px', borderRadius:50, border:'none', fontSize:14, outline:'none' }} />
+            <button type="button" onClick={() => { if (email.includes('@')) setSent(true); }} style={{ background:'#fff', color:'var(--accent,#111)', padding:'14px 28px', borderRadius:50, border:'none', fontSize:14, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>Subscribe</button>
           </div>
         )}
       </div>
@@ -798,12 +799,12 @@ export default function Tabs({ tabs }: { tabs: Tab[] }) {
   const [active, setActive] = useState(0);
   return (
     <section style={{ padding:'80px 40px', maxWidth:800, margin:'0 auto' }}>
-      <div style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
+      <div role="tablist" style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
         {safeTabs.map((t, i) => (
-          <button key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--text,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
+          <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--text,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
         ))}
       </div>
-      <div style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{safeTabs[active]?.content}</div>
+      <div role="tabpanel" style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{safeTabs[active]?.content}</div>
     </section>
   );
 }`,
@@ -838,7 +839,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
         <div style={{ width:64, height:64, borderRadius:'50%', background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', fontSize:28 }}>✓</div>
         <h3 style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>You're all set!</h3>
         <p style={{ color:'#666', fontSize:16 }}>We'll confirm your booking shortly.</p>
-        <button onClick={() => setSent(false)} style={{ marginTop:24, background:'none', border:'1.5px solid #ddd', borderRadius:50, padding:'10px 28px', fontSize:14, cursor:'pointer', color:'#666' }}>Book again</button>
+        <button type="button" onClick={() => setSent(false)} style={{ marginTop:24, background:'none', border:'1.5px solid #ddd', borderRadius:50, padding:'10px 28px', fontSize:14, cursor:'pointer', color:'#666' }}>Book again</button>
       </div>
     </section>
   );
@@ -855,21 +856,21 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
               const def = fieldDefs[f] || { label: f, type:'text', placeholder:'' };
               if (def.type === 'textarea') return (
                 <div key={f} style={{ gridColumn:'1 / -1' }}>
-                  <label style={lbl}>{def.label}</label>
-                  <textarea value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} rows={3} style={{...inp, resize:'none'}} onFocus={onFocus} onBlur={onBlur} />
+                  <label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
+                  <textarea id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} rows={3} style={{...inp, resize:'none'}} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               );
               if (def.type === 'select' && f === 'time') return (
-                <div key={f}><label style={lbl}>{def.label}</label>
-                  <select value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                <div key={f}><label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
+                  <select id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
                     <option value="">Select time</option>
                     {timeSlots.map(t=><option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               );
               if (def.type === 'select' && f === 'guests') return (
-                <div key={f}><label style={lbl}>{def.label}</label>
-                  <select value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                <div key={f}><label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
+                  <select id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
                     <option value="">Select guests</option>
                     {guestOptions.map(g=><option key={g} value={g}>{g}</option>)}
                   </select>
@@ -877,13 +878,13 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
               );
               return (
                 <div key={f} style={{ gridColumn: (f==='name'||f==='email') && defaultFields.includes('email') ? 'auto' : defaultFields.includes('date') ? '1 / -1' : 'auto' }}>
-                  <label style={lbl}>{def.label}</label>
-                  <input type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
+                  <label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
+                  <input id={`booking-${f}`} type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               );
             })}
           </div>
-          <button onClick={() => { if (form.name || form.email) setSent(true); }} style={{ marginTop:28, width:'100%', background:accent, color:'#fff', border:'none', borderRadius:50, padding:'16px 36px', fontSize:16, fontWeight:700, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta || 'Confirm Booking →'}</button>
+          <button type="button" onClick={() => { if (form.name || form.email) setSent(true); }} style={{ marginTop:28, width:'100%', background:accent, color:'#fff', border:'none', borderRadius:50, padding:'16px 36px', fontSize:16, fontWeight:700, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta || 'Confirm Booking →'}</button>
         </div>
       </div>
     </section>
@@ -899,7 +900,7 @@ export default function Banner({ text, cta, href, emoji }: { text: string; cta?:
       {emoji && <span style={{ fontSize:16 }}>{emoji}</span>}
       <span style={{ fontSize:13, fontWeight:600, letterSpacing:'0.01em' }}>{text}</span>
       {cta && <a href={href||'#'} style={{ color:'#fff', fontWeight:800, fontSize:13, textDecoration:'none', background:'rgba(255,255,255,0.18)', padding:'4px 14px', borderRadius:50, marginLeft:4, transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.28)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.18)'}>{cta} →</a>}
-      <button onClick={() => setShow(false)} style={{ position:'absolute', right:16, background:'none', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 4px' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#fff'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.5)'}>×</button>
+      <button type="button" aria-label="Dismiss banner" onClick={() => setShow(false)} style={{ position:'absolute', right:16, background:'none', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 4px' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#fff'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='rgba(255,255,255,0.5)'}>×</button>
     </div>
   );
 }`,
@@ -1104,7 +1105,7 @@ export default function VideoSection({ title, subtitle, videoUrl, thumbnail, acc
           {playing ? (
             <iframe src={embedUrl} width="100%" height="100%" style={{border:'none',position:'absolute',inset:0}} allow="autoplay; fullscreen" allowFullScreen />
           ) : (
-            <div onClick={()=>setPlaying(true)} style={{cursor:'pointer',position:'relative',width:'100%',height:'100%'}}>
+            <button type="button" aria-label="Play video" onClick={()=>setPlaying(true)} style={{cursor:'pointer',position:'relative',width:'100%',height:'100%',background:'none',border:'none',padding:0}}>
               {thumbnail&&<img src={thumbnail} alt="video" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />}
               <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <div style={{width:80,height:80,borderRadius:50,background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 32px rgba(0,0,0,0.3)',transition:'transform 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.transform='scale(1.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>
@@ -1211,7 +1212,7 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
           {subtitle&&<p style={{color:'#888',fontSize:16,marginBottom:0}}>{subtitle}</p>}
         </div>
         <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:40,flexWrap:'wrap'}}>
-          {cats.map(c=><button key={c} onClick={()=>setActive(c)} style={{padding:'8px 20px',borderRadius:50,border:active===c?'none':'1.5px solid #e5e5e5',background:active===c?accent:'transparent',color:active===c?'#fff':'#666',fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.18s'}}>{c}</button>)}
+          {cats.map(c=><button type="button" aria-pressed={active===c} key={c} onClick={()=>setActive(c)} style={{padding:'8px 20px',borderRadius:50,border:active===c?'none':'1.5px solid #e5e5e5',background:active===c?accent:'transparent',color:active===c?'#fff':'#666',fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.18s'}}>{c}</button>)}
         </div>
         <div style={{columns:3,gap:20}}>
           {filtered.map((p,i)=>(
@@ -1892,7 +1893,7 @@ export default function AlertBanner({ type, message, dismissible, accentColor }:
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: accentColor ? accentColor + '18' : c.bg, border: \`1px solid \${accentColor ? accentColor + '44' : c.border}\`, color: accentColor || c.color, fontFamily: 'inherit', fontSize: 14 }}>
       <span>{c.icon}</span>
       <span style={{ flex: 1 }}>{message}</span>
-      {dismissible && <button onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'inherit', padding: 0, lineHeight: 1 }}>✕</button>}
+      {dismissible && <button type="button" aria-label="Dismiss alert" onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'inherit', padding: 0, lineHeight: 1 }}>✕</button>}
     </div>
   );
 }`,
@@ -1958,7 +1959,7 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
       {playing ? (
         <iframe src={getEmbed()} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} allow="autoplay; fullscreen" allowFullScreen title={title} />
       ) : (
-        <div style={{ position: 'absolute', inset: 0, cursor: 'pointer' }} onClick={() => setPlaying(true)}>
+        <button type="button" aria-label="Play video" style={{ position: 'absolute', inset: 0, cursor: 'pointer', background: 'none', border: 'none', padding: 0, width: '100%', height: '100%' }} onClick={() => setPlaying(true)}>
           {thumbnail && <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
             <div style={{ width: 72, height: 72, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
@@ -2075,9 +2076,9 @@ export default function TabsInline({ tabs, defaultTab, accentColor }: { tabs: { 
   const [active, setActive] = useState(defaultTab ?? 0);
   return (
     <div style={{ fontFamily: 'inherit' }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: 4, background: 'hsl(var(--muted))', borderRadius: 12, marginBottom: 20, width: 'fit-content' }}>
+      <div role="tablist" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: 4, background: 'hsl(var(--muted))', borderRadius: 12, marginBottom: 20, width: 'fit-content' }}>
         {tabs.map((tab, i) => (
-          <button key={i} onClick={() => setActive(i)} style={{ padding: '7px 18px', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', background: active === i ? accent : 'transparent', color: active === i ? '#fff' : 'hsl(var(--muted-foreground))' }}>{tab.label}</button>
+          <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding: '7px 18px', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', background: active === i ? accent : 'transparent', color: active === i ? '#fff' : 'hsl(var(--muted-foreground))' }}>{tab.label}</button>
         ))}
       </div>
       <div>{tabs[active]?.content}</div>
@@ -2091,7 +2092,7 @@ export default function AccordionItem({ title, children, defaultOpen, accentColo
   const [open, setOpen] = useState(defaultOpen ?? false);
   return (
     <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 12, overflow: 'hidden', fontFamily: 'inherit', marginBottom: 8 }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: open ? accent + '18' : 'hsl(var(--card))', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: open ? accent : 'hsl(var(--foreground))', textAlign: 'left' as const, transition: 'background 0.2s' }}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: open ? accent + '18' : 'hsl(var(--card))', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: open ? accent : 'hsl(var(--foreground))', textAlign: 'left' as const, transition: 'background 0.2s' }}>
         <span>{title}</span>
         <span style={{ fontSize: 18, transition: 'transform 0.25s', transform: open ? 'rotate(180deg)' : 'none', color: accent, display: 'inline-block' }}>v</span>
       </button>
@@ -2125,15 +2126,15 @@ export default function ImageGalleryGrid({ images, columns }: { images: { url: s
         ))}
       </div>
       {lightbox !== null && (
-        <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
           <img src={images[lightbox].url} alt={images[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} />
           {images[lightbox].caption && <p style={{ color: '#fff', marginTop: 14, fontSize: 14, opacity: 0.8 }}>{images[lightbox].caption}</p>}
           <div style={{ display: 'flex', gap: 16, marginTop: 16 }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => setLightbox(l => l !== null && l > 0 ? l - 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'<'}</button>
+            <button type="button" aria-label="Previous image" onClick={() => setLightbox(l => l !== null && l > 0 ? l - 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'<'}</button>
             <span style={{ color: '#fff', fontSize: 13, alignSelf: 'center' }}>{lightbox + 1} / {images.length}</span>
             <button onClick={() => setLightbox(l => l !== null && l < images.length - 1 ? l + 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'>'}</button>
           </div>
-          <button onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>x</button>
+          <button type="button" aria-label="Close lightbox" onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
       )}
     </>
@@ -2168,7 +2169,7 @@ export default function EmptyState({ icon, title, desc, cta, onAction, accentCol
       {icon && <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.5 }}>{icon}</div>}
       <div style={{ fontSize: 20, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 8 }}>{title}</div>
       {desc && <p style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', margin: '0 auto 24px', maxWidth: 360, lineHeight: 1.6 }}>{desc}</p>}
-      {cta && <button onClick={onAction} style={{ padding: '10px 24px', borderRadius: 10, background: accent, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{cta}</button>}
+      {cta && <button type="button" onClick={onAction} style={{ padding: '10px 24px', borderRadius: 10, background: accent, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{cta}</button>}
     </div>
   );
 }`,
