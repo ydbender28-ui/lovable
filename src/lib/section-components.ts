@@ -108,7 +108,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
                 <h3 style={{ fontSize:17, fontWeight:700, margin:'0 0 6px' }}>{item.name}</h3>
                 <p style={{ fontSize:13, color:'#888', margin:'0 0 14px', lineHeight:1.5 }}>{item.desc}</p>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <span style={{ fontSize:19, fontWeight:800, color:accent }}>from \${parseFloat(String(item.price)).toFixed(2)}</span>
+                  <span style={{ fontSize:19, fontWeight:800, color:accent }}>\${parseFloat(String(item.price)).toFixed(2)}</span>
                   <button onClick={() => addToCart(item)} style={{ background:accent, color:'#fff', border:'none', borderRadius:8, padding:'8px 16px', fontWeight:700, fontSize:13, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>Add to Cart +</button>
                 </div>
               </div>
