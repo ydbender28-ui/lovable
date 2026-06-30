@@ -303,7 +303,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
   );
 }`,
 
-"/components/sections/Testimonials.tsx": `import React from 'react';
+"/components/sections/Testimonials.tsx": `import React, { useState, useEffect } from 'react';
 type Testimonial = { quote: string; name: string; role: string; image?: string };
 export default function Testimonials({ title, items }: { title: string; items: Testimonial[] }) {
   const safeItems = (items || []).filter(Boolean);
@@ -314,8 +314,10 @@ export default function Testimonials({ title, items }: { title: string; items: T
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:32 }}>
         {safeItems.map((t, i) => (
@@ -854,7 +856,7 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
             </button>
           </div>}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${Math.min(plans.length,3)},1fr)\`,gap:20,alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : \`repeat(\${Math.min(plans.length,3)},1fr)\`,gap:20,alignItems:'start'}}>
           {(plans||[]).map((p,i)=>{
             const isSelected = selected===i;
             const price = billing==='yearly'&&p.yearlyPrice ? p.yearlyPrice : p.price;
@@ -879,7 +881,7 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
   );
 }`,
 
-"/components/sections/FAQ.tsx": `import React, { useState } from 'react';
+"/components/sections/FAQ.tsx": `import React, { useState, useEffect } from 'react';
 type FAQItem = { q: string; a: string };
 export default function FAQ({ title, items }: { title: string; items: FAQItem[] }) {
   const safeItems = (items || []).filter(Boolean);
@@ -891,8 +893,10 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="faq" style={{ padding:'100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       {safeItems.map((item, i) => (
         <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
@@ -907,7 +911,7 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
   );
 }`,
 
-"/components/sections/CTA.tsx": `import React from 'react';
+"/components/sections/CTA.tsx": `import React, { useState, useEffect } from 'react';
 export default function CTA({ title, subtitle, cta, image }: { title: string; subtitle?: string; cta: { text: string; href?: string }; image?: string }) {
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
@@ -916,8 +920,10 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ position:'relative', padding:'100px 40px', textAlign:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ position:'relative', padding: isMobile ? '64px 20px' : '100px 40px', textAlign:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
       <div style={{ position:'relative', zIndex:1, maxWidth:700, margin:'0 auto' }}>
         <h2 style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, lineHeight:1.1, color: image ? '#fff' : 'var(--text,#111)', letterSpacing:'-0.02em' }}>{title}</h2>
@@ -1038,7 +1044,7 @@ export default function Team({ title, members, items, accentColor }: { title: st
   );
 }`,
 
-"/components/sections/Newsletter.tsx": `import React, { useState } from 'react';
+"/components/sections/Newsletter.tsx": `import React, { useState, useEffect } from 'react';
 export default function Newsletter({ title, subtitle, placeholder }: { title: string; subtitle?: string; placeholder?: string }) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -1049,8 +1055,10 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'80px 40px', background:'var(--accent,#111)', color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '80px 40px', background:'var(--accent,#111)', color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:600, margin:'0 auto', textAlign:'center' }}>
         <h2 style={{ fontSize:32, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
         {subtitle && <p style={{ fontSize:16, opacity:0.8, marginTop:12 }}>{subtitle}</p>}
@@ -1099,7 +1107,7 @@ export default function Timeline({ title, events, items }: { title: string; even
   );
 }`,
 
-"/components/sections/LogoCloud.tsx": `import React from 'react';
+"/components/sections/LogoCloud.tsx": `import React, { useState, useEffect } from 'react';
 export default function LogoCloud({ title, logos }: { title?: string; logos: { name: string; image?: string }[] }) {
   const safeLogos = (logos || []).filter(Boolean);
   const doubled = [...safeLogos, ...safeLogos];
@@ -1110,8 +1118,10 @@ export default function LogoCloud({ title, logos }: { title?: string; logos: { n
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'60px 40px', borderTop:'1px solid var(--border,#eee)', borderBottom:'1px solid var(--border,#eee)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease', overflow:'hidden' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '40px 20px' : '60px 40px', borderTop:'1px solid var(--border,#eee)', borderBottom:'1px solid var(--border,#eee)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease', overflow:'hidden' }}>
       <style>{\`@keyframes logoScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }\`}</style>
       <div style={{ maxWidth:1200, margin:'0 auto', textAlign:'center' }}>
         {title && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--muted,#999)', marginBottom:32 }}>{title}</p>}
@@ -1128,7 +1138,7 @@ export default function LogoCloud({ title, logos }: { title?: string; logos: { n
   );
 }`,
 
-"/components/sections/BlogGrid.tsx": `import React from 'react';
+"/components/sections/BlogGrid.tsx": `import React, { useState, useEffect } from 'react';
 type Post = { title: string; excerpt: string; image: string; date: string; author: string; category?: string };
 export default function BlogGrid({ title, posts, items }: { title: string; posts?: Post[]; items?: Post[] }) {
   const safePosts = ((posts || items || [])).filter(Boolean);
@@ -1139,8 +1149,10 @@ export default function BlogGrid({ title, posts, items }: { title: string; posts
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="blog" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} id="blog" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:32 }}>
         {safePosts.map((p, i) => (
@@ -1355,7 +1367,7 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',marginBottom:48,textAlign:'center'}}>{title}</h2>}
-        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'start'}}>
+        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',gap:40,alignItems:'start'}}>
           <a href={mapsLink} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',display:'block',borderRadius:24,overflow:'hidden',boxShadow:'0 4px 32px rgba(0,0,0,0.1)',height:420,background:'#e8e8e8',position:'relative',cursor:'pointer'}}>
             <div style={{width:'100%',height:'100%',background:'linear-gradient(135deg,#e8f0e8 0%,#d4e4d4 50%,#c8dcc8 100%)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:16}}>
               <div style={{width:64,height:64,borderRadius:50,background:accent,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,boxShadow:'0 8px 24px rgba(0,0,0,0.2)'}}>📍</div>
@@ -1400,7 +1412,7 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
   );
 }`,
 
-"/components/sections/ServiceCards.tsx": `import React from 'react';
+"/components/sections/ServiceCards.tsx": `import React, { useState, useEffect } from 'react';
 type Service = { title: string; desc?: string; description?: string; price?: string; icon?: string; badge?: string; features?: string[] };
 export default function ServiceCards({ title, subtitle, items, services, accentColor, columns }: { title: string; subtitle?: string; items?: Service[]; services?: Service[]; accentColor?: string; columns?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1413,8 +1425,10 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fafafa)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
+    <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fafafa)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1437,12 +1451,14 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
   );
 }`,
 
-"/components/sections/StepProcess.tsx": `import React from 'react';
+"/components/sections/StepProcess.tsx": `import React, { useState, useEffect } from 'react';
 type Step = { title: string; desc: string; icon?: string };
 export default function StepProcess({ title, subtitle, steps, accentColor, layout }: { title: string; subtitle?: string; steps: Step[]; accentColor?: string; layout?: 'horizontal'|'vertical' }) {
   const accent = accentColor || 'var(--accent,#111)';
   const safeSteps = (steps || []).filter(Boolean);
-  const horiz = layout !== 'vertical';
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+  const horiz = !isMobile && layout !== 'vertical';
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -1544,7 +1560,7 @@ export default function AppDownload({ title, subtitle, description, appStoreUrl,
   );
 }`,
 
-"/components/sections/Comparison.tsx": `import React from 'react';
+"/components/sections/Comparison.tsx": `import React, { useState, useEffect } from 'react';
 type Plan = { name: string; highlighted?: boolean };
 type Row = { feature: string; values: (string|boolean)[] };
 export default function Comparison({ title, subtitle, plans, rows, accentColor }: { title: string; subtitle?: string; plans: Plan[]; rows: Row[]; accentColor?: string }) {
@@ -1568,7 +1584,7 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>
-        <div style={{borderRadius:24,overflow:'hidden',border:'1px solid #f0f0f0',boxShadow:'0 4px 24px rgba(0,0,0,0.06)'}}>
+        <div style={{borderRadius:24,overflow:'hidden',border:'1px solid #f0f0f0',boxShadow:'0 4px 24px rgba(0,0,0,0.06)',overflowX: isMobile ? 'auto' : 'visible'}}>
           <div style={{display:'grid',gridTemplateColumns:\`2fr \${safePlans.map(()=>'1fr').join(' ')}\`,background:'#fafafa',borderBottom:'1px solid #f0f0f0'}}>
             <div style={{padding:'20px 24px'}}/>
             {safePlans.map((p,i)=><div key={i} style={{padding:'20px 16px',textAlign:'center',background:p.highlighted?accent:'transparent',position:'relative'}}>{p.highlighted&&<div style={{position:'absolute',top:-1,left:0,right:0,height:3,background:accent,borderRadius:'3px 3px 0 0'}}/>}<div style={{fontWeight:800,fontSize:16,color:p.highlighted?'#fff':'#222'}}>{p.name}</div></div>)}
@@ -1613,7 +1629,7 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
         <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:40,flexWrap:'wrap'}}>
           {cats.map(c=><button type="button" aria-pressed={active===c} key={c} onClick={()=>setActive(c)} style={{padding:'8px 20px',borderRadius:50,border:active===c?'none':'1.5px solid #e5e5e5',background:active===c?accent:'transparent',color:active===c?'#fff':'#666',fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.18s'}}>{c}</button>)}
         </div>
-        <div style={{columns:3,gap:20}}>
+        <div style={{columns: isMobile ? 2 : 3,gap:20}}>
           {filtered.map((p,i)=>(
             <div key={i} style={{breakInside:'avoid',marginBottom:20,borderRadius:16,overflow:'hidden',position:'relative',cursor:'pointer'}} onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(null)}>
               <img src={p.image} alt={p.title} style={{width:'100%',display:'block',transition:'transform 0.4s',transform:hover===i?'scale(1.05)':'scale(1)'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
@@ -1761,7 +1777,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(sectionRef.current) obs.observe(sectionRef.current);
-    return () => obs.disconnect();
++
   }, []);
   return (
     <section ref={sectionRef as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
@@ -2420,7 +2436,7 @@ export default function SocialLinks({ items, size, accentColor }: { items: { pla
   );
 }`,
 
-"/components/sections/NewsletterInline.tsx": `import React, { useState } from 'react';
+"/components/sections/NewsletterInline.tsx": `import React, { useState, useEffect } from 'react';
 export default function NewsletterInline({ placeholder, cta, title, onSubmit, accentColor }: { placeholder?: string; cta?: string; title?: string; onSubmit?: (email: string) => void; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const [email, setEmail] = useState('');
@@ -3681,4 +3697,98 @@ export default function HeroVideo({ title = 'Experience the Difference', subtitl
     </section>
   );
 }
-`;
+`,
+
+"/components/sections/StructuredData.tsx": `
+import React from 'react';
+
+interface StructuredDataProps {
+  type?: 'LocalBusiness' | 'Restaurant' | 'MedicalBusiness' | 'LegalService' | 'HealthAndBeautyBusiness' | 'SportsActivityLocation' | 'Store' | 'Organization';
+  name?: string;
+  description?: string;
+  url?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  latitude?: number;
+  longitude?: number;
+  openingHours?: string[];
+  priceRange?: string;
+  image?: string;
+  rating?: number;
+  reviewCount?: number;
+}
+
+export default function StructuredData({ type = 'LocalBusiness', name, description, url, phone, address, city, state, zip, latitude, longitude, openingHours, priceRange, image, rating, reviewCount }: StructuredDataProps) {
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": type,
+    ...(name && { name }),
+    ...(description && { description }),
+    ...(url && { url }),
+    ...(phone && { telephone: phone }),
+    ...(priceRange && { priceRange }),
+    ...(image && { image }),
+    ...((address || city) && {
+      address: {
+        "@type": "PostalAddress",
+        ...(address && { streetAddress: address }),
+        ...(city && { addressLocality: city }),
+        ...(state && { addressRegion: state }),
+        ...(zip && { postalCode: zip }),
+        addressCountry: "US"
+      }
+    }),
+    ...((latitude && longitude) && {
+      geo: { "@type": "GeoCoordinates", latitude, longitude }
+    }),
+    ...(openingHours && openingHours.length > 0 && { openingHours }),
+    ...((rating && reviewCount) && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: rating,
+        reviewCount
+      }
+    })
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+`,
+
+"/components/sections/GoogleAnalytics.tsx": `
+import React from 'react';
+
+interface GoogleAnalyticsProps {
+  measurementId?: string;
+}
+
+export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
+  if (!measurementId) return null;
+
+  React.useEffect(() => {
+    const script1 = document.createElement('script');
+    script1.src = \`https://www.googletagmanager.com/gtag/js?id=\${measurementId}\`;
+    script1.async = true;
+    document.head.appendChild(script1);
+
+    const script2 = document.createElement('script');
+    script2.innerHTML = \`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '\${measurementId}');\`;
+    document.head.appendChild(script2);
+
+    return () => {
+      document.head.removeChild(script1);
+      document.head.removeChild(script2);
+    };
+  }, [measurementId]);
+
+  return null;
+}
+`,

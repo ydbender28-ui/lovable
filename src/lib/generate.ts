@@ -207,6 +207,28 @@ Add a MetaTags component as the first child of your App div:
 />
 Import it: import MetaTags from '/components/sections/MetaTags';
 
+## SEO ADVANCED — Add these for professional sites:
+
+### Structured Data (LocalBusiness schema):
+For local businesses (restaurants, spas, dental, law, etc.) add after MetaTags:
+<StructuredData
+  type="LocalBusiness"  {/* or Restaurant, MedicalBusiness, LegalService, etc. */}
+  name="Business Name"
+  description="Short description"
+  phone="(555) 123-4567"
+  address="123 Main St"
+  city="San Francisco"
+  state="CA"
+  priceRange="$$"
+  rating={4.9}
+  reviewCount={247}
+/>
+
+### Google Analytics:
+If the user mentions GA or analytics tracking, add before Footer:
+<GoogleAnalytics measurementId="GA-XXXXXXXXXX" />
+Leave measurementId as empty string if not provided — it renders nothing.
+
 ## Technical rules:
 - Styling: use CSS custom properties (var(--bg), var(--primary), etc.) and inline style={{}} for ALL colors. NEVER use Tailwind CSS classes for colors.
 - Use {{unsplash:query|WxH}} for ALL images. They auto-resolve to real photos. Example: {{unsplash:coffee shop interior|1600x900}}
@@ -3095,7 +3117,7 @@ complete file here
 
   // Auto-fix missing section component imports in App.tsx
   if (finalFiles['/App.tsx']) {
-    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','HeroCentered','HeroSplit','HeroVideo','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','DarkModeToggle','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router','LoginForm','SignupForm','ChatWidget','CheckoutForm','ProductDetail','BlogPost','JobListing','RestaurantReservation','PropertyListing','DoctorProfile','MenuCategory','PackageComparison','IntegrationGrid','MegaMenu','PressKit','ReferralProgram','MembershipTiers','EventDetail','FilterBar','CartDrawer','CookieBanner','LoadingScreen','SearchBar','PricingToggle','ForgotPassword'];
+    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','HeroCentered','HeroSplit','HeroVideo','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','DarkModeToggle','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router','LoginForm','SignupForm','ChatWidget','CheckoutForm','ProductDetail','BlogPost','JobListing','RestaurantReservation','PropertyListing','DoctorProfile','MenuCategory','PackageComparison','IntegrationGrid','MegaMenu','PressKit','ReferralProgram','MembershipTiers','EventDetail','FilterBar','CartDrawer','CookieBanner','LoadingScreen','SearchBar','PricingToggle','ForgotPassword','StructuredData','GoogleAnalytics'];
     let appCode = finalFiles['/App.tsx'];
     const missingImports: string[] = [];
     for (const comp of KNOWN_SECTIONS) {
@@ -3140,7 +3162,7 @@ complete file here
       // Hero variants
       HeroCentered: 'hero', HeroSplit: 'hero', HeroVideo: 'hero',
       // Utility — no anchor needed (empty string = skip)
-      MetaTags: '', DarkModeToggle: '', Router: '',
+      MetaTags: '', DarkModeToggle: '', Router: '', StructuredData: '', GoogleAnalytics: '',
       // Specialty components
       LoginForm: 'login', SignupForm: 'signup', ChatWidget: 'chat',
       CheckoutForm: 'checkout', ProductDetail: 'product', BlogPost: 'blog',
