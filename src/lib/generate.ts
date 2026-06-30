@@ -1866,7 +1866,7 @@ RULES:
 /* FORCE STYLES — hardcoded from :root values */
 body, #root, #app, [data-reactroot], main { background-color: ${hsl('background') || '#faf8f5'}; color: ${hsl('foreground') || '#1c1109'}; min-height: 100vh; }
 nav, header { background-color: ${hsl('card') || '#ffffff'}; backdrop-filter: blur(12px); border-bottom: 1px solid ${hsl('border') || '#e8dfd5'}; }
-img:not([class*="h-"]) { max-height: 500px; object-fit: cover; width: 100%; }
+img:not([class*="h-"]):not([class*="hero"]):not([style*="vh"]) { max-height: 240px !important; object-fit: cover !important; width: 100% !important; display: block !important; }
 .bg-background { background-color: ${hsl('background') || '#faf8f5'} !important; }
 .bg-foreground { background-color: ${hsl('foreground') || '#1c1109'} !important; }
 .bg-card { background-color: ${hsl('card') || '#ffffff'} !important; }
