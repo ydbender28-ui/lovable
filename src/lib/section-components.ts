@@ -8,18 +8,20 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
   const accent = accentColor || '#111';
   const [scrolled, setScrolled] = useState(false);
   const [cartCount, setCartCount] = useState(cartCountProp ?? 0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   const cartOpenerRef = React.useRef<(() => void) | null>(null);
   useEffect(() => { const h = () => setScrolled(window.scrollY > 10); window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h); }, []);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
   const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpenerRef.current) cartOpenerRef.current(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
   const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
   const handleClick = (l: string) => (e: React.MouseEvent) => {
+    setMobileOpen(false);
     if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); return; }
     const slug = String(l).toLowerCase().replace(/\s+/g, '-');
-    // Try id match (exact, then no-hyphens, then common aliases)
     const aliases: Record<string,string> = { services:'services', about:'about', reviews:'reviews', menu:'menu', booking:'booking', book:'booking', reserve:'booking', reservations:'booking', contact:'contact', gallery:'gallery', team:'team', pricing:'pricing', plans:'pricing', faq:'faq', location:'location', directions:'location', hours:'hours', results:'results', portfolio:'portfolio', shop:'shop', work:'portfolio', process:'process', features:'features', stats:'stats', video:'video', events:'events', partners:'partners', blog:'blog', download:'download', offer:'offer' };
     let el: HTMLElement | null = document.getElementById(slug) || document.getElementById(slug.replace(/-/g,'')) || document.getElementById(aliases[slug] || slug);
-    // Fallback: find a section whose h2/h3 text contains the link text
     if (!el) {
       const secs = document.querySelectorAll('section, [id]');
       for (const s of secs) {
@@ -30,42 +32,53 @@ export default function Navbar({ brand, links, cta, ctaHref, showCart, onNavigat
     if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   };
   return (
-    <nav role="navigation" aria-label="Main navigation" style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding:'0 40px', transition:'background 0.2s' }}>
+    <nav role="navigation" aria-label="Main navigation" style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #f0f0f0', padding: isMobile ? '0 20px' : '0 40px', transition:'background 0.2s' }}>
       <a href="#main-content" style={{ position:'absolute', top:'-40px', left:0, background:accent, color:'#fff', padding:'8px 16px', zIndex:9999, borderRadius:'0 0 4px 0', transition:'top 0.2s', textDecoration:'none', fontSize:14, fontWeight:600 }} onFocus={e => e.currentTarget.style.top='0'} onBlur={e => e.currentTarget.style.top='-40px'}>Skip to main content</a>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
-        <div style={{ display:'flex', gap:28, alignItems:'center' }}>
-          {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#666', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#666'}>{String(l)}</a>)}
-          {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:700, textDecoration:'none', cursor:'pointer', transition:'opacity 0.2s', letterSpacing:'-0.01em' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
-          {showCart && <button type="button" aria-label={`Shopping cart, ${cartCount} item${cartCount!==1?'s':''}`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#e5e5e5'}>
-            🛒 {cartCount > 0 && <span aria-hidden="true" style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
-          </button>}
-        </div>
+        {isMobile ? (
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {showCart && <button type="button" aria-label={\`Cart \${cartCount}\`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'7px 12px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:5, fontSize:14, fontWeight:600, color:'#111' }}>🛒{cartCount > 0 && <span style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}</button>}
+            <button type="button" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} onClick={() => setMobileOpen(!mobileOpen)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#111', padding:'4px 8px', lineHeight:1 }}>{mobileOpen ? '✕' : '☰'}</button>
+          </div>
+        ) : (
+          <div style={{ display:'flex', gap:28, alignItems:'center' }}>
+            {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#666', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#666'}>{String(l)}</a>)}
+            {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:700, textDecoration:'none', cursor:'pointer', transition:'opacity 0.2s', letterSpacing:'-0.01em' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
+            {showCart && <button type="button" aria-label={\`Shopping cart, \${cartCount} item\${cartCount!==1?'s':''}\`} onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #e5e5e5', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#e5e5e5'}>
+              🛒 {cartCount > 0 && <span aria-hidden="true" style={{ background:accent, color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
+            </button>}
+          </div>
+        )}
       </div>
+      {isMobile && mobileOpen && (
+        <div style={{ borderTop:'1px solid #f0f0f0', padding:'8px 0 20px', display:'flex', flexDirection:'column' }}>
+          {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase().replace(/\s+/g,'-')}\`} onClick={handleClick(String(l))} style={{ fontSize:16, color:'#333', textDecoration:'none', fontWeight:500, padding:'13px 0', borderBottom:'1px solid #f5f5f5', cursor:'pointer' }}>{String(l)}</a>)}
+          {cta && <a href={ctaHref||'#contact'} onClick={ctaHref?undefined:handleClick('contact')} style={{ background:accent, color:'#fff', padding:'14px 24px', borderRadius:50, fontSize:15, fontWeight:700, textDecoration:'none', textAlign:'center', marginTop:16, display:'block' }}>{cta}</a>}
+        </div>
+      )}
     </nav>
   );
 }`,
 
-"/components/sections/Hero.tsx": `import React from 'react';
+"/components/sections/Hero.tsx": `import React, { useState, useEffect, useRef } from 'react';
 export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?: string; title: string; subtitle: string; cta1?: { text: string; href?: string }; cta2?: { text: string; href?: string }; image: string }) {
-  const ref = React.useRef<HTMLElement>(null);
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
-    if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 }); if(ref.current) obs.observe(ref.current); return () => obs.disconnect(); }, []);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ position:'relative', minHeight:'65vh', display:'flex', alignItems:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ position:'relative', minHeight: isMobile ? '50vh' : '65vh', display:'flex', alignItems:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))' }} />
-      <div style={{ position:'relative', zIndex:1, maxWidth:1200, margin:'0 auto', padding:'80px 40px', color:'#fff' }}>
+      <div style={{ position:'relative', zIndex:1, maxWidth:1200, margin:'0 auto', padding: isMobile ? '48px 20px' : '80px 40px', color:'#fff' }}>
         {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:16, opacity:0.8 }}>{tag}</p>}
-        <h1 style={{ fontSize:'clamp(36px, 6vw, 72px)', fontWeight:800, lineHeight:1.05, maxWidth:700, letterSpacing:'-0.03em' }}>{title}</h1>
-        <p style={{ fontSize:18, lineHeight:1.6, maxWidth:500, marginTop:24, opacity:0.85 }}>{subtitle}</p>
-        <div style={{ display:'flex', gap:16, marginTop:40, flexWrap:'wrap' }}>
-          {cta1 && <a href={cta1.href||'#'} style={{ background:'var(--accent, #c2410c)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'opacity 0.2s' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta1.text}</a>}
-          {cta2 && <a href={cta2.href||'#'} style={{ border:'1px solid rgba(255,255,255,0.4)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'background 0.2s' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta2.text}</a>}
+        <h1 style={{ fontSize:'clamp(28px, 6vw, 72px)', fontWeight:800, lineHeight:1.05, maxWidth:700, letterSpacing:'-0.03em' }}>{title}</h1>
+        <p style={{ fontSize: isMobile ? 15 : 18, lineHeight:1.6, maxWidth:500, marginTop:24, opacity:0.85 }}>{subtitle}</p>
+        <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 16, marginTop: isMobile ? 28 : 40 }}>
+          {cta1 && <a href={cta1.href||'#'} style={{ background:'var(--accent, #c2410c)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'opacity 0.2s', textAlign:'center' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta1.text}</a>}
+          {cta2 && <a href={cta2.href||'#'} style={{ border:'1px solid rgba(255,255,255,0.4)', color:'#fff', padding:'14px 32px', borderRadius:50, fontSize:15, fontWeight:600, textDecoration:'none', transition:'background 0.2s', textAlign:'center' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta2.text}</a>}
         </div>
       </div>
     </section>
@@ -2334,6 +2347,825 @@ export default function MetaTags({ title, description, keywords }: MetaTagsProps
   return null;
 }
 `,
+
+
+"/components/sections/DashboardStats.tsx": `import { useState, useEffect } from 'react';
+interface StatItem { label: string; value: string; change: string; positive: boolean; icon: string; }
+interface Props { items?: StatItem[]; accentColor?: string; }
+const DEFAULT: StatItem[] = [
+  { label: 'Total Revenue', value: '$84,320', change: '+12.5%', positive: true, icon: '💰' },
+  { label: 'Active Users', value: '3,842', change: '+8.1%', positive: true, icon: '👥' },
+  { label: 'Churn Rate', value: '2.4%', change: '+0.3%', positive: false, icon: '📉' },
+  { label: 'Avg Order', value: '$124', change: '-3.2%', positive: false, icon: '🛒' },
+];
+export default function DashboardStats({ items = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, padding: '24px 0' }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'default', transform: mounted ? 'translateY(0)' : 'translateY(12px)', opacity: mounted ? 1 : 0, transitionDelay: i * 80 + 'ms' }}
+          onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; }}
+          onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: accent + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{item.icon}</div>
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 50, background: item.positive ? '#dcfce7' : '#fee2e2', color: item.positive ? '#16a34a' : '#dc2626' }}>{item.change}</span>
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--fg, #111)', marginBottom: 4 }}>{item.value}</div>
+          <div style={{ fontSize: 13, color: 'var(--muted, #888)' }}>{item.label}</div>
+          <div style={{ marginTop: 16, height: 4, borderRadius: 99, background: 'var(--border, #e5e7eb)', overflow: 'hidden' }}>
+            <div style={{ height: '100%', borderRadius: 99, background: item.positive ? accent : '#f87171', width: mounted ? (40 + i * 15) + '%' : '0%', transition: 'width 1s ease', transitionDelay: (i * 120 + 300) + 'ms' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}`,
+
+"/components/sections/DataTable.tsx": `import { useState, useMemo } from 'react';
+interface Column { key: string; label: string; sortable?: boolean; }
+interface Props { columns?: Column[]; rows?: Record<string,any>[]; onEdit?: (row: Record<string,any>) => void; onDelete?: (row: Record<string,any>) => void; title?: string; accentColor?: string; }
+const DEFAULT_COLS: Column[] = [{ key:'name',label:'Name',sortable:true },{ key:'email',label:'Email',sortable:true },{ key:'role',label:'Role',sortable:true },{ key:'status',label:'Status' }];
+const DEFAULT_ROWS = [
+  { name:'Alice Chen', email:'alice@example.com', role:'Admin', status:'Active' },
+  { name:'Bob Smith', email:'bob@example.com', role:'Editor', status:'Active' },
+  { name:'Carol Wu', email:'carol@example.com', role:'Viewer', status:'Inactive' },
+  { name:'David Lee', email:'david@example.com', role:'Editor', status:'Active' },
+  { name:'Eva Moore', email:'eva@example.com', role:'Viewer', status:'Active' },
+  { name:'Frank Hall', email:'frank@example.com', role:'Viewer', status:'Inactive' },
+  { name:'Grace Kim', email:'grace@example.com', role:'Editor', status:'Active' },
+  { name:'Henry Park', email:'henry@example.com', role:'Viewer', status:'Active' },
+  { name:'Iris Tang', email:'iris@example.com', role:'Editor', status:'Inactive' },
+  { name:'James Wu', email:'james@example.com', role:'Admin', status:'Active' },
+  { name:'Karen Liu', email:'karen@example.com', role:'Viewer', status:'Active' },
+  { name:'Leo Chen', email:'leo@example.com', role:'Editor', status:'Active' },
+];
+export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS, onEdit, onDelete, title = 'Data Table', accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [sortKey, setSortKey] = useState('');
+  const [sortDir, setSortDir] = useState<'asc'|'desc'>('asc');
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const PAGE_SIZE = 10;
+  const filtered = useMemo(() => rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(search.toLowerCase()))), [rows, search]);
+  const sorted = useMemo(() => { if (!sortKey) return filtered; return [...filtered].sort((a, b) => { const v = String(a[sortKey]).localeCompare(String(b[sortKey])); return sortDir === 'asc' ? v : -v; }); }, [filtered, sortKey, sortDir]);
+  const paged = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const handleSort = (key: string) => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('asc'); } };
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3>
+        <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Search..." style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none', width: 220 }} />
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead><tr style={{ background: 'var(--bg, #f9fafb)' }}>
+            {columns.map(col => <th key={col.key} onClick={() => col.sortable && handleSort(col.key)} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: col.sortable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }}>{col.label}{col.sortable && sortKey === col.key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</th>)}
+            {(onEdit || onDelete) && <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 12, textTransform: 'uppercase' }}>Actions</th>}
+          </tr></thead>
+          <tbody>
+            {paged.map((row, i) => (
+              <tr key={i} style={{ borderTop: '1px solid var(--border, #e5e7eb)' }}
+                onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'}
+                onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                {columns.map(col => <td key={col.key} style={{ padding: '12px 16px', color: 'var(--fg, #111)' }}>{col.key === 'status' ? <span style={{ padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700, background: row[col.key] === 'Active' ? '#dcfce7' : '#f3f4f6', color: row[col.key] === 'Active' ? '#16a34a' : '#888' }}>{row[col.key]}</span> : String(row[col.key] ?? '')}</td>)}
+                {(onEdit || onDelete) && <td style={{ padding: '12px 16px', textAlign: 'right' }}><div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>{onEdit && <button onClick={() => onEdit(row)} style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid ' + accent, background: 'transparent', color: accent, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Edit</button>}{onDelete && <button onClick={() => onDelete(row)} style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid #fca5a5', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>}</div></td>}
+              </tr>
+            ))}
+            {paged.length === 0 && <tr><td colSpan={columns.length + 1} style={{ padding: 32, textAlign: 'center', color: 'var(--muted, #888)' }}>No results found.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, color: 'var(--muted, #888)' }}>Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0} style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.4 : 1, fontSize: 13 }}>Prev</button>
+          <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} style={{ padding: '6px 14px', borderRadius: 7, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: page >= totalPages - 1 ? 'not-allowed' : 'pointer', opacity: page >= totalPages - 1 ? 0.4 : 1, fontSize: 13 }}>Next</button>
+        </div>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/ActivityFeed.tsx": `import { useState } from 'react';
+interface FeedItem { icon: string; title: string; desc?: string; time: string; user: string; color?: string; }
+interface Props { title?: string; items?: FeedItem[]; accentColor?: string; }
+const DEFAULT: FeedItem[] = [
+  { icon:'✅', title:'Order #1042 completed', desc:'Payment received and confirmed', time:'2 min ago', user:'Alice Chen', color:'#22c55e' },
+  { icon:'👤', title:'New user registered', desc:'bob@example.com joined', time:'18 min ago', user:'System', color:'#6366f1' },
+  { icon:'🚀', title:'Feature deployed', desc:'v2.4.1 pushed to production', time:'1h ago', user:'Dev Team', color:'#f59e0b' },
+  { icon:'⚠️', title:'High traffic alert', desc:'API usage spiked to 94%', time:'2h ago', user:'Monitor', color:'#ef4444' },
+  { icon:'💬', title:'New support ticket', desc:'Ticket #887 needs attention', time:'3h ago', user:'Carol Wu', color:'#06b6d4' },
+  { icon:'💳', title:'Subscription renewed', desc:'Pro plan', time:'5h ago', user:'David Lee', color:'#8b5cf6' },
+];
+function initials(name: string) { return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2); }
+export default function ActivityFeed({ title = 'Recent Activity', items = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [visible, setVisible] = useState(5);
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <h3 style={{ margin: '0 0 24px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {items.slice(0, visible).map((item, i) => (
+          <div key={i} style={{ display: 'flex', gap: 14, paddingBottom: i < visible - 1 ? 20 : 0, marginBottom: i < visible - 1 ? 20 : 0, borderBottom: i < visible - 1 ? '1px solid var(--border, #f0f0f0)' : 'none' }}>
+            <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 10, background: (item.color || accent) + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{item.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg, #111)' }}>{item.title}</span>
+                <span style={{ fontSize: 11, color: 'var(--muted, #aaa)', whiteSpace: 'nowrap' }}>{item.time}</span>
+              </div>
+              {item.desc && <div style={{ fontSize: 12, color: 'var(--muted, #888)', marginTop: 2 }}>{item.desc}</div>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: accent, color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(item.user)}</div>
+                <span style={{ fontSize: 11, color: 'var(--muted, #999)' }}>{item.user}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {visible < items.length && <button onClick={() => setVisible(v => v + 5)} style={{ marginTop: 20, width: '100%', padding: '10px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: accent }}>Load more</button>}
+    </div>
+  );
+}`,
+
+"/components/sections/RevenueChart.tsx": `import { useState, useEffect } from 'react';
+interface DataPoint { month: string; value: number; }
+interface Props { title?: string; data?: DataPoint[]; accentColor?: string; currency?: string; }
+const DEFAULT: DataPoint[] = [{ month:'Jan', value:42000 },{ month:'Feb', value:38000 },{ month:'Mar', value:55000 },{ month:'Apr', value:61000 },{ month:'May', value:58000 },{ month:'Jun', value:74000 },{ month:'Jul', value:82000 },{ month:'Aug', value:79000 },{ month:'Sep', value:91000 },{ month:'Oct', value:88000 },{ month:'Nov', value:97000 },{ month:'Dec', value:112000 }];
+export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT, accentColor, currency = '$' }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [mounted, setMounted] = useState(false);
+  const [tooltip, setTooltip] = useState<number | null>(null);
+  useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
+  const max = Math.max(...data.map(d => d.value));
+  const fmt = (v: number) => v >= 1000 ? currency + (v/1000).toFixed(0) + 'k' : currency + v;
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3>
+        <span style={{ fontSize: 22, fontWeight: 800, color: accent }}>{fmt(data[data.length - 1]?.value ?? 0)}</span>
+      </div>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 6, height: 160, paddingBottom: 24 }}>
+        {data.map((d, i) => {
+          const h = (d.value / max) * 136;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}
+              onMouseEnter={() => setTooltip(i)} onMouseLeave={() => setTooltip(null)}>
+              <div style={{ width: '100%', borderRadius: '4px 4px 0 0', background: tooltip === i ? accent : accent + 'bb', transition: 'height 0.7s cubic-bezier(.4,0,.2,1), background 0.15s', transitionDelay: i * 40 + 'ms', height: mounted ? h : 0 }} />
+              <span style={{ position: 'absolute', bottom: 0, fontSize: 9, color: 'var(--muted, #999)', whiteSpace: 'nowrap' }}>{d.month}</span>
+              {tooltip === i && <div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: '#fff', padding: '5px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 10 }}>{fmt(d.value)}</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/AdminSidebar.tsx": `import { useState } from 'react';
+interface NavChild { label: string; href: string; }
+interface NavItem { label: string; icon: string; href?: string; active?: boolean; badge?: number; children?: NavChild[]; }
+interface Props { brand: string; items?: NavItem[]; onNavigate?: (href: string) => void; accentColor?: string; }
+const DEFAULT: NavItem[] = [
+  { label:'Dashboard', icon:'🏠', href:'#', active:true },
+  { label:'Analytics', icon:'📊', href:'#' },
+  { label:'Users', icon:'👥', href:'#', badge:3 },
+  { label:'Orders', icon:'📦', href:'#' },
+  { label:'Products', icon:'🛒', href:'#', children:[{ label:'All Products', href:'#' },{ label:'Add Product', href:'#' }] },
+  { label:'Settings', icon:'⚙️', href:'#' },
+];
+export default function AdminSidebar({ brand, items = DEFAULT, onNavigate, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [activeItem, setActiveItem] = useState(() => items.findIndex(i => i.active));
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  const toggle = (i: number) => setCollapsed(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  return (
+    <div style={{ width: 220, background: 'var(--card, #fff)', borderRight: '1px solid var(--border, #e5e7eb)', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 480 }}>
+      <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border, #e5e7eb)' }}>
+        <div style={{ fontWeight: 800, fontSize: 18, color: accent }}>{brand}</div>
+        <div style={{ fontSize: 11, color: 'var(--muted, #999)', marginTop: 2 }}>Admin Dashboard</div>
+      </div>
+      <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
+        {items.map((item, i) => (
+          <div key={i}>
+            <div onClick={() => item.children ? toggle(i) : (setActiveItem(i), onNavigate?.(item.href || '#'))} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', marginBottom: 2, background: activeItem === i ? accent + '15' : 'transparent', color: activeItem === i ? accent : 'var(--fg, #333)', fontWeight: activeItem === i ? 700 : 500, fontSize: 13, userSelect: 'none' }}
+              onMouseOver={e => { if (activeItem !== i) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f5f5f5)'; }}
+              onMouseOut={e => { if (activeItem !== i) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              <span style={{ flex: 1 }}>{item.label}</span>
+              {item.badge ? <span style={{ background: accent, color: '#fff', borderRadius: 50, fontSize: 10, fontWeight: 700, padding: '1px 7px' }}>{item.badge}</span> : null}
+              {item.children ? <span style={{ fontSize: 10 }}>{collapsed.has(i) ? '▶' : '▼'}</span> : null}
+            </div>
+            {item.children && !collapsed.has(i) && (
+              <div style={{ paddingLeft: 20, marginBottom: 4 }}>
+                {item.children.map((child, j) => (
+                  <div key={j} onClick={() => onNavigate?.(child.href)} style={{ padding: '7px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12, color: 'var(--muted, #777)' }}
+                    onMouseOver={e => (e.currentTarget as HTMLElement).style.color = accent}
+                    onMouseOut={e => (e.currentTarget as HTMLElement).style.color = 'var(--muted, #777)'}>{child.label}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </nav>
+      <div style={{ padding: '12px 10px', borderTop: '1px solid var(--border, #e5e7eb)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', color: '#ef4444', fontSize: 13, fontWeight: 600 }}
+          onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#fee2e2'}
+          onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+          <span>🚪</span> Logout
+        </div>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/KanbanBoard.tsx": `import { useState } from 'react';
+interface KCol { id: string; title: string; color: string; }
+interface KCard { id: string; col: string; title: string; assignee: string; priority: 'high'|'medium'|'low'; due?: string; desc?: string; }
+interface Props { columns?: KCol[]; cards?: KCard[]; accentColor?: string; }
+const DC: KCol[] = [{ id:'todo', title:'To Do', color:'#6366f1' },{ id:'inprogress', title:'In Progress', color:'#f59e0b' },{ id:'review', title:'Review', color:'#06b6d4' },{ id:'done', title:'Done', color:'#22c55e' }];
+const DK: KCard[] = [
+  { id:'1', col:'todo', title:'Design new landing page', assignee:'Alice', priority:'high', due:'Jun 30' },
+  { id:'2', col:'todo', title:'Fix mobile navigation', assignee:'Bob', priority:'medium' },
+  { id:'3', col:'inprogress', title:'Integrate payment API', assignee:'Carol', priority:'high', due:'Jun 28', desc:'Set up Stripe webhooks and test checkout flow.' },
+  { id:'4', col:'inprogress', title:'Write API docs', assignee:'David', priority:'low' },
+  { id:'5', col:'review', title:'User auth refactor', assignee:'Alice', priority:'high', desc:'JWT refresh token implementation.' },
+  { id:'6', col:'done', title:'Set up CI/CD pipeline', assignee:'Bob', priority:'medium' },
+];
+const PC: Record<string,string> = { high:'#ef4444', medium:'#f59e0b', low:'#22c55e' };
+export default function KanbanBoard({ columns = DC, cards = DK, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [modal, setModal] = useState<KCard | null>(null);
+  return (
+    <div style={{ padding: '24px 0', position: 'relative' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns.length + ', minmax(220px, 1fr))', gap: 16, overflowX: 'auto' }}>
+        {columns.map(col => {
+          const cc = cards.filter(c => c.col === col.id);
+          return (
+            <div key={col.id} style={{ background: 'var(--bg, #f9fafb)', borderRadius: 14, padding: 16, minHeight: 360 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: col.color }} />
+                  <span style={{ fontWeight: 700, fontSize: 13 }}>{col.title}</span>
+                </div>
+                <span style={{ background: col.color + '22', color: col.color, fontWeight: 700, fontSize: 11, borderRadius: 50, padding: '2px 8px' }}>{cc.length}</span>
+              </div>
+              {cc.map(card => (
+                <div key={card.id} onClick={() => setModal(card)} style={{ background: 'var(--card, #fff)', borderRadius: 10, padding: 14, marginBottom: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', cursor: 'grab', border: '1px solid var(--border, #eee)', transition: 'box-shadow 0.2s, transform 0.2s' }}
+                  onMouseOver={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                  onMouseOut={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>{card.title}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: accent, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{card.assignee.slice(0,2).toUpperCase()}</div>
+                      <span style={{ fontSize: 11, color: 'var(--muted, #888)' }}>{card.due || ''}</span>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 50, background: PC[card.priority] + '22', color: PC[card.priority] }}>{card.priority}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      {modal && (
+        <div onClick={() => setModal(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--card, #fff)', borderRadius: 16, padding: 32, maxWidth: 440, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>{modal.title}</h3>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--muted, #999)' }}>x</button>
+            </div>
+            {modal.desc && <p style={{ margin: '0 0 16px', color: 'var(--muted, #666)', fontSize: 14 }}>{modal.desc}</p>}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 50, background: PC[modal.priority] + '20', color: PC[modal.priority], fontWeight: 700 }}>{modal.priority} priority</span>
+              <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 50, background: 'var(--bg, #f3f4f6)', color: 'var(--muted, #666)', fontWeight: 600 }}>Assignee: {modal.assignee}</span>
+              {modal.due ? <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 50, background: 'var(--bg, #f3f4f6)', color: 'var(--muted, #666)', fontWeight: 600 }}>Due: {modal.due}</span> : null}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}`,
+
+"/components/sections/UserManagement.tsx": `import { useState } from 'react';
+interface User { name: string; email: string; role: string; active: boolean; lastSeen?: string; }
+interface Props { users?: User[]; accentColor?: string; }
+const DEFAULT: User[] = [
+  { name:'Alice Chen', email:'alice@example.com', role:'Admin', active:true, lastSeen:'Just now' },
+  { name:'Bob Smith', email:'bob@example.com', role:'Editor', active:true, lastSeen:'5 min ago' },
+  { name:'Carol Wu', email:'carol@example.com', role:'Viewer', active:false, lastSeen:'2 days ago' },
+  { name:'David Lee', email:'david@example.com', role:'Editor', active:true },
+  { name:'Eva Moore', email:'eva@example.com', role:'Viewer', active:true },
+];
+const ROLES = ['All', 'Admin', 'Editor', 'Viewer'];
+const RC: Record<string,string> = { Admin:'#6366f1', Editor:'#f59e0b', Viewer:'#22c55e' };
+function ini(n: string) { return n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
+export default function UserManagement({ users: init = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [users, setUsers] = useState(init);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [showAdd, setShowAdd] = useState(false);
+  const [nu, setNu] = useState({ name:'', email:'', role:'Viewer' });
+  const filtered = users.filter(u => (roleFilter === 'All' || u.role === roleFilter) && (u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())));
+  const toggle = (idx: number) => setUsers(list => list.map((u, i) => i === idx ? { ...u, active: !u.active } : u));
+  const add = () => { if (!nu.name || !nu.email) return; setUsers(u => [...u, { ...nu, active:true }]); setNu({ name:'', email:'', role:'Viewer' }); setShowAdd(false); };
+  const inp = { padding: '7px 12px', borderRadius: 7, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none' } as const;
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, flex: 1 }}>Users</h3>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ ...inp, width: 180 }} />
+        <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ ...inp, background: 'var(--card, #fff)', cursor: 'pointer' }}>{ROLES.map(r => <option key={r}>{r}</option>)}</select>
+        <button onClick={() => setShowAdd(!showAdd)} style={{ padding: '8px 16px', borderRadius: 8, background: accent, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>+ Add User</button>
+      </div>
+      {showAdd && (
+        <div style={{ padding: '16px 24px', background: 'var(--bg, #f9fafb)', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <input value={nu.name} onChange={e => setNu(u => ({ ...u, name: e.target.value }))} placeholder="Full name" style={{ ...inp, width: 150 }} />
+          <input value={nu.email} onChange={e => setNu(u => ({ ...u, email: e.target.value }))} placeholder="Email" style={{ ...inp, width: 180 }} />
+          <select value={nu.role} onChange={e => setNu(u => ({ ...u, role: e.target.value }))} style={{ ...inp, background: 'var(--card, #fff)', cursor: 'pointer' }}>{['Admin','Editor','Viewer'].map(r => <option key={r}>{r}</option>)}</select>
+          <button onClick={add} style={{ padding: '8px 16px', borderRadius: 8, background: accent, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>Add</button>
+          <button onClick={() => setShowAdd(false)} style={{ padding: '8px 16px', borderRadius: 8, background: 'transparent', color: 'var(--muted, #888)', border: '1px solid var(--border, #e5e7eb)', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
+        </div>
+      )}
+      <div>
+        {filtered.map((u, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 24px', borderBottom: i < filtered.length - 1 ? '1px solid var(--border, #f0f0f0)' : 'none' }}
+            onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'}
+            onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: accent, color: '#fff', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ini(u.name)}</div>
+            <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</div><div style={{ fontSize: 12, color: 'var(--muted, #888)' }}>{u.email}</div></div>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 50, background: (RC[u.role] || '#888') + '22', color: RC[u.role] || '#888', flexShrink: 0 }}>{u.role}</span>
+            <div onClick={() => toggle(users.indexOf(u))} style={{ flexShrink: 0, width: 40, height: 22, borderRadius: 50, background: u.active ? accent : '#e5e7eb', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+              <div style={{ position: 'absolute', top: 2, left: u.active ? 20 : 2, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted, #aaa)' }}>No users found.</div>}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/NotificationCenter.tsx": `import { useState } from 'react';
+interface Notif { icon: string; title: string; message: string; time: string; read?: boolean; type?: string; }
+interface Props { items?: Notif[]; accentColor?: string; }
+const DEFAULT: Notif[] = [
+  { icon:'✅', title:'Payment received', message:'Order #1042 confirmed', time:'2m ago', read:false, type:'success' },
+  { icon:'⚠️', title:'Low disk space', message:'Server storage at 87%', time:'15m ago', read:false, type:'warning' },
+  { icon:'👤', title:'New user signup', message:'bob@example.com registered', time:'1h ago', read:false, type:'info' },
+  { icon:'❌', title:'Deploy failed', message:'Build #94 failed', time:'2h ago', read:true, type:'error' },
+  { icon:'📊', title:'Weekly report', message:'Analytics digest available', time:'1d ago', read:true, type:'info' },
+];
+const TC: Record<string,string> = { info:'#6366f1', success:'#22c55e', warning:'#f59e0b', error:'#ef4444' };
+export default function NotificationCenter({ items: init = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState(init);
+  const unread = items.filter(n => !n.read).length;
+  const markAll = () => setItems(l => l.map(n => ({ ...n, read: true })));
+  const markOne = (i: number) => setItems(l => l.map((n, idx) => idx === i ? { ...n, read: true } : n));
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <button onClick={() => setOpen(!open)} style={{ position: 'relative', width: 44, height: 44, borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: 'var(--card, #fff)', cursor: 'pointer', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        🔔
+        {unread > 0 ? <span style={{ position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread}</span> : null}
+      </button>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+          <div style={{ position: 'absolute', right: 0, top: 52, width: 340, background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 14, boxShadow: '0 16px 48px rgba(0,0,0,0.15)', zIndex: 100, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>Notifications {unread > 0 ? <span style={{ background: accent, color: '#fff', borderRadius: 50, fontSize: 11, padding: '1px 7px', marginLeft: 6 }}>{unread}</span> : null}</span>
+              {unread > 0 ? <button onClick={markAll} style={{ fontSize: 12, color: accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Mark all read</button> : null}
+            </div>
+            <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+              {items.map((n, i) => (
+                <div key={i} onClick={() => markOne(i)} style={{ display: 'flex', gap: 12, padding: '14px 18px', borderBottom: '1px solid var(--border, #f0f0f0)', cursor: 'pointer', background: n.read ? 'transparent' : accent + '08' }}
+                  onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'}
+                  onMouseOut={e => (e.currentTarget as HTMLElement).style.background = n.read ? 'transparent' : accent + '08'}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: (TC[n.type||'info']||accent) + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{n.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <span style={{ fontWeight: n.read ? 500 : 700, fontSize: 13 }}>{n.title}</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted, #aaa)', whiteSpace: 'nowrap' }}>{n.time}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--muted, #888)', marginTop: 2 }}>{n.message}</div>
+                  </div>
+                  {!n.read ? <div style={{ width: 7, height: 7, borderRadius: '50%', background: accent, flexShrink: 0, marginTop: 6 }} /> : null}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}`,
+
+"/components/sections/AnalyticsPanel.tsx": `interface StatBlock { label: string; value: string; delta?: string; }
+interface ChartPoint { label: string; value: number; }
+interface TableRow { name: string; value: number; max: number; }
+interface Props { title?: string; stats?: StatBlock[]; chartData?: ChartPoint[]; tableData?: TableRow[]; accentColor?: string; }
+const DS: StatBlock[] = [{ label:'Page Views', value:'124,831', delta:'+18%' },{ label:'Sessions', value:'41,290', delta:'+9%' },{ label:'Bounce Rate', value:'38.4%', delta:'-2%' }];
+const DC: ChartPoint[] = [{ label:'Mon', value:320 },{ label:'Tue', value:480 },{ label:'Wed', value:410 },{ label:'Thu', value:560 },{ label:'Fri', value:720 },{ label:'Sat', value:390 },{ label:'Sun', value:280 }];
+const DT: TableRow[] = [{ name:'/home', value:42000, max:60000 },{ name:'/products', value:31000, max:60000 },{ name:'/about', value:18000, max:60000 },{ name:'/blog', value:14000, max:60000 }];
+export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, chartData=DC, tableData=DT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const maxVal = Math.max(...chartData.map(d => d.value));
+  const pts = chartData.map((d, i) => ({ x: (i / (chartData.length - 1)) * 100, y: 100 - (d.value / maxVal) * 100 }));
+  const pathD = pts.map((p, i) => (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y).join(' ');
+  const areaD = pathD + ' L ' + pts[pts.length-1].x + ' 100 L 0 100 Z';
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+        {stats.map((s, i) => (
+          <div key={i} style={{ padding: 16, borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: 'var(--bg, #f9fafb)' }}>
+            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>{s.value}</div>
+            <div style={{ fontSize: 12, color: 'var(--muted, #888)', marginTop: 4 }}>{s.label}</div>
+            {s.delta ? <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6, color: s.delta.startsWith('-') ? '#ef4444' : '#22c55e' }}>{s.delta} vs last week</div> : null}
+          </div>
+        ))}
+      </div>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted, #888)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Weekly Traffic</div>
+        <svg viewBox="0 0 100 60" preserveAspectRatio="none" style={{ width: '100%', height: 100, display: 'block' }}>
+          <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={accent} stopOpacity={0.2}/><stop offset="100%" stopColor={accent} stopOpacity={0}/></linearGradient></defs>
+          <path d={areaD} fill="url(#ag)" />
+          <path d={pathD} fill="none" stroke={accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.5" fill={accent} vectorEffect="non-scaling-stroke" />)}
+        </svg>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>{chartData.map((d, i) => <span key={i} style={{ fontSize: 10, color: 'var(--muted, #bbb)' }}>{d.label}</span>)}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted, #888)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Top Pages</div>
+        {tableData.map((row, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <span style={{ fontSize: 12, color: 'var(--muted, #888)', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
+            <div style={{ flex: 1, height: 6, borderRadius: 99, background: 'var(--border, #e5e7eb)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 99, background: accent, width: (row.value / row.max * 100) + '%' }} />
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, width: 48, textAlign: 'right', flexShrink: 0 }}>{(row.value/1000).toFixed(0)}k</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/OrdersTable.tsx": `import { useState } from 'react';
+interface Order { id: string; customer: string; items: string; total: number; status: string; date: string; }
+interface Props { orders?: Order[]; onStatusChange?: (id: string, status: string) => void; accentColor?: string; }
+const DEFAULT: Order[] = [
+  { id:'#1042', customer:'Alice Chen', items:'2x Widget Pro', total:149.00, status:'Delivered', date:'Jun 28' },
+  { id:'#1041', customer:'Bob Smith', items:'1x Premium Plan', total:99.00, status:'Processing', date:'Jun 28' },
+  { id:'#1040', customer:'Carol Wu', items:'3x Bundle', total:214.50, status:'Shipped', date:'Jun 27' },
+  { id:'#1039', customer:'David Lee', items:'1x Starter Pack', total:49.00, status:'Pending', date:'Jun 27' },
+  { id:'#1038', customer:'Eva Moore', items:'1x Enterprise', total:499.00, status:'Delivered', date:'Jun 26' },
+  { id:'#1037', customer:'Frank Hall', items:'2x Basic Plan', total:58.00, status:'Cancelled', date:'Jun 25' },
+];
+const SC: Record<string,{ bg:string; color:string }> = {
+  Pending:{ bg:'#fef3c7', color:'#d97706' }, Processing:{ bg:'#dbeafe', color:'#2563eb' },
+  Shipped:{ bg:'#ede9fe', color:'#7c3aed' }, Delivered:{ bg:'#dcfce7', color:'#16a34a' }, Cancelled:{ bg:'#fee2e2', color:'#dc2626' },
+};
+const TABS = ['All','Pending','Processing','Shipped','Delivered','Cancelled'];
+export default function OrdersTable({ orders: init = DEFAULT, onStatusChange, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [filter, setFilter] = useState('All');
+  const [orders, setOrders] = useState(init);
+  const filtered = filter === 'All' ? orders : orders.filter(o => o.status === filter);
+  const upd = (id: string, status: string) => { setOrders(l => l.map(o => o.id === id ? { ...o, status } : o)); onStatusChange?.(id, status); };
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)' }}>
+        <h3 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700 }}>Orders</h3>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {TABS.map(s => <button key={s} onClick={() => setFilter(s)} style={{ padding: '5px 14px', borderRadius: 50, border: filter === s ? 'none' : '1px solid var(--border, #e5e7eb)', background: filter === s ? accent : 'transparent', color: filter === s ? '#fff' : 'var(--muted, #666)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{s}</button>)}
+        </div>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead><tr style={{ background: 'var(--bg, #f9fafb)' }}>
+            {['Order','Customer','Items','Total','Status','Date'].map(h => <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {filtered.map((o, i) => (
+              <tr key={i} style={{ borderTop: '1px solid var(--border, #e5e7eb)' }}
+                onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'}
+                onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                <td style={{ padding: '13px 16px', fontWeight: 700, color: accent }}>{o.id}</td>
+                <td style={{ padding: '13px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 30, height: 30, borderRadius: '50%', background: accent, color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{o.customer.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase()}</div>
+                    {o.customer}
+                  </div>
+                </td>
+                <td style={{ padding: '13px 16px', color: 'var(--muted, #888)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.items}</td>
+                <td style={{ padding: '13px 16px', fontWeight: 700 }}>${o.total.toFixed(2)}</td>
+                <td style={{ padding: '13px 16px' }}>
+                  <select value={o.status} onChange={e => upd(o.id, e.target.value)} style={{ padding: '4px 10px', borderRadius: 50, border: 'none', background: (SC[o.status]?.bg||'#f3f4f6'), color: (SC[o.status]?.color||'#888'), fontSize: 11, fontWeight: 700, cursor: 'pointer', outline: 'none' }}>
+                    {Object.keys(SC).map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </td>
+                <td style={{ padding: '13px 16px', color: 'var(--muted, #888)', whiteSpace: 'nowrap' }}>{o.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/FormBuilder.tsx": `import { useState } from 'react';
+interface FieldDef { label: string; key: string; type: 'text'|'email'|'tel'|'select'|'textarea'|'toggle'; placeholder?: string; options?: string[]; value?: any; }
+interface Sec { title: string; fields: FieldDef[]; }
+interface Props { title?: string; subtitle?: string; sections?: Sec[]; onSave?: (data: Record<string,any>) => void; accentColor?: string; }
+const DEF: Sec[] = [
+  { title:'Profile', fields:[{ label:'Full Name', key:'name', type:'text', placeholder:'John Doe', value:'Alice Chen' },{ label:'Email', key:'email', type:'email', placeholder:'you@example.com', value:'alice@example.com' },{ label:'Role', key:'role', type:'select', options:['Admin','Editor','Viewer'], value:'Admin' }] },
+  { title:'Preferences', fields:[{ label:'Bio', key:'bio', type:'textarea', placeholder:'Tell us about yourself...' },{ label:'Email Notifications', key:'notifs', type:'toggle', value:true },{ label:'Dark Mode', key:'dark', type:'toggle', value:false }] },
+];
+export default function FormBuilder({ title='Account Settings', subtitle='Manage your profile and preferences.', sections=DEF, onSave, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const init: Record<string,any> = {};
+  sections.forEach(s => s.fields.forEach(f => { init[f.key] = f.value ?? (f.type === 'toggle' ? false : ''); }));
+  const [data, setData] = useState<Record<string,any>>(init);
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const set = (key: string, val: any) => { setData(d => ({ ...d, [key]: val })); setSaved(false); };
+  const save = async () => { setLoading(true); await new Promise(r => setTimeout(r, 900)); onSave?.(data); setLoading(false); setSaved(true); setTimeout(() => setSaved(false), 3000); };
+  const inp = { width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', fontSize: 14, outline: 'none', background: 'var(--bg, #f9fafb)', boxSizing: 'border-box' as const };
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', maxWidth: 640 }}>
+      <div style={{ padding: 24, borderBottom: '1px solid var(--border, #e5e7eb)' }}>
+        <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800 }}>{title}</h2>
+        {subtitle ? <p style={{ margin: 0, color: 'var(--muted, #888)', fontSize: 14 }}>{subtitle}</p> : null}
+      </div>
+      {sections.map((sec, si) => (
+        <div key={si} style={{ padding: 24, borderBottom: '1px solid var(--border, #e5e7eb)' }}>
+          <h4 style={{ margin: '0 0 20px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--muted, #888)' }}>{sec.title}</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {sec.fields.map((f, fi) => (
+              <div key={fi}>
+                {f.type === 'toggle' ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: 14, fontWeight: 600 }}>{f.label}</label>
+                    <div onClick={() => set(f.key, !data[f.key])} style={{ width: 44, height: 24, borderRadius: 50, background: data[f.key] ? accent : '#e5e7eb', cursor: 'pointer', position: 'relative', transition: 'background 0.2s' }}>
+                      <div style={{ position: 'absolute', top: 3, left: data[f.key] ? 22 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 0.2s' }} />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>{f.label}</label>
+                    {f.type === 'select' ? <select value={data[f.key]||''} onChange={e => set(f.key, e.target.value)} style={{ ...inp, cursor: 'pointer' }}>{f.options?.map(o => <option key={o}>{o}</option>)}</select>
+                    : f.type === 'textarea' ? <textarea value={data[f.key]||''} onChange={e => set(f.key, e.target.value)} placeholder={f.placeholder} rows={3} style={{ ...inp, resize: 'vertical' }} />
+                    : <input type={f.type} value={data[f.key]||''} onChange={e => set(f.key, e.target.value)} placeholder={f.placeholder} style={inp} />}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <div style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {saved ? <span style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>Changes saved!</span> : <span />}
+        <button onClick={save} disabled={loading} style={{ padding: '10px 28px', borderRadius: 9, background: accent, color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 700, opacity: loading ? 0.8 : 1 }}>
+          {loading ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/FileManager.tsx": `import { useState } from 'react';
+interface FileItem { name: string; type: string; size: string; date: string; url?: string; }
+interface Props { files?: FileItem[]; accentColor?: string; }
+const DEFAULT: FileItem[] = [
+  { name:'hero-image.png', type:'image', size:'2.4 MB', date:'Jun 28', url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200' },
+  { name:'annual-report.pdf', type:'pdf', size:'1.1 MB', date:'Jun 27' },
+  { name:'product-shot.jpg', type:'image', size:'3.8 MB', date:'Jun 26', url:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200' },
+  { name:'data-export.csv', type:'csv', size:'142 KB', date:'Jun 25' },
+  { name:'brand-assets.zip', type:'zip', size:'18.2 MB', date:'Jun 24' },
+  { name:'team-photo.jpg', type:'image', size:'4.1 MB', date:'Jun 23', url:'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200' },
+];
+const FI: Record<string,string> = { image:'🖼️', pdf:'📄', csv:'📊', zip:'🗜️', default:'📁' };
+export default function FileManager({ files = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [sel, setSel] = useState<Set<number>>(new Set());
+  const [view, setView] = useState<'grid'|'list'>('grid');
+  const [search, setSearch] = useState('');
+  const filt = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
+  const tog = (i: number) => setSel(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, flex: 1 }}>Files</h3>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none', width: 160 }} />
+        {sel.size > 0 ? <button onClick={() => setSel(new Set())} style={{ padding: '7px 14px', borderRadius: 8, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Delete ({sel.size})</button> : null}
+        <button onClick={() => setView(v => v === 'grid' ? 'list' : 'grid')} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 12 }}>{view === 'grid' ? 'List' : 'Grid'}</button>
+        <button style={{ padding: '7px 14px', borderRadius: 8, background: accent, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Upload</button>
+      </div>
+      <div style={{ padding: 16 }}>
+        {view === 'grid' ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12 }}>
+            {filt.map((f, i) => (
+              <div key={i} onClick={() => tog(i)} style={{ borderRadius: 10, border: '2px solid ' + (sel.has(i) ? accent : 'var(--border, #e5e7eb)'), overflow: 'hidden', cursor: 'pointer', background: sel.has(i) ? accent + '08' : 'var(--bg, #f9fafb)' }}>
+                <div style={{ height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {f.url ? <img src={f.url} alt={f.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 36 }}>{FI[f.type]||FI.default}</span>}
+                </div>
+                <div style={{ padding: '8px 10px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted, #aaa)', marginTop: 2 }}>{f.size}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>{filt.map((f, i) => (
+            <div key={i} onClick={() => tog(i)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, cursor: 'pointer', background: sel.has(i) ? accent + '10' : 'transparent', marginBottom: 2 }}
+              onMouseOver={e => { if (!sel.has(i)) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'; }}
+              onMouseOut={e => { if (!sel.has(i)) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+              <input type="checkbox" checked={sel.has(i)} onChange={() => tog(i)} onClick={e => e.stopPropagation()} />
+              <span style={{ fontSize: 20 }}>{FI[f.type]||FI.default}</span>
+              <span style={{ flex: 1, fontSize: 13 }}>{f.name}</span>
+              <span style={{ fontSize: 11, color: 'var(--muted, #aaa)' }}>{f.size}</span>
+              <span style={{ fontSize: 11, color: 'var(--muted, #bbb)' }}>{f.date}</span>
+            </div>
+          ))}</div>
+        )}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/CalendarWidget.tsx": `import { useState } from 'react';
+interface CalEvent { date: string; title: string; color?: string; }
+interface Props { events?: CalEvent[]; accentColor?: string; }
+const DEFAULT: CalEvent[] = [
+  { date:'2026-06-08', title:'Product launch', color:'#22c55e' },
+  { date:'2026-06-15', title:'Investor call', color:'#ef4444' },
+  { date:'2026-06-20', title:'Sprint review', color:'#6366f1' },
+  { date:'2026-06-25', title:'Design review', color:'#06b6d4' },
+  { date:'2026-06-30', title:'Month-end close', color:'#8b5cf6' },
+];
+const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+export default function CalendarWidget({ events = DEFAULT, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const today = new Date();
+  const [cur, setCur] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [sel, setSel] = useState<string | null>(null);
+  const first = new Date(cur.year, cur.month, 1).getDay();
+  const dim = new Date(cur.year, cur.month + 1, 0).getDate();
+  const cells: (number|null)[] = [...Array(first).fill(null), ...Array.from({ length: dim }, (_, i) => i + 1)];
+  const fmt = (d: number) => cur.year + '-' + String(cur.month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  const evFor = (d: number) => events.filter(e => e.date === fmt(d));
+  const selEvs = sel ? events.filter(e => e.date === sel) : [];
+  const isToday = (d: number) => fmt(d) === today.toISOString().split('T')[0];
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexWrap: 'wrap' }}>
+      <div style={{ padding: 20, flex: '1 1 260px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <button onClick={() => setCur(c => c.month === 0 ? { year: c.year-1, month: 11 } : { ...c, month: c.month-1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted, #888)' }}>&#8249;</button>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{MONTHS[cur.month]} {cur.year}</span>
+          <button onClick={() => setCur(c => c.month === 11 ? { year: c.year+1, month: 0 } : { ...c, month: c.month+1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted, #888)' }}>&#8250;</button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+          {DAYS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--muted, #aaa)', padding: '3px 0' }}>{d}</div>)}
+          {cells.map((d, i) => {
+            if (!d) return <div key={i} />;
+            const ds = fmt(d), evs = evFor(d), isSel = sel === ds, isTod = isToday(d);
+            return (
+              <div key={i} onClick={() => setSel(isSel ? null : ds)} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 7, cursor: 'pointer', background: isSel ? accent : isTod ? accent + '18' : 'transparent', color: isSel ? '#fff' : 'var(--fg, #111)', fontWeight: isTod ? 800 : 400, fontSize: 12 }}
+                onMouseOver={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f3f4f6)'; }}
+                onMouseOut={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = isTod ? accent + '18' : 'transparent'; }}>
+                {d}
+                {evs.length > 0 ? <div style={{ display: 'flex', justifyContent: 'center', gap: 1, marginTop: 1 }}>{evs.slice(0,3).map((e,j) => <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: isSel ? '#fff' : (e.color || accent) }} />)}</div> : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {sel && selEvs.length > 0 ? (
+        <div style={{ width: 170, borderLeft: '1px solid var(--border, #e5e7eb)', padding: 16, background: 'var(--bg, #f9fafb)', flex: '0 0 170px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted, #888)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Events</div>
+          {selEvs.map((e, i) => <div key={i} style={{ padding: '7px 10px', borderRadius: 7, marginBottom: 7, borderLeft: '3px solid ' + (e.color || accent), background: 'var(--card, #fff)', fontSize: 12, fontWeight: 600 }}>{e.title}</div>)}
+        </div>
+      ) : null}
+    </div>
+  );
+}`,
+
+"/components/sections/QuickActions.tsx": `interface ActionItem { icon: string; label: string; desc?: string; color: string; onClick?: () => void; }
+interface Props { title?: string; items?: ActionItem[]; columns?: number; accentColor?: string; }
+const DEFAULT: ActionItem[] = [
+  { icon:'➕', label:'New Project', desc:'Start from scratch', color:'#6366f1' },
+  { icon:'📤', label:'Export Data', desc:'CSV or JSON', color:'#f59e0b' },
+  { icon:'👥', label:'Invite Team', desc:'Add collaborators', color:'#22c55e' },
+  { icon:'💳', label:'Billing', desc:'Manage subscription', color:'#06b6d4' },
+  { icon:'📊', label:'Reports', desc:'View analytics', color:'#8b5cf6' },
+  { icon:'⚙️', label:'Settings', desc:'Configure workspace', color:'#ec4899' },
+];
+export default function QuickActions({ title='Quick Actions', items=DEFAULT, columns=3, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  return (
+    <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+      {title ? <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3> : null}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns + ', 1fr)', gap: 14 }}>
+        {items.map((item, i) => (
+          <button key={i} onClick={item.onClick} style={{ padding: '18px 16px', borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: item.color + '0c', cursor: 'pointer', textAlign: 'left', outline: 'none' }}
+            onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLElement).style.background = item.color + '18'; }}
+            onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.background = item.color + '0c'; }}>
+            <div style={{ width: 42, height: 42, borderRadius: 10, background: item.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 10 }}>{item.icon}</div>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>{item.label}</div>
+            {item.desc ? <div style={{ fontSize: 11, color: 'var(--muted, #888)', marginTop: 3 }}>{item.desc}</div> : null}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/DashboardShell.tsx": `import { useState } from 'react';
+interface NavItem { label: string; icon: string; active?: boolean; }
+interface Props { brand: string; navItems?: NavItem[]; pageTitle?: string; breadcrumbs?: string[]; userName?: string; userRole?: string; notifications?: number; children?: React.ReactNode; accentColor?: string; }
+const DN: NavItem[] = [{ label:'Dashboard', icon:'🏠', active:true },{ label:'Analytics', icon:'📊' },{ label:'Users', icon:'👥' },{ label:'Orders', icon:'📦' },{ label:'Settings', icon:'⚙️' }];
+function ini(n: string) { return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase(); }
+export default function DashboardShell({ brand, navItems=DN, pageTitle='Dashboard', breadcrumbs=['Home','Dashboard'], userName='Admin User', userRole='Super Admin', notifications=4, children, accentColor }: Props) {
+  const accent = accentColor || 'var(--primary, #6366f1)';
+  const [active, setActive] = useState(() => navItems.findIndex(n => n.active) || 0);
+  const [menu, setMenu] = useState(false);
+  const [open, setOpen] = useState(true);
+  return (
+    <div style={{ display: 'flex', height: '100vh', minHeight: 600, background: 'var(--bg, #f3f4f6)', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
+      <div style={{ width: open ? 220 : 64, background: 'var(--card, #fff)', borderRight: '1px solid var(--border, #e5e7eb)', display: 'flex', flexDirection: 'column', transition: 'width 0.25s', overflow: 'hidden', flexShrink: 0 }}>
+        <div style={{ padding: open ? '20px 18px 14px' : '20px 14px 14px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14 }}>{brand[0]}</div>
+          {open ? <span style={{ fontWeight: 800, fontSize: 16, color: accent, whiteSpace: 'nowrap' }}>{brand}</span> : null}
+        </div>
+        <nav style={{ flex: 1, padding: '12px 8px' }}>
+          {navItems.map((item, i) => (
+            <div key={i} onClick={() => setActive(i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, cursor: 'pointer', marginBottom: 2, background: active === i ? accent + '15' : 'transparent', color: active === i ? accent : 'var(--fg, #444)', fontWeight: active === i ? 700 : 500, fontSize: 13, overflow: 'hidden', whiteSpace: 'nowrap' }}
+              onMouseOver={e => { if (active !== i) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f5f5f5)'; }}
+              onMouseOut={e => { if (active !== i) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+              {open ? item.label : null}
+            </div>
+          ))}
+        </nav>
+        <div style={{ padding: '10px 8px', borderTop: '1px solid var(--border, #e5e7eb)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, cursor: 'pointer', color: '#ef4444', fontSize: 13, fontWeight: 600, overflow: 'hidden', whiteSpace: 'nowrap' }}
+            onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#fee2e2'}
+            onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+            <span style={{ flexShrink: 0 }}>🚪</span>
+            {open ? 'Logout' : null}
+          </div>
+        </div>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <header style={{ height: 60, background: 'var(--card, #fff)', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px', flexShrink: 0 }}>
+          <button onClick={() => setOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--muted, #888)' }}>☰</button>
+          <input placeholder="Search..." style={{ flex: 1, maxWidth: 300, padding: '7px 14px', borderRadius: 9, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none', background: 'var(--bg, #f3f4f6)' }} />
+          <div style={{ flex: 1 }} />
+          <button style={{ position: 'relative', width: 40, height: 40, borderRadius: 10, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            🔔
+            {notifications > 0 ? <span style={{ position: 'absolute', top: 6, right: 6, width: 14, height: 14, borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{notifications}</span> : null}
+          </button>
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => setMenu(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 10, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: accent, color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{ini(userName || 'AU')}</div>
+              <span style={{ fontSize: 10, color: 'var(--muted, #aaa)' }}>v</span>
+            </button>
+            {menu ? (
+              <>
+                <div onClick={() => setMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
+                <div style={{ position: 'absolute', right: 0, top: 48, background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 10, boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 50, minWidth: 160, overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border, #f0f0f0)' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13 }}>{userName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted, #888)' }}>{userRole}</div>
+                  </div>
+                  {['Profile','Settings','Help'].map(item => <div key={item} style={{ padding: '10px 16px', fontSize: 13, cursor: 'pointer' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f5f5f5)'} onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>{item}</div>)}
+                  <div style={{ padding: '10px 16px', fontSize: 13, cursor: 'pointer', color: '#ef4444', borderTop: '1px solid var(--border, #f0f0f0)' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.background = '#fee2e2'} onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>Sign out</div>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </header>
+        <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+          <div style={{ marginBottom: 20 }}>
+            {breadcrumbs ? <div style={{ display: 'flex', gap: 4, fontSize: 12, color: 'var(--muted, #aaa)', marginBottom: 6 }}>{breadcrumbs.map((b,i) => <span key={i}>{i > 0 ? <span style={{ margin: '0 4px' }}>/</span> : null}{b}</span>)}</div> : null}
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>{pageTitle}</h1>
+          </div>
+          {children || <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted, #aaa)', background: 'var(--card, #fff)', borderRadius: 16, border: '1px solid var(--border, #e5e7eb)' }}>Page content goes here</div>}
+        </main>
+      </div>
+    </div>
+  );
+}`,
 
 };
 
