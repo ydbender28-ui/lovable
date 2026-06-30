@@ -8,6 +8,7 @@ import type { Suggestion } from "@/lib/suggestions";
 import Logo from "@/components/Logo";
 import IntegrationsPanel from "./IntegrationsPanel";
 import ThemeSwitcher, { QUICK_THEMES, applyThemeToCss } from "@/components/ThemeSwitcher";
+import ColorPicker from "@/components/ColorPicker";
 import type { SandpackErr } from "@/components/SandpackPreview";
 
 const SandpackPreview = dynamic(() => import("@/components/SandpackPreview"), {
@@ -366,6 +367,26 @@ export default function ProjectWorkspace({
     setFiles(prev => ({ ...prev, '/index.css': newCss }));
   };
 
+  // Accent color picker
+  const extractPrimaryColor = (css: string): string => {
+    const match = css.match(/--primary:\s*(#[0-9a-fA-F]{3,8}|rgb[^;]+)/);
+    return match ? match[1].trim() : '#6366f1';
+  };
+
+  const [accentColor, setAccentColor] = useState(() =>
+    extractPrimaryColor(initialFiles['/index.css'] || '')
+  );
+
+  const handleColorChange = (color: string) => {
+    setAccentColor(color);
+    setFiles(prev => ({
+      ...prev,
+      '/index.css': (prev['/index.css'] || '')
+        .replace(/--primary:\s*[^;]+;/, `--primary: ${color};`)
+        .replace(/--accent:\s*[^;]+;/, `--accent: ${color};`),
+    }));
+  };
+
   // New features
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -391,6 +412,9 @@ export default function ProjectWorkspace({
   const [showUserTest, setShowUserTest] = useState(false);
   const [userTestLoading, setUserTestLoading] = useState(false);
   const [userTestResult, setUserTestResult] = useState<UserTestResult | null>(null);
+
+  // Keyboard shortcuts tooltip
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Monetize
   const [showMonetize, setShowMonetize] = useState(false);
@@ -988,6 +1012,59 @@ export default function ProjectWorkspace({
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + Enter: Submit the current prompt
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        const submitBtn = document.querySelector("[data-submit-btn]") as HTMLButtonElement;
+        if (submitBtn && !submitBtn.disabled) submitBtn.click();
+      }
+
+      // Cmd/Ctrl + Z: Undo (only when not in a text input)
+      if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
+        const active = document.activeElement;
+        const isInput = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+        if (!isInput) {
+          e.preventDefault();
+          const undoBtn = document.querySelector("[data-undo-btn]") as HTMLButtonElement;
+          if (undoBtn && !undoBtn.disabled) undoBtn.click();
+        }
+      }
+
+      // Cmd/Ctrl + Shift + P: Toggle publish
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "p") {
+        e.preventDefault();
+        const publishBtn = document.querySelector("[data-publish-btn]") as HTMLButtonElement;
+        if (publishBtn) publishBtn.click();
+      }
+
+      // Escape: Unfocus chat input
+      if (e.key === "Escape") {
+        const input = document.querySelector("[data-chat-input]") as HTMLTextAreaElement;
+        if (input && document.activeElement === input) {
+          input.blur();
+        }
+        setShowShortcuts(false);
+      }
+
+      // /: Focus chat input when not already in an input
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey) {
+        const active = document.activeElement;
+        const isInput = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement;
+        if (!isInput) {
+          e.preventDefault();
+          const input = document.querySelector("[data-chat-input]") as HTMLTextAreaElement;
+          if (input) { input.focus(); input.select(); }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   function toggleVoice() {
@@ -2309,6 +2386,7 @@ export default function ProjectWorkspace({
         <div className="rounded-xl border border-[#ececf1] bg-white focus-within:border-[#6a1ff7]/50 transition-colors shadow-sm">
           <textarea
             ref={textareaRef}
+            data-chat-input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chatMode ? handleChatSend() : handleSend(); } }}
@@ -2384,7 +2462,7 @@ export default function ProjectWorkspace({
                   Stop
                 </button>
               ) : (
-                <button onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : false) || !prompt.trim()}
+                <button data-submit-btn onClick={chatMode ? handleChatSend : handleSend} disabled={(chatMode ? chatStreaming : false) || !prompt.trim()}
                   className="rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40">
                   {chatMode ? (chatStreaming ? "Thinking..." : "Send") : "Send"}
                 </button>
@@ -2483,6 +2561,9 @@ export default function ProjectWorkspace({
         )}
         {hasFiles && activeTab === "preview" && (
           <ThemeSwitcher onThemeChange={handleThemeChange} currentTheme={activeThemeName} />
+        )}
+        {hasFiles && activeTab === "preview" && (
+          <ColorPicker currentColor={accentColor} onColorChange={handleColorChange} />
         )}
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
