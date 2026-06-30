@@ -221,14 +221,51 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
   WRONG: <div className="space-y-4">{pizzas.map(p => <div>...</div>)}</div>  ← NEVER DO THIS
   WRONG: <button onClick={() => setCartOpen(true)}>Cart</button> anywhere outside Navbar ← NEVER DO THIS
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
+- import IconFeatures from '/components/sections/IconFeatures' → <IconFeatures title="Why Us" items={[{icon:"⚡",title:"Fast",desc:"..."}]} columns={3} />  ← icon-centered grid, good for 6+ features
 - import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
+- import Reviews from '/components/sections/Reviews' → <Reviews title="What Customers Say" items={[{name:"Jane",rating:5,text:"Amazing!",date:"Jan 2025",source:"Google"}]} />  ← star-rated review cards with average score
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
+- import MapSection from '/components/sections/MapSection' → <MapSection address="123 Main St, City" phone="555-0100" hours={[{day:"Monday",open:"9:00",close:"17:00"},{day:"Sunday",closed:true}]} />  ← embedded map + hours + contact
+- import HoursTable from '/components/sections/HoursTable' → <HoursTable hours={[{day:"Monday",open:"9:00",close:"21:00"},{day:"Sunday",closed:true}]} />  ← shows open/closed status live
 - import Footer from '/components/sections/Footer' → <Footer brand="Name" tagline="Tagline" links={["Menu","About"]} />
 - import FAQ from '/components/sections/FAQ' → <FAQ title="FAQ" items={[{q:"Question?",a:"Answer."}]} />
 - import Stats from '/components/sections/Stats' → <Stats items={[{value:"100+",label:"Customers"}]} />
+- import ServiceCards from '/components/sections/ServiceCards' → <ServiceCards title="Services" items={[{title:"Haircut",desc:"...",price:"$45",icon:"✂️",features:["30 min","All hair types"]}]} />  ← for salons, agencies, consultants
+- import StepProcess from '/components/sections/StepProcess' → <StepProcess title="How It Works" steps={[{icon:"1",title:"Step",desc:"..."}]} layout="horizontal" />
+- import VideoSection from '/components/sections/VideoSection' → <VideoSection title="See It In Action" videoUrl="https://youtube.com/watch?v=..." thumbnail="url" />
+- import VideoHero from '/components/sections/VideoHero' → <VideoHero title="Headline" subtitle="..." videoUrl="https://..." cta="Get Started" />  ← full-screen video background hero
+- import AppDownload from '/components/sections/AppDownload' → <AppDownload title="Get the App" appStoreUrl="#" playStoreUrl="#" features={["Free to use","Works offline"]} />
+- import Comparison from '/components/sections/Comparison' → <Comparison title="Compare Plans" plans={[{name:"Basic"},{name:"Pro",highlighted:true}]} rows={[{feature:"Users",values:["1","Unlimited"]},{feature:"Storage",values:["5GB","100GB"]},{feature:"API",values:[false,true]}]} />
+- import Portfolio from '/components/sections/Portfolio' → <Portfolio title="Our Work" items={[{title:"Project",category:"Web",image:"url",desc:"..."}]} />  ← filterable masonry grid
+- import BeforeAfter from '/components/sections/BeforeAfter' → <BeforeAfter title="Results" items={[{before:"url",after:"url",beforeLabel:"Before",afterLabel:"After"}]} />  ← drag slider comparison
+- import EventsList from '/components/sections/EventsList' → <EventsList title="Upcoming Events" items={[{title:"Event",date:"July 4",time:"7PM",location:"Main St",desc:"..."}]} layout="grid" />
+- import Countdown from '/components/sections/Countdown' → <Countdown title="Launching Soon" targetDate="2025-12-31" cta="Notify Me" dark={true} />
+- import TrustBadges from '/components/sections/TrustBadges' → <TrustBadges title="Trusted & Secure" items={[{label:"SSL Secured",icon:"🔒",sub:"256-bit encryption"},{label:"HIPAA Compliant",icon:"🏥"}]} />
+- import ProductSpotlight from '/components/sections/ProductSpotlight' → <ProductSpotlight title="Product Name" description="..." image="url" price="$99" cta="Buy Now" badge="New" features={[{icon:"⚡",label:"Fast"}]} />
+- import LocationCards from '/components/sections/LocationCards' → <LocationCards title="Find Us" items={[{name:"Downtown",address:"123 Main",phone:"555-0100",hours:"9am-9pm",image:"url"}]} />
+- import QuoteBlock from '/components/sections/QuoteBlock' → <QuoteBlock quote="The best in the business." author="CEO Name" role="Company Inc" dark={true} />
+- import SocialProof from '/components/sections/SocialProof' → <SocialProof stats={[{value:"10K+",label:"Happy Customers",icon:"😊"},{value:"4.9★",label:"Average Rating"}]} dark={true} />
+- import Partners from '/components/sections/Partners' → <Partners title="Our Partners" items={[{name:"Acme Co",logo:"url",url:"#"}]} showDesc={false} />
+- import Awards from '/components/sections/Awards' → <Awards title="Recognition" items={[{title:"Best Coffee 2024",org:"City Magazine",icon:"🏆"}]} />
+- import ImageText from '/components/sections/ImageText' → <ImageText blocks={[{image:"url",title:"Headline",desc:"...",cta:"Learn More",imageLeft:true},{image:"url",title:"Headline 2",desc:"..."}]} />  ← alternating image+text rows
+- import RichText from '/components/sections/RichText' → <RichText blocks={[{type:"h2",content:"Title"},{type:"p",content:"Body text."},{type:"quote",content:"Pull quote"},{type:"list",items:["Item 1","Item 2"]}]} />
+- import StickyBar from '/components/sections/StickyBar' → <StickyBar text="Limited time offer!" cta="Order Now" ctaHref="#menu" showAfterScroll={400} />  ← sticky bottom CTA bar
+- import Booking from '/components/sections/Booking' → <Booking title="Reserve a Table" accentColor="var(--accent,#c2410c)" />
+- import BlogGrid from '/components/sections/BlogGrid' → <BlogGrid title="Blog" items={[{title:"Post",excerpt:"...",image:"url",date:"Jan 2025",category:"News"}]} />
+- import PricingTable from '/components/sections/PricingTable' → <PricingTable title="Pricing" plans={[{name:"Basic",price:"$9",period:"mo",features:["Feature 1"],cta:"Get Started"}]} />
+- import CTA from '/components/sections/CTA' → <CTA title="Ready?" subtitle="Get started today." cta="Sign Up" />
+- import Gallery from '/components/sections/Gallery' → <Gallery title="Gallery" items={[{image:"url",caption:"Photo"}]} />
+- import LogoCloud from '/components/sections/LogoCloud' → <LogoCloud title="As seen in" logos={[{name:"Forbes",url:"url"}]} />
+- import Newsletter from '/components/sections/Newsletter' → <Newsletter title="Stay Updated" subtitle="Get weekly updates." />
+- import SplitSection from '/components/sections/SplitSection' → <SplitSection title="Left Headline" desc="..." image="url" cta="Learn More" />
+- import Tabs from '/components/sections/Tabs' → <Tabs tabs={[{label:"Tab 1",content:"..."}]} />
+- import Team from '/components/sections/Team' → <Team title="Our Team" items={[{name:"Jane",role:"CEO",image:"url",bio:"..."}]} />
+- import Timeline from '/components/sections/Timeline' → <Timeline title="Our Story" items={[{year:"2020",title:"Founded",desc:"..."}]} />
+- import Banner from '/components/sections/Banner' → <Banner text="Free delivery on orders over $30!" cta="Order Now" href="#menu" emoji="🚀" />  ← place ABOVE Hero
+- import ShopGrid from '/components/sections/ShopGrid' → <ShopGrid title="Shop" items={[{name:"Product",price:29.99,desc:"...",category:"Cat",image:"url"}]} />
 - DO NOT import from /components/ui/ — those don't exist
 - ALWAYS pass the exact prop types shown above — wrong types cause crashes
-- ONLY these /components/sections/ imports exist: Navbar, Hero, MenuGrid, ShopGrid, Features, Testimonials, Contact, Footer, FAQ, Stats, Banner, BlogGrid, CTA, Gallery, LogoCloud, Newsletter, PricingTable, SplitSection, Tabs, Team, Timeline. Any other name causes "Element type is invalid" crash.
+- ONLY use /components/sections/ imports from the list above. Any other name causes "Element type is invalid" crash.
 
 ## CONTENT — write like a creative director, not an AI:
 - Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".

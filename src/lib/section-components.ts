@@ -703,6 +703,669 @@ export default function Banner({ text, cta, href, emoji }: { text: string; cta?:
   );
 }`,
 
+"/components/sections/Reviews.tsx": `import React, { useState } from 'react';
+type Review = { name: string; rating: number; text: string; date?: string; avatar?: string; source?: string };
+export default function Reviews({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Review[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const stars = (n: number) => Array.from({length:5},(_,i)=><span key={i} style={{color:i<n?'#f59e0b':'#e5e7eb',fontSize:16}}>★</span>);
+  const avg = (items.reduce((s,r)=>s+r.rating,0)/items.length).toFixed(1);
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:56}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginBottom:12}}>
+            <span style={{fontSize:48,fontWeight:900,letterSpacing:'-0.03em'}}>{avg}</span>
+            <div><div style={{display:'flex',gap:2}}>{stars(5)}</div><p style={{fontSize:12,color:'#999',margin:'2px 0 0'}}>from {items.length} reviews</p></div>
+          </div>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:24}}>
+          {items.map((r,i)=>(
+            <div key={i} style={{background:'#fafafa',borderRadius:20,padding:28,border:'1px solid #f0f0f0',transition:'box-shadow 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.boxShadow='none'}>
+              <div style={{display:'flex',gap:4,marginBottom:12}}>{stars(r.rating)}</div>
+              <p style={{fontSize:14,lineHeight:1.7,color:'#444',margin:'0 0 20px',fontStyle:'italic'}}>"{r.text}"</p>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:40,height:40,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,flexShrink:0}}>{r.avatar?<img src={r.avatar} style={{width:40,height:40,borderRadius:50,objectFit:'cover'}} alt={r.name}/>:r.name[0]}</div>
+                <div><div style={{fontWeight:700,fontSize:14}}>{r.name}</div>{(r.date||r.source)&&<div style={{fontSize:12,color:'#aaa'}}>{r.source||''}{r.source&&r.date?' · ':''}{r.date||''}</div>}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/MapSection.tsx": `import React from 'react';
+type Hour = { day: string; hours: string; closed?: boolean };
+export default function MapSection({ title, address, phone, email, hours, mapUrl, accentColor }: { title?: string; address: string; phone?: string; email?: string; hours?: Hour[]; mapUrl?: string; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const embedUrl = mapUrl || \`https://maps.google.com/maps?q=\${encodeURIComponent(address)}&output=embed\`;
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',marginBottom:48,textAlign:'center'}}>{title}</h2>}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:40,alignItems:'start'}}>
+          <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 4px 32px rgba(0,0,0,0.1)',height:420}}>
+            <iframe src={embedUrl} width="100%" height="100%" style={{border:'none',display:'block'}} loading="lazy" />
+          </div>
+          <div style={{paddingTop:8}}>
+            <div style={{marginBottom:32}}>
+              <div style={{display:'flex',gap:14,alignItems:'flex-start',marginBottom:20}}>
+                <span style={{fontSize:22,flexShrink:0}}>📍</span>
+                <div><div style={{fontWeight:700,fontSize:16,marginBottom:4}}>Address</div><p style={{color:'#666',fontSize:15,lineHeight:1.6,margin:0}}>{address}</p></div>
+              </div>
+              {phone&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}><span style={{fontSize:22}}>📞</span><div><div style={{fontWeight:700,fontSize:16,marginBottom:2}}>Phone</div><a href={\`tel:\${phone}\`} style={{color:accent,textDecoration:'none',fontSize:15}}>{phone}</a></div></div>}
+              {email&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}><span style={{fontSize:22}}>✉️</span><div><div style={{fontWeight:700,fontSize:16,marginBottom:2}}>Email</div><a href={\`mailto:\${email}\`} style={{color:accent,textDecoration:'none',fontSize:15}}>{email}</a></div></div>}
+            </div>
+            {hours&&hours.length>0&&<div><div style={{fontWeight:800,fontSize:18,marginBottom:16}}>Hours</div><div style={{background:'#fafafa',borderRadius:16,padding:20}}>{hours.map((h,i)=>{const isToday=new Date().toLocaleDateString('en',{weekday:'long'})===h.day;return(<div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:i<hours.length-1?'1px solid #f0f0f0':'none'}}><span style={{fontWeight:isToday?800:500,color:isToday?accent:'#444',fontSize:14}}>{h.day}</span><span style={{fontSize:14,color:h.closed?'#e53e3e':isToday?accent:'#666',fontWeight:isToday?700:400}}>{h.closed?'Closed':h.hours}</span></div>);})}</div></div>}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/ServiceCards.tsx": `import React from 'react';
+type Service = { title: string; desc: string; price?: string; icon?: string; badge?: string; features?: string[] };
+export default function ServiceCards({ title, subtitle, items, accentColor, columns }: { title: string; subtitle?: string; items: Service[]; accentColor?: string; columns?: number }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const cols = columns || (items.length <= 3 ? items.length : items.length <= 6 ? 3 : 4);
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fafafa)'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:56}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:17,maxWidth:560,margin:'0 auto'}}>{subtitle}</p>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:24}}>
+          {items.map((s,i)=>(
+            <div key={i} style={{background:'#fff',borderRadius:20,padding:32,border:'1px solid #f0f0f0',position:'relative',transition:'all 0.2s'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 48px rgba(0,0,0,0.1)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
+              {s.badge&&<span style={{position:'absolute',top:20,right:20,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{s.badge}</span>}
+              {s.icon&&<div style={{fontSize:36,marginBottom:16}}>{s.icon}</div>}
+              <h3 style={{fontSize:20,fontWeight:700,margin:'0 0 8px',letterSpacing:'-0.01em'}}>{s.title}</h3>
+              <p style={{color:'#888',fontSize:14,lineHeight:1.6,margin:'0 0 16px'}}>{s.desc}</p>
+              {s.features&&<ul style={{listStyle:'none',padding:0,margin:'0 0 20px'}}>{s.features.map((f,j)=><li key={j} style={{fontSize:13,color:'#555',padding:'4px 0',display:'flex',gap:8,alignItems:'center'}}><span style={{color:accent,fontWeight:800}}>✓</span>{f}</li>)}</ul>}
+              {s.price&&<div style={{fontSize:22,fontWeight:900,color:accent,letterSpacing:'-0.02em'}}>{s.price}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/StepProcess.tsx": `import React from 'react';
+type Step = { title: string; desc: string; icon?: string };
+export default function StepProcess({ title, subtitle, steps, accentColor, layout }: { title: string; subtitle?: string; steps: Step[]; accentColor?: string; layout?: 'horizontal'|'vertical' }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const horiz = layout !== 'vertical';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:56}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:17,maxWidth:540,margin:'0 auto'}}>{subtitle}</p>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:horiz?\`repeat(\${steps.length},1fr)\`:'1fr',gap:horiz?24:0,position:'relative'}}>
+          {steps.map((s,i)=>(
+            <div key={i} style={{display:'flex',flexDirection:horiz?'column':'row',alignItems:horiz?'center':'flex-start',gap:horiz?16:24,textAlign:horiz?'center':'left',paddingBottom:horiz?0:40,borderLeft:!horiz&&i<steps.length-1?\`2px dashed \${accent}33\`:!horiz?'2px solid transparent':'none',marginLeft:!horiz?20:0,paddingLeft:!horiz?32:0,position:'relative'}}>
+              {!horiz&&<div style={{position:'absolute',left:-21,top:0,width:40,height:40,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:16,flexShrink:0,zIndex:1}}>{s.icon||i+1}</div>}
+              {horiz&&<div style={{width:56,height:56,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:20,marginBottom:4}}>{s.icon||i+1}</div>}
+              {horiz&&i<steps.length-1&&<div style={{position:'absolute',top:28,left:'calc(50% + 28px)',width:'calc(100% - 56px)',height:2,background:\`\${accent}33\`,zIndex:0}}/>}
+              <div><h3 style={{fontSize:17,fontWeight:700,margin:'0 0 6px'}}>{s.title}</h3><p style={{fontSize:14,color:'#888',lineHeight:1.6,margin:0}}>{s.desc}</p></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/VideoSection.tsx": `import React, { useState } from 'react';
+export default function VideoSection({ title, subtitle, videoUrl, thumbnail, accentColor }: { title?: string; subtitle?: string; videoUrl: string; thumbnail?: string; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const [playing, setPlaying] = useState(false);
+  const isYoutube = videoUrl.includes('youtube') || videoUrl.includes('youtu.be');
+  const embedUrl = isYoutube ? videoUrl.replace('watch?v=','embed/').replace('youtu.be/','youtube.com/embed/') + '?autoplay=1' : videoUrl;
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:960,margin:'0 auto'}}>
+        {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
+          {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>}
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>}
+        <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.15)',position:'relative',aspectRatio:'16/9',background:'#000'}}>
+          {playing ? (
+            <iframe src={embedUrl} width="100%" height="100%" style={{border:'none',position:'absolute',inset:0}} allow="autoplay; fullscreen" allowFullScreen />
+          ) : (
+            <div onClick={()=>setPlaying(true)} style={{cursor:'pointer',position:'relative',width:'100%',height:'100%'}}>
+              {thumbnail&&<img src={thumbnail} alt="video" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />}
+              <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <div style={{width:80,height:80,borderRadius:50,background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 32px rgba(0,0,0,0.3)',transition:'transform 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.transform='scale(1.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>
+                  <div style={{width:0,height:0,borderTop:'14px solid transparent',borderBottom:'14px solid transparent',borderLeft:\`22px solid \${accent}\`,marginLeft:4}} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/AppDownload.tsx": `import React from 'react';
+export default function AppDownload({ title, subtitle, description, appStoreUrl, playStoreUrl, mockupImage, accentColor, features }: { title: string; subtitle?: string; description?: string; appStoreUrl?: string; playStoreUrl?: string; mockupImage?: string; accentColor?: string; features?: string[] }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'80px 40px',background:accent,color:'#fff',overflow:'hidden'}}>
+      <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:mockupImage?'1fr 1fr':'1fr',gap:60,alignItems:'center'}}>
+        <div>
+          {subtitle&&<p style={{fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',opacity:0.7,marginBottom:12}}>{subtitle}</p>}
+          <h2 style={{fontSize:44,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1.1,margin:'0 0 16px'}}>{title}</h2>
+          {description&&<p style={{fontSize:17,opacity:0.8,lineHeight:1.7,margin:'0 0 28px',maxWidth:480}}>{description}</p>}
+          {features&&<ul style={{listStyle:'none',padding:0,margin:'0 0 32px'}}>{features.map((f,i)=><li key={i} style={{display:'flex',gap:10,alignItems:'center',marginBottom:10,fontSize:15,opacity:0.9}}><span style={{width:22,height:22,borderRadius:50,background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,flexShrink:0}}>✓</span>{f}</li>)}</ul>}
+          <div style={{display:'flex',gap:14,flexWrap:'wrap'}}>
+            {appStoreUrl&&<a href={appStoreUrl} style={{display:'flex',alignItems:'center',gap:10,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(8px)',borderRadius:14,padding:'12px 22px',textDecoration:'none',color:'#fff',border:'1.5px solid rgba(255,255,255,0.25)',transition:'background 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.15)'}><span style={{fontSize:26}}>🍎</span><div><div style={{fontSize:10,opacity:0.7,letterSpacing:'0.05em'}}>Download on the</div><div style={{fontSize:16,fontWeight:800}}>App Store</div></div></a>}
+            {playStoreUrl&&<a href={playStoreUrl} style={{display:'flex',alignItems:'center',gap:10,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(8px)',borderRadius:14,padding:'12px 22px',textDecoration:'none',color:'#fff',border:'1.5px solid rgba(255,255,255,0.25)',transition:'background 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.15)'}><span style={{fontSize:26}}>🤖</span><div><div style={{fontSize:10,opacity:0.7,letterSpacing:'0.05em'}}>Get it on</div><div style={{fontSize:16,fontWeight:800}}>Google Play</div></div></a>}
+          </div>
+        </div>
+        {mockupImage&&<div style={{display:'flex',justifyContent:'center'}}><img src={mockupImage} alt="app mockup" style={{maxHeight:480,objectFit:'contain',filter:'drop-shadow(0 32px 64px rgba(0,0,0,0.4))'}} /></div>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Comparison.tsx": `import React from 'react';
+type Plan = { name: string; highlighted?: boolean };
+type Row = { feature: string; values: (string|boolean)[] };
+export default function Comparison({ title, subtitle, plans, rows, accentColor }: { title: string; subtitle?: string; plans: Plan[]; rows: Row[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const cell = (v: string|boolean) => typeof v === 'boolean' ? (v ? <span style={{color:'#22c55e',fontSize:20,fontWeight:800}}>✓</span> : <span style={{color:'#e5e7eb',fontSize:20}}>—</span>) : <span style={{fontSize:14,fontWeight:600}}>{v}</span>;
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1000,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:48}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>
+        <div style={{borderRadius:24,overflow:'hidden',border:'1px solid #f0f0f0',boxShadow:'0 4px 24px rgba(0,0,0,0.06)'}}>
+          <div style={{display:'grid',gridTemplateColumns:\`2fr \${plans.map(()=>'1fr').join(' ')}\`,background:'#fafafa',borderBottom:'1px solid #f0f0f0'}}>
+            <div style={{padding:'20px 24px'}}/>
+            {plans.map((p,i)=><div key={i} style={{padding:'20px 16px',textAlign:'center',background:p.highlighted?accent:'transparent',position:'relative'}}>{p.highlighted&&<div style={{position:'absolute',top:-1,left:0,right:0,height:3,background:accent,borderRadius:'3px 3px 0 0'}}/>}<div style={{fontWeight:800,fontSize:16,color:p.highlighted?'#fff':'#222'}}>{p.name}</div></div>)}
+          </div>
+          {rows.map((r,i)=>(
+            <div key={i} style={{display:'grid',gridTemplateColumns:\`2fr \${plans.map(()=>'1fr').join(' ')}\`,borderBottom:i<rows.length-1?'1px solid #f5f5f5':'none',background:i%2===0?'#fff':'#fafafa'}}>
+              <div style={{padding:'16px 24px',fontSize:14,fontWeight:500,color:'#444'}}>{r.feature}</div>
+              {r.values.map((v,j)=><div key={j} style={{padding:'16px 16px',textAlign:'center',background:plans[j]?.highlighted?'rgba(0,0,0,0.03)':'transparent'}}>{cell(v)}</div>)}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Portfolio.tsx": `import React, { useState } from 'react';
+type Project = { title: string; category: string; image: string; desc?: string; link?: string };
+export default function Portfolio({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Project[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const cats = ['All', ...Array.from(new Set(items.map(p=>p.category)))];
+  const [active, setActive] = useState('All');
+  const [hover, setHover] = useState<number|null>(null);
+  const filtered = active==='All'?items:items.filter(p=>p.category===active);
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:40}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16,marginBottom:0}}>{subtitle}</p>}
+        </div>
+        <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:40,flexWrap:'wrap'}}>
+          {cats.map(c=><button key={c} onClick={()=>setActive(c)} style={{padding:'8px 20px',borderRadius:50,border:active===c?'none':'1.5px solid #e5e5e5',background:active===c?accent:'transparent',color:active===c?'#fff':'#666',fontSize:13,fontWeight:600,cursor:'pointer',transition:'all 0.18s'}}>{c}</button>)}
+        </div>
+        <div style={{columns:3,gap:20}}>
+          {filtered.map((p,i)=>(
+            <div key={i} style={{breakInside:'avoid',marginBottom:20,borderRadius:16,overflow:'hidden',position:'relative',cursor:'pointer'}} onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(null)}>
+              <img src={p.image} alt={p.title} style={{width:'100%',display:'block',transition:'transform 0.4s',transform:hover===i?'scale(1.05)':'scale(1)'}} />
+              <div style={{position:'absolute',inset:0,background:hover===i?'rgba(0,0,0,0.65)':'rgba(0,0,0,0)',transition:'background 0.3s',display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:24}}>
+                {hover===i&&<><span style={{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.7)',textTransform:'uppercase',letterSpacing:'0.08em'}}>{p.category}</span><h3 style={{fontSize:18,fontWeight:700,color:'#fff',margin:'4px 0 6px'}}>{p.title}</h3>{p.desc&&<p style={{fontSize:13,color:'rgba(255,255,255,0.8)',margin:0}}>{p.desc}</p>}</>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/EventsList.tsx": `import React from 'react';
+type Event = { title: string; date: string; time?: string; location?: string; desc?: string; image?: string; link?: string; badge?: string };
+export default function EventsList({ title, subtitle, items, accentColor, layout }: { title: string; subtitle?: string; items: Event[]; accentColor?: string; layout?: 'list'|'grid' }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const grid = layout === 'grid';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        <div style={{marginBottom:48}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16,margin:0}}>{subtitle}</p>}
+        </div>
+        <div style={{display:grid?'grid':'flex',gridTemplateColumns:grid?'repeat(auto-fill,minmax(300px,1fr))':undefined,flexDirection:grid?undefined:'column',gap:grid?24:0}}>
+          {items.map((ev,i)=>(
+            <div key={i} style={{background:'#fafafa',borderRadius:grid?20:0,overflow:'hidden',borderBottom:!grid&&i<items.length-1?'1px solid #f0f0f0':'none',display:'flex',flexDirection:grid?'column':'row',alignItems:grid?'stretch':'center',gap:grid?0:24,padding:grid?0:'20px 0',transition:'box-shadow 0.2s'}} onMouseOver={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)')} onMouseOut={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='none')}>
+              {ev.image&&<img src={ev.image} alt={ev.title} style={{width:grid?'100%':100,height:grid?180:100,objectFit:'cover',flexShrink:0,borderRadius:grid?'0':'12px'}}/>}
+              <div style={{padding:grid?20:0,flex:1}}>
+                {ev.badge&&<span style={{background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,display:'inline-block',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.05em'}}>{ev.badge}</span>}
+                <h3 style={{fontSize:17,fontWeight:700,margin:'0 0 6px',letterSpacing:'-0.01em'}}>{ev.title}</h3>
+                <div style={{display:'flex',gap:16,flexWrap:'wrap',marginBottom:ev.desc?8:0}}>
+                  <span style={{fontSize:13,color:accent,fontWeight:600}}>📅 {ev.date}</span>
+                  {ev.time&&<span style={{fontSize:13,color:'#888'}}>🕐 {ev.time}</span>}
+                  {ev.location&&<span style={{fontSize:13,color:'#888'}}>📍 {ev.location}</span>}
+                </div>
+                {ev.desc&&<p style={{fontSize:13,color:'#888',margin:0,lineHeight:1.6}}>{ev.desc}</p>}
+              </div>
+              {ev.link&&<a href={ev.link} style={{display:'inline-flex',alignItems:'center',padding:'8px 18px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:700,flexShrink:0,margin:grid?'0 20px 20px':'0'}}>RSVP →</a>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Countdown.tsx": `import React, { useState, useEffect } from 'react';
+export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, accentColor, dark }: { title: string; subtitle?: string; targetDate: string; cta?: string; ctaHref?: string; accentColor?: string; dark?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const bg = dark ? '#0f0f0f' : 'var(--bg,#fff)';
+  const fg = dark ? '#fff' : '#111';
+  const [time, setTime] = useState({d:0,h:0,m:0,s:0});
+  useEffect(()=>{
+    const tick=()=>{const diff=Math.max(0,new Date(targetDate).getTime()-Date.now());setTime({d:Math.floor(diff/86400000),h:Math.floor(diff/3600000)%24,m:Math.floor(diff/60000)%60,s:Math.floor(diff/1000)%60});};
+    tick();const id=setInterval(tick,1000);return()=>clearInterval(id);
+  },[targetDate]);
+  const box = (v:number,l:string)=>(
+    <div style={{textAlign:'center'}}>
+      <div style={{background:dark?'rgba(255,255,255,0.08)':'#f5f5f5',borderRadius:16,padding:'24px 32px',minWidth:90,marginBottom:8}}>
+        <div style={{fontSize:52,fontWeight:900,lineHeight:1,color:accent,letterSpacing:'-0.04em'}}>{String(v).padStart(2,'0')}</div>
+      </div>
+      <div style={{fontSize:12,fontWeight:600,color:dark?'rgba(255,255,255,0.5)':'#999',textTransform:'uppercase',letterSpacing:'0.1em'}}>{l}</div>
+    </div>
+  );
+  return (
+    <section style={{padding:'80px 40px',background:bg,color:fg}}>
+      <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
+        <h2 style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 12px'}}>{title}</h2>
+        {subtitle&&<p style={{fontSize:17,color:dark?'rgba(255,255,255,0.6)':'#888',margin:'0 0 48px'}}>{subtitle}</p>}
+        <div style={{display:'flex',gap:20,justifyContent:'center',alignItems:'flex-start',marginBottom:48}}>
+          {box(time.d,'Days')}{box(time.h,'Hours')}{box(time.m,'Mins')}{box(time.s,'Secs')}
+        </div>
+        {cta&&<a href={ctaHref||'#'} style={{display:'inline-block',padding:'14px 36px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontWeight:800,fontSize:16,letterSpacing:'-0.01em'}}>{cta}</a>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/TrustBadges.tsx": `import React from 'react';
+type Badge = { label: string; icon?: string; sub?: string };
+export default function TrustBadges({ items, title, accentColor }: { items: Badge[]; title?: string; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'48px 40px',background:'var(--bg,#fafafa)',borderTop:'1px solid #f0f0f0',borderBottom:'1px solid #f0f0f0'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {title&&<p style={{textAlign:'center',fontSize:13,fontWeight:600,color:'#bbb',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:28}}>{title}</p>}
+        <div style={{display:'flex',flexWrap:'wrap',gap:24,justifyContent:'center',alignItems:'center'}}>
+          {items.map((b,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 24px',background:'#fff',borderRadius:50,border:'1.5px solid #f0f0f0',boxShadow:'0 2px 8px rgba(0,0,0,0.04)'}}>
+              {b.icon&&<span style={{fontSize:22}}>{b.icon}</span>}
+              <div><div style={{fontSize:13,fontWeight:700,color:'#222'}}>{b.label}</div>{b.sub&&<div style={{fontSize:11,color:'#aaa'}}>{b.sub}</div>}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/BeforeAfter.tsx": `import React, { useState, useRef } from 'react';
+type Item = { title?: string; before: string; after: string; beforeLabel?: string; afterLabel?: string };
+export default function BeforeAfter({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Item[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const [pos, setPos] = useState<number[]>(items.map(()=>50));
+  const dragging = useRef<number|null>(null);
+  const handle = (e: React.MouseEvent<HTMLDivElement>, i: number) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.min(95,Math.max(5,((e.clientX-rect.left)/rect.width)*100));
+    setPos(p=>p.map((v,j)=>j===i?pct:v));
+  };
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
+          {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 10px'}}>{title}</h2>}
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>}
+        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${items.length},1fr)\`,gap:24}}>
+          {items.map((item,i)=>(
+            <div key={i}>
+              {item.title&&<h3 style={{fontSize:16,fontWeight:700,textAlign:'center',marginBottom:12}}>{item.title}</h3>}
+              <div style={{position:'relative',borderRadius:16,overflow:'hidden',cursor:'ew-resize',userSelect:'none',aspectRatio:'4/3'}} onMouseMove={e=>handle(e,i)} onMouseDown={()=>dragging.current=i} onMouseUp={()=>dragging.current=null}>
+                <img src={item.after} alt="after" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                <div style={{position:'absolute',inset:0,overflow:'hidden',width:\`\${pos[i]}%\`}}>
+                  <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:\`\${10000/pos[i]}%\`,maxWidth:'none',height:'100%',objectFit:'cover'}} />
+                </div>
+                <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)'}}>
+                  <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
+                </div>
+                <div style={{position:'absolute',bottom:12,left:12,background:'rgba(0,0,0,0.55)',color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50}}>{item.beforeLabel||'Before'}</div>
+                <div style={{position:'absolute',bottom:12,right:12,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50}}>{item.afterLabel||'After'}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/HoursTable.tsx": `import React from 'react';
+type Hour = { day: string; open?: string; close?: string; closed?: boolean };
+export default function HoursTable({ title, hours, note, accentColor }: { title?: string; hours: Hour[]; note?: string; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const today = new Date().toLocaleDateString('en-US',{weekday:'long'});
+  const now = new Date();
+  const todayHours = hours.find(h=>h.day===today);
+  const isOpenNow = ()=>{if(!todayHours||todayHours.closed||!todayHours.open||!todayHours.close)return false;const[oh,om]=todayHours.open.split(':').map(Number);const[ch,cm]=todayHours.close.split(':').map(Number);const cur=now.getHours()*60+now.getMinutes();return cur>=oh*60+om&&cur<=ch*60+cm;};
+  return (
+    <section style={{padding:'60px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:560,margin:'0 auto'}}>
+        {title&&<h2 style={{fontSize:32,fontWeight:700,letterSpacing:'-0.02em',marginBottom:24,textAlign:'center'}}>{title}</h2>}
+        <div style={{background:'#fafafa',borderRadius:20,overflow:'hidden',border:'1px solid #f0f0f0'}}>
+          <div style={{padding:'16px 24px',background:accent,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span style={{color:'#fff',fontWeight:700,fontSize:15}}>Hours</span>
+            <span style={{background:isOpenNow()?'#22c55e':'#ef4444',color:'#fff',fontSize:12,fontWeight:700,padding:'3px 12px',borderRadius:50}}>{isOpenNow()?'Open Now':'Closed Now'}</span>
+          </div>
+          {hours.map((h,i)=>{const isT=h.day===today;return(<div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 24px',borderBottom:i<hours.length-1?'1px solid #f0f0f0':'none',background:isT?'rgba(0,0,0,0.02)':'transparent'}}>
+            <span style={{fontSize:14,fontWeight:isT?800:500,color:isT?accent:'#555'}}>{h.day}{isT&&' (Today)'}</span>
+            <span style={{fontSize:14,color:h.closed?'#ef4444':isT?accent:'#666',fontWeight:isT?700:400}}>{h.closed?'Closed':\`\${h.open} – \${h.close}\`}</span>
+          </div>);})}
+        </div>
+        {note&&<p style={{textAlign:'center',fontSize:13,color:'#aaa',marginTop:16}}>{note}</p>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/ProductSpotlight.tsx": `import React from 'react';
+type Feature = { icon?: string; label: string };
+export default function ProductSpotlight({ title, subtitle, description, image, price, originalPrice, cta, ctaHref, features, badge, accentColor, imageLeft }: { title: string; subtitle?: string; description?: string; image: string; price?: string; originalPrice?: string; cta?: string; ctaHref?: string; features?: Feature[]; badge?: string; accentColor?: string; imageLeft?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:imageLeft?'rtl':'ltr'}}>
+        <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.1)',position:'relative',direction:'ltr'}}>
+          <img src={image} alt={title} style={{width:'100%',display:'block',aspectRatio:'4/3',objectFit:'cover'}} />
+          {badge&&<span style={{position:'absolute',top:20,left:20,background:accent,color:'#fff',fontSize:12,fontWeight:800,padding:'6px 16px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{badge}</span>}
+        </div>
+        <div style={{direction:'ltr'}}>
+          {subtitle&&<p style={{fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',color:accent,marginBottom:12}}>{subtitle}</p>}
+          <h2 style={{fontSize:40,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1.1,margin:'0 0 16px'}}>{title}</h2>
+          {description&&<p style={{fontSize:16,color:'#777',lineHeight:1.7,margin:'0 0 24px'}}>{description}</p>}
+          {features&&<div style={{display:'flex',flexWrap:'wrap',gap:10,marginBottom:28}}>{features.map((f,i)=><span key={i} style={{display:'flex',alignItems:'center',gap:6,background:'#f5f5f5',borderRadius:50,padding:'6px 14px',fontSize:13,fontWeight:600}}>{f.icon&&<span>{f.icon}</span>}{f.label}</span>)}</div>}
+          {price&&<div style={{display:'flex',alignItems:'baseline',gap:12,marginBottom:28}}><span style={{fontSize:38,fontWeight:900,color:accent,letterSpacing:'-0.03em'}}>{price}</span>{originalPrice&&<span style={{fontSize:18,color:'#bbb',textDecoration:'line-through'}}>{originalPrice}</span>}</div>}
+          {cta&&<a href={ctaHref||'#'} style={{display:'inline-block',padding:'14px 32px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontWeight:800,fontSize:16,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/LocationCards.tsx": `import React from 'react';
+type Location = { name: string; address: string; phone?: string; hours?: string; image?: string; link?: string };
+export default function LocationCards({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Location[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1200,margin:'0 auto'}}>
+        <div style={{textAlign:'center',marginBottom:48}}>
+          <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:24}}>
+          {items.map((loc,i)=>(
+            <div key={i} style={{background:'#fafafa',borderRadius:20,overflow:'hidden',border:'1px solid #f0f0f0',transition:'box-shadow 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.boxShadow='none'}>
+              {loc.image&&<img src={loc.image} alt={loc.name} style={{width:'100%',height:180,objectFit:'cover',display:'block'}}/>}
+              <div style={{padding:24}}>
+                <h3 style={{fontSize:18,fontWeight:700,margin:'0 0 8px'}}>{loc.name}</h3>
+                <p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📍 {loc.address}</p>
+                {loc.phone&&<p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📞 <a href={\`tel:\${loc.phone}\`} style={{color:'inherit',textDecoration:'none'}}>{loc.phone}</a></p>}
+                {loc.hours&&<p style={{fontSize:14,color:'#888',margin:'0 0 16px'}}>🕐 {loc.hours}</p>}
+                {loc.link&&<a href={loc.link} style={{fontSize:13,fontWeight:700,color:accent,textDecoration:'none'}}>Get Directions →</a>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/QuoteBlock.tsx": `import React from 'react';
+export default function QuoteBlock({ quote, author, role, image, accentColor, dark }: { quote: string; author?: string; role?: string; image?: string; accentColor?: string; dark?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const bg = dark ? accent : 'var(--bg,#fafafa)';
+  const fg = dark ? '#fff' : '#111';
+  return (
+    <section style={{padding:'80px 40px',background:bg}}>
+      <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
+        <div style={{fontSize:80,lineHeight:0.8,color:dark?'rgba(255,255,255,0.2)':accent,marginBottom:24,fontFamily:'Georgia,serif'}}>"</div>
+        <blockquote style={{fontSize:28,fontWeight:700,lineHeight:1.4,letterSpacing:'-0.02em',color:fg,margin:'0 0 40px',fontStyle:'italic'}}>{quote}</blockquote>
+        {(author||image)&&<div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14}}>
+          {image&&<img src={image} alt={author||''} style={{width:52,height:52,borderRadius:50,objectFit:'cover'}}/>}
+          <div style={{textAlign:'left'}}>
+            {author&&<div style={{fontWeight:800,fontSize:16,color:fg}}>{author}</div>}
+            {role&&<div style={{fontSize:13,color:dark?'rgba(255,255,255,0.6)':'#999'}}>{role}</div>}
+          </div>
+        </div>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/IconFeatures.tsx": `import React from 'react';
+type Feature = { icon: string; title: string; desc: string };
+export default function IconFeatures({ title, subtitle, items, accentColor, columns, dark }: { title?: string; subtitle?: string; items: Feature[]; accentColor?: string; columns?: number; dark?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const cols = columns || (items.length <= 3 ? items.length : items.length <= 4 ? 4 : items.length <= 6 ? 3 : 4);
+  const bg = dark ? '#0f0f0f' : 'var(--bg,#fff)';
+  const fg = dark ? '#fff' : '#111';
+  return (
+    <section style={{padding:'80px 40px',background:bg}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:56}}>
+          {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px',color:fg}}>{title}</h2>}
+          {subtitle&&<p style={{color:dark?'rgba(255,255,255,0.55)':'#888',fontSize:17,maxWidth:540,margin:'0 auto'}}>{subtitle}</p>}
+        </div>}
+        <div style={{display:'grid',gridTemplateColumns:\`repeat(\${cols},1fr)\`,gap:32}}>
+          {items.map((f,i)=>(
+            <div key={i} style={{textAlign:'center',padding:'32px 16px'}}>
+              <div style={{width:64,height:64,borderRadius:20,background:dark?'rgba(255,255,255,0.08)':\`\${accent}14\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,margin:'0 auto 20px'}}>{f.icon}</div>
+              <h3 style={{fontSize:17,fontWeight:700,margin:'0 0 8px',color:fg}}>{f.title}</h3>
+              <p style={{fontSize:14,color:dark?'rgba(255,255,255,0.55)':'#888',lineHeight:1.65,margin:0}}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/StickyBar.tsx": `import React, { useState, useEffect } from 'react';
+export default function StickyBar({ text, cta, ctaHref, accentColor, showAfterScroll }: { text: string; cta: string; ctaHref?: string; accentColor?: string; showAfterScroll?: number }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const [visible, setVisible] = useState(!showAfterScroll);
+  useEffect(()=>{if(!showAfterScroll)return;const h=()=>setVisible(window.scrollY>showAfterScroll);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h);},[showAfterScroll]);
+  if(!visible)return null;
+  return (
+    <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:999,background:accent,color:'#fff',padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 -4px 24px rgba(0,0,0,0.15)',backdropFilter:'blur(8px)'}}>
+      <span style={{fontSize:15,fontWeight:600}}>{text}</span>
+      <a href={ctaHref||'#'} style={{background:'#fff',color:accent,borderRadius:50,padding:'10px 24px',fontWeight:800,fontSize:14,textDecoration:'none',flexShrink:0,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>
+    </div>
+  );
+}`,
+
+"/components/sections/VideoHero.tsx": `import React from 'react';
+export default function VideoHero({ title, subtitle, cta, ctaHref, cta2, cta2Href, videoUrl, accentColor, overlay }: { title: string; subtitle?: string; cta?: string; ctaHref?: string; cta2?: string; cta2Href?: string; videoUrl: string; accentColor?: string; overlay?: number }) {
+  const accent = accentColor || 'var(--accent,#c2410c)';
+  return (
+    <section style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',color:'#fff'}}>
+      <video autoPlay muted loop playsInline style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',zIndex:0}}>
+        <source src={videoUrl} type="video/mp4"/>
+      </video>
+      <div style={{position:'absolute',inset:0,background:\`rgba(0,0,0,\${overlay??0.5})\`,zIndex:1}}/>
+      <div style={{position:'relative',zIndex:2,textAlign:'center',padding:'0 40px',maxWidth:900}}>
+        <h1 style={{fontSize:'clamp(40px,6vw,80px)',fontWeight:900,lineHeight:1.05,letterSpacing:'-0.03em',margin:'0 0 20px'}}>{title}</h1>
+        {subtitle&&<p style={{fontSize:'clamp(16px,2vw,22px)',opacity:0.85,maxWidth:580,margin:'0 auto 40px',lineHeight:1.6}}>{subtitle}</p>}
+        {(cta||cta2)&&<div style={{display:'flex',gap:14,justifyContent:'center',flexWrap:'wrap'}}>
+          {cta&&<a href={ctaHref||'#'} style={{display:'inline-block',padding:'15px 36px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontWeight:800,fontSize:17,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>}
+          {cta2&&<a href={cta2Href||'#'} style={{display:'inline-block',padding:'15px 36px',borderRadius:50,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(8px)',color:'#fff',textDecoration:'none',fontWeight:700,fontSize:17,border:'1.5px solid rgba(255,255,255,0.35)'}}>{cta2}</a>}
+        </div>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/RichText.tsx": `import React from 'react';
+type Block = { type: 'h2'|'h3'|'p'|'quote'|'list'; content: string; items?: string[] };
+export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Block[]; accentColor?: string; maxWidth?: number }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:maxWidth||720,margin:'0 auto'}}>
+        {blocks.map((b,i)=>{
+          if(b.type==='h2')return<h2 key={i} style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 16px'}}>{b.content}</h2>;
+          if(b.type==='h3')return<h3 key={i} style={{fontSize:22,fontWeight:700,margin:'0 0 12px'}}>{b.content}</h3>;
+          if(b.type==='p')return<p key={i} style={{fontSize:17,color:'#555',lineHeight:1.8,margin:'0 0 20px'}}>{b.content}</p>;
+          if(b.type==='quote')return<blockquote key={i} style={{borderLeft:\`4px solid \${accent}\`,margin:'28px 0',padding:'12px 24px',background:\`\${accent}08\`,borderRadius:'0 12px 12px 0'}}><p style={{fontSize:18,fontStyle:'italic',color:'#444',margin:0,lineHeight:1.7}}>{b.content}</p></blockquote>;
+          if(b.type==='list'&&b.items)return<ul key={i} style={{listStyle:'none',padding:0,margin:'0 0 20px'}}>{b.items.map((it,j)=><li key={j} style={{padding:'6px 0',paddingLeft:24,position:'relative',fontSize:16,color:'#555',lineHeight:1.7}}><span style={{position:'absolute',left:0,color:accent,fontWeight:700}}>•</span>{it}</li>)}</ul>;
+          return null;
+        })}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Partners.tsx": `import React from 'react';
+type Partner = { name: string; logo?: string; desc?: string; url?: string };
+export default function Partners({ title, subtitle, items, accentColor, showDesc }: { title?: string; subtitle?: string; items: Partner[]; accentColor?: string; showDesc?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
+          {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>}
+          {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
+        </div>}
+        <div style={{display:'grid',gridTemplateColumns:showDesc?\`repeat(auto-fill,minmax(240px,1fr))\`:\`repeat(auto-fill,minmax(160px,1fr))\`,gap:showDesc?24:16,alignItems:'center'}}>
+          {items.map((p,i)=>(
+            <a key={i} href={p.url||'#'} style={{textDecoration:'none',display:'flex',flexDirection:showDesc?'column':'row',alignItems:'center',gap:12,padding:showDesc?24:16,borderRadius:16,border:'1.5px solid #f0f0f0',background:'#fafafa',transition:'all 0.2s',color:'inherit'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.borderColor=accent;(e.currentTarget as HTMLElement).style.background='#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.borderColor='#f0f0f0';(e.currentTarget as HTMLElement).style.background='#fafafa'}}>
+              {p.logo?<img src={p.logo} alt={p.name} style={{height:36,objectFit:'contain',filter:'grayscale(1)',transition:'filter 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.filter='none'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.filter='grayscale(1)'}/>:<div style={{fontWeight:800,fontSize:16,color:'#bbb'}}>{p.name}</div>}
+              {showDesc&&<div><div style={{fontWeight:700,fontSize:14}}>{p.name}</div>{p.desc&&<p style={{fontSize:13,color:'#888',margin:'4px 0 0'}}>{p.desc}</p>}</div>}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/Awards.tsx": `import React from 'react';
+type Award = { title: string; org?: string; year?: string; icon?: string; image?: string };
+export default function Awards({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Award[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'60px 40px',background:'var(--bg,#fafafa)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
+          {title&&<h2 style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 8px'}}>{title}</h2>}
+          {subtitle&&<p style={{color:'#888',fontSize:15}}>{subtitle}</p>}
+        </div>}
+        <div style={{display:'flex',flexWrap:'wrap',gap:20,justifyContent:'center'}}>
+          {items.map((a,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'16px 24px',background:'#fff',borderRadius:16,border:'1.5px solid #f0f0f0',boxShadow:'0 2px 12px rgba(0,0,0,0.04)'}}>
+              {a.image?<img src={a.image} alt={a.title} style={{height:48,objectFit:'contain'}}/>:<div style={{fontSize:32}}>{a.icon||'🏆'}</div>}
+              <div><div style={{fontWeight:700,fontSize:15,color:'#222'}}>{a.title}</div>{(a.org||a.year)&&<div style={{fontSize:12,color:'#aaa'}}>{[a.org,a.year].filter(Boolean).join(' · ')}</div>}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/SocialProof.tsx": `import React from 'react';
+type Stat = { value: string; label: string; icon?: string };
+type Quote = { text: string; author: string; image?: string };
+export default function SocialProof({ stats, quotes, accentColor, dark }: { stats?: Stat[]; quotes?: Quote[]; accentColor?: string; dark?: boolean }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  const bg = dark ? '#0f0f0f' : accent;
+  return (
+    <section style={{padding:'80px 40px',background:bg,color:'#fff'}}>
+      <div style={{maxWidth:1100,margin:'0 auto'}}>
+        {stats&&<div style={{display:'grid',gridTemplateColumns:\`repeat(\${stats.length},1fr)\`,gap:32,marginBottom:quotes?60:0}}>
+          {stats.map((s,i)=>(
+            <div key={i} style={{textAlign:'center'}}>
+              {s.icon&&<div style={{fontSize:32,marginBottom:8}}>{s.icon}</div>}
+              <div style={{fontSize:52,fontWeight:900,letterSpacing:'-0.04em',lineHeight:1}}>{s.value}</div>
+              <div style={{fontSize:14,opacity:0.7,marginTop:8,fontWeight:500}}>{s.label}</div>
+            </div>
+          ))}
+        </div>}
+        {quotes&&<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:24}}>
+          {quotes.map((q,i)=>(
+            <div key={i} style={{background:'rgba(255,255,255,0.1)',borderRadius:20,padding:28,backdropFilter:'blur(8px)'}}>
+              <p style={{fontSize:15,lineHeight:1.7,margin:'0 0 20px',fontStyle:'italic',opacity:0.9}}>"{q.text}"</p>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                {q.image?<img src={q.image} alt={q.author} style={{width:36,height:36,borderRadius:50,objectFit:'cover'}}/>:<div style={{width:36,height:36,borderRadius:50,background:'rgba(255,255,255,0.2)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{q.author[0]}</div>}
+                <span style={{fontWeight:700,fontSize:14}}>{q.author}</span>
+              </div>
+            </div>
+          ))}
+        </div>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/ImageText.tsx": `import React from 'react';
+type Block = { image: string; title: string; desc: string; cta?: string; ctaHref?: string; badge?: string; imageLeft?: boolean };
+export default function ImageText({ blocks, accentColor }: { blocks: Block[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#111)';
+  return (
+    <section style={{padding:'60px 40px',background:'var(--bg,#fff)'}}>
+      <div style={{maxWidth:1100,margin:'0 auto',display:'flex',flexDirection:'column',gap:80}}>
+        {blocks.map((b,i)=>{
+          const left = b.imageLeft !== undefined ? b.imageLeft : i%2===0;
+          return (
+            <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:left?'ltr':'rtl'}}>
+              <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 16px 64px rgba(0,0,0,0.1)',direction:'ltr',position:'relative'}}>
+                <img src={b.image} alt={b.title} style={{width:'100%',aspectRatio:'4/3',objectFit:'cover',display:'block'}}/>
+                {b.badge&&<span style={{position:'absolute',top:16,left:16,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 12px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{b.badge}</span>}
+              </div>
+              <div style={{direction:'ltr'}}>
+                <h2 style={{fontSize:34,fontWeight:800,letterSpacing:'-0.02em',margin:'0 0 16px',lineHeight:1.2}}>{b.title}</h2>
+                <p style={{fontSize:16,color:'#777',lineHeight:1.8,margin:'0 0 28px'}}>{b.desc}</p>
+                {b.cta&&<a href={b.ctaHref||'#'} style={{display:'inline-block',padding:'12px 28px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontWeight:700,fontSize:15,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{b.cta} →</a>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}`,
+
 };
 
 export const SECTION_COMPONENT_LIST = `
