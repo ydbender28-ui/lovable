@@ -1407,12 +1407,12 @@ export default function ProjectWorkspace({
               if (/mobile app|phone app|ios app|android app|smartphone/.test(pl)) setPreviewMode("mobile");
               else if (/tablet|ipad/.test(pl)) setPreviewMode("tablet");
               else if (/dashboard|admin panel|analytics|desktop/.test(pl)) setPreviewMode("desktop");
-              const creditNote = "";
               if (payload.creditsRemaining != null) setUserCredits(payload.creditsRemaining);
               const liveNote = payload.liveUpdated ? "\n\n✓ Live site updated automatically." : "";
+              const costNote = payload.creditsUsed != null ? `\n\n💰 Cost: $${Number(payload.creditsUsed).toFixed(4)}` : "";
               const summary = silent
                 ? "✓ Error fixed automatically." + (payload.liveUpdated ? "\n\n✓ Live site updated." : "")
-                : (payload.summary ?? "Done! Check the preview.") + creditNote + liveNote;
+                : (payload.summary ?? "Done! Check the preview.") + costNote + liveNote;
               setMessages((prev) => {
                 const msgs: typeof prev = [...prev, {
                   id: payload.tempMessageId ?? `msg-${Date.now()}`,
