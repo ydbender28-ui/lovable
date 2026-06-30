@@ -19,23 +19,35 @@ export async function buildSpec(prompt: string): Promise<BuildSpec> {
     }),
     client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 600,
+      max_tokens: 800,
       system: `You are a web page architect. Given a build request, choose which pre-built sections to use and in what order.
 
 AVAILABLE SECTIONS (use ONLY these names):
-Navbar, Hero, Banner, VideoHero, Stats, Features, IconFeatures, SplitSection, ImageText, MenuGrid, ShopGrid, Gallery, Portfolio, Team, Timeline, Testimonials, Reviews, LogoCloud, BlogGrid, PricingTable, Comparison, FAQ, Newsletter, CTA, SocialProof, QuoteBlock, Booking, HoursTable, MapSection, ServiceCards, StepProcess, VideoSection, AppDownload, BeforeAfter, EventsList, Countdown, TrustBadges, LocationCards, ProductSpotlight, Partners, Awards, RichText, StickyBar, Contact, Footer, Tabs, DashboardShell, DashboardStats, DataTable, RevenueChart, AdminSidebar, KanbanBoard, UserManagement, NotificationCenter, AnalyticsPanel, OrdersTable, FormBuilder, FileManager, CalendarWidget, QuickActions, PricingCard, TestimonialCard, FeatureCard, StatBadge, ImageCard, ProfileCard, AlertBanner, ProgressBar, CountdownTimer, VideoEmbed, MapEmbed, SocialLinks, NewsletterInline, RatingStars, Breadcrumbs, TabsInline, AccordionItem, ImageGalleryGrid, CallToActionBanner, EmptyState, Router
+Navbar, Hero, HeroCentered, HeroSplit, HeroVideo, Banner, VideoHero, Stats, Features, IconFeatures, SplitSection, ImageText, MenuGrid, ShopGrid, Gallery, Portfolio, Team, Timeline, Testimonials, Reviews, LogoCloud, BlogGrid, PricingTable, Comparison, FAQ, Newsletter, CTA, SocialProof, QuoteBlock, Booking, HoursTable, MapSection, ServiceCards, StepProcess, VideoSection, AppDownload, BeforeAfter, EventsList, Countdown, TrustBadges, LocationCards, ProductSpotlight, Partners, Awards, RichText, StickyBar, Contact, Footer, Tabs, DashboardShell, DashboardStats, DataTable, RevenueChart, AdminSidebar, KanbanBoard, UserManagement, NotificationCenter, AnalyticsPanel, OrdersTable, FormBuilder, FileManager, CalendarWidget, QuickActions, PricingCard, TestimonialCard, FeatureCard, StatBadge, ImageCard, ProfileCard, AlertBanner, ProgressBar, CountdownTimer, VideoEmbed, MapEmbed, SocialLinks, NewsletterInline, RatingStars, Breadcrumbs, TabsInline, AccordionItem, ImageGalleryGrid, CallToActionBanner, EmptyState, Router, MetaTags, DarkModeToggle
 
 BUSINESS TYPE SECTION PLANS (follow the order closely):
-- Spa/Salon/Beauty: Navbar→Hero→StickyBar→ServiceCards→SocialProof→BeforeAfter→Team→Reviews→Booking→MapSection→Footer
-- Restaurant/Food: Navbar→Banner→Hero→MenuGrid→Gallery→SocialProof→Reviews→HoursTable→MapSection→Footer
-- Fitness/Gym: Navbar→Hero→SocialProof→ServiceCards→StepProcess→Team→PricingTable→Reviews→Contact→Footer
-- Medical/Dental: Navbar→Hero→ServiceCards→TrustBadges→Team→BeforeAfter→Reviews→Booking→MapSection→Footer
-- Law/Professional: Navbar→Hero→Stats→ServiceCards→Team→Timeline→Reviews→Contact→Footer
-- Retail/Ecommerce: Navbar→Banner→Hero→ShopGrid→Features→Reviews→Newsletter→Footer
-- SaaS/Tech: Navbar→Hero→LogoCloud→Features→Comparison→PricingTable→FAQ→CTA→Footer
-- Contractor/Trades: Navbar→Hero→ServiceCards→Gallery→StepProcess→Reviews→Contact→MapSection→Footer
-- Hotel/Real Estate: Navbar→Hero→Gallery→Features→PricingTable→Reviews→MapSection→Contact→Footer
-- Admin/Dashboard/CRM/Internal Tool: DashboardShell→DashboardStats→RevenueChart→DataTable→ActivityFeed→(OrdersTable or UserManagement or KanbanBoard based on context)→AnalyticsPanel
+- Spa/Salon/Beauty: Navbar→MetaTags→HeroCentered(backgroundImage)→StickyBar→ServiceCards→SocialProof→BeforeAfter→Team→Reviews→Booking→MapSection→Footer
+- Restaurant/Food: Navbar→MetaTags→Banner→HeroCentered(backgroundImage)→MenuGrid→Gallery→SocialProof→Reviews→HoursTable→MapSection→Footer
+- Fitness/Gym: Navbar→MetaTags→HeroVideo→SocialProof→ServiceCards→StepProcess→Team→PricingTable→Reviews→Contact→Footer→DarkModeToggle
+- Medical/Dental: Navbar→MetaTags→Hero→ServiceCards→TrustBadges→Team→BeforeAfter→Reviews→Booking→MapSection→Footer
+- Law/Professional: Navbar→MetaTags→HeroSplit→Stats→ServiceCards→Team→Timeline→Reviews→Contact→Footer
+- Retail/Ecommerce: Navbar→MetaTags→Banner→Hero→ShopGrid→Features→Reviews→Newsletter→Footer
+- SaaS/Tech: Navbar→MetaTags→HeroSplit→LogoCloud→Features→Comparison→PricingTable→FAQ→CTA→Footer→DarkModeToggle
+- Contractor/Trades: Navbar→MetaTags→Hero→ServiceCards→Gallery→StepProcess→Reviews→Contact→MapSection→Footer
+- Hotel/Real Estate: Navbar→MetaTags→HeroCentered(backgroundImage)→Gallery→Features→PricingTable→Reviews→MapSection→Contact→Footer
+- Photography/Creative: Navbar→MetaTags→HeroVideo→Portfolio→Stats→Team→PricingTable→Reviews→Booking→Contact→Footer
+- Bar/Nightclub: Navbar→MetaTags→HeroVideo→Banner→MenuGrid→EventsList→Gallery→Reviews→HoursTable→MapSection→Footer
+- Wedding/Events: Navbar→MetaTags→HeroCentered(backgroundImage)→Gallery→Stats→Features→PricingTable→Reviews→Booking→MapSection→Footer
+- Admin/Dashboard/CRM/Internal Tool: MetaTags→DashboardShell→DashboardStats→RevenueChart→DataTable→ActivityFeed→(OrdersTable or UserManagement or KanbanBoard based on context)→AnalyticsPanel
+- Multi-page Site: MetaTags→Router with Navbar→(per-page sections)→Footer
+
+HERO VARIANT SELECTION:
+- HeroCentered: use for sites with beautiful background photos — spa, restaurant, hotel, wedding venue, any site with strong imagery
+- HeroSplit: use for product/service businesses where showing a product/app screenshot matters — SaaS, real estate, personal trainer, coaching
+- HeroVideo: use for high-energy businesses — gym, nightclub, bar, luxury brand, agency, music
+- Hero (default): use for everything else or when unsure
+- ALWAYS include backgroundImage param for HeroCentered: "https://source.unsplash.com/1600x900/?[business-keywords]"
+- ALWAYS include a stats array for HeroSplit: [{value: "...", label: "..."}] with 3 believable stats
 
 VARIETY RULES:
 - For every build, include at least one "surprise" section not in the default plan for that type. Choose from: VideoSection, Countdown, Awards, SocialProof, AppDownload, QuoteBlock. Pick whichever fits the business best.
@@ -49,6 +61,8 @@ FEATURE SPECIFICITY RULES:
 - Return 3-5 features that are concrete and specific to THIS business, not generic.
 - BAD: ["booking form", "team section", "reviews"]
 - GOOD: ["booking form with date/time/service picker and confirmation email", "team cards with headshots, credentials, and specialties", "Google star rating display with 5+ real-sounding reviews", "before/after photo slider showing treatment results"]
+
+Return 8-12 sections total (MetaTags, DarkModeToggle, Router do not count as visual sections — always include them when appropriate without worrying about the count). Non-visual utility sections like MetaTags and DarkModeToggle should always be included for relevant business types.
 
 Return JSON only:
 {
