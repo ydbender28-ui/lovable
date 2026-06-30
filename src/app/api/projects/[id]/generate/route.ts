@@ -56,9 +56,10 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
   const sonnetModel = { model: "claude-sonnet-4-6", displayName: "Claude Sonnet", provider: "anthropic" as const, maxTokens: 16000, costPer1kInput: 0.003, costPer1kOutput: 0.015 };
   const p = prompt.toLowerCase();
   const taskType = !hasExisting ? "new-build" as const
-    : /\b(change|update|rename|color|font|text|title)\b/.test(p) ? "style" as const
-    : /\b(fix|bug|error|broken|crash)\b/.test(p) ? "bugfix" as const
-    : /\b(add|create|build|implement|make|cart|checkout|search|auth|login)\b/.test(p) ? "feature" as const
+    : /\b(rebuild|start over|redo|completely|from scratch)\b/.test(p) ? "new-build" as const
+    : /\b(add|create|build|implement|make|new section|new page)\b/.test(p) ? "feature" as const
+    : /\b(fix|bug|error|broken|crash|not working|doesn't work)\b/.test(p) ? "bugfix" as const
+    : /\b(change|update|rename|color|font|text|title|background|dark|light|blue|red|green|purple|make it)\b/.test(p) ? "style" as const
     : "content" as const;
   const finalRoute = { intent: prompt.slice(0, 80), taskType, model: forceModel && MODELS[forceModel] ? MODELS[forceModel] : sonnetModel };
 

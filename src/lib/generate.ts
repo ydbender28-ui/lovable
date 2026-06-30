@@ -584,34 +584,59 @@ Accent: professional — #1e3a5f, #b8860b, #0f766e
 const EDGE_FUNCTIONS_HINT = `For server-side logic, generate /functions/<name>.js (Supabase Edge Functions, Deno runtime).`;
 
 // Separate edit prompt — search/replace format for surgical edits
-const SYSTEM_EDIT = `You are editing an existing React + TypeScript app. Tailwind CSS is available.
+const SYSTEM_EDIT = `You are making SURGICAL edits to an existing React app. Tailwind CSS is available.
 
-## RULES:
-- Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
-- Match the existing code style (Tailwind or inline styles).
-- NEVER change unrelated code, images, or layout.
-- Build COMPLETE features — no stubs, no TODOs.
-- The code MUST be fully functional.
-- PRESERVE all existing /components/sections/* imports — NEVER remove or replace them.
-- PRESERVE all existing sections the user did not ask to change.
+## GOLDEN RULE: PRESERVE EVERYTHING NOT EXPLICITLY ASKED TO CHANGE
+The user's existing site took effort to build. Your job is a SCALPEL, not a sledgehammer.
+
+## WHAT TO PRESERVE (non-negotiable):
+- ALL /components/sections/* imports — never remove, never replace with inline code
+- ALL existing section components (<Navbar>, <Hero>, <ServiceCards>, etc.) — only modify props if the user asked
+- The overall page structure and section order
+- All existing data (menu items, team members, prices, etc.) unless asked to change
+- All existing IDs, hrefs, and section links
+
+## WHAT YOU CAN CHANGE:
+- Colors → update CSS variables in /index.css OR accentColor props on components
+- Text content → update the specific prop value
+- Adding a new section → add the import + JSX, don't touch other sections
+- Removing a section → remove just that component from JSX
+- Font → update @import in /index.css and font-family in body
+- Build COMPLETE features — no stubs, no TODOs. The code MUST be fully functional.
 - EVERY button MUST have a working onClick handler. No dead buttons.
 - When adding interactive features (cart, modal, tabs, accordion, form), include ALL useState hooks, handlers, and conditional rendering.
-- If adding "Add to Cart": include useState for cart items, handler to add/remove, cart count in nav, and a cart drawer/modal.
-- If adding a form: include onSubmit with e.preventDefault(), form validation, and success feedback.
-- If adding tabs: include useState for activeTab, onClick to switch, and conditional content rendering.
 
-## COLOR/THEME CHANGES:
+## COLOR CHANGES — the right way:
+If user says "change to blue":
+1. Change --primary in /index.css :root to the blue color
+2. If accentColor props are hardcoded hex (not var(--primary)), update those too
+3. That's it. DO NOT rewrite App.tsx.
+
+If user says "make it dark mode":
+1. Change --bg to dark color, --fg to light color, --card to slightly lighter dark in /index.css
+2. DO NOT rewrite App.tsx.
+
+## COLOR/THEME CHANGES — detailed:
 First, check the existing code to determine which color system it uses:
 
-CASE A — Code uses CSS variables like bg-[hsl(var(--background))], text-[hsl(var(--foreground))]:
-Change /index.css ONLY. Swap the HSL values in :root. Do NOT touch /App.tsx.
-Example: "make it dark green" → --background: 150 30% 8%; --foreground: 150 10% 95%; --primary: 150 60% 40%;
+CASE A — Code uses CSS variables like var(--primary), var(--bg), var(--fg) or bg-[hsl(var(--background))]:
+Change /index.css ONLY. Swap the values in :root. Do NOT touch /App.tsx at all.
+Example: "make it dark green" → --bg: #0a1a0f; --fg: #f0fff4; --primary: #86efac;
 
 CASE B — Code uses hardcoded Tailwind classes like bg-white, bg-stone-50, text-gray-900:
 You MUST return the FULL /App.tsx file with all color classes swapped to the new theme.
 Also update /index.css if it has color variables.
-Example: "make it dark green" → bg-white becomes bg-green-950, text-gray-900 becomes text-green-50, etc.
 Keep ALL layout, structure, content, images, and functionality identical — only swap color/bg/text/border classes.
+
+## ADDING A SECTION:
+If user says "add a FAQ section":
+1. Add import FAQ from '/components/sections/FAQ'; at the top of App.tsx
+2. Add <FAQ title="..." items={[...]} accentColor="var(--primary)" /> in the right place in JSX
+3. That's it. DO NOT touch other sections.
+
+## BEFORE YOU OUTPUT:
+Ask yourself: "Did I remove any /components/sections/* import?" If yes, add it back.
+Ask yourself: "Did I change anything the user didn't ask about?" If yes, revert it.
 
 ## CHOOSING SEARCH/REPLACE vs FULL FILE:
 
@@ -1065,30 +1090,49 @@ const EDIT_TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-const SYSTEM_EDIT_TOOLS = `You are editing an existing React + TypeScript app. Tailwind CSS is available.
+const SYSTEM_EDIT_TOOLS = `You are making SURGICAL edits to an existing React app.
 
-## RULES:
-- Do STRICTLY what the user asks — NOTHING MORE, NOTHING LESS.
-- NEVER rewrite the whole file — only change what the user asked to change.
-- PRESERVE all existing imports, especially /components/sections/* imports — do NOT remove or replace them.
-- PRESERVE all existing sections/components the user did not ask to change.
-- Build COMPLETE features — no stubs, no TODOs.
-- The code MUST be fully functional.
+## GOLDEN RULE: PRESERVE EVERYTHING NOT EXPLICITLY ASKED TO CHANGE
+The user's existing site took effort to build. Your job is a SCALPEL, not a sledgehammer.
 
-## HOW TO MAKE EDITS:
-Use the edit_file tool to modify existing files, or create_file for new files.
-Always provide the COMPLETE file content — not a diff or partial update.
-Only edit files that need to change. Leave unchanged files alone.
+## WHAT TO PRESERVE (non-negotiable):
+- ALL /components/sections/* imports — never remove, never replace with inline code
+- ALL existing section components (<Navbar>, <Hero>, <ServiceCards>, etc.) — only modify props if the user asked
+- The overall page structure and section order
+- All existing data (menu items, team members, prices, etc.) unless asked to change
+- All existing IDs, hrefs, and section links
 
-## COLOR/THEME CHANGES:
-First, check the existing code to determine which color system it uses:
-- If CSS variables (bg-background, text-foreground): Change /index.css ONLY.
-- If hardcoded Tailwind classes (bg-white, text-gray-900): Edit /App.tsx with all colors swapped.
+## WHAT YOU CAN CHANGE:
+- Colors → update CSS variables in /index.css OR accentColor props on components
+- Text content → update the specific prop value
+- Adding a new section → add the import + JSX, don't touch other sections
+- Removing a section → remove just that component from JSX
+- Font → update @import in /index.css and font-family in body
 
-## IMPORTANT:
-- Start with a brief explanation of what you'll do.
-- Then call the tools to make the edits.
-- After editing, confirm what was changed.`;
+## COLOR CHANGES — the right way:
+If user says "change to blue":
+1. Change --primary in /index.css :root to the blue color
+2. If accentColor props are hardcoded hex (not var(--primary)), update those too
+3. That's it. DO NOT rewrite App.tsx.
+
+If user says "make it dark mode":
+1. Change --bg to dark color, --fg to light color, --card to slightly lighter dark in /index.css
+2. DO NOT rewrite App.tsx.
+
+## ADDING A SECTION:
+If user says "add a FAQ section":
+1. Add import FAQ from '/components/sections/FAQ'; at the top of App.tsx
+2. Add <FAQ title="..." items={[...]} accentColor="var(--primary)" /> in the right place in JSX
+3. That's it. DO NOT touch other sections.
+
+## TOOL USAGE:
+Use edit_file for each file you need to change.
+Provide the COMPLETE updated file — not a diff.
+Only edit files that actually need changing.
+
+## BEFORE YOU OUTPUT:
+Ask yourself: "Did I remove any /components/sections/* import?" If yes, add it back.
+Ask yourself: "Did I change anything the user didn't ask about?" If yes, revert it.`;
 
 async function generateWithTools(
   model: string,
@@ -1965,14 +2009,21 @@ border-radius: ${pickedDesign!.radius} everywhere.${layoutBlock}`;
 
   const conversationCtx = isEdit ? buildConversationContext() : "";
 
+  // Build preservation reminder for edit context
+  const preservationReminder = isEdit && existingFiles
+    ? `\n\nREMEMBER: Only change what the user asked. Keep ALL section components and imports intact.\nEXISTING SECTIONS TO PRESERVE: ${
+        Object.values(existingFiles).join('\n').match(/import\s+(\w+)\s+from\s+'\/components\/sections\/[^']+'/g)?.map(m => m.match(/import\s+(\w+)/)?.[1]).filter(Boolean).join(', ') || 'check the file above'
+      }`
+    : "";
+
   // Tool-use path gets a clean prompt without search/replace hints
   const toolUserContent = isEdit
-    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}`
+    ? `EXISTING APP (DO NOT REWRITE — only change what was asked):\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] USER REQUEST: ${prompt}${preservationReminder}`
     : "";
 
   // Text-based path keeps the intent hints (tells AI to use SEARCH/REPLACE format)
   const userContent = isEdit
-    ? `Current files:\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] ${prompt}\n\n${intentHints[editIntent]}`
+    ? `EXISTING APP (DO NOT REWRITE — only change what was asked):\n${existingSection}${envSection}${knowledgeSection}${historySection}${conversationCtx}\n\n[${editIntent.toUpperCase()}] USER REQUEST: ${prompt}${preservationReminder}\n\n${intentHints[editIntent]}`
     : `Build this app: ${prompt}${envSection}${knowledgeSection}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}. Use the current year (${year}) for any copyright notices.`;
 
   let text = "";
@@ -2161,6 +2212,21 @@ img:not([class*="h-"]):not([class*="hero"]):not([style*="vh"]) { max-height: 240
 .text-primary-foreground { color: ${hsl('primary-foreground') || '#ffffff'} !important; }
 .border-border { border-color: ${hsl('border') || '#e8dfd5'} !important; }
 `;
+    }
+
+    // PRESERVE all section imports — only add missing ones, never remove
+    if (isEdit && existingFiles && toolUseFiles['/App.tsx']) {
+      const sectionImportRegex = /import\s+\w+\s+from\s+'\/components\/sections\/[^']+';/g;
+      const existingImports = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+      const newImports = (toolUseFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+      const missingFromNew = existingImports.filter(imp => !newImports.includes(imp));
+      if (missingFromNew.length > 0) {
+        const firstImport = toolUseFiles['/App.tsx'].indexOf('import ');
+        if (firstImport !== -1) {
+          toolUseFiles['/App.tsx'] = toolUseFiles['/App.tsx'].slice(0, firstImport) +
+            missingFromNew.join('\n') + '\n' + toolUseFiles['/App.tsx'].slice(firstImport);
+        }
+      }
     }
 
     // Merge with existing files for edits
@@ -2476,6 +2542,21 @@ complete file here
     }
   } else {
     resolvedFiles = parsed.files;
+  }
+
+  // PRESERVE all section imports — only add missing ones, never remove (text-based path)
+  if (isEdit && existingFiles && resolvedFiles['/App.tsx']) {
+    const sectionImportRegex = /import\s+\w+\s+from\s+'\/components\/sections\/[^']+';/g;
+    const existingImports = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+    const newImports = (resolvedFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+    const missingFromNew = existingImports.filter(imp => !newImports.includes(imp));
+    if (missingFromNew.length > 0) {
+      const firstImport = resolvedFiles['/App.tsx'].indexOf('import ');
+      if (firstImport !== -1) {
+        resolvedFiles['/App.tsx'] = resolvedFiles['/App.tsx'].slice(0, firstImport) +
+          missingFromNew.join('\n') + '\n' + resolvedFiles['/App.tsx'].slice(firstImport);
+      }
+    }
   }
 
   // For edits: merge returned files with existing (AI only returns changed files)
