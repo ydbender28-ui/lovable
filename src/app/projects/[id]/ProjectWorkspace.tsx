@@ -7,6 +7,7 @@ import { buildStandaloneHtml } from "@/lib/buildHtml";
 import type { Suggestion } from "@/lib/suggestions";
 import Logo from "@/components/Logo";
 import IntegrationsPanel from "./IntegrationsPanel";
+import ThemeSwitcher, { QUICK_THEMES, applyThemeToCss } from "@/components/ThemeSwitcher";
 import type { SandpackErr } from "@/components/SandpackPreview";
 
 const SandpackPreview = dynamic(() => import("@/components/SandpackPreview"), {
@@ -354,6 +355,16 @@ export default function ProjectWorkspace({
   };
   const [dnsInfo, setDnsInfo] = useState<{ domain: string; cname: string } | null>(null);
   const [envVars, setEnvVars] = useState<EnvVars>({});
+
+  // Theme switcher
+  const [activeThemeName, setActiveThemeName] = useState<string | undefined>();
+
+  const handleThemeChange = (theme: typeof QUICK_THEMES[0]) => {
+    setActiveThemeName(theme.name);
+    const currentCss = files['/index.css'] || '';
+    const newCss = applyThemeToCss(currentCss, theme);
+    setFiles(prev => ({ ...prev, '/index.css': newCss }));
+  };
 
   // New features
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
@@ -2469,6 +2480,9 @@ export default function ProjectWorkspace({
             <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/></svg>
             {circleSelectMode ? "Draw circle…" : "Select"}
           </button>
+        )}
+        {hasFiles && activeTab === "preview" && (
+          <ThemeSwitcher onThemeChange={handleThemeChange} currentTheme={activeThemeName} />
         )}
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
