@@ -196,10 +196,12 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 4. NEVER write useState for cart, cartOpen, cartItems, or cartCount — these are built into the components
 5. Any custom cart/nav code you write will conflict with the built-in system and show a duplicate cart button
 6. NEVER write a custom delivery/dine-in/pickup toggle or order-type selector — if needed, build it as a clean styled toggle inside App.tsx using useState, with pill buttons and proper styling. No ZIP code inputs, no ugly form elements.
-7. NEVER write a custom booking/reservation form — use <Booking> component only
-   WRONG: <input type="date"/> <input type="time"/> <select>2 guests</select> written by hand — looks broken
-   CORRECT: import Booking from '/components/sections/Booking'; → <Booking title="Reserve a Table" fields={["name","email","date","time","guests","notes"]} />
-7. NEVER use <input type="date"> or <input type="time"> anywhere — they render as ugly browser-native pickers
+7. NEVER use <input type="date"> or <input type="time"> anywhere — ugly native pickers. Use styled <select> dropdowns instead.
+8. For reservation/booking forms: build directly in App.tsx as a styled card component. Use this exact pattern for inputs:
+   const inp = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, outline:'none', background:'#fff', boxSizing:'border-box' as const, fontFamily:'inherit' };
+   Time options: ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','6:00 PM','7:00 PM','8:00 PM']
+   Guest options: ['1 guest','2 guests','3 guests','4 guests','5+ guests']
+   Wrap in a card: background:#fff, borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.08)'
 
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
 - import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
