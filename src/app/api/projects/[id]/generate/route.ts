@@ -7,7 +7,7 @@ import { decrypt, isEncrypted } from "@/lib/crypto";
 import { getSmartDefaults, getRecentMistakes, detectCategory } from "@/lib/learning";
 import { buildSpec } from "@/lib/spec-builder";
 import { buildWebsiteKnowledge } from "@/lib/website-knowledge"
-import { getRelevantComponents } from "@/lib/component-retrieval";
+import { getRelevantComponents, getSiteTypeKnowledge } from "@/lib/component-retrieval";
 import { getBuilderConfig, saveUserBuild, getSimilarBuilds } from "@/lib/builder-config";
 
 export const maxDuration = 300;
@@ -111,7 +111,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     const realExamples = await getRelevantComponents(prompt).catch(() => '');
     if (realExamples) smartPrompt += `\n\n${realExamples}`;
 
-    // Inject similar past user builds + dynamic prompt additions from training agent
+    // Embed prompt once — reused for site type lookup + similar builds
     const [builderConfig, embedRes] = await Promise.all([
       getBuilderConfig().catch(() => ({ additions: '', forbidden: '' })),
       fetch('https://api.openai.com/v1/embeddings', {
@@ -125,7 +125,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
     const promptEmbedding: number[] | null = embedRes?.data?.[0]?.embedding ?? null;
 
     if (promptEmbedding) {
-      const similarBuilds = await getSimilarBuilds(promptEmbedding).catch(() => '');
+      // Site type knowledge — find closest of 2000+ site types, inject design brief
+      const [siteTypeKnowledge, similarBuilds] = await Promise.all([
+        getSiteTypeKnowledge(prompt, promptEmbedding).catch(() => ''),
+        getSimilarBuilds(promptEmbedding).catch(() => ''),
+      ]);
+      if (siteTypeKnowledge) smartPrompt += `\n\n${siteTypeKnowledge}`;
       if (similarBuilds) smartPrompt += `\n\n${similarBuilds}`;
     }
 

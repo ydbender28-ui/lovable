@@ -1,5 +1,61 @@
 -- Run this in Supabase SQL editor to set up all tables + functions
 
+-- 0. Site type knowledge base — 2000+ specific site types with design briefs
+create table if not exists site_type_knowledge (
+  id uuid primary key default gen_random_uuid(),
+  site_type text unique not null,
+  sections text[] default '{}',
+  hero_headline text,
+  color_palette jsonb default '{}',
+  design_tone text,
+  must_have text[] default '{}',
+  avoid text[] default '{}',
+  content_tips text,
+  embedding vector(1536),
+  created_at timestamptz default now()
+);
+
+create index if not exists site_type_knowledge_embedding_idx
+  on site_type_knowledge using ivfflat (embedding vector_cosine_ops)
+  with (lists = 100);
+
+-- RPC to find closest site type by prompt embedding
+create or replace function match_site_type(
+  query_embedding vector(1536),
+  match_count int default 1
+)
+returns table (
+  site_type text,
+  sections text[],
+  hero_headline text,
+  color_palette jsonb,
+  design_tone text,
+  must_have text[],
+  avoid text[],
+  content_tips text,
+  similarity float
+)
+language plpgsql
+as $$
+begin
+  return query
+  select
+    stk.site_type,
+    stk.sections,
+    stk.hero_headline,
+    stk.color_palette,
+    stk.design_tone,
+    stk.must_have,
+    stk.avoid,
+    stk.content_tips,
+    1 - (stk.embedding <=> query_embedding) as similarity
+  from site_type_knowledge stk
+  where stk.embedding is not null
+  order by stk.embedding <=> query_embedding
+  limit match_count;
+end;
+$$;
+
 -- 1. Enable pgvector if not already
 create extension if not exists vector;
 

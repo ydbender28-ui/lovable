@@ -74,6 +74,33 @@ function detectIndustry(prompt: string): string | null {
   return null
 }
 
+export async function getSiteTypeKnowledge(prompt: string, embedding: number[]): Promise<string> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return ''
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/match_site_type`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query_embedding: embedding, match_count: 1 }),
+      signal: AbortSignal.timeout(4000),
+    })
+    if (!res.ok) return ''
+    const rows = await res.json() as { site_type: string; sections: string[]; hero_headline: string; color_palette: Record<string,string>; design_tone: string; must_have: string[]; avoid: string[]; content_tips: string; similarity: number }[]
+    if (!rows?.length || rows[0].similarity < 0.6) return ''
+    const r = rows[0]
+    const palette = r.color_palette ?? {}
+    return `## Site type matched: "${r.site_type}" (${Math.round(r.similarity * 100)}% match)
+Tone: ${r.design_tone}
+Sections to use: ${r.sections.join(' → ')}
+Colors: bg=${palette.bg ?? ''} accent=${palette.accent ?? ''} (${palette.description ?? ''})
+Hero headline style: "${r.hero_headline}"
+Must include: ${r.must_have.join(' | ')}
+Avoid: ${r.avoid.join(' | ')}
+Content tip: ${r.content_tips}`
+  } catch {
+    return ''
+  }
+}
+
 export async function getRelevantComponents(prompt: string): Promise<string> {
   if (!SUPABASE_URL || !SUPABASE_KEY || !OPENAI_KEY) return ''
 
