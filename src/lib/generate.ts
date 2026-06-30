@@ -204,7 +204,13 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 14. Section IDs MUST match exactly: if you use id="booking" in App.tsx, the Banner/CTA href must be "#booking" — not "#book", "#reservations", or "#contact".
 15. If Navbar has a cart icon and you are NOT building a shop/restaurant, remove the cart — do NOT include cart functionality on non-commerce sites.
 16. EVERY interactive button must DO something: Book Now scrolls to booking, Call Now opens dialer, Get Directions opens maps, Select Plan highlights the plan.
-17. Design must be BOLD and DISTINCTIVE — use the full accent color for hero backgrounds, gradients, or large graphic elements. NEVER use plain white/gray backgrounds throughout. Make it feel premium, not like a template.
+17. Design must be BOLD and DISTINCTIVE — NOT plain white. Rules:
+    - Hero: NEVER plain white background. Use a rich image, deep color, gradient, or texture.
+    - At least 2-3 sections must have a colored/dark background (accent, dark, or warm tone) — not everything white.
+    - Use the accent color prominently: large headings, section backgrounds, dividers, icon backgrounds.
+    - Alternate section backgrounds: white → accent-tinted → white → dark → white. Never all white.
+    - Example: Hero (dark/image) → Services (white) → Stats (accent bg) → Reviews (off-white) → CTA (dark/accent bg)
+    - BANNED backgrounds: plain #fff or #ffffff for more than 3 consecutive sections.
 7. NEVER use <input type="date"> or <input type="time"> anywhere — ugly native pickers. Use styled <select> dropdowns instead.
 8. For reservation/booking forms: build directly in App.tsx as a styled card component. Use this exact pattern for inputs:
    const inp = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, outline:'none', background:'#fff', boxSizing:'border-box' as const, fontFamily:'inherit' };
@@ -213,13 +219,16 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
    Wrap in a card: background:#fff, borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.08)'
 
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
-- import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
-  CRITICAL: links must be string[] like ["Menu","About"] — NOT objects. ALWAYS include 3-5 links. NEVER leave links empty.
+- import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Services","About","Reviews","Contact"]} cta="Book Now" ctaHref="#booking" accentColor="#7c3aed" />
+  CRITICAL: links must be string[] like ["Services","About"] — NOT objects. ALWAYS include 3-5 links. NEVER leave links empty.
   CRITICAL: Navbar goes ABOVE Hero as a separate component — NEVER put nav inside the Hero or overlay it with position:absolute.
-  CRITICAL: The Navbar already has a 🛒 cart button built in. NEVER add another cart button anywhere in the page.
+  CRITICAL: showCart is FALSE by default — ONLY add showCart={true} when the page has MenuGrid or ShopGrid (food/product ordering). NEVER on spa, salon, gym, law firm, hotel, portfolio, or any non-commerce site.
+  CRITICAL: ctaHref MUST match a real section id on the page. cta="Book Now" + ctaHref="#booking" requires id="booking" somewhere. cta="Order Now" + ctaHref="#menu" requires id="menu".
+  CRITICAL: accentColor on Navbar must match the site theme color used everywhere else.
+  WRONG: <Navbar showCart={true} /> on a spa/salon/gym/hotel ← FORBIDDEN
   WRONG: <nav className="flex justify-between p-4">...</nav>  ← writing a custom navbar is FORBIDDEN
-  WRONG: <button onClick={()=>setCartOpen(true)}>Cart</button> anywhere outside Navbar ← FORBIDDEN
-  CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" />
+  CORRECT (spa): <Navbar brand="Serenity Spa" links={["Services","Team","Reviews","Contact"]} cta="Book Now" ctaHref="#booking" accentColor="#7c3aed" />
+  CORRECT (restaurant): <Navbar brand="Ember & Grind" links={["Menu","Gallery","Reviews","Contact"]} cta="Order Now" ctaHref="#menu" showCart={true} accentColor="#c2410c" />
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
   !!!ABSOLUTE RULE!!! For ANY menu, food list, product list, or card grid — you MUST use <MenuGrid>. Writing a custom <div> or <ul> list of items is FORBIDDEN.
