@@ -3,6 +3,8 @@ import { UI_COMPONENT_LIST } from "./ui-components";
 import { SECTION_COMPONENT_LIST } from "./section-components";
 import { EXTRA_COMPONENT_LIST } from "./extra-components";
 import { matchDesign, buildDesignContext } from "./designs";
+import { checkSiteQuality, formatQualityReport } from "./quality-check";
+import type { QualityIssue } from "./quality-check";
 
 export type ProjectFiles = Record<string, string>;
 
@@ -165,6 +167,36 @@ GOOD for spa: ["Hot Stone Massage — 60 min", "HydraFacial™ Treatment", "Coup
 - If the user says "create a site for my Italian restaurant in Austin" → use Austin-appropriate details, Italian menu items, local neighborhoods
 - If the user says "SaaS app for HR teams" → use HR-specific features, enterprise pricing, HR pain points in copy
 - Fill in gaps with REALISTIC guesses that fit the industry/location
+
+## IMAGES — Use Real Photos (Critical for Professional Look)
+NEVER use placeholder.com, via.placeholder.com, or broken image URLs.
+
+Use Unsplash source URLs for real photos. Format:
+https://source.unsplash.com/[WIDTHxHEIGHT]/?[comma,separated,keywords]
+
+Examples by use case:
+- Hero background (restaurant): https://source.unsplash.com/1600x900/?restaurant,food,dining
+- Hero background (spa/salon): https://source.unsplash.com/1600x900/?spa,wellness,luxury
+- Hero background (gym/fitness): https://source.unsplash.com/1600x900/?gym,fitness,workout
+- Hero background (tech/saas): https://source.unsplash.com/1600x900/?technology,office,modern
+- Hero background (hotel): https://source.unsplash.com/1600x900/?hotel,luxury,resort
+- Team member photo: https://source.unsplash.com/400x400/?professional,portrait,person
+- Product image: https://source.unsplash.com/600x600/?product,[product-type]
+- Gallery image: https://source.unsplash.com/800x600/?[business-type]
+- Blog thumbnail: https://source.unsplash.com/800x500/?[topic]
+- Before/after: Use spa,treatment or fitness,transformation as keywords
+
+ALWAYS pass relevant image URLs to components:
+- Hero: backgroundImage="https://source.unsplash.com/1600x900/?[business-type]"
+- Team: use image prop on each team member
+- Gallery: pass images array with Unsplash URLs
+- BeforeAfter: pass before and after image URLs
+- ShopGrid products: pass image URLs for each product
+- BlogGrid: pass image for each post
+
+Match keywords to the specific business type in the prompt.
+For a pizza restaurant: "pizza,italian,food" not just "food"
+For a yoga studio: "yoga,meditation,wellness" not just "fitness"
 
 ## SEO (ALWAYS DO THIS)
 Add a MetaTags component as the first child of your App div:
@@ -1943,6 +1975,8 @@ export interface GenerateResult {
   inputTokens: number;
   outputTokens: number;
   estimatedCostUsd: number;
+  qualityScore?: number;
+  qualityIssues?: QualityIssue[];
 }
 
 export async function generateProject(
