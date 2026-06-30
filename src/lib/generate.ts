@@ -186,9 +186,10 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
   !!!ABSOLUTE RULE!!! For ANY menu, food list, product list, or card grid — you MUST use <MenuGrid>. Writing a custom <div> or <ul> list of items is FORBIDDEN.
-  MenuGrid renders a 3-column grid with images (200px height), category tabs, and Add-to-Cart built in.
+  MenuGrid has the cart BUILT IN — it automatically syncs with the Navbar cart button via window events. DO NOT add a separate cart button anywhere else. DO NOT build a custom menu layout.
   CORRECT: <MenuGrid title="Our Menu" items={[{name:"Margherita",price:13.99,desc:"Fresh basil, mozzarella",category:"Classic",badge:"Popular",image:"{{unsplash:margherita pizza|400x300}}"},{name:"Pepperoni",price:14.99,desc:"Classic pepperoni",category:"Classic",image:"{{unsplash:pepperoni pizza|400x300}}"}]} />
   WRONG: <div className="space-y-4">{pizzas.map(p => <div>...</div>)}</div>  ← NEVER DO THIS
+  WRONG: <button onClick={() => setCartOpen(true)}>Cart</button> anywhere outside Navbar ← NEVER DO THIS
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
 - import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
