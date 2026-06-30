@@ -359,108 +359,208 @@ export default function SplitSection({ tag, title, text, image, reverse }: { tag
   );
 }`,
 
-"/components/sections/ShopGrid.tsx": `import React, { useState } from 'react';
-type Product = { id: number; name: string; price: number; desc: string; category: string; badge?: string; image?: string };
-type CartItem = Product & { qty: number };
+"/components/sections/ShopGrid.tsx": `import React from 'react';
 
-export default function ShopGrid({ title, subtitle, items, onCheckout }: { title: string; subtitle?: string; items: Product[]; onCheckout?: (items: CartItem[]) => void }) {
-  const safeItems = (items || []).filter(Boolean) as Product[];
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCart, setShowCart] = useState(false);
-  const [checkedOut, setCheckedOut] = useState(false);
-  const cats = ['All', ...new Set(safeItems.map(i => i.category))];
-  const [active, setActive] = useState('All');
-  const filtered = active === 'All' ? safeItems : safeItems.filter(i => i.category === active);
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+const CartCtx = React.createContext<any>(null);
 
-  const addToCart = (item: Product) => {
-    setCart(prev => {
-      const found = prev.find(c => c.id === item.id);
-      if (found) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { ...item, qty: 1 }];
-    });
+function useCart() {
+  const [items, setItems] = React.useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem('cart') || '[]'); } catch { return []; }
+  });
+  const save = (next: any[]) => { setItems(next); try { localStorage.setItem('cart', JSON.stringify(next)); } catch {} };
+  const add = (product: any, variant?: string) => {
+    const key = String(product.id || product.name) + (variant || '');
+    const existing = items.find((i: any) => i.key === key);
+    if (existing) save(items.map((i: any) => i.key === key ? { ...i, qty: i.qty + 1 } : i));
+    else save([...items, { key, product, variant, qty: 1 }]);
+  };
+  const remove = (key: string) => save(items.filter((i: any) => i.key !== key));
+  const updateQty = (key: string, delta: number) => save(items.map((i: any) => i.key === key ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter((i: any) => i.qty > 0));
+  const total = items.reduce((s: number, i: any) => s + (parseFloat(i.product.price?.toString().replace(/[^0-9.]/g, '') || '0') * i.qty), 0);
+  const count = items.reduce((s: number, i: any) => s + i.qty, 0);
+  return { items, add, remove, updateQty, total, count };
+}
+
+interface Product { id?: string | number; name: string; price: string | number; image?: string; description?: string; desc?: string; variants?: string[]; badge?: string; category?: string; }
+interface ShopGridProps { products?: Product[]; items?: Product[]; title?: string; subtitle?: string; accentColor?: string; columns?: number; }
+
+export default function ShopGrid({ products, items, title, subtitle, accentColor = '#6366f1', columns = 3 }: ShopGridProps) {
+  const prods = products || items || [];
+  const cart = useCart();
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [added, setAdded] = React.useState<string | null>(null);
+  const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({});
+  const [quickView, setQuickView] = React.useState<Product | null>(null);
+
+
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('cartupdate', { detail: { count: cart.count, open: () => setDrawerOpen(true) } }));
+  }, [cart.count]);
+  React.useEffect(() => {
+    const h = (e: Event) => { if ((e as CustomEvent).detail === 'open') setDrawerOpen(true); };
+    window.addEventListener('carttrigger', h);
+    return () => window.removeEventListener('carttrigger', h);
+  }, []);
+
+  const handleAdd = (p: Product) => {
+    const id = String(p.id || p.name);
+    const variant = selectedVariants[id];
+    cart.add({ ...p, id }, variant);
+    setAdded(id);
+    setTimeout(() => setAdded(null), 1500);
+    setDrawerOpen(true);
   };
 
   return (
-    <>
-      <section id="menu" style={{ padding:'100px 40px', background:'#faf9f7' }}>
-        <div style={{ maxWidth:1200, margin:'0 auto' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:40 }}>
-            <div>
-              <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
-              {subtitle && <p style={{ color:'#666', fontSize:16, marginTop:8 }}>{subtitle}</p>}
-            </div>
-            <button type="button" aria-label={`Open cart, ${cartCount} item${cartCount!==1?'s':''}`} onClick={() => setShowCart(true)} style={{ position:'relative', background:'#111', color:'#fff', border:'none', padding:'12px 24px', borderRadius:50, fontSize:14, fontWeight:600, cursor:'pointer' }}>
-              Cart {cartCount > 0 && <span style={{ position:'absolute', top:-8, right:-8, background:'var(--accent, #c2410c)', color:'#fff', width:22, height:22, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
-            </button>
+    <CartCtx.Provider value={cart}>
+      <section id="shop" style={{ padding: '80px 40px', background: 'var(--bg, #faf9f7)' }}>
+        {(title || subtitle) && (
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            {title && <h2 style={{ fontSize: 'clamp(28px,4vw,42px)', fontWeight: 800, color: 'var(--fg, #111)', marginBottom: 8 }}>{title}</h2>}
+            {subtitle && <p style={{ color: 'var(--fg, #666)', opacity: 0.7, fontSize: 18 }}>{subtitle}</p>}
           </div>
-          <div style={{ display:'flex', gap:8, marginBottom:32, flexWrap:'wrap' }}>
-            {cats.map(c => <button type="button" aria-pressed={active===c} key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border:active===c?'none':'1px solid #ddd', background:active===c?'var(--accent, #c2410c)':'#fff', color:active===c?'#fff':'#555', fontSize:14, cursor:'pointer' }}>{c}</button>)}
-          </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24 }}>
-            {filtered.map(item => (
-              <div key={item.id} style={{ background:'#fff', borderRadius:12, border:'1px solid #eee', overflow:'hidden', transition:'transform 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.transform='translateY(-4px)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.transform='none'}>
-                {item.image && <img src={item.image} alt={item.name} style={{ width:'100%', height:200, objectFit:'cover' }} />}
-                <div style={{ padding:20 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                    <h3 style={{ fontSize:17, fontWeight:600 }}>{item.name}</h3>
-                    <span style={{ fontSize:17, fontWeight:700 }}>\${item.price.toFixed(2)}</span>
-                  </div>
-                  {item.badge && <span style={{ fontSize:11, background:'var(--accent,#c2410c)', color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600, display:'inline-block', marginTop:6 }}>{item.badge}</span>}
-                  <p style={{ fontSize:14, color:'#888', marginTop:8 }}>{item.desc}</p>
-                  <button onClick={() => addToCart(item)} style={{ marginTop:16, width:'100%', background:'#111', color:'#fff', border:'none', padding:'12px', borderRadius:8, fontSize:14, fontWeight:600, cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#333'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#111'}>Add to Cart</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        )}
 
-      {showCart && (
-        <div style={{ position:'fixed', inset:0, zIndex:200 }}>
-          <div onClick={() => setShowCart(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.5)' }} />
-          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:420, background:'#fff', boxShadow:'-8px 0 30px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column' }}>
-            <div style={{ padding:'24px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <h2 style={{ fontSize:24, fontWeight:700 }}>Your Cart</h2>
-              <button type="button" aria-label="Close cart" onClick={() => setShowCart(false)} style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color:'#999' }}>×</button>
-            </div>
-            <div style={{ flex:1, overflowY:'auto', padding:24 }}>
-              {cart.length === 0 ? <p style={{ color:'#999', textAlign:'center', marginTop:40 }}>Your cart is empty</p> : cart.map(item => (
-                <div key={item.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'16px 0', borderBottom:'1px solid #f0f0f0' }}>
-                  <div>
-                    <p style={{ fontWeight:600 }}>{item.name}</p>
-                    <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:8 }}>
-                      <button onClick={() => setCart(prev => prev.map(c => c.id===item.id ? {...c, qty: Math.max(1, c.qty-1)} : c))} style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, background:'#fff', cursor:'pointer' }}>-</button>
-                      <span style={{ fontSize:14, minWidth:20, textAlign:'center' }}>{item.qty}</span>
-                      <button onClick={() => setCart(prev => prev.map(c => c.id===item.id ? {...c, qty: c.qty+1} : c))} style={{ width:28, height:28, border:'1px solid #ddd', borderRadius:4, background:'#fff', cursor:'pointer' }}>+</button>
-                      <button onClick={() => setCart(prev => prev.filter(c => c.id!==item.id))} style={{ marginLeft:8, color:'#999', background:'none', border:'none', fontSize:13, cursor:'pointer' }}>Remove</button>
+        {cart.count > 0 && (
+          <button onClick={() => setDrawerOpen(true)} type="button" style={{
+            position: 'fixed', bottom: 24, right: 24, background: accentColor, color: '#fff',
+            border: 'none', borderRadius: 50, padding: '14px 20px', cursor: 'pointer',
+            fontSize: 16, fontWeight: 700, zIndex: 1000, boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            display: 'flex', alignItems: 'center', gap: 8
+          }} aria-label={\`View cart, \${cart.count} items\`}>
+            🛒 {cart.count} · \${cart.total.toFixed(2)}
+          </button>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 24, maxWidth: 1200, margin: '0 auto' }}>
+          {prods.map((p, i) => {
+            const id = String(p.id || p.name);
+            const isAdded = added === id;
+            return (
+              <div key={i} style={{ background: 'var(--card, #fff)', borderRadius: 16, overflow: 'hidden', border: '1px solid var(--border, #eee)', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 40px rgba(0,0,0,0.12)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
+                <div style={{ position: 'relative', paddingTop: '75%', background: 'var(--muted, #f5f5f5)', cursor: 'pointer' }} onClick={() => setQuickView(p)}>
+                  {p.image ? (
+                    <img src={p.image} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>🛍️</div>
+                  )}
+                  {p.badge && <span style={{ position: 'absolute', top: 12, left: 12, background: accentColor, color: '#fff', padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{p.badge}</span>}
+                </div>
+
+                <div style={{ padding: 20 }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--fg, #111)', marginBottom: 6 }}>{p.name}</h3>
+                  {(p.description || p.desc) && <p style={{ fontSize: 14, color: 'var(--fg, #666)', opacity: 0.7, marginBottom: 12, lineHeight: 1.5 }}>{p.description || p.desc}</p>}
+
+                  {p.variants && p.variants.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                      {p.variants.map((v, vi) => (
+                        <button key={vi} type="button" onClick={() => setSelectedVariants(prev => ({ ...prev, [id]: v }))}
+                          style={{ padding: '4px 12px', borderRadius: 20, border: \`2px solid \${selectedVariants[id] === v ? accentColor : 'var(--border, #eee)'}\`,
+                            background: selectedVariants[id] === v ? accentColor : 'transparent',
+                            color: selectedVariants[id] === v ? '#fff' : 'var(--fg, #111)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                          {v}
+                        </button>
+                      ))}
                     </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: accentColor }}>{typeof p.price === 'number' ? \`\$\${p.price}\` : p.price}</span>
+                    <button type="button" onClick={() => handleAdd(p)} style={{
+                      background: isAdded ? '#10b981' : accentColor, color: '#fff', border: 'none',
+                      padding: '10px 20px', borderRadius: 25, cursor: 'pointer', fontWeight: 700,
+                      fontSize: 14, transition: 'all 0.2s', transform: isAdded ? 'scale(1.05)' : 'scale(1)'
+                    }}>
+                      {isAdded ? '✓ Added!' : 'Add to Cart'}
+                    </button>
                   </div>
-                  <span style={{ fontWeight:600 }}>\${(item.price * item.qty).toFixed(2)}</span>
                 </div>
-              ))}
-            </div>
-            {cart.length > 0 && (
-              <div style={{ padding:24, borderTop:'1px solid #eee' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:700, marginBottom:16 }}>
-                  <span>Total</span><span>\${cartTotal.toFixed(2)}</span>
-                </div>
-                {checkedOut ? (
-                  <div style={{ background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:14, padding:'20px', textAlign:'center' }}>
-                    <div style={{ fontSize:28, marginBottom:6 }}>✓</div>
-                    <div style={{ fontWeight:800, fontSize:15, color:'#166534' }}>Order Placed!</div>
-                    <div style={{ fontSize:13, color:'#4ade80', marginTop:4 }}>We'll have it ready shortly.</div>
-                  </div>
-                ) : (
-                  <button onClick={() => { setCheckedOut(true); setTimeout(() => { setCart([]); setCheckedOut(false); setShowCart(false); }, 3000); }} style={{ width:'100%', background:'var(--accent, #c2410c)', color:'#fff', border:'none', padding:'14px', borderRadius:50, fontSize:16, fontWeight:600, cursor:'pointer' }}>Checkout — \${cartTotal.toFixed(2)}</button>
-                )}
               </div>
-            )}
-          </div>
+            );
+          })}
         </div>
-      )}
-    </>
+
+        {drawerOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 2000 }} onClick={() => setDrawerOpen(false)}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 380, background: 'var(--card, #fff)', boxShadow: '-4px 0 40px rgba(0,0,0,0.15)', padding: 24, overflowY: 'auto', zIndex: 1 }}
+              onClick={e => e.stopPropagation()} role="dialog" aria-label="Shopping cart" aria-modal="true">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--fg, #111)', margin: 0 }}>Your Cart ({cart.count})</h3>
+                <button type="button" onClick={() => setDrawerOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--fg, #111)' }} aria-label="Close cart">×</button>
+              </div>
+
+              {cart.items.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--fg, #999)', opacity: 0.5 }}>
+                  <div style={{ fontSize: 48, marginBottom: 16 }}>🛒</div>
+                  <p>Your cart is empty</p>
+                </div>
+              ) : (
+                <>
+                  {cart.items.map((item: any, idx: number) => (
+                    <div key={idx} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: '1px solid var(--border, #eee)' }}>
+                      <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--muted, #f5f5f5)', flexShrink: 0, overflow: 'hidden' }}>
+                        {item.product.image ? <img src={item.product.image} alt={item.product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 700, color: 'var(--fg, #111)', margin: '0 0 4px' }}>{item.product.name}</p>
+                        {item.variant && <p style={{ fontSize: 13, color: 'var(--fg, #666)', opacity: 0.6, margin: '0 0 4px' }}>{item.variant}</p>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                          <button type="button" onClick={() => cart.updateQty(item.key, -1)} style={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid var(--border, #ddd)', background: 'transparent', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg, #111)' }}>−</button>
+                          <span style={{ fontSize: 14, fontWeight: 700, minWidth: 20, textAlign: 'center', color: 'var(--fg, #111)' }}>{item.qty}</span>
+                          <button type="button" onClick={() => cart.add(item.product, item.variant)} style={{ width: 24, height: 24, borderRadius: '50%', border: 'none', background: accentColor, color: '#fff', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                        <button type="button" onClick={() => cart.remove(item.key)} style={{ background: 'none', border: 'none', color: 'var(--fg, #999)', opacity: 0.4, cursor: 'pointer', fontSize: 18, padding: 0 }} aria-label="Remove item">×</button>
+                        <span style={{ fontWeight: 800, color: accentColor, whiteSpace: 'nowrap' }}>{typeof item.product.price === 'number' ? \`\$\${(item.product.price * item.qty).toFixed(2)}\` : item.product.price}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div style={{ padding: '20px 0', borderTop: '2px solid var(--border, #eee)', marginTop: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <span style={{ fontWeight: 700, fontSize: 18, color: 'var(--fg, #111)' }}>Total</span>
+                      <span style={{ fontWeight: 800, fontSize: 22, color: accentColor }}>\${cart.total.toFixed(2)}</span>
+                    </div>
+                    <button type="button" onClick={() => alert('Checkout integration required. Connect Stripe or your payment provider.')}
+                      style={{ width: '100%', background: accentColor, color: '#fff', border: 'none', padding: '16px', borderRadius: 12, fontSize: 18, fontWeight: 800, cursor: 'pointer' }}>
+                      Checkout →
+                    </button>
+                    <button type="button" onClick={() => setDrawerOpen(false)} style={{ width: '100%', background: 'transparent', color: 'var(--fg, #111)', border: '2px solid var(--border, #eee)', padding: '12px', borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginTop: 8 }}>
+                      Continue Shopping
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {quickView && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+            onClick={() => setQuickView(null)}>
+            <div style={{ background: 'var(--card, #fff)', borderRadius: 20, maxWidth: 600, width: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+              onClick={e => e.stopPropagation()} role="dialog" aria-label="Product quick view">
+              {quickView.image && <img src={quickView.image} alt={quickView.name} style={{ width: '100%', height: 300, objectFit: 'cover' }} />}
+              <div style={{ padding: 32 }}>
+                <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--fg, #111)', marginBottom: 8 }}>{quickView.name}</h2>
+                {(quickView.description || quickView.desc) && <p style={{ color: 'var(--fg, #666)', opacity: 0.8, lineHeight: 1.6, marginBottom: 16 }}>{quickView.description || quickView.desc}</p>}
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <span style={{ fontSize: 28, fontWeight: 800, color: accentColor }}>{typeof quickView.price === 'number' ? \`\$\${quickView.price}\` : quickView.price}</span>
+                  <button type="button" onClick={() => { handleAdd(quickView); setQuickView(null); }}
+                    style={{ flex: 1, background: accentColor, color: '#fff', border: 'none', padding: '14px 28px', borderRadius: 30, cursor: 'pointer', fontWeight: 800, fontSize: 16 }}>
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    </CartCtx.Provider>
   );
 }`,
 

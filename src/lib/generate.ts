@@ -2834,6 +2834,19 @@ complete file here
     finalFiles['/index.css'] = css;
   }
 
+  // ── Quality check ──
+  // Only run on new builds (not edits) to surface issues before the user sees the preview
+  let qualityScore: number | undefined;
+  let qualityIssues: QualityIssue[] | undefined;
+  if (!isEdit) {
+    const qualityReport = checkSiteQuality(finalFiles);
+    qualityScore = qualityReport.score;
+    qualityIssues = qualityReport.issues;
+    if (!qualityReport.passed) {
+      parsed.summary += `\n\n${formatQualityReport(qualityReport)}`;
+    }
+  }
+
   return {
     files: finalFiles,
     summary: parsed.summary,
@@ -2844,6 +2857,8 @@ complete file here
     inputTokens,
     outputTokens,
     estimatedCostUsd: estimateCost(modelOpt.model, inputTokens, outputTokens),
+    qualityScore,
+    qualityIssues,
   };
 }
 
