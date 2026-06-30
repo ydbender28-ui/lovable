@@ -3,20 +3,29 @@
 
 export const SECTION_COMPONENTS: Record<string, string> = {
 
-"/components/sections/Navbar.tsx": `import React, { useState } from 'react';
-export default function Navbar({ brand, links, cta, onNavigate }: { brand: string; links: any[]; cta?: string; onNavigate?: (page: string) => void }) {
+"/components/sections/Navbar.tsx": `import React, { useState, useEffect } from 'react';
+export default function Navbar({ brand, links, cta, onNavigate, cartCount: cartCountProp, onCartClick }: { brand: string; links: any[]; cta?: string; onNavigate?: (page: string) => void; cartCount?: number; onCartClick?: () => void }) {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [cartCount, setCartCount] = useState(cartCountProp ?? 0);
+  const [cartOpener, setCartOpener] = useState<(() => void) | null>(null);
+  useEffect(() => { const h = () => setScrolled(window.scrollY > 10); window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h); }, []);
+  useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) setCartOpener(() => d.open); }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
+  const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpener) cartOpener(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
   const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
   const handleClick = (l: string) => (e: React.MouseEvent) => {
     if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); }
   };
   return (
-    <nav style={{ position:'sticky', top:0, zIndex:100, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #eee', padding:'0 40px' }}>
+    <nav style={{ position:'sticky', top:0, zIndex:100, background: scrolled ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #eee', padding:'0 40px', transition:'background 0.2s' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', height:64 }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ fontSize:20, fontWeight:800, color:'#111', textDecoration:'none', letterSpacing:'-0.02em' }}>{brand}</a>
-        <div style={{ display:'flex', gap:32, alignItems:'center' }}>
+        <div style={{ display:'flex', gap:24, alignItems:'center' }}>
           {safeLinks.map(l => <a key={String(l)} href={\`#\${String(l).toLowerCase()}\`} onClick={handleClick(String(l))} style={{ fontSize:14, color:'#555', textDecoration:'none', fontWeight:500, cursor:'pointer', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#555'}>{String(l)}</a>)}
           {cta && <a href="#contact" onClick={handleClick('contact')} style={{ background:'#111', color:'#fff', padding:'10px 24px', borderRadius:50, fontSize:14, fontWeight:600, textDecoration:'none', cursor:'pointer', transition:'background 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#333'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#111'}>{cta}</a>}
+          <button onClick={handleCartClick} style={{ position:'relative', background:'none', border:'1.5px solid #ddd', padding:'8px 14px', borderRadius:50, cursor:'pointer', display:'flex', alignItems:'center', gap:6, fontSize:14, fontWeight:600, color:'#111', transition:'border-color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.borderColor='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.borderColor='#ddd'}>
+            🛒 {cartCount > 0 && <span style={{ background:'var(--accent,#c2410c)', color:'#fff', borderRadius:'50%', width:18, height:18, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>{cartCount}</span>}
+          </button>
         </div>
       </div>
     </nav>
@@ -62,7 +71,7 @@ export default function Features({ tag, title, items }: { tag?: string; title: s
   );
 }`,
 
-"/components/sections/MenuGrid.tsx": `import React, { useState } from 'react';
+"/components/sections/MenuGrid.tsx": `import React, { useState, useEffect } from 'react';
 type MenuItem = { id?: number; name: string; price: number | string; desc: string; category: string; badge?: string; image?: string };
 type CartItem = { item: MenuItem; qty: number };
 export default function MenuGrid({ title, subtitle, items, categories, accentColor }: { title: string; subtitle?: string; items: MenuItem[]; categories?: string[]; accentColor?: string }) {
@@ -74,6 +83,8 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
   const filtered = active === 'All' ? items : items.filter(i => i.category === active);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
   const cartTotal = cart.reduce((s, c) => s + (parseFloat(String(c.item.price)) * c.qty), 0);
+  useEffect(() => { window.dispatchEvent(new CustomEvent('cartupdate', { detail: { count: cartCount, open: () => setCartOpen(true) } })); }, [cartCount]);
+  useEffect(() => { const h = (e: Event) => { if ((e as CustomEvent).detail === 'open') setCartOpen(true); }; window.addEventListener('carttrigger', h); return () => window.removeEventListener('carttrigger', h); }, []);
   const addToCart = (item: MenuItem) => setCart(prev => { const ex = prev.find(c => c.item.name === item.name); return ex ? prev.map(c => c.item.name === item.name ? {...c, qty: c.qty+1} : c) : [...prev, {item, qty:1}]; });
   const updateQty = (name: string, delta: number) => setCart(prev => prev.map(c => c.item.name === name ? {...c, qty: Math.max(0, c.qty+delta)} : c).filter(c => c.qty > 0));
   return (
