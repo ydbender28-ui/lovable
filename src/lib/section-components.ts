@@ -150,7 +150,7 @@ export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
     <section ref={ref as any} style={{ position:'relative', minHeight: isMobile ? '50vh' : '65vh', display:'flex', alignItems:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+      <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))' }} />
       <div style={{ position:'relative', zIndex:1, maxWidth:1200, margin:'0 auto', padding: isMobile ? '48px 20px' : '80px 40px', color:'#fff' }}>
         {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:16, opacity:0.8 }}>{tag}</p>}
@@ -232,7 +232,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(290px, 1fr))', gap:24 }}>
           {filtered.map((item, i) => (
             <div key={i} style={{ background:'#fff', borderRadius:20, overflow:'hidden', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', transition:'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 40px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'}}>
-              {item.image && <div style={{ position:'relative' }}><img src={item.image} alt={item.name} style={{ width:'100%', height:210, objectFit:'cover', display:'block' }} />{item.badge && <span style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(8px)', color:'#fff', fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:50, letterSpacing:'0.05em', textTransform:'uppercase' }}>{item.badge}</span>}</div>}
+              {item.image && <div style={{ position:'relative' }}><img src={item.image} alt={item.name} style={{ width:'100%', height:210, objectFit:'cover', display:'block' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />{item.badge && <span style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(8px)', color:'#fff', fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:50, letterSpacing:'0.05em', textTransform:'uppercase' }}>{item.badge}</span>}</div>}
               <div style={{ padding:'18px 20px 20px' }}>
                 {!item.image && item.badge && <span style={{ fontSize:11, background:accent, color:'#fff', padding:'3px 10px', borderRadius:50, fontWeight:700, marginBottom:10, display:'inline-block', textTransform:'uppercase', letterSpacing:'0.05em' }}>{item.badge}</span>}
                 <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 5px', letterSpacing:'-0.01em' }}>{item.name}</h3>
@@ -263,7 +263,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
               {cart.length === 0 && <div style={{ textAlign:'center', padding:'60px 0', color:'#ccc' }}><div style={{ fontSize:48, marginBottom:12 }}>🛍️</div><p style={{ fontSize:15, fontWeight:500 }}>Your cart is empty</p></div>}
               {cart.map((c, i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 0', borderBottom:'1px solid #f5f5f5' }}>
-                  {c.item.image && <img src={c.item.image} alt={c.item.name} style={{ width:56, height:56, borderRadius:12, objectFit:'cover', flexShrink:0 }} />}
+                  {c.item.image && <img src={c.item.image} alt={c.item.name} style={{ width:56, height:56, borderRadius:12, objectFit:'cover', flexShrink:0 }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />}
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontWeight:700, fontSize:14, marginBottom:2, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.item.name}</div>
                     <div style={{ fontSize:13, color:'#999' }}>\${parseFloat(String(c.item.price)).toFixed(2)} each</div>
@@ -322,7 +322,7 @@ export default function Testimonials({ title, items }: { title: string; items: T
           <div key={i} style={{ background:'#faf9f7', borderRadius:16, padding:32, transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
             <p style={{ fontSize:16, lineHeight:1.7, color:'#333', fontStyle:'italic', marginBottom:24 }}>"{t.quote}"</p>
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              {t.image && <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} />}
+              {t.image && <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />}
               <div>
                 <p style={{ fontWeight:600, fontSize:15 }}>{t.name}</p>
                 <p style={{ fontSize:13, color:'#888' }}>{t.role}</p>
@@ -335,12 +335,26 @@ export default function Testimonials({ title, items }: { title: string; items: T
   );
 }`,
 
-"/components/sections/Contact.tsx": `import React, { useState } from 'react';
+"/components/sections/Contact.tsx": `import React, { useState, useEffect } from 'react';
 type ContactInfo = { label: string; value: string; href?: string; icon?: string };
 export default function Contact({ title, subtitle, items }: { title: string; subtitle?: string; items: ContactInfo[] }) {
   const safeItems = (items || []).filter(Boolean);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const handleContactSubmit = async () => {
+    if (!form.name || !form.email) return;
+    setSubmitting(true);
+    try {
+      await fetch('/api/form-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formType: 'contact', fields: { Name: form.name, Email: form.email, Message: form.message } }),
+      });
+    } catch {}
+    setSent(true);
+    setSubmitting(false);
+  };
   const accent = 'var(--accent, #c2410c)';
   const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 16px', borderRadius: 10, border: '1px solid #e5e5e5', fontSize: 14, fontFamily: 'inherit', outline: 'none', background: '#fafafa', boxSizing: 'border-box', transition: 'border-color 0.2s' };
   const ref = React.useRef<HTMLElement>(null);
@@ -350,12 +364,14 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="contact" style={{ padding: '100px 40px', background: '#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} id="contact" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background: '#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>{title}</h2>
         {subtitle && <p style={{ color: '#666', fontSize: 16, marginBottom: 56 }}>{subtitle}</p>}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 80, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.4fr', gap: isMobile ? 40 : 80, alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
             {safeItems.map((c, i) => (
               <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -390,7 +406,7 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
                   <label htmlFor="contact-message" style={{ fontSize: 13, fontWeight: 600, color: '#333', display: 'block', marginBottom: 6 }}>Message</label>
                   <textarea id="contact-message" value={form.message} onChange={e => setForm(p => ({...p, message: e.target.value}))} placeholder="Tell us how we can help..." rows={5} style={{ ...inputStyle, resize: 'vertical' }} onFocus={e => e.target.style.borderColor = accent} onBlur={e => e.target.style.borderColor = '#e5e5e5'} />
                 </div>
-                <button type="button" onClick={() => { if (form.name && form.email) setSent(true); }} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e => (e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>Send Message →</button>
+                <button type="button" onClick={handleContactSubmit} disabled={submitting} style={{ background: accent, color: '#fff', border: 'none', borderRadius: 50, padding: '14px 36px', fontSize: 15, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', alignSelf: 'flex-start', transition: 'opacity 0.2s', opacity: submitting ? 0.7 : 1 }} onMouseOver={e => { if (!submitting) (e.currentTarget as HTMLElement).style.opacity='0.85'; }} onMouseOut={e => { if (!submitting) (e.currentTarget as HTMLElement).style.opacity='1'; }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{submitting ? 'Sending...' : 'Send Message →'}</button>
               </div>
             )}
           </div>
@@ -579,7 +595,7 @@ export default function DarkModeToggle({ accentColor = '#6366f1', position = 'fi
 }
 `,
 
-"/components/sections/SplitSection.tsx": `import React from 'react';
+"/components/sections/SplitSection.tsx": `import React, { useState, useEffect } from 'react';
 export default function SplitSection({ tag, title, text, image, reverse }: { tag?: string; title: string; text: string; image: string; reverse?: boolean }) {
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
@@ -588,15 +604,17 @@ export default function SplitSection({ tag, title, text, image, reverse }: { tag
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ maxWidth:1200, margin:'0 auto', padding:'100px 40px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:60, alignItems:'center', direction: reverse ? 'rtl' : 'ltr', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ maxWidth:1200, margin:'0 auto', padding: isMobile ? '48px 20px' : '100px 40px', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:60, alignItems:'center', direction: 'ltr', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ direction:'ltr' }}>
         {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:12 }}>{tag}</p>}
         <h2 style={{ fontSize:36, fontWeight:700, lineHeight:1.15, letterSpacing:'-0.02em', marginBottom:20 }}>{title}</h2>
         <p style={{ fontSize:17, lineHeight:1.7, color:'#555' }}>{text}</p>
       </div>
       <div style={{ borderRadius:16, overflow:'hidden', direction:'ltr' }}>
-        <img src={image} alt={title} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+        <img src={image} alt={title} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
       </div>
     </section>
   );
@@ -685,7 +703,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
                 <div style={{ position: 'relative', paddingTop: '75%', background: 'var(--muted, #f5f5f5)', cursor: 'pointer' }} onClick={() => setQuickView(p)}>
                   {p.image ? (
-                    <img src={p.image} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={p.image} alt={p.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
                   ) : (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>🛍️</div>
                   )}
@@ -745,7 +763,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
                   {cart.items.map((item: any, idx: number) => (
                     <div key={idx} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: '1px solid var(--border, #eee)' }}>
                       <div style={{ width: 64, height: 64, borderRadius: 8, background: 'var(--muted, #f5f5f5)', flexShrink: 0, overflow: 'hidden' }}>
-                        {item.product.image ? <img src={item.product.image} alt={item.product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>}
+                        {item.product.image ? <img src={item.product.image} alt={item.product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🛍️</div>}
                       </div>
                       <div style={{ flex: 1 }}>
                         <p style={{ fontWeight: 700, color: 'var(--fg, #111)', margin: '0 0 4px' }}>{item.product.name}</p>
@@ -787,7 +805,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
             onClick={() => setQuickView(null)}>
             <div style={{ background: 'var(--card, #fff)', borderRadius: 20, maxWidth: 600, width: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
               onClick={e => e.stopPropagation()} role="dialog" aria-label="Product quick view">
-              {quickView.image && <img src={quickView.image} alt={quickView.name} style={{ width: '100%', height: 300, objectFit: 'cover' }} />}
+              {quickView.image && <img src={quickView.image} alt={quickView.name} style={{ width: '100%', height: 300, objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />}
               <div style={{ padding: 32 }}>
                 <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--fg, #111)', marginBottom: 8 }}>{quickView.name}</h2>
                 {(quickView.description || quickView.desc) && <p style={{ color: 'var(--fg, #666)', opacity: 0.8, lineHeight: 1.6, marginBottom: 16 }}>{quickView.description || quickView.desc}</p>}
@@ -898,7 +916,7 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
   }, []);
   return (
     <section ref={ref as any} style={{ position:'relative', padding:'100px 40px', textAlign:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
+      {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
       <div style={{ position:'relative', zIndex:1, maxWidth:700, margin:'0 auto' }}>
         <h2 style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, lineHeight:1.1, color: image ? '#fff' : 'var(--text,#111)', letterSpacing:'-0.02em' }}>{title}</h2>
         {subtitle && <p style={{ fontSize:18, marginTop:16, color: image ? 'rgba(255,255,255,0.8)' : 'var(--muted,#666)' }}>{subtitle}</p>}
@@ -928,13 +946,13 @@ export default function Gallery({ title, images, items }: { title: string; image
           <div key={i} onClick={() => setSelected(i)} style={{ borderRadius:12, overflow:'hidden', cursor:'pointer', aspectRatio:'4/3' }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
             onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}>
-            <img src={img.src} alt={img.alt} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform 0.3s' }} />
+            <img src={img.src} alt={img.alt} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', transition:'transform 0.3s' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
           </div>
         ))}
       </div>
       {selected !== null && (
         <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setSelected(null)} onKeyDown={e => e.key === 'Escape' && setSelected(null)} tabIndex={-1} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-          <img src={safeImages[selected].src} alt={safeImages[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} />
+          <img src={safeImages[selected].src} alt={safeImages[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
         </div>
       )}
     </section>
@@ -983,7 +1001,7 @@ export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }
   );
 }`,
 
-"/components/sections/Team.tsx": `import React from 'react';
+"/components/sections/Team.tsx": `import React, { useState, useEffect } from 'react';
 type Member = { name: string; role: string; image?: string; bio?: string };
 export default function Team({ title, members, items, accentColor }: { title: string; members?: Member[]; items?: Member[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#c2410c)';
@@ -1002,7 +1020,7 @@ export default function Team({ title, members, items, accentColor }: { title: st
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:32 }}>
           {list.map((m, i) => (
             <div key={i} style={{ textAlign:'center', padding:'32px 20px', background:'#fafafa', borderRadius:20, border:'1px solid #f0f0f0', transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
-              {m.image ? <img src={m.image} alt={m.name} style={{ width:100, height:100, borderRadius:'50%', objectFit:'cover', margin:'0 auto 16px', display:'block' }} /> : <div style={{ width:100, height:100, borderRadius:'50%', background:accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, fontWeight:800, margin:'0 auto 16px' }}>{m.name[0]}</div>}
+              {m.image ? <img src={m.image} alt={m.name} style={{ width:100, height:100, borderRadius:'50%', objectFit:'cover', margin:'0 auto 16px', display:'block' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} /> : <div style={{ width:100, height:100, borderRadius:'50%', background:accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, fontWeight:800, margin:'0 auto 16px' }}>{m.name[0]}</div>}
               <h3 style={{ fontSize:17, fontWeight:700, margin:'0 0 4px' }}>{m.name}</h3>
               <p style={{ fontSize:13, color:accent, fontWeight:600, margin:0 }}>{m.role}</p>
               {m.bio && <p style={{ fontSize:13, color:'#888', marginTop:10, lineHeight:1.6 }}>{m.bio}</p>}
@@ -1033,7 +1051,7 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
         {sent ? <p style={{ marginTop:24, fontSize:16, color:'#4ade80' }}>Thanks for subscribing!</p> : (
           <div style={{ display:'flex', gap:8, marginTop:32, maxWidth:440, margin:'32px auto 0' }}>
             <input id="newsletter-email" type="email" autoComplete="email" aria-label="Email address for newsletter" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={placeholder || 'Enter your email'} style={{ flex:1, padding:'14px 20px', borderRadius:50, border:'none', fontSize:14, outline:'none' }} />
-            <button type="button" onClick={() => { if (email.includes('@')) setSent(true); }} style={{ background:'#fff', color:'var(--accent,#111)', padding:'14px 28px', borderRadius:50, border:'none', fontSize:14, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>Subscribe</button>
+            <button type="button" onClick={async () => { if (!email.includes('@')) return; setSent(true); try { await fetch('/api/form-submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ formType:'newsletter', fields:{ Email: email } }) }); } catch {} }} style={{ background:'#fff', color:'var(--accent,#111)', padding:'14px 28px', borderRadius:50, border:'none', fontSize:14, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' }}>Subscribe</button>
           </div>
         )}
       </div>
@@ -1092,7 +1110,7 @@ export default function LogoCloud({ title, logos }: { title?: string; logos: { n
         <div style={{ overflow:'hidden', position:'relative' }}>
           <div style={{ display:'flex', gap:60, alignItems:'center', opacity:0.5, width:'max-content', animation:'logoScroll 20s linear infinite' }}>
             {doubled.map((l, i) => l.image
-              ? <img key={i} src={l.image} alt={l.name} style={{ height:28, objectFit:'contain', flexShrink:0 }} />
+              ? <img key={i} src={l.image} alt={l.name} style={{ height:28, objectFit:'contain', flexShrink:0 }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }} />
               : <span key={i} style={{ fontSize:18, fontWeight:700, letterSpacing:'-0.02em', whiteSpace:'nowrap', flexShrink:0 }}>{l.name}</span>
             )}
           </div>
@@ -1121,7 +1139,7 @@ export default function BlogGrid({ title, posts, items }: { title: string; posts
           <article key={i} style={{ borderRadius:16, overflow:'hidden', border:'1px solid var(--border,#eee)', background:'var(--card,#fff)', transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)' }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform='translateY(-6px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform='translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'; }}>
-            <img src={p.image} alt={p.title} style={{ width:'100%', height:200, objectFit:'cover' }} />
+            <img src={p.image} alt={p.title} style={{ width:'100%', height:200, objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
             <div style={{ padding:24 }}>
               {p.category && <span style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--accent,#c2410c)', fontWeight:600 }}>{p.category}</span>}
               <h3 style={{ fontSize:18, fontWeight:600, marginTop:8, lineHeight:1.3 }}>{p.title}</h3>
@@ -1160,6 +1178,20 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
   const defaultFields = fields || ['name', 'email', 'date', 'time', 'guests', 'notes'];
   const [form, setForm] = useState<Record<string,string>>({});
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const handleBookingSubmit = async () => {
+    if (!form.name && !form.email) return;
+    setSubmitting(true);
+    try {
+      await fetch('/api/form-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formType: 'booking', fields: Object.fromEntries(Object.entries(form).map(([k,v]) => [k.charAt(0).toUpperCase()+k.slice(1), v])) }),
+      });
+    } catch {}
+    setSent(true);
+    setSubmitting(false);
+  };
   const inp: React.CSSProperties = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, fontFamily:'inherit', outline:'none', background:'#fff', boxSizing:'border-box', transition:'border-color 0.2s, box-shadow 0.2s', color:'#111' };
   const lbl: React.CSSProperties = { fontSize:13, fontWeight:600, color:'#444', display:'block', marginBottom:6 };
   const fieldDefs: Record<string,{label:string;type:string;placeholder:string}> = {
@@ -1195,7 +1227,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
           <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:12 }}>{title}</h2>
           {subtitle && <p style={{ color:'#666', fontSize:17 }}>{subtitle}</p>}
         </div>
-        <div style={{ background:'#fff', borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.07)' }}>
+        <div style={{ background:'#fff', borderRadius:24, padding: isMobile ? 24 : 48, boxShadow:'0 4px 32px rgba(0,0,0,0.07)' }}>
           <div style={{ display:'grid', gridTemplateColumns: defaultFields.includes('date') && defaultFields.includes('time') ? '1fr 1fr' : '1fr', gap:20 }}>
             {defaultFields.map(f => {
               const def = fieldDefs[f] || { label: f, type:'text', placeholder:'' };
@@ -1229,7 +1261,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
               );
             })}
           </div>
-          <button type="button" onClick={() => { if (form.name || form.email) setSent(true); }} style={{ marginTop:28, width:'100%', background:accent, color:'#fff', border:'none', borderRadius:50, padding:'16px 36px', fontSize:16, fontWeight:700, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta || 'Confirm Booking →'}</button>
+          <button type="button" onClick={handleBookingSubmit} disabled={submitting} style={{ marginTop:28, width:'100%', background:accent, color:'#fff', border:'none', borderRadius:50, padding:'16px 36px', fontSize:16, fontWeight:700, cursor:submitting ? 'default' : 'pointer', transition:'opacity 0.2s', opacity: submitting ? 0.7 : 1 }} onMouseOver={e=>{ if(!submitting)(e.currentTarget as HTMLElement).style.opacity='0.88'; }} onMouseOut={e=>{ if(!submitting)(e.currentTarget as HTMLElement).style.opacity='1'; }}>{submitting ? 'Sending...' : (cta || 'Confirm Booking →')}</button>
         </div>
       </div>
     </section>
@@ -1281,7 +1313,7 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor }
               <div style={{display:'flex',gap:4,marginBottom:12}}>{stars(r.rating)}</div>
               <p style={{fontSize:14,lineHeight:1.7,color:'#444',margin:'0 0 20px',fontStyle:'italic'}}>"{r.text}"</p>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
-                <div style={{width:40,height:40,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,flexShrink:0}}>{r.avatar?<img src={r.avatar} style={{width:40,height:40,borderRadius:50,objectFit:'cover'}} alt={r.name}/>:r.name[0]}</div>
+                <div style={{width:40,height:40,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:16,flexShrink:0}}>{r.avatar?<img src={r.avatar} style={{width:40,height:40,borderRadius:50,objectFit:'cover'}} alt={r.name} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>:r.name[0]}</div>
                 <div><div style={{fontWeight:700,fontSize:14}}>{r.name}</div>{(r.date||r.source)&&<div style={{fontSize:12,color:'#aaa'}}>{r.source||''}{r.source&&r.date?' · ':''}{r.date||''}</div>}</div>
               </div>
             </div>
@@ -1451,7 +1483,7 @@ export default function VideoSection({ title, subtitle, videoUrl, thumbnail, acc
             <iframe src={embedUrl} width="100%" height="100%" style={{border:'none',position:'absolute',inset:0}} allow="autoplay; fullscreen" allowFullScreen />
           ) : (
             <button type="button" aria-label="Play video" onClick={()=>setPlaying(true)} style={{cursor:'pointer',position:'relative',width:'100%',height:'100%',background:'none',border:'none',padding:0}}>
-              {thumbnail&&<img src={thumbnail} alt="video" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} />}
+              {thumbnail&&<img src={thumbnail} alt="video" style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />}
               <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <div style={{width:80,height:80,borderRadius:50,background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 32px rgba(0,0,0,0.3)',transition:'transform 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.transform='scale(1.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>
                   <div style={{width:0,height:0,borderTop:'14px solid transparent',borderBottom:'14px solid transparent',borderLeft:\`22px solid \${accent}\`,marginLeft:4}} />
@@ -1488,7 +1520,7 @@ export default function AppDownload({ title, subtitle, description, appStoreUrl,
             {playStoreUrl&&<a href={playStoreUrl} style={{display:'flex',alignItems:'center',gap:10,background:'rgba(255,255,255,0.15)',backdropFilter:'blur(8px)',borderRadius:14,padding:'12px 22px',textDecoration:'none',color:'#fff',border:'1.5px solid rgba(255,255,255,0.25)',transition:'background 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.25)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,0.15)'}><span style={{fontSize:26}}>🤖</span><div><div style={{fontSize:10,opacity:0.7,letterSpacing:'0.05em'}}>Get it on</div><div style={{fontSize:16,fontWeight:800}}>Google Play</div></div></a>}
           </div>
         </div>
-        {mockupImage&&<div style={{display:'flex',justifyContent:'center'}}><img src={mockupImage} alt="app mockup" style={{maxHeight:480,objectFit:'contain',filter:'drop-shadow(0 32px 64px rgba(0,0,0,0.4))'}} /></div>}
+        {mockupImage&&<div style={{display:'flex',justifyContent:'center'}}><img src={mockupImage} alt="app mockup" style={{maxHeight:480,objectFit:'contain',filter:'drop-shadow(0 32px 64px rgba(0,0,0,0.4))'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} /></div>}
       </div>
     </section>
   );
@@ -1562,7 +1594,7 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
         <div style={{columns:3,gap:20}}>
           {filtered.map((p,i)=>(
             <div key={i} style={{breakInside:'avoid',marginBottom:20,borderRadius:16,overflow:'hidden',position:'relative',cursor:'pointer'}} onMouseEnter={()=>setHover(i)} onMouseLeave={()=>setHover(null)}>
-              <img src={p.image} alt={p.title} style={{width:'100%',display:'block',transition:'transform 0.4s',transform:hover===i?'scale(1.05)':'scale(1)'}} />
+              <img src={p.image} alt={p.title} style={{width:'100%',display:'block',transition:'transform 0.4s',transform:hover===i?'scale(1.05)':'scale(1)'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
               <div style={{position:'absolute',inset:0,background:hover===i?'rgba(0,0,0,0.65)':'rgba(0,0,0,0)',transition:'background 0.3s',display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:24}}>
                 {hover===i&&<><span style={{fontSize:11,fontWeight:700,color:'rgba(255,255,255,0.7)',textTransform:'uppercase',letterSpacing:'0.08em'}}>{p.category}</span><h3 style={{fontSize:18,fontWeight:700,color:'#fff',margin:'4px 0 6px'}}>{p.title}</h3>{p.desc&&<p style={{fontSize:13,color:'rgba(255,255,255,0.8)',margin:0}}>{p.desc}</p>}</>}
               </div>
@@ -1597,7 +1629,7 @@ export default function EventsList({ title, subtitle, items, accentColor, layout
         <div style={{display:grid?'grid':'flex',gridTemplateColumns:grid?'repeat(auto-fill,minmax(300px,1fr))':undefined,flexDirection:grid?undefined:'column',gap:grid?24:0}}>
           {safeItems.map((ev,i)=>(
             <div key={i} style={{background:'#fafafa',borderRadius:grid?20:0,overflow:'hidden',borderBottom:!grid&&i<safeItems.length-1?'1px solid #f0f0f0':'none',display:'flex',flexDirection:grid?'column':'row',alignItems:grid?'stretch':'center',gap:grid?0:24,padding:grid?0:'20px 0',transition:'box-shadow 0.2s'}} onMouseOver={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)')} onMouseOut={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='none')}>
-              {ev.image&&<img src={ev.image} alt={ev.title} style={{width:grid?'100%':100,height:grid?180:100,objectFit:'cover',flexShrink:0,borderRadius:grid?'0':'12px'}}/>}
+              {ev.image&&<img src={ev.image} alt={ev.title} style={{width:grid?'100%':100,height:grid?180:100,objectFit:'cover',flexShrink:0,borderRadius:grid?'0':'12px'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>}
               <div style={{padding:grid?20:0,flex:1}}>
                 {ev.badge&&<span style={{background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,display:'inline-block',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.05em'}}>{ev.badge}</span>}
                 <h3 style={{fontSize:17,fontWeight:700,margin:'0 0 6px',letterSpacing:'-0.01em'}}>{ev.title}</h3>
@@ -1720,9 +1752,9 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
             <div key={i}>
               {item.title&&<h3 style={{fontSize:16,fontWeight:700,textAlign:'center',marginBottom:12}}>{item.title}</h3>}
               <div ref={el=>containerRefs.current[i]=el} style={{position:'relative',borderRadius:16,overflow:'hidden',cursor:'ew-resize',userSelect:'none',aspectRatio:'4/3',touchAction:'none'}} onPointerDown={e=>onPointerDown(e,i)} onPointerMove={e=>onPointerMove(e,i)} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
-                <img src={item.after} alt="after" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} />
+                <img src={item.after} alt="after" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
                 <div style={{position:'absolute',inset:0,overflow:'hidden',width:\`\${pos[i]}%\`}}>
-                  <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:\`\${10000/pos[i]}%\`,maxWidth:'none',height:'100%',objectFit:'cover'}} />
+                  <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:`${10000/pos[i]}%`,maxWidth:'none',height:'100%',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
                 </div>
                 <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)',pointerEvents:'none'}}>
                   <div style={{position:'absolute',top:'50%',left:'50%',animation:'baHandlePulse 2s ease infinite',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
@@ -1789,7 +1821,7 @@ export default function ProductSpotlight({ title, subtitle, description, image, 
     <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:imageLeft?'rtl':'ltr'}}>
         <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.1)',position:'relative',direction:'ltr'}}>
-          <img src={image} alt={title} style={{width:'100%',display:'block',aspectRatio:'4/3',objectFit:'cover'}} />
+          <img src={image} alt={title} style={{width:'100%',display:'block',aspectRatio:'4/3',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
           {badge&&<span style={{position:'absolute',top:20,left:20,background:accent,color:'#fff',fontSize:12,fontWeight:800,padding:'6px 16px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{badge}</span>}
         </div>
         <div style={{direction:'ltr'}}>
