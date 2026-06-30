@@ -23,7 +23,7 @@ export async function buildSpec(prompt: string): Promise<BuildSpec> {
       system: `You are a web page architect. Given a build request, choose which pre-built sections to use and in what order.
 
 AVAILABLE SECTIONS (use ONLY these names):
-Navbar, Hero, Banner, VideoHero, Stats, Features, IconFeatures, SplitSection, ImageText, MenuGrid, ShopGrid, Gallery, Portfolio, Team, Timeline, Testimonials, Reviews, LogoCloud, BlogGrid, PricingTable, Comparison, FAQ, Newsletter, CTA, SocialProof, QuoteBlock, Booking, HoursTable, MapSection, ServiceCards, StepProcess, VideoSection, AppDownload, BeforeAfter, EventsList, Countdown, TrustBadges, LocationCards, ProductSpotlight, Partners, Awards, RichText, StickyBar, Contact, Footer, Tabs
+Navbar, Hero, Banner, VideoHero, Stats, Features, IconFeatures, SplitSection, ImageText, MenuGrid, ShopGrid, Gallery, Portfolio, Team, Timeline, Testimonials, Reviews, LogoCloud, BlogGrid, PricingTable, Comparison, FAQ, Newsletter, CTA, SocialProof, QuoteBlock, Booking, HoursTable, MapSection, ServiceCards, StepProcess, VideoSection, AppDownload, BeforeAfter, EventsList, Countdown, TrustBadges, LocationCards, ProductSpotlight, Partners, Awards, RichText, StickyBar, Contact, Footer, Tabs, DashboardShell, DashboardStats, DataTable, RevenueChart, AdminSidebar, KanbanBoard, UserManagement, NotificationCenter, AnalyticsPanel, OrdersTable, FormBuilder, FileManager, CalendarWidget, QuickActions, PricingCard, TestimonialCard, FeatureCard, StatBadge, ImageCard, ProfileCard, AlertBanner, ProgressBar, CountdownTimer, VideoEmbed, MapEmbed, SocialLinks, NewsletterInline, RatingStars, Breadcrumbs, TabsInline, AccordionItem, ImageGalleryGrid, CallToActionBanner, EmptyState
 
 BUSINESS TYPE SECTION PLANS (follow the order closely):
 - Spa/Salon/Beauty: Navbar→Hero→StickyBar→ServiceCards→SocialProof→BeforeAfter→Team→Reviews→Booking→MapSection→Footer
@@ -35,6 +35,7 @@ BUSINESS TYPE SECTION PLANS (follow the order closely):
 - SaaS/Tech: Navbar→Hero→LogoCloud→Features→Comparison→PricingTable→FAQ→CTA→Footer
 - Contractor/Trades: Navbar→Hero→ServiceCards→Gallery→StepProcess→Reviews→Contact→MapSection→Footer
 - Hotel/Real Estate: Navbar→Hero→Gallery→Features→PricingTable→Reviews→MapSection→Contact→Footer
+- Admin/Dashboard/CRM/Internal Tool: DashboardShell→DashboardStats→RevenueChart→DataTable→ActivityFeed→(OrdersTable or UserManagement or KanbanBoard based on context)→AnalyticsPanel
 
 VARIETY RULES:
 - For every build, include at least one "surprise" section not in the default plan for that type. Choose from: VideoSection, Countdown, Awards, SocialProof, AppDownload, QuoteBlock. Pick whichever fits the business best.

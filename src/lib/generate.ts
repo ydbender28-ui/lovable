@@ -227,6 +227,85 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
    Guest options: ['1 guest','2 guests','3 guests','4 guests','5+ guests']
    Wrap in a card: background:#fff, borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.08)'
 
+## ADMIN DASHBOARD BUILDS — use these components:
+
+When the user asks for "admin", "dashboard", "CRM", "backend", "management panel", "analytics", or "internal tool":
+
+import DashboardShell from '/components/sections/DashboardShell';
+import DashboardStats from '/components/sections/DashboardStats';
+import DataTable from '/components/sections/DataTable';
+import RevenueChart from '/components/sections/RevenueChart';
+import ActivityFeed from '/components/sections/ActivityFeed';
+import OrdersTable from '/components/sections/OrdersTable';
+import UserManagement from '/components/sections/UserManagement';
+import KanbanBoard from '/components/sections/KanbanBoard';
+import AnalyticsPanel from '/components/sections/AnalyticsPanel';
+import CalendarWidget from '/components/sections/CalendarWidget';
+import NotificationCenter from '/components/sections/NotificationCenter';
+import FormBuilder from '/components/sections/FormBuilder';
+import FileManager from '/components/sections/FileManager';
+import QuickActions from '/components/sections/QuickActions';
+
+ADMIN DASHBOARD STRUCTURE — wrap everything in DashboardShell:
+\`\`\`tsx
+export default function App() {
+  return (
+    <DashboardShell
+      brand="AppName"
+      navItems={[
+        {label:"Dashboard",icon:"📊",active:true},
+        {label:"Orders",icon:"📦"},
+        {label:"Customers",icon:"👥"},
+        {label:"Products",icon:"🏷️"},
+        {label:"Analytics",icon:"📈"},
+        {label:"Settings",icon:"⚙️"},
+      ]}
+      pageTitle="Dashboard Overview"
+      breadcrumbs={["Home","Dashboard"]}
+      userName="Admin User"
+      userRole="Administrator"
+      accentColor="var(--primary)"
+    >
+      <DashboardStats items={[
+        {label:"Total Revenue",value:"$48,295",change:"+12.5%",positive:true,icon:"💰"},
+        {label:"New Orders",value:"284",change:"+8.2%",positive:true,icon:"📦"},
+        {label:"Active Users",value:"1,429",change:"-2.1%",positive:false,icon:"👥"},
+        {label:"Avg Order Value",value:"$169",change:"+5.4%",positive:true,icon:"📊"},
+      ]} accentColor="var(--primary)" />
+      <RevenueChart title="Monthly Revenue" data={[
+        {month:"Jan",value:38000},{month:"Feb",value:42000},{month:"Mar",value:39000},
+        {month:"Apr",value:45000},{month:"May",value:48000},{month:"Jun",value:52000},
+      ]} accentColor="var(--primary)" />
+      <DataTable title="Recent Orders" columns={[
+        {key:"id",label:"Order #",sortable:true},
+        {key:"customer",label:"Customer",sortable:true},
+        {key:"amount",label:"Amount",sortable:true},
+        {key:"status",label:"Status"},
+        {key:"date",label:"Date",sortable:true},
+      ]} rows={[
+        {id:"#1042",customer:"Sarah Johnson",amount:"$285",status:"Delivered",date:"Jun 28"},
+        {id:"#1041",customer:"Mike Chen",amount:"$164",status:"Shipped",date:"Jun 27"},
+        {id:"#1040",customer:"Emma Davis",amount:"$432",status:"Processing",date:"Jun 27"},
+      ]} accentColor="var(--primary)" />
+      <ActivityFeed title="Recent Activity" items={[
+        {icon:"🛒",title:"New order placed",desc:"Sarah Johnson placed order #1042",time:"2 min ago",user:"SJ"},
+        {icon:"👤",title:"New user signup",desc:"mike@example.com created an account",time:"15 min ago",user:"MC"},
+        {icon:"⭐",title:"New review",desc:"5-star review on Product XYZ",time:"1 hour ago",user:"ED"},
+      ]} accentColor="var(--primary)" />
+    </DashboardShell>
+  );
+}
+\`\`\`
+
+ADMIN DESIGN RULES:
+- Background: #f4f5f7 (light grey) or #0f1117 (dark mode)
+- Sidebar: white or dark, 220px wide, fixed
+- Cards: white, subtle shadow, 8-12px border radius
+- Text: #1a1a2e for headers, #6b7280 for labels
+- NEVER use Hero/Banner/Reviews/MenuGrid in an admin dashboard
+- ALL data must be realistic: real-looking names, real numbers, real dates
+- Dark mode admin: use dark backgrounds (#0f1117), lighter text
+
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
 - import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Services","About","Reviews","Contact"]} cta="Book Now" ctaHref="#booking" accentColor="#7c3aed" />
   CRITICAL: links must be string[] like ["Services","About"] — NOT objects. ALWAYS include 3-5 links. NEVER leave links empty.
@@ -419,6 +498,68 @@ img:not(.hero-img) { max-height: 260px; width: 100%; object-fit: cover; display:
 - Pick sections that make sense for the business — a dental office needs Booking, Team, TrustBadges, BeforeAfter. A restaurant needs MenuGrid, Gallery, HoursTable, Reviews
 - At least one section must be non-obvious: use BeforeAfter, Countdown, Awards, VideoSection, or SocialProof to add surprise
 - NEVER use the exact same set of sections for similar businesses
+
+## WHAT EVERY SITE TYPE NEEDS — follow these blueprints:
+
+### RESTAURANT / FOOD:
+Sections: Navbar → Banner(promo) → Hero(image) → MenuGrid → Gallery → SocialProof → Reviews → HoursTable → MapSection → Footer
+Must have: 12+ menu items with real prices, food photos, hours for every day, Google Maps link, phone as tel: link
+Accent: warm colors — #c2410c, #b45309, #92400e
+
+### SPA / SALON / WELLNESS:
+Sections: Navbar → StickyBar(offer) → Hero → ServiceCards → SocialProof → BeforeAfter → Team → PricingTable → Reviews → Booking → MapSection → Footer
+Must have: 6+ services with prices, before/after photos, team bios, booking form, trust stats
+Accent: elegant — #7c3aed, #be185d, #0f766e, #4d7c5e
+
+### FITNESS / GYM:
+Sections: Navbar → Hero → SocialProof → ServiceCards → StepProcess → Team → PricingTable → Reviews → Countdown(trial offer) → Contact → Footer
+Must have: 3 pricing tiers, transformation testimonials, class schedule, free trial CTA
+Accent: bold — #dc2626, #ea580c, #7c3aed
+
+### MEDICAL / DENTAL:
+Sections: Navbar → Hero → TrustBadges → ServiceCards → Team → BeforeAfter → Reviews → Booking → MapSection → Footer
+Must have: credentials/awards, insurance logos, doctor bios, before/after results, HIPAA trust badge
+Accent: clinical — #0369a1, #0f766e, #1d4ed8
+
+### LAW FIRM:
+Sections: Navbar → Hero → Stats → ServiceCards → Team → Timeline → LogoCloud(press) → Reviews → Contact → Footer
+Must have: case win stats, practice areas, attorney bios, bar certifications, free consultation CTA
+Accent: authoritative — #1e3a5f, #b8860b, #1a1a1a
+
+### SAAS / TECH PRODUCT:
+Sections: Navbar → Hero → LogoCloud(customers) → Features → SplitSection → Comparison → PricingTable → FAQ → CTA → Footer
+Must have: live demo link or screenshot, 3 pricing tiers (free/pro/enterprise), feature comparison table, customer logos
+Accent: modern — #7c3aed, #2563eb, #0f766e
+
+### E-COMMERCE / SHOP:
+Sections: Navbar(showCart=true) → Banner(sale) → Hero → ShopGrid → Features → Reviews → Newsletter → Footer
+Must have: 8+ products with real prices, cart functionality, sale banner, free shipping threshold
+Accent: clean — #111, #7c3aed, #dc2626
+
+### PORTFOLIO / CREATIVE:
+Sections: Navbar → Hero → Portfolio → Awards → ImageText(about) → Team → Reviews → Contact → Footer
+Must have: 6+ portfolio pieces with descriptions, personal bio, skills/tech list, contact form
+Accent: creative — #111, #7c3aed, dark themes
+
+### CONTRACTOR / TRADES:
+Sections: Navbar → Hero → ServiceCards → Gallery → StepProcess → Reviews → TrustBadges → Contact → MapSection → Footer
+Must have: licensed/insured badges, before/after gallery, process steps, real testimonials with names/cities
+Accent: bold — #dc2626, #ea580c, #b45309
+
+### HOTEL / RENTAL:
+Sections: Navbar → Hero → Gallery → Features → PricingTable(room types) → Reviews → MapSection → Booking → Footer
+Must have: room photos, amenities list, pricing per night, location map, booking form
+Accent: luxury — #b8860b, #0f172a, #1e3a5f
+
+### NONPROFIT / CHARITY:
+Sections: Navbar → Hero → Stats → SplitSection → Team → Timeline → Reviews → Newsletter → CTA → Footer
+Must have: impact numbers, mission statement, team photos, donation CTA, story timeline
+Accent: warm/trustworthy — #16a34a, #0369a1, #b45309
+
+### REAL ESTATE:
+Sections: Navbar → Hero → Portfolio(listings) → ServiceCards → Team → Stats → Reviews → Contact → Footer
+Must have: featured listings with prices, agent bios, neighborhood knowledge, testimonials from buyers/sellers
+Accent: professional — #1e3a5f, #b8860b, #0f766e
 
 ### Visual distinctiveness:
 - Hero must have a large, full-width image (use {{unsplash:...}} with specific query)
@@ -2395,7 +2536,7 @@ complete file here
 
   // Auto-fix missing section component imports in App.tsx
   if (finalFiles['/App.tsx']) {
-    const KNOWN_SECTIONS = ['Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs'];
+    const KNOWN_SECTIONS = ['Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell'];
     let appCode = finalFiles['/App.tsx'];
     const missingImports: string[] = [];
     for (const comp of KNOWN_SECTIONS) {
@@ -2423,6 +2564,8 @@ complete file here
       Stats: 'stats', LogoCloud: 'partners', BlogGrid: 'blog', Newsletter: 'newsletter',
       AppDownload: 'download', BeforeAfter: 'results', EventsList: 'events',
       Countdown: 'offer', TrustBadges: 'trust', VideoSection: 'video',
+      DashboardStats: 'stats', DataTable: 'data', ActivityFeed: 'activity', OrdersTable: 'orders',
+      UserManagement: 'users', KanbanBoard: 'tasks', CalendarWidget: 'calendar', AnalyticsPanel: 'analytics',
     };
     for (const [comp, anchorId] of Object.entries(SECTION_IDS)) {
       // Only inject anchor if component is used and no element already has that id
