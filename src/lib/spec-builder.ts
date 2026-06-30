@@ -14,7 +14,7 @@ export async function buildSpec(prompt: string): Promise<BuildSpec> {
       max_tokens: 300,
       messages: [{
         role: "user",
-        content: `You are an expert at writing prompts for AI web app generators. Rewrite the following prompt to be more specific, detailed, and actionable. Add relevant UI details, features, and design direction. Keep it under 120 words. Return ONLY the improved prompt with no preamble.\n\nOriginal prompt: ${prompt}`,
+        content: `You are an expert at writing prompts for AI web app generators. Rewrite the following prompt to be more specific, detailed, and actionable for generating a professional website.\n\nYour enhanced prompt must include:\n1. Business name (invent one if not given, make it fit the industry)\n2. City/location (invent if not given)\n3. Target audience and key differentiators\n4. Specific services, products, or features (at least 4-6, NOT generic)\n5. Tone/vibe (e.g., "upscale and elegant", "friendly and approachable", "bold and high-energy")\n6. Key conversion goal (what should visitors do? book, buy, contact, sign up?)\n\nKeep it under 150 words. Return ONLY the improved prompt with no preamble.\n\nOriginal prompt: ${prompt}`,
       }],
     }),
     client.messages.create({
