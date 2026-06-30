@@ -7,18 +7,18 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "default" | "outline" | "ghost" | "destructive";
   size?: "default" | "sm" | "lg";
 };
-const base: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: "var(--radius, 8px)", fontWeight: 500, cursor: "pointer", transition: "all 0.2s", border: "none", fontFamily: "inherit" };
-const variants: Record<string, React.CSSProperties> = {
-  default: { ...base, background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", padding: "10px 20px" },
-  outline: { ...base, background: "transparent", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", padding: "10px 20px" },
-  ghost: { ...base, background: "transparent", color: "hsl(var(--foreground))", padding: "10px 20px" },
-  destructive: { ...base, background: "hsl(var(--destructive, 0 84% 60%))", color: "#fff", padding: "10px 20px" },
+const _btnBase: React.CSSProperties = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: "var(--radius, 8px)", fontWeight: 500, cursor: "pointer", transition: "all 0.2s", border: "none", fontFamily: "inherit" };
+const _btnVariants: Record<string, React.CSSProperties> = {
+  default: { ..._btnBase, background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", padding: "10px 20px" },
+  outline: { ..._btnBase, background: "transparent", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", padding: "10px 20px" },
+  ghost: { ..._btnBase, background: "transparent", color: "hsl(var(--foreground))", padding: "10px 20px" },
+  destructive: { ..._btnBase, background: "hsl(var(--destructive, 0 84% 60%))", color: "#fff", padding: "10px 20px" },
 };
-const sizes: Record<string, React.CSSProperties> = {
+const _btnSizes: Record<string, React.CSSProperties> = {
   default: {}, sm: { padding: "6px 12px", fontSize: 13 }, lg: { padding: "14px 28px", fontSize: 16 },
 };
 export function Button({ variant = "default", size = "default", style, ...props }: ButtonProps) {
-  return <button style={{ ...variants[variant], ...sizes[size], ...style }} {...props} />;
+  return <button style={{ ..._btnVariants[variant], ..._btnSizes[size], ...style }} {...props} />;
 }`,
 
   "/components/ui/card.tsx": `import React from "react";
@@ -38,13 +38,13 @@ export function Input({ style, ...props }: React.InputHTMLAttributes<HTMLInputEl
 
   "/components/ui/badge.tsx": `import React from "react";
 type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & { variant?: "default" | "secondary" | "outline" };
-const variants: Record<string, React.CSSProperties> = {
+const _badgeVariants: Record<string, React.CSSProperties> = {
   default: { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" },
   secondary: { background: "hsl(var(--secondary))", color: "hsl(var(--secondary-foreground, var(--foreground)))" },
   outline: { border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))", background: "transparent" },
 };
 export function Badge({ variant = "default", style, ...props }: BadgeProps) {
-  return <span style={{ display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "2px 10px", fontSize: 12, fontWeight: 600, ...variants[variant], ...style }} {...props} />;
+  return <span style={{ display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "2px 10px", fontSize: 12, fontWeight: 600, ..._badgeVariants[variant], ...style }} {...props} />;
 }`,
 };
 

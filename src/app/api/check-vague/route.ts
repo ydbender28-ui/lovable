@@ -3,39 +3,69 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const maxDuration = 30;
 
-const CLARIFIER_PROMPT = `You are ThatCode's intent clarifier. Decide if a build request needs one clarifying question before generating.
+const CLARIFIER_PROMPT = `You are ThatCode's intent clarifier. Analyze the build request and decide if clarifying questions are needed.
 
-Rules:
-- Proceed immediately if the request mentions a specific domain, product, industry, or feature
-- Ask ONE question only if the request is so vague that any answer would be wildly different (e.g. "build an app" with zero context)
-- Never ask about colors, fonts, or copy — make smart defaults
-- Ask about: core functionality, target audience, business model, or key differentiator
+RULES:
+- If the request is specific enough (has industry + purpose + rough feature set) → proceed immediately
+- If the request needs more context → ask 2-3 SHORT, targeted questions based on the detected type
+- Never ask about colors, fonts, copy, or tech stack — make smart defaults
+- Questions must be SPECIFIC to the detected industry/type
+- Keep questions short (max 8 words each)
 
-Respond with JSON only:
+QUESTION TEMPLATES by type:
+- restaurant/food: ["Website or online ordering app?", "Delivery, dine-in, or both?", "Casual or upscale vibe?"]
+- saas/software: ["Marketing page or working dashboard?", "B2B or consumer product?", "Free trial or paid-only?"]
+- portfolio: ["Designer, developer, or photographer?", "Seeking jobs or freelance clients?"]
+- ecommerce/shop: ["What are you selling?", "Small boutique or large catalog?"]
+- fitness/health: ["Gym, personal trainer, or wellness brand?", "Classes, memberships, or one-on-one?"]
+- event: ["One-time event or recurring?", "Free or ticketed?"]
+- blog/media: ["Personal blog or publication?", "What topics?"]
+- agency: ["Design, marketing, or dev agency?", "Local or remote clients?"]
+- generic: ["What does this do or sell?", "Who is the target user?"]
+
+Respond with JSON only — no markdown:
 {
   "action": "proceed" | "clarify",
-  "question": "string (only if action=clarify — make it specific and helpful)",
-  "understanding": "one sentence of what you understood"
+  "questions": ["question1", "question2"],
+  "understanding": "one sentence of what you understood",
+  "detectedType": "restaurant|saas|portfolio|ecommerce|fitness|event|blog|agency|generic"
 }
 
+- "proceed" → questions array is empty
+- "clarify" → 2-3 questions max, targeted to the detected type
+- understanding is always filled in
+
 Examples:
-- "build a coffee shop landing page" → {"action":"proceed","understanding":"A landing page for a coffee shop with menu, hours, and atmosphere"}
-- "build an app" → {"action":"clarify","question":"What does your app do — what's the core problem it solves for users?","understanding":"A generic app request with no domain"}
-- "saas for project management" → {"action":"proceed","understanding":"A SaaS landing page for a project management tool"}
-- "make me a website" → {"action":"clarify","question":"What kind of business or project is this website for?","understanding":"A website with no specified domain or purpose"}`;
+- "build a pizza shop" → {"action":"clarify","questions":["Website or online ordering app?","Delivery, dine-in, or both?","Casual or upscale vibe?"],"understanding":"A pizza restaurant that needs a web presence","detectedType":"restaurant"}
+- "build a landing page for my SaaS that tracks employee time" → {"action":"proceed","questions":[],"understanding":"A SaaS landing page for employee time tracking","detectedType":"saas"}
+- "make me a website" → {"action":"clarify","questions":["What does this website do or sell?","Who is the target user?"],"understanding":"A website with no specified purpose","detectedType":"generic"}
+- "create a portfolio for me" → {"action":"clarify","questions":["Designer, developer, or photographer?","Seeking jobs or freelance clients?"],"understanding":"A personal portfolio site","detectedType":"portfolio"}`;
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) return new Response("Unauthorized", { status: 401 });
 
-  const { prompt } = await req.json();
+  const { prompt, answers } = await req.json();
   if (!prompt) return Response.json({ action: "proceed", vague: false, understanding: "" });
+
+  // If answers were provided, enrich the understanding for the build
+  if (answers && Object.keys(answers).length > 0) {
+    const enriched = Object.entries(answers)
+      .map(([q, a]) => `${q}: ${a}`)
+      .join(". ");
+    return Response.json({
+      action: "proceed",
+      enrichedPrompt: `${prompt}. Additional context: ${enriched}`,
+      understanding: `Building based on: ${prompt}. User specified: ${enriched}`,
+      vague: false,
+    });
+  }
 
   try {
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const res = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 150,
+      max_tokens: 250,
       system: CLARIFIER_PROMPT,
       messages: [{ role: "user", content: prompt }],
     });
@@ -46,11 +76,13 @@ export async function POST(req: Request) {
 
     return Response.json({
       action: result.action ?? "proceed",
-      question: result.question,
+      questions: result.questions ?? [],
+      question: result.questions?.[0], // backward compat
       understanding: result.understanding ?? "",
-      vague: result.action === "clarify", // backward compat
+      detectedType: result.detectedType ?? "generic",
+      vague: result.action === "clarify",
     });
   } catch {
-    return Response.json({ action: "proceed", vague: false, understanding: "" });
+    return Response.json({ action: "proceed", vague: false, understanding: "", questions: [] });
   }
 }

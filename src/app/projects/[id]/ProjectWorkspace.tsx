@@ -1154,9 +1154,10 @@ export default function ProjectWorkspace({
           body: JSON.stringify({ prompt: trimmed }),
         });
         const vagueData = await vagueRes.json();
-        if (vagueData.action === "clarify" && vagueData.question) {
+        if (vagueData.action === "clarify" && (vagueData.questions?.length > 0 || vagueData.question)) {
+          const questions = vagueData.questions?.length > 0 ? vagueData.questions : [vagueData.question];
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {}, question: vagueData.question } as any);
+          setFlow({ type: "clarify", pendingPrompt: trimmed, answers: {}, question: questions[0], questions } as any);
           return;
         }
         // Proceed directly — no clarification needed
@@ -1838,32 +1839,40 @@ export default function ProjectWorkspace({
 
   function ClarifyCard() {
     const [answer, setAnswer] = useState("");
+    const [answers, setAnswers] = useState<Record<string, string>>({});
     if (flow.type !== "clarify") return null;
     const f = flow;
 
-    // Smart clarifier mode — AI asked a specific question
-    if (f.question) {
-      function submitAnswer(skip = false) {
-        const full = skip || !answer.trim()
-          ? f.pendingPrompt
-          : `${f.pendingPrompt}\n\nAdditional context: ${answer.trim()}`;
+    // Smart clarifier mode — AI asked targeted questions
+    const questions: string[] = (f as any).questions ?? (f.question ? [f.question] : []);
+    if (questions.length > 0) {
+      function submitAnswers(skip = false) {
+        if (skip) { setFlow({ type: "idle" }); runGenerate(f.pendingPrompt); return; }
+        const filled = Object.entries(answers).filter(([, v]) => v.trim());
+        const context = filled.map(([q, a]) => `${q}: ${a}`).join(". ");
+        const full = context ? `${f.pendingPrompt}. Additional context: ${context}` : f.pendingPrompt;
         setFlow({ type: "idle" });
         runGenerate(full);
       }
       return (
         <div className="rounded-xl border border-[#e5e5e5] bg-white p-4 max-w-[92%] space-y-3 shadow-sm">
-          <p className="text-sm text-[#333]">{f.question}</p>
-          <input
-            value={answer}
-            onChange={e => setAnswer(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && submitAnswer()}
-            placeholder="Type your answer..."
-            autoFocus
-            className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-xs text-[#333] placeholder:text-[#aaa] focus:outline-none focus:border-[#c2410c]/40"
-          />
-          <div className="flex gap-2">
-            <button onClick={() => submitAnswer()} className="rounded-full bg-[#111] text-white px-4 py-2 text-xs font-medium hover:bg-[#333] transition-colors">Build it</button>
-            <button onClick={() => submitAnswer(true)} className="text-xs text-[#999] hover:text-[#333] px-3 py-2 transition-colors">Skip, just build</button>
+          <p className="text-xs font-semibold text-[#888] uppercase tracking-wide">Quick questions</p>
+          {questions.map((q: string, i: number) => (
+            <div key={i} className="space-y-1">
+              <p className="text-sm text-[#333]">{q}</p>
+              <input
+                value={answers[q] ?? ""}
+                onChange={e => setAnswers(prev => ({ ...prev, [q]: e.target.value }))}
+                onKeyDown={e => e.key === "Enter" && i === questions.length - 1 && submitAnswers()}
+                placeholder="Your answer..."
+                autoFocus={i === 0}
+                className="w-full rounded-lg border border-[#e5e5e5] bg-[#fafafa] px-3 py-2 text-xs text-[#333] placeholder:text-[#aaa] focus:outline-none focus:border-[#c2410c]/40"
+              />
+            </div>
+          ))}
+          <div className="flex gap-2 pt-1">
+            <button onClick={() => submitAnswers()} className="rounded-full bg-[#111] text-white px-4 py-2 text-xs font-medium hover:bg-[#333] transition-colors">Build it</button>
+            <button onClick={() => submitAnswers(true)} className="text-xs text-[#999] hover:text-[#333] px-3 py-2 transition-colors">Skip, just build</button>
           </div>
         </div>
       );
