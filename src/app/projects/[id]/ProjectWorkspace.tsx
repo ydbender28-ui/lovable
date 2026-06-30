@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
+import type { Suggestion } from "@/lib/suggestions";
 import Logo from "@/components/Logo";
 import IntegrationsPanel from "./IntegrationsPanel";
 import type { SandpackErr } from "@/components/SandpackPreview";
@@ -54,24 +55,24 @@ function detectNeededApis(prompt: string, existing: EnvVars) {
 }
 
 
-function getSmartSuggestions(files: ProjectFiles): string[] {
+function getSmartSuggestions(files: ProjectFiles): Suggestion[] {
   const c = Object.values(files).join(" ").toLowerCase();
-  const pool: [boolean, string][] = [
-    [c.includes("table"), "Add column sorting, search filtering, and pagination to the table"],
-    [c.includes("form"), "Add real-time input validation with inline error messages and success states"],
-    [c.includes("chart") || c.includes("recharts"), "Make charts interactive with hover tooltips, zoom, and animated entry"],
-    [c.includes("card"), "Add smooth hover lift effects and click animations to the cards"],
-    [!c.includes("dark") && !c.includes("theme"), "Add a dark / light mode toggle with smooth transitions"],
-    [!c.includes("responsive") && !c.includes("@media"), "Make the full layout responsive for all screen sizes"],
-    [c.includes("button"), "Add loading spinners and success checkmarks to action buttons"],
-    [c.includes("nav") || c.includes("sidebar"), "Make navigation sticky with scroll-aware highlight and mobile hamburger menu"],
-    [c.includes("list") || c.includes("items"), "Add drag-and-drop reordering with visual drop indicators"],
-    [c.includes("modal") || c.includes("dialog"), "Add keyboard navigation (Escape to close) and focus trapping to modals"],
-    [true, "Add skeleton loading states for all dynamic content"],
-    [true, "Polish with better typography, spacing rhythm, and consistent shadows"],
-    [true, "Add confetti or success animations for key user actions"],
+  const pool: [boolean, Suggestion][] = [
+    [c.includes("table"), { icon: "📊", label: "Sort & filter table", prompt: "Add column sorting, search filtering, and pagination to the table" }],
+    [c.includes("form"), { icon: "✅", label: "Add form validation", prompt: "Add real-time input validation with inline error messages and success states" }],
+    [c.includes("chart") || c.includes("recharts"), { icon: "📈", label: "Interactive charts", prompt: "Make charts interactive with hover tooltips, zoom, and animated entry" }],
+    [c.includes("card"), { icon: "🃏", label: "Animate cards", prompt: "Add smooth hover lift effects and click animations to the cards" }],
+    [!c.includes("dark") && !c.includes("theme"), { icon: "🌙", label: "Dark mode toggle", prompt: "Add a dark / light mode toggle with smooth transitions" }],
+    [!c.includes("responsive") && !c.includes("@media"), { icon: "📱", label: "Make responsive", prompt: "Make the full layout responsive for all screen sizes" }],
+    [c.includes("button"), { icon: "⏳", label: "Button loading states", prompt: "Add loading spinners and success checkmarks to action buttons" }],
+    [c.includes("nav") || c.includes("sidebar"), { icon: "📌", label: "Sticky nav", prompt: "Make navigation sticky with scroll-aware highlight and mobile hamburger menu" }],
+    [c.includes("list") || c.includes("items"), { icon: "↕️", label: "Drag to reorder", prompt: "Add drag-and-drop reordering with visual drop indicators" }],
+    [c.includes("modal") || c.includes("dialog"), { icon: "⌨️", label: "Keyboard nav", prompt: "Add keyboard navigation (Escape to close) and focus trapping to modals" }],
+    [true, { icon: "💀", label: "Skeleton loading", prompt: "Add skeleton loading states for all dynamic content" }],
+    [true, { icon: "✨", label: "Polish design", prompt: "Polish with better typography, spacing rhythm, and consistent shadows" }],
+    [true, { icon: "🎉", label: "Add animations", prompt: "Add confetti or success animations for key user actions" }],
   ];
-  return pool.filter(([show]) => show).slice(0, 3).map(([, t]) => t as string);
+  return pool.filter(([show]) => show).slice(0, 3).map(([, s]) => s as Suggestion);
 }
 
 // Inject visual edit as a React component that mounts click handlers
@@ -354,7 +355,7 @@ export default function ProjectWorkspace({
 
   // New features
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [enhancing, setEnhancing] = useState(false);
   const [uploadImage, setUploadImage] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
   const [previousFiles, setPreviousFiles] = useState<ProjectFiles | null>(null);
@@ -2141,9 +2142,10 @@ export default function ProjectWorkspace({
         {suggestions.length > 0 && !loading && (
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
-              <button key={s} onClick={() => { setSuggestions([]); runGenerate(s); }}
-                className="text-xs rounded-full border border-[#e5e5e5] bg-white text-[#333] px-4 py-2 hover:bg-[#f5f5f5] hover:border-[#ccc] transition-colors shadow-sm whitespace-nowrap">
-                {s}
+              <button key={s.label} onClick={() => { setSuggestions([]); runGenerate(s.prompt); }}
+                className="text-xs rounded-full border border-[#e5e5e5] bg-white text-[#333] px-4 py-2 hover:bg-[#f5f5f5] hover:border-[#ccc] transition-colors shadow-sm whitespace-nowrap flex items-center gap-1.5">
+                <span>{s.icon}</span>
+                <span>{s.label}</span>
               </button>
             ))}
           </div>

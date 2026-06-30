@@ -9,6 +9,7 @@ import { buildSpec } from "@/lib/spec-builder";
 import { buildWebsiteKnowledge } from "@/lib/website-knowledge"
 import { getRelevantComponents, getSiteTypeKnowledge } from "@/lib/component-retrieval";
 import { getBuilderConfig, saveUserBuild, getSimilarBuilds } from "@/lib/builder-config";
+import { generateSuggestions } from "@/lib/suggestions";
 
 export const maxDuration = 300;
 
@@ -251,7 +252,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         send("done", {
           files: outcome.result.files,
           summary: outcome.result.summary,
-          suggestions: [],
+          suggestions: generateSuggestions(outcome.result.files, prompt),
           tempMessageId: `msg-${Date.now()}`,
           liveUpdated: outcome.wasPublished,
           creditsUsed: outcome.actualCredits,
