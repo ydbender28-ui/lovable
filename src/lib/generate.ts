@@ -188,6 +188,8 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
   CRITICAL: For ANY menu, product list, or card grid — ALWAYS use MenuGrid. NEVER build a custom card grid from scratch.
+  MenuGrid has built-in images, Add to Cart button, and cart drawer. Pass image URLs using {{unsplash:query|400x300}} per item.
+  Example: <MenuGrid title="Our Menu" items={[{name:"Margherita",price:13.99,desc:"Fresh basil, mozzarella",category:"Classic",badge:"Popular",image:"{{unsplash:margherita pizza|400x300}}"}]} />
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
 - import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
