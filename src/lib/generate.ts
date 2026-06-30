@@ -335,6 +335,7 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
 
 ## DARKTOGGLE & FOOTER GUIDANCE:
 - DarkModeToggle: Add near the bottom of App (before Footer) for sites that benefit from dark/light toggle. Especially good for: tech sites, portfolios, blogs. Use position="fixed-bottom-right".
+- CookieBanner: Add before Footer for any site that has contact forms, analytics, or booking. It auto-hides after user accepts and saves preference to localStorage. <CookieBanner accentColor="var(--primary)" privacyUrl="#privacy" />
 - Footer: Now supports columns prop for multi-column layout, socials prop for social media icons, email/phone/address props for contact info, and showNewsletter prop. Always pass these to make the footer look complete.
   Example: <Footer logo="Business Name" tagline="Short description" columns={[{heading:"Services",links:[{label:"Service 1",href:"#"},{label:"Service 2",href:"#"}]},{heading:"Company",links:[{label:"About",href:"#"},{label:"Contact",href:"#"}]}]} phone="(555) 123-4567" email="hello@business.com" socials={[{platform:"instagram",href:"#"},{platform:"facebook",href:"#"}]} accentColor="var(--primary)" />
 

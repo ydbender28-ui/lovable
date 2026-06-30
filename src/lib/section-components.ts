@@ -17,13 +17,13 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', h, { passive: true });
-    return () => window.removeEventListener('scroll', h);
+  +) => window.removeEventListener('scroll', h);
   }, []);
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+  +) => window.removeEventListener('resize', check);
   }, []);
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -31,12 +31,12 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
       { threshold: 0.5, rootMargin: '-100px 0px -50% 0px' }
     );
     document.querySelectorAll('[id]').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
+  +) => observer.disconnect();
   }, []);
   useEffect(() => {
     const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; };
     window.addEventListener('cartupdate', h);
-    return () => window.removeEventListener('cartupdate', h);
+  +) => window.removeEventListener('cartupdate', h);
   }, []);
   const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpenerRef.current) cartOpenerRef.current(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
   const brandName = logo || brand || '';
@@ -55,7 +55,7 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
   const isActive = (label: string) => { const slug = label.toLowerCase().replace(/\s+/g, '-'); return activeSection === slug || activeSection === (aliases[slug] || slug); };
-  return (
++
     <>
       <a href="#main-content" style={{ position:'fixed', top:'-40px', left:0, background:accent, color:'#fff', padding:'8px 16px', zIndex:9999, borderRadius:'0 0 4px 0', transition:'top 0.2s', textDecoration:'none', fontSize:14, fontWeight:600 }} onFocus={e => e.currentTarget.style.top='0'} onBlur={e => e.currentTarget.style.top='-40px'}>Skip to main content</a>
       <nav role="navigation" aria-label="Main navigation" style={{
@@ -148,7 +148,7 @@ export default function Hero({ tag, title, subtitle, cta1, cta2, image }: { tag?
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 }); if(ref.current) obs.observe(ref.current); return () => obs.disconnect(); }, []);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ position:'relative', minHeight: isMobile ? '50vh' : '65vh', display:'flex', alignItems:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <img src={image} alt={title} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
       <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))' }} />
@@ -174,11 +174,11 @@ export default function Features({ tag, title, items }: { tag?: string; title: s
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' && window.innerWidth < 768);
   React.useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:8 }}>{tag}</p>}
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
@@ -219,7 +219,7 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
   };
   const updateQty = (name: string, delta: number) => setCart(prev => prev.map(c => c.item.name === name ? {...c, qty: Math.max(0, c.qty+delta)} : c).filter(c => c.qty > 0));
   const handleCheckout = () => { setCheckedOut(true); setTimeout(() => { setCart([]); setCheckedOut(false); setCartOpen(false); }, 3000); };
-  return (
++
     <section id="menu" style={{ padding:'80px 40px', background:'var(--bg,#faf9f7)' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
         <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:8 }}>{title}</h2>
@@ -312,11 +312,11 @@ export default function Testimonials({ title, items }: { title: string; items: T
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:32 }}>
@@ -364,11 +364,11 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="contact" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background: '#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>{title}</h2>
@@ -451,7 +451,7 @@ export default function Footer({ logo = 'Brand', tagline, columns, links, social
   // Convert flat links to column if no columns provided
   const cols: FooterColumn[] = columns || (links && links.length > 0 ? [{ heading: 'Quick Links', links }] : []);
 
-  return (
++
     <footer style={{ background: 'var(--card)', borderTop: '1px solid var(--border)', paddingTop: isMobile ? 32 : 64 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '0 20px' : '0 40px' }}>
 
@@ -586,7 +586,7 @@ export default function DarkModeToggle({ accentColor = '#6366f1', position = 'fi
     : position === 'fixed-bottom-left' ? { position: 'fixed' as const, bottom: 24, left: 24, zIndex: 999 }
     : {};
 
-  return (
++
     <button type="button" onClick={toggle} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       style={{ ...posStyle, width: 48, height: 48, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
       onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'}
@@ -604,11 +604,11 @@ export default function SplitSection({ tag, title, text, image, reverse }: { tag
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ maxWidth:1200, margin:'0 auto', padding: isMobile ? '48px 20px' : '100px 40px', display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:60, alignItems:'center', direction: 'ltr', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ direction:'ltr' }}>
         {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:12 }}>{tag}</p>}
@@ -662,7 +662,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
   React.useEffect(() => {
     const h = (e: Event) => { if ((e as CustomEvent).detail === 'open') setDrawerOpen(true); };
     window.addEventListener('carttrigger', h);
-    return () => window.removeEventListener('carttrigger', h);
+  +) => window.removeEventListener('carttrigger', h);
   }, []);
 
   const handleAdd = (p: Product) => {
@@ -674,7 +674,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
     setDrawerOpen(true);
   };
 
-  return (
++
     <CartCtx.Provider value={cart}>
       <section id="shop" style={{ padding: '80px 40px', background: 'var(--bg, #faf9f7)' }}>
         {(title || subtitle) && (
@@ -699,7 +699,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
           {prods.map((p, i) => {
             const id = String(p.id || p.name);
             const isAdded = added === id;
-            return (
+          +
               <div key={i} style={{ background: 'var(--card, #fff)', borderRadius: 16, overflow: 'hidden', border: '1px solid var(--border, #eee)', transition: 'transform 0.2s, box-shadow 0.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 40px rgba(0,0,0,0.12)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
@@ -839,11 +839,11 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="pricing" style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
@@ -860,7 +860,7 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
           {(plans||[]).map((p,i)=>{
             const isSelected = selected===i;
             const price = billing==='yearly'&&p.yearlyPrice ? p.yearlyPrice : p.price;
-            return (
+          +
               <div key={i} onClick={()=>setSelected(i)} style={{background:p.popular?accent:'#fff',color:p.popular?'#fff':'#111',border:isSelected&&!p.popular?\`2px solid \${accent}\`:'2px solid '+(p.popular?accent:'#f0f0f0'),borderRadius:20,padding:32,position:'relative',cursor:'pointer',transition:\`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`,boxShadow:isSelected?'0 16px 48px rgba(0,0,0,0.12)':'0 2px 12px rgba(0,0,0,0.04)',opacity: visible ? 1 : 0, transform: visible ? (p.popular?'scale(1.03)':'none') : 'translateY(24px)'}}>
                 {p.popular&&<span style={{position:'absolute',top:-14,left:'50%',transform:'translateX(-50%)',background:'#fff',color:accent,fontSize:11,padding:'4px 14px',borderRadius:50,fontWeight:800,border:\`2px solid \${accent}\`,whiteSpace:'nowrap'}}>Most Popular</span>}
                 <h3 style={{fontSize:19,fontWeight:800,margin:'0 0 6px'}}>{p.name}</h3>
@@ -891,11 +891,11 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       {safeItems.map((item, i) => (
@@ -918,11 +918,11 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ position:'relative', padding: isMobile ? '64px 20px' : '100px 40px', textAlign:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
       <div style={{ position:'relative', zIndex:1, maxWidth:700, margin:'0 auto' }}>
@@ -944,11 +944,11 @@ export default function Gallery({ title, images, items }: { title: string; image
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="gallery" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:16 }}>
@@ -980,7 +980,7 @@ function AnimatedStat({ value, dark }: { value: string; dark?: boolean }) {
     if (target === 0) return;
     const duration = 1500; const steps = 40; let step = 0;
     const timer = setInterval(() => { step++; setDisplayed(Math.round((step/steps)*target)); if(step>=steps) clearInterval(timer); }, duration/steps);
-    return () => clearInterval(timer);
+  +) => clearInterval(timer);
   }, [started, value]);
   const suffix = value.replace(/[0-9,]/g, '');
   const target = parseInt(value.replace(/[^0-9]/g, '')) || 0;
@@ -993,11 +993,11 @@ export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' && window.innerWidth < 768);
   React.useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '80px 40px', background: dark ? 'var(--accent,#111)' : 'var(--card,#faf9f7)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : \`repeat(\${Math.min(safeItems.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
         {safeItems.map((s, i) => (
@@ -1021,11 +1021,11 @@ export default function Team({ title, members, items, accentColor }: { title: st
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="team" style={{ padding: isMobile ? '48px 20px' : '80px 40px', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
         <h2 style={{ fontSize:38, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:56 }}>{title}</h2>
@@ -1053,11 +1053,11 @@ export default function Newsletter({ title, subtitle, placeholder }: { title: st
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '80px 40px', background:'var(--accent,#111)', color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <div style={{ maxWidth:600, margin:'0 auto', textAlign:'center' }}>
         <h2 style={{ fontSize:32, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
@@ -1082,11 +1082,11 @@ export default function Timeline({ title, events, items }: { title: string; even
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       {safeEvents.map((e, i) => (
@@ -1116,11 +1116,11 @@ export default function LogoCloud({ title, logos }: { title?: string; logos: { n
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{ padding: isMobile ? '40px 20px' : '60px 40px', borderTop:'1px solid var(--border,#eee)', borderBottom:'1px solid var(--border,#eee)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease', overflow:'hidden' }}>
       <style>{\`@keyframes logoScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }\`}</style>
       <div style={{ maxWidth:1200, margin:'0 auto', textAlign:'center' }}>
@@ -1147,11 +1147,11 @@ export default function BlogGrid({ title, posts, items }: { title: string; posts
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} id="blog" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(320px, 1fr))', gap:32 }}>
@@ -1175,12 +1175,12 @@ export default function BlogGrid({ title, posts, items }: { title: string; posts
   );
 }`,
 
-"/components/sections/Tabs.tsx": `import React, { useState } from 'react';
+"/components/sections/Tabs.tsx": `import React, { useState, useEffect } from 'react';
 type Tab = { label: string; content: string };
 export default function Tabs({ tabs }: { tabs: Tab[] }) {
   const safeTabs = (tabs || []).filter(Boolean);
   const [active, setActive] = useState(0);
-  return (
++
     <section style={{ padding:'80px 40px', maxWidth:800, margin:'0 auto' }}>
       <div role="tablist" style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
         {safeTabs.map((t, i) => (
@@ -1242,7 +1242,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
       </div>
     </section>
   );
-  return (
++
     <section id="booking" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background:'#fafafa' }}>
       <div style={{ maxWidth:640, margin:'0 auto' }}>
         <div style={{ textAlign:'center', marginBottom:48 }}>
@@ -1275,7 +1275,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
                   </select>
                 </div>
               );
-              return (
+            +
                 <div key={f} style={{ gridColumn: (f==='name'||f==='email') && defaultFields.includes('email') ? 'auto' : defaultFields.includes('date') ? '1 / -1' : 'auto' }}>
                   <label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
                   <input id={`booking-${f}`} type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
@@ -1294,7 +1294,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
 export default function Banner({ text, cta, href, emoji }: { text: string; cta?: string; href?: string; emoji?: string }) {
   const [show, setShow] = useState(true);
   if (!show) return null;
-  return (
++
     <div style={{ background:'var(--accent,#111)', color:'#fff', padding:'11px 24px', display:'flex', alignItems:'center', justifyContent:'center', gap:12, position:'relative' }}>
       {emoji && <span style={{ fontSize:16 }}>{emoji}</span>}
       <span style={{ fontSize:13, fontWeight:600, letterSpacing:'0.01em' }}>{text}</span>
@@ -1316,11 +1316,11 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor }
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
@@ -1359,11 +1359,11 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',marginBottom:48,textAlign:'center'}}>{title}</h2>}
@@ -1423,11 +1423,11 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fafafa)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
@@ -1464,11 +1464,11 @@ export default function StepProcess({ title, subtitle, steps, accentColor, layou
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:56}}>
@@ -1501,11 +1501,11 @@ export default function VideoSection({ title, subtitle, videoUrl, thumbnail, acc
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:960,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
@@ -1531,7 +1531,7 @@ export default function VideoSection({ title, subtitle, videoUrl, thumbnail, acc
   );
 }`,
 
-"/components/sections/AppDownload.tsx": `import React from 'react';
+"/components/sections/AppDownload.tsx": `import React, { useState, useEffect } from 'react';
 export default function AppDownload({ title, subtitle, description, appStoreUrl, playStoreUrl, mockupImage, accentColor, features }: { title: string; subtitle?: string; description?: string; appStoreUrl?: string; playStoreUrl?: string; mockupImage?: string; accentColor?: string; features?: string[] }) {
   const accent = accentColor || 'var(--accent,#111)';
   const ref = React.useRef<HTMLElement>(null);
@@ -1539,11 +1539,11 @@ export default function AppDownload({ title, subtitle, description, appStoreUrl,
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'80px 40px',background:accent,color:'#fff',overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
-      <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:mockupImage?'1fr 1fr':'1fr',gap:60,alignItems:'center'}}>
+      <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns: isMobile ? '1fr' : (mockupImage?'1fr 1fr':'1fr'),gap:60,alignItems:'center'}}>
         <div>
           {subtitle&&<p style={{fontSize:13,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em',opacity:0.7,marginBottom:12}}>{subtitle}</p>}
           <h2 style={{fontSize:44,fontWeight:800,letterSpacing:'-0.03em',lineHeight:1.1,margin:'0 0 16px'}}>{title}</h2>
@@ -1573,11 +1573,11 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1000,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
@@ -1615,11 +1615,11 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:40}}>
@@ -1655,11 +1655,11 @@ export default function EventsList({ title, subtitle, items, accentColor, layout
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         <div style={{marginBottom:48}}>
@@ -1707,7 +1707,7 @@ export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, a
       <div style={{fontSize:12,fontWeight:600,color:dark?'rgba(255,255,255,0.5)':'#999',textTransform:'uppercase',letterSpacing:'0.1em'}}>{l}</div>
     </div>
   );
-  return (
++
     <section style={{padding:'80px 40px',background:bg,color:fg}}>
       <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:'-0.03em',margin:'0 0 12px'}}>{title}</h2>
@@ -1721,7 +1721,7 @@ export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, a
   );
 }`,
 
-"/components/sections/TrustBadges.tsx": `import React from 'react';
+"/components/sections/TrustBadges.tsx": `import React, { useState, useEffect } from 'react';
 type Badge = { label: string; icon?: string; sub?: string };
 export default function TrustBadges({ items, title, accentColor }: { items: Badge[]; title?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1731,9 +1731,9 @@ export default function TrustBadges({ items, title, accentColor }: { items: Badg
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'48px 40px',background:'var(--bg,#fafafa)',borderTop:'1px solid #f0f0f0',borderBottom:'1px solid #f0f0f0', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {title&&<p style={{textAlign:'center',fontSize:13,fontWeight:600,color:'#bbb',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:28}}>{title}</p>}
@@ -1779,7 +1779,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
     if(sectionRef.current) obs.observe(sectionRef.current);
 +
   }, []);
-  return (
++
     <section ref={sectionRef as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <style>{\`@keyframes baHandlePulse { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.15)} }\`}</style>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -1824,9 +1824,9 @@ export default function HoursTable({ title, hours, note, accentColor }: { title?
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:560,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:32,fontWeight:700,letterSpacing:'-0.02em',marginBottom:24,textAlign:'center'}}>{title}</h2>}
@@ -1855,11 +1855,11 @@ export default function ProductSpotlight({ title, subtitle, description, image, 
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:imageLeft?'rtl':'ltr'}}>
         <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.1)',position:'relative',direction:'ltr'}}>
@@ -1889,11 +1889,11 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
@@ -1919,7 +1919,7 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
   );
 }`,
 
-"/components/sections/QuoteBlock.tsx": `import React from 'react';
+"/components/sections/QuoteBlock.tsx": `import React, { useState, useEffect } from 'react';
 export default function QuoteBlock({ quote, author, role, image, accentColor, dark }: { quote: string; author?: string; role?: string; image?: string; accentColor?: string; dark?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
   const bg = dark ? accent : 'var(--bg,#fafafa)';
@@ -1929,9 +1929,9 @@ export default function QuoteBlock({ quote, author, role, image, accentColor, da
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'80px 40px',background:bg, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
         <div style={{fontSize:80,lineHeight:0.8,color:dark?'rgba(255,255,255,0.2)':accent,marginBottom:24,fontFamily:'Georgia,serif'}}>"</div>
@@ -1948,7 +1948,7 @@ export default function QuoteBlock({ quote, author, role, image, accentColor, da
   );
 }`,
 
-"/components/sections/IconFeatures.tsx": `import React from 'react';
+"/components/sections/IconFeatures.tsx": `import React, { useState, useEffect } from 'react';
 type Feature = { icon: string; title: string; desc: string };
 export default function IconFeatures({ title, subtitle, items, accentColor, columns, dark }: { title?: string; subtitle?: string; items: Feature[]; accentColor?: string; columns?: number; dark?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1961,9 +1961,9 @@ export default function IconFeatures({ title, subtitle, items, accentColor, colu
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'80px 40px',background:bg, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:56}}>
@@ -1989,7 +1989,7 @@ export default function StickyBar({ text, cta, ctaHref, accentColor, showAfterSc
   const accent = accentColor || 'var(--accent,#111)';
   const [shown, setShown] = useState(!showAfterScroll);
   useEffect(()=>{if(!showAfterScroll)return;const h=()=>setShown(window.scrollY>showAfterScroll);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h);},[showAfterScroll]);
-  return (
++
     <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:999,background:accent,color:'#fff',padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 -4px 24px rgba(0,0,0,0.15)',backdropFilter:'blur(8px)',transform: shown ? 'translateY(0)' : 'translateY(100%)',transition:'transform 0.3s ease'}}>
       <span style={{fontSize:15,fontWeight:600}}>{text}</span>
       <a href={ctaHref||'#'} style={{background:'#fff',color:accent,borderRadius:50,padding:'10px 24px',fontWeight:800,fontSize:14,textDecoration:'none',flexShrink:0,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta}</a>
@@ -1997,10 +1997,10 @@ export default function StickyBar({ text, cta, ctaHref, accentColor, showAfterSc
   );
 }`,
 
-"/components/sections/VideoHero.tsx": `import React from 'react';
+"/components/sections/VideoHero.tsx": `import React, { useState, useEffect } from 'react';
 export default function VideoHero({ title, subtitle, cta, ctaHref, cta2, cta2Href, videoUrl, accentColor, overlay }: { title: string; subtitle?: string; cta?: string; ctaHref?: string; cta2?: string; cta2Href?: string; videoUrl: string; accentColor?: string; overlay?: number }) {
   const accent = accentColor || 'var(--accent,#c2410c)';
-  return (
++
     <section style={{position:'relative',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',color:'#fff'}}>
       <video autoPlay muted loop playsInline style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',zIndex:0}}>
         <source src={videoUrl} type="video/mp4"/>
@@ -2028,11 +2028,11 @@ export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Bl
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:maxWidth||720,margin:'0 auto'}}>
         {safeBlocks.map((b,i)=>{
@@ -2058,11 +2058,11 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
-  return (
++
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
@@ -2082,7 +2082,7 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
   );
 }`,
 
-"/components/sections/Awards.tsx": `import React from 'react';
+"/components/sections/Awards.tsx": `import React, { useState, useEffect } from 'react';
 type Award = { title: string; org?: string; year?: string; icon?: string; image?: string };
 export default function Awards({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Award[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -2092,9 +2092,9 @@ export default function Awards({ title, subtitle, items, accentColor }: { title?
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fafafa)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
@@ -2114,7 +2114,7 @@ export default function Awards({ title, subtitle, items, accentColor }: { title?
   );
 }`,
 
-"/components/sections/SocialProof.tsx": `import React from 'react';
+"/components/sections/SocialProof.tsx": `import React, { useState, useEffect } from 'react';
 type Stat = { value: string; label: string; icon?: string };
 type Quote = { text: string; author: string; image?: string };
 export default function SocialProof({ stats, quotes, accentColor, dark }: { stats?: Stat[]; quotes?: Quote[]; accentColor?: string; dark?: boolean }) {
@@ -2125,9 +2125,9 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'80px 40px',background:bg,color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {stats&&<div style={{display:'grid',gridTemplateColumns:\`repeat(\${stats.length},1fr)\`,gap:32,marginBottom:quotes?60:0}}>
@@ -2155,7 +2155,7 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
   );
 }`,
 
-"/components/sections/ImageText.tsx": `import React from 'react';
+"/components/sections/ImageText.tsx": `import React, { useState, useEffect } from 'react';
 type Block = { image: string; title: string; desc: string; cta?: string; ctaHref?: string; badge?: string; imageLeft?: boolean };
 export default function ImageText({ blocks, accentColor }: { blocks: Block[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -2164,15 +2164,15 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
   React.useEffect(() => {
     const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
     if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
+  +) => obs.disconnect();
   }, []);
-  return (
++
     <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'flex',flexDirection:'column',gap:80}}>
         {blocks.map((b,i)=>{
           const left = b.imageLeft !== undefined ? b.imageLeft : i%2===0;
-          return (
-            <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:left?'ltr':'rtl'}}>
+        +
+            <div key={i} style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',gap:64,alignItems:'center',direction:'ltr'}}>
               <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 16px 64px rgba(0,0,0,0.1)',direction:'ltr',position:'relative'}}>
                 <img src={b.image} alt={b.title} style={{width:'100%',aspectRatio:'4/3',objectFit:'cover',display:'block'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>
                 {b.badge&&<span style={{position:'absolute',top:16,left:16,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 12px',borderRadius:50,textTransform:'uppercase',letterSpacing:'0.05em'}}>{b.badge}</span>}
@@ -2193,7 +2193,7 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
 "/components/sections/PricingCard.tsx": `import React from 'react';
 export default function PricingCard({ name, price, period, desc, features, cta, highlighted, badge, accentColor, onSelect }: { name: string; price: string; period?: string; desc?: string; features: string[]; cta: string; highlighted?: boolean; badge?: string; accentColor?: string; onSelect?: () => void }) {
   const accent = accentColor || 'hsl(var(--primary))';
-  return (
++
     <div style={{ border: highlighted ? \`2px solid \${accent}\` : '1px solid hsl(var(--border))', borderRadius: 16, padding: 32, background: highlighted ? accent : 'hsl(var(--card))', color: highlighted ? '#fff' : 'hsl(var(--foreground))', position: 'relative', maxWidth: 360, fontFamily: 'inherit' }}>
       {badge && <span style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: highlighted ? '#fff' : accent, color: highlighted ? accent : '#fff', borderRadius: 999, padding: '4px 16px', fontSize: 12, fontWeight: 700 }}>{badge}</span>}
       <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{name}</div>
@@ -2212,7 +2212,7 @@ export default function TestimonialCard({ text, author, role, rating, accentColo
   const accent = accentColor || 'hsl(var(--primary))';
   const stars = rating ?? 5;
   const initials = author.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-  return (
++
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, fontFamily: 'inherit', position: 'relative' }}>
       <div style={{ fontSize: 64, lineHeight: 0.6, color: accent, opacity: 0.25, fontFamily: 'Georgia, serif', marginBottom: 8 }}>"</div>
       <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
@@ -2258,9 +2258,9 @@ export default function StatBadge({ value, label, icon, accentColor }: { value: 
       setDisplay((numPart > 999 ? current.toLocaleString('en', { maximumFractionDigits: 0 }) : current.toFixed(numPart % 1 !== 0 ? 1 : 0)) + suffix);
       if (step >= steps) clearInterval(t);
     }, 1200 / steps);
-    return () => clearInterval(t);
+  +) => clearInterval(t);
   }, []);
-  return (
++
     <div style={{ textAlign: 'center', padding: '24px 32px', fontFamily: 'inherit' }}>
       {icon && <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>}
       <div style={{ fontSize: 48, fontWeight: 800, color: accent, lineHeight: 1, letterSpacing: '-0.03em' }}>{display}</div>
@@ -2271,7 +2271,7 @@ export default function StatBadge({ value, label, icon, accentColor }: { value: 
 
 "/components/sections/ImageCard.tsx": `import React from 'react';
 export default function ImageCard({ image, category, title, excerpt, cta, href, date }: { image: string; category?: string; title: string; excerpt?: string; cta?: string; href?: string; date?: string }) {
-  return (
++
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, overflow: 'hidden', fontFamily: 'inherit' }}>
       <div style={{ width: '100%', paddingBottom: '56.25%', position: 'relative', overflow: 'hidden' }}>
         <img src={image} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} />
@@ -2291,7 +2291,7 @@ export default function ImageCard({ image, category, title, excerpt, cta, href, 
 export default function ProfileCard({ name, role, image, bio, twitter, linkedin, instagram, accentColor }: { name: string; role: string; image?: string; bio?: string; twitter?: string; linkedin?: string; instagram?: string; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-  return (
++
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, padding: 28, textAlign: 'center', fontFamily: 'inherit' }}>
       <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px', border: \`3px solid \${accent}\` }}>
         {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.3), rgba(99,102,241,0.1))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }} /> : <div style={{ width: '100%', height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 22 }}>{initials}</div>}
@@ -2314,7 +2314,7 @@ export default function AlertBanner({ type, message, dismissible, accentColor }:
   if (dismissed) return null;
   const configs = { info: { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8', icon: 'ℹ️' }, success: { bg: '#f0fdf4', border: '#bbf7d0', color: '#16a34a', icon: '✅' }, warning: { bg: '#fffbeb', border: '#fde68a', color: '#d97706', icon: '⚠️' }, error: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: '❌' } };
   const c = configs[type];
-  return (
++
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: accentColor ? accentColor + '18' : c.bg, border: \`1px solid \${accentColor ? accentColor + '44' : c.border}\`, color: accentColor || c.color, fontFamily: 'inherit', fontSize: 14 }}>
       <span>{c.icon}</span>
       <span style={{ flex: 1 }}>{message}</span>
@@ -2330,7 +2330,7 @@ export default function ProgressBar({ label, value, max, showPercent, accentColo
   const [width, setWidth] = useState(0);
   useEffect(() => { const t = setTimeout(() => setWidth(pct), 80); return () => clearTimeout(t); }, [pct]);
   const color = accentColor || (pct < 30 ? '#ef4444' : pct < 70 ? '#f59e0b' : '#22c55e');
-  return (
++
     <div style={{ fontFamily: 'inherit' }}>
       {(label || showPercent) && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
         {label && <span>{label}</span>}
@@ -2355,7 +2355,7 @@ export default function CountdownTimer({ targetDate, title, subtitle, cta, ctaHr
       <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 6, color: 'hsl(var(--muted-foreground))' }}>{l}</div>
     </div>
   );
-  return (
++
     <div style={{ textAlign: 'center', fontFamily: 'inherit', padding: '32px 0' }}>
       {title && <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{title}</h2>}
       {subtitle && <p style={{ color: 'hsl(var(--muted-foreground))', marginBottom: 24 }}>{subtitle}</p>}
@@ -2379,7 +2379,7 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
     if (vmMatch) return \`https://player.vimeo.com/video/\${vmMatch[1]}?autoplay=1\`;
     return url;
   };
-  return (
++
     <div style={{ borderRadius: 16, overflow: 'hidden', position: 'relative', paddingBottom: pad, background: '#000', fontFamily: 'inherit' }}>
       {playing ? (
         <iframe src={getEmbed()} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }} allow="autoplay; fullscreen" allowFullScreen title={title} />
@@ -2402,7 +2402,7 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
 export default function MapEmbed({ address, lat, lng, title, accentColor }: { address: string; lat?: number; lng?: number; title?: string; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const mapsUrl = lat && lng ? \`https://www.google.com/maps?q=\${lat},\${lng}\` : \`https://www.google.com/maps/search/\${encodeURIComponent(address)}\`;
-  return (
++
     <div style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 16, overflow: 'hidden', fontFamily: 'inherit' }}>
       <div style={{ height: 160, background: 'linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ fontSize: 48 }}>📍</div>
@@ -2423,7 +2423,7 @@ export default function SocialLinks({ items, size, accentColor }: { items: { pla
   const accent = accentColor || 'hsl(var(--primary))';
   const dim = size === 'sm' ? 36 : size === 'lg' ? 52 : 44;
   const fs = size === 'sm' ? 13 : size === 'lg' ? 18 : 15;
-  return (
++
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontFamily: 'inherit' }}>
       {(items || []).map((item, i) => (
         <a key={i} href={item.url} target="_blank" rel="noreferrer" style={{ width: dim, height: dim, borderRadius: '50%', border: \`2px solid \${accent}\`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs, color: accent, textDecoration: 'none', transition: 'all 0.2s', background: 'transparent', fontWeight: 700, textTransform: 'uppercase' as const }}
@@ -2442,7 +2442,7 @@ export default function NewsletterInline({ placeholder, cta, title, onSubmit, ac
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const handle = (e: React.FormEvent) => { e.preventDefault(); if (!email) return; onSubmit?.(email); setSubmitted(true); };
-  return (
++
     <div style={{ fontFamily: 'inherit' }}>
       {title && <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>{title}</div>}
       {submitted ? (
@@ -2464,7 +2464,7 @@ export default function RatingStars({ value, max, interactive, onChange, size, c
   const [hover, setHover] = useState(0);
   const [current, setCurrent] = useState(value);
   const display = hover || current;
-  return (
++
     <div style={{ display: 'inline-flex', gap: 2 }}>
       {Array.from({ length: total }).map((_, i) => (
         <span key={i} onClick={() => { if (interactive) { setCurrent(i+1); onChange?.(i+1); } }}
@@ -2479,7 +2479,7 @@ export default function RatingStars({ value, max, interactive, onChange, size, c
 "/components/sections/Breadcrumbs.tsx": `import React from 'react';
 export default function Breadcrumbs({ items, accentColor }: { items: { label: string; href?: string }[]; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
-  return (
++
     <nav aria-label="breadcrumb" style={{ fontFamily: 'inherit' }}>
       <ol style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, listStyle: 'none', margin: 0, padding: 0, fontSize: 14 }}>
         {items.map((item, i) => (
@@ -2499,7 +2499,7 @@ export default function Breadcrumbs({ items, accentColor }: { items: { label: st
 export default function TabsInline({ tabs, defaultTab, accentColor }: { tabs: { label: string; content: React.ReactNode }[]; defaultTab?: number; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const [active, setActive] = useState(defaultTab ?? 0);
-  return (
++
     <div style={{ fontFamily: 'inherit' }}>
       <div role="tablist" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: 4, background: 'hsl(var(--muted))', borderRadius: 12, marginBottom: 20, width: 'fit-content' }}>
         {tabs.map((tab, i) => (
@@ -2515,7 +2515,7 @@ export default function TabsInline({ tabs, defaultTab, accentColor }: { tabs: { 
 export default function AccordionItem({ title, children, defaultOpen, accentColor }: { title: string; children: React.ReactNode; defaultOpen?: boolean; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const [open, setOpen] = useState(defaultOpen ?? false);
-  return (
++
     <div style={{ border: '1px solid hsl(var(--border))', borderRadius: 12, overflow: 'hidden', fontFamily: 'inherit', marginBottom: 8 }}>
       <button type="button" aria-expanded={open} onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: open ? accent + '18' : 'hsl(var(--card))', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 15, fontWeight: 600, color: open ? accent : 'hsl(var(--foreground))', textAlign: 'left' as const, transition: 'background 0.2s' }}>
         <span>{title}</span>
@@ -2536,10 +2536,10 @@ export default function ImageGalleryGrid({ images, columns }: { images: { url: s
       if (e.key === 'ArrowLeft') setLightbox(l => l !== null && l > 0 ? l - 1 : l);
     };
     window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
+  +) => window.removeEventListener('keydown', h);
   }, [images.length]);
   const cols = columns || 3;
-  return (
++
     <>
       <div style={{ display: 'grid', gridTemplateColumns: \`repeat(\${cols}, 1fr)\`, gap: 8 }}>
         {images.map((img, i) => (
@@ -2570,7 +2570,7 @@ export default function ImageGalleryGrid({ images, columns }: { images: { url: s
 export default function CallToActionBanner({ title, subtitle, cta1, cta1Href, cta2, cta2Href, dark, accentColor }: { title: string; subtitle?: string; cta1: string; cta1Href?: string; cta2?: string; cta2Href?: string; dark?: boolean; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const bg = dark ? '#111' : accent;
-  return (
++
     <div style={{ background: bg, borderRadius: 16, padding: '32px 36px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 20, fontFamily: 'inherit' }}>
       <div>
         <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', lineHeight: 1.3 }}>{title}</div>
@@ -2589,7 +2589,7 @@ export default function CallToActionBanner({ title, subtitle, cta1, cta1Href, ct
 "/components/sections/EmptyState.tsx": `import React from 'react';
 export default function EmptyState({ icon, title, desc, cta, onAction, accentColor }: { icon?: string; title: string; desc?: string; cta?: string; onAction?: () => void; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
-  return (
++
     <div style={{ textAlign: 'center', padding: '60px 20px', fontFamily: 'inherit' }}>
       {icon && <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.5 }}>{icon}</div>}
       <div style={{ fontSize: 20, fontWeight: 700, color: 'hsl(var(--foreground))', marginBottom: 8 }}>{title}</div>
@@ -2620,7 +2620,7 @@ export default function Router({ pages, defaultPath }: RouterProps) {
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
+  +) => window.removeEventListener('hashchange', handler);
   }, []);
 
   const activePage = pages.find(p => p.path === current) || pages[0];
@@ -2674,7 +2674,7 @@ export default function DashboardStats({ items = DEFAULT, accentColor }: Props) 
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
-  return (
++
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, padding: '24px 0' }}>
       {items.map((item, i) => (
         <div key={i} style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'default', transform: mounted ? 'translateY(0)' : 'translateY(12px)', opacity: mounted ? 1 : 0, transitionDelay: i * 80 + 'ms' }}
@@ -2725,7 +2725,7 @@ export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS,
   const paged = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const handleSort = (key: string) => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('asc'); } };
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3>
@@ -2776,7 +2776,7 @@ function initials(name: string) { return name.split(' ').map(p => p[0]).join('')
 export default function ActivityFeed({ title = 'Recent Activity', items = DEFAULT, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [visible, setVisible] = useState(5);
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <h3 style={{ margin: '0 0 24px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -2813,7 +2813,7 @@ export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT
   useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
   const max = Math.max(...data.map(d => d.value));
   const fmt = (v: number) => v >= 1000 ? currency + (v/1000).toFixed(0) + 'k' : currency + v;
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3>
@@ -2822,7 +2822,7 @@ export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT
       <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 6, height: 160, paddingBottom: 24 }}>
         {data.map((d, i) => {
           const h = (d.value / max) * 136;
-          return (
+        +
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}
               onMouseEnter={() => setTooltip(i)} onMouseLeave={() => setTooltip(null)}>
               <div style={{ width: '100%', borderRadius: '4px 4px 0 0', background: tooltip === i ? accent : accent + 'bb', transition: 'height 0.7s cubic-bezier(.4,0,.2,1), background 0.15s', transitionDelay: i * 40 + 'ms', height: mounted ? h : 0 }} />
@@ -2853,7 +2853,7 @@ export default function AdminSidebar({ brand, items = DEFAULT, onNavigate, accen
   const [activeItem, setActiveItem] = useState(() => items.findIndex(i => i.active));
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
   const toggle = (i: number) => setCollapsed(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
-  return (
++
     <div style={{ width: 220, background: 'var(--card, #fff)', borderRight: '1px solid var(--border, #e5e7eb)', height: '100%', display: 'flex', flexDirection: 'column', minHeight: 480 }}>
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border, #e5e7eb)' }}>
         <div style={{ fontWeight: 800, fontSize: 18, color: accent }}>{brand}</div>
@@ -2910,12 +2910,12 @@ const PC: Record<string,string> = { high:'#ef4444', medium:'#f59e0b', low:'#22c5
 export default function KanbanBoard({ columns = DC, cards = DK, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [modal, setModal] = useState<KCard | null>(null);
-  return (
++
     <div style={{ padding: '24px 0', position: 'relative' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns.length + ', minmax(220px, 1fr))', gap: 16, overflowX: 'auto' }}>
         {columns.map(col => {
           const cc = cards.filter(c => c.col === col.id);
-          return (
+        +
             <div key={col.id} style={{ background: 'var(--bg, #f9fafb)', borderRadius: 14, padding: 16, minHeight: 360 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2986,7 +2986,7 @@ export default function UserManagement({ users: init = DEFAULT, accentColor }: P
   const toggle = (idx: number) => setUsers(list => list.map((u, i) => i === idx ? { ...u, active: !u.active } : u));
   const add = () => { if (!nu.name || !nu.email) return; setUsers(u => [...u, { ...nu, active:true }]); setNu({ name:'', email:'', role:'Viewer' }); setShowAdd(false); };
   const inp = { padding: '7px 12px', borderRadius: 7, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none' } as const;
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, flex: 1 }}>Users</h3>
@@ -3040,7 +3040,7 @@ export default function NotificationCenter({ items: init = DEFAULT, accentColor 
   const unread = items.filter(n => !n.read).length;
   const markAll = () => setItems(l => l.map(n => ({ ...n, read: true })));
   const markOne = (i: number) => setItems(l => l.map((n, idx) => idx === i ? { ...n, read: true } : n));
-  return (
++
     <div style={{ position: 'relative', display: 'inline-block' }}>
       <button onClick={() => setOpen(!open)} style={{ position: 'relative', width: 44, height: 44, borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: 'var(--card, #fff)', cursor: 'pointer', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         🔔
@@ -3091,7 +3091,7 @@ export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, c
   const pts = chartData.map((d, i) => ({ x: (i / (chartData.length - 1)) * 100, y: 100 - (d.value / maxVal) * 100 }));
   const pathD = pts.map((p, i) => (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y).join(' ');
   const areaD = pathD + ' L ' + pts[pts.length-1].x + ' 100 L 0 100 Z';
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
@@ -3151,7 +3151,7 @@ export default function OrdersTable({ orders: init = DEFAULT, onStatusChange, ac
   const [orders, setOrders] = useState(init);
   const filtered = filter === 'All' ? orders : orders.filter(o => o.status === filter);
   const upd = (id: string, status: string) => { setOrders(l => l.map(o => o.id === id ? { ...o, status } : o)); onStatusChange?.(id, status); };
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)' }}>
         <h3 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700 }}>Orders</h3>
@@ -3211,7 +3211,7 @@ export default function FormBuilder({ title='Account Settings', subtitle='Manage
   const set = (key: string, val: any) => { setData(d => ({ ...d, [key]: val })); setSaved(false); };
   const save = async () => { setLoading(true); await new Promise(r => setTimeout(r, 900)); onSave?.(data); setLoading(false); setSaved(true); setTimeout(() => setSaved(false), 3000); };
   const inp = { width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', fontSize: 14, outline: 'none', background: 'var(--bg, #f9fafb)', boxSizing: 'border-box' as const };
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', maxWidth: 640 }}>
       <div style={{ padding: 24, borderBottom: '1px solid var(--border, #e5e7eb)' }}>
         <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800 }}>{title}</h2>
@@ -3272,7 +3272,7 @@ export default function FileManager({ files = DEFAULT, accentColor }: Props) {
   const [search, setSearch] = useState('');
   const filt = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const tog = (i: number) => setSel(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, flex: 1 }}>Files</h3>
@@ -3338,7 +3338,7 @@ export default function CalendarWidget({ events = DEFAULT, accentColor }: Props)
   const evFor = (d: number) => events.filter(e => e.date === fmt(d));
   const selEvs = sel ? events.filter(e => e.date === sel) : [];
   const isToday = (d: number) => fmt(d) === today.toISOString().split('T')[0];
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexWrap: 'wrap' }}>
       <div style={{ padding: 20, flex: '1 1 260px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -3351,7 +3351,7 @@ export default function CalendarWidget({ events = DEFAULT, accentColor }: Props)
           {cells.map((d, i) => {
             if (!d) return <div key={i} />;
             const ds = fmt(d), evs = evFor(d), isSel = sel === ds, isTod = isToday(d);
-            return (
+          +
               <div key={i} onClick={() => setSel(isSel ? null : ds)} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 7, cursor: 'pointer', background: isSel ? accent : isTod ? accent + '18' : 'transparent', color: isSel ? '#fff' : 'var(--fg, #111)', fontWeight: isTod ? 800 : 400, fontSize: 12 }}
                 onMouseOver={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f3f4f6)'; }}
                 onMouseOut={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = isTod ? accent + '18' : 'transparent'; }}>
@@ -3384,7 +3384,7 @@ const DEFAULT: ActionItem[] = [
 ];
 export default function QuickActions({ title='Quick Actions', items=DEFAULT, columns=3, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
-  return (
++
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       {title ? <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns + ', 1fr)', gap: 14 }}>
@@ -3412,7 +3412,7 @@ export default function DashboardShell({ brand, navItems=DN, pageTitle='Dashboar
   const [active, setActive] = useState(() => navItems.findIndex(n => n.active) || 0);
   const [menu, setMenu] = useState(false);
   const [open, setOpen] = useState(true);
-  return (
++
     <div style={{ display: 'flex', height: '100vh', minHeight: 600, background: 'var(--bg, #f3f4f6)', fontFamily: 'system-ui, sans-serif', overflow: 'hidden' }}>
       <div style={{ width: open ? 220 : 64, background: 'var(--card, #fff)', borderRight: '1px solid var(--border, #e5e7eb)', display: 'flex', flexDirection: 'column', transition: 'width 0.25s', overflow: 'hidden', flexShrink: 0 }}>
         <div style={{ padding: open ? '20px 18px 14px' : '20px 14px 14px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -3539,7 +3539,7 @@ export default function HeroCentered({ title = 'Welcome', subtitle, description,
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => { const t = setTimeout(() => setVisible(true), 100); return () => clearTimeout(t); }, []);
 
-  return (
++
     <section id="hero" style={{
       position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', padding: '120px 40px 80px',
@@ -3648,7 +3648,7 @@ export default function HeroSplit({ title = 'Build Something Amazing', subtitle,
     </div>
   );
 
-  return (
++
     <section id="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '100px 40px', background: 'var(--bg)', overflow: 'hidden' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 40, flexWrap: 'wrap' }}>
         {imagePosition === 'left' ? <>{imageContent}{textContent}</> : <>{textContent}{imageContent}</>}
@@ -3675,7 +3675,7 @@ export default function HeroVideo({ title = 'Experience the Difference', subtitl
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => { const t = setTimeout(() => setVisible(true), 300); return () => clearTimeout(t); }, []);
 
-  return (
++
     <section id="hero" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', overflow: 'hidden' }}>
       {videoUrl ? (
         <video autoPlay muted loop playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}>
@@ -3754,7 +3754,7 @@ export default function StructuredData({ type = 'LocalBusiness', name, descripti
     })
   };
 
-  return (
++
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
@@ -3783,12 +3783,83 @@ export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps)
     script2.innerHTML = \`window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '\${measurementId}');\`;
     document.head.appendChild(script2);
 
-    return () => {
+  +) => {
       document.head.removeChild(script1);
       document.head.removeChild(script2);
     };
   }, [measurementId]);
 
   return null;
+}
+`,
+
+"/components/sections/CookieBanner.tsx": `
+import React from 'react';
+
+interface CookieBannerProps {
+  accentColor?: string;
+  privacyUrl?: string;
+  cookieName?: string;
+  message?: string;
+}
+
+export default function CookieBanner({ accentColor = '#6366f1', privacyUrl = '#', cookieName = 'cookie_consent', message }: CookieBannerProps) {
+  const [visible, setVisible] = React.useState(false);
+  const [animating, setAnimating] = React.useState(false);
+
+  React.useEffect(() => {
+    try {
+      if (!localStorage.getItem(cookieName)) {
+        setTimeout(() => setVisible(true), 1500);
+      }
+    } catch {}
+  }, [cookieName]);
+
+  const accept = (all: boolean) => {
+    try { localStorage.setItem(cookieName, all ? 'all' : 'essential'); } catch {}
+    setAnimating(true);
+    setTimeout(() => setVisible(false), 300);
+  };
+
+  if (!visible) return null;
+
++
+    <div style={{
+      position: 'fixed', bottom: 20, left: '50%', transform: \`translateX(-50%) translateY(\${animating ? '120px' : '0'})\`,
+      width: 'min(600px, calc(100vw - 32px))', background: 'var(--card)',
+      borderRadius: 16, padding: '20px 24px', boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+      border: '1px solid var(--border)', zIndex: 9999, transition: 'transform 0.3s ease',
+      display: 'flex', flexDirection: 'column', gap: 16,
+    }} role="dialog" aria-label="Cookie consent">
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <span style={{ fontSize: 28, flexShrink: 0 }}>🍪</span>
+        <div>
+          <p style={{ fontWeight: 700, color: 'var(--fg)', marginBottom: 4, fontSize: 16 }}>We use cookies</p>
+          <p style={{ color: 'var(--fg)', opacity: 0.7, fontSize: 14, lineHeight: 1.5, margin: 0 }}>
+            {message || \`We use cookies to improve your experience, analyze traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies.\`}
+            {' '}<a href={privacyUrl} style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <button type="button" onClick={() => accept(false)} style={{
+          background: 'transparent', color: 'var(--fg)', border: '1px solid var(--border)',
+          padding: '9px 18px', borderRadius: 25, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          transition: 'all 0.15s',
+        }} onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'var(--muted)'}
+           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'transparent'}>
+          Essential Only
+        </button>
+        <button type="button" onClick={() => accept(true)} style={{
+          background: accentColor, color: '#fff', border: 'none',
+          padding: '9px 20px', borderRadius: 25, fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          boxShadow: \`0 4px 14px \${accentColor}40\`, transition: 'all 0.15s',
+        }} onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.opacity = '0.9'}
+           onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.opacity = '1'}>
+          Accept All
+        </button>
+      </div>
+    </div>
+  );
 }
 `,
