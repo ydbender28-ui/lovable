@@ -130,63 +130,25 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Section padding: style={{padding:'80px 40px'}} on every section. Never let content touch the edge of the screen.
 - Buttons: ALWAYS have visible background OR border. Never an invisible/unstyled button.
 
-## STYLING — DESIGN SYSTEM + TAILWIND:
+## STYLING — USE TAILWIND ONLY. NO INLINE STYLES. NO CSS VARIABLES.
 
-Define ALL colors as CSS variables in /index.css using HSL values, then reference them via Tailwind:
+Use standard Tailwind color classes for everything. Pick colors that match the brand/mood of the site.
+NEVER use style={{}}, NEVER use CSS variables, NEVER use var(--anything).
 
-In /index.css you MUST use RAW HSL VALUES (no hsl() wrapper, no hex):
-:root {
-  --background: 40 20% 98%;
-  --foreground: 30 10% 10%;
-  --card: 0 0% 100%;
-  --primary: 25 90% 48%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 40 15% 94%;
-  --muted: 30 5% 55%;
-  --border: 30 15% 88%;
-  --accent: 25 85% 40%;
-  --radius: 0.75rem;
-}
-CRITICAL: Values MUST be "H S% L%" format like "25 90% 48%". NOT hex (#6b3a2a). NOT hsl(25, 90%, 48%). Just the raw numbers.
+Examples of correct usage:
+<nav className="fixed top-0 w-full z-50 bg-gray-900/90 backdrop-blur-lg border-b border-gray-800">
+<button className="px-8 py-3.5 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-all">
+<section className="py-20 bg-white">
+<div className="min-h-screen bg-zinc-950 text-white">
+<div className="rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-gray-200">
 
-In JSX, use these semantic color classes — NEVER use direct colors like bg-white, text-gray-900:
-CORRECT: className="bg-background text-foreground"
-CORRECT: className="bg-primary text-primary-foreground"
-CORRECT: className="bg-card border-border"
-CORRECT: className="text-muted"
-WRONG:   className="bg-white text-gray-900" ← NEVER do this
-WRONG:   className="bg-[hsl(var(--background))]" ← too verbose, use bg-background
-
-Available color classes: bg-background, bg-foreground, bg-card, bg-primary, bg-secondary, bg-muted, bg-accent, text-foreground, text-muted, text-primary, text-primary-foreground, border-border
-Layout classes use regular Tailwind: rounded-xl, p-6, shadow-sm, flex, grid, hover:, etc.
-
-Changing the theme = changing /index.css HSL values. Every element updates instantly.
+Pick a consistent color palette for the whole site. For a pizza shop use warm reds/oranges. For SaaS use blues/purples. For health use greens. Stick to one accent color throughout.
 
 Other rules:
 - App component MUST be "export default function App()"
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/
 - Every { must have matching }. Every ( must have matching ).
-
-## STYLING — USE INLINE STYLES for colors + Tailwind for layout:
-
-For ALL colors, use inline style with hsl(var(--name)):
-style={{background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))'}}
-style={{background: 'hsl(var(--background))', color: 'hsl(var(--foreground))'}}
-style={{background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))'}}
-style={{color: 'hsl(var(--muted))'}}
-
-For layout, spacing, sizing — use Tailwind className:
-"fixed top-0 w-full z-50 backdrop-blur-lg"
-"min-h-screen flex items-center pt-16 grid lg:grid-cols-2 gap-12"
-"text-5xl md:text-6xl font-extrabold tracking-tight"
-"px-8 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-all"
-"rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
-"py-20 md:py-28 max-w-7xl mx-auto px-6"
-
-COMBINE both on every element:
-<nav className="fixed top-0 w-full z-50 backdrop-blur-lg" style={{background: 'hsla(var(--card), 0.8)', borderBottom: '1px solid hsl(var(--border))'}}>
-<button className="px-8 py-3.5 rounded-full font-semibold" style={{background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))'}}>
-<section className="py-20" style={{background: 'hsl(var(--secondary))'}}>
+- Keep /index.css minimal — just Google Fonts import and body font-family. No CSS variables needed.>
 
 IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up the layout:
 - Card image: style={{width:'100%', height:220, objectFit:'cover'}} — ALWAYS, no exceptions
