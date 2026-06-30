@@ -484,20 +484,24 @@ export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }
 }`,
 
 "/components/sections/Team.tsx": `import React from 'react';
-type Member = { name: string; role: string; image: string; bio?: string };
-export default function Team({ title, members }: { title: string; members: Member[] }) {
+type Member = { name: string; role: string; image?: string; bio?: string };
+export default function Team({ title, members, items, accentColor }: { title: string; members?: Member[]; items?: Member[]; accentColor?: string }) {
+  const accent = accentColor || 'var(--accent,#c2410c)';
+  const list = members || items || [];
   return (
-    <section id="team" style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto' }}>
-      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(250px, 1fr))', gap:32 }}>
-        {members.map((m, i) => (
-          <div key={i} style={{ textAlign:'center' }}>
-            <img src={m.image} alt={m.name} style={{ width:120, height:120, borderRadius:'50%', objectFit:'cover', margin:'0 auto 16px' }} />
-            <h3 style={{ fontSize:18, fontWeight:600 }}>{m.name}</h3>
-            <p style={{ fontSize:13, color:'var(--accent,#c2410c)', fontWeight:500, marginTop:4 }}>{m.role}</p>
-            {m.bio && <p style={{ fontSize:14, color:'var(--muted,#888)', marginTop:8, lineHeight:1.6 }}>{m.bio}</p>}
-          </div>
-        ))}
+    <section id="team" style={{ padding:'80px 40px', background:'var(--bg,#fff)' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto' }}>
+        <h2 style={{ fontSize:38, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:56 }}>{title}</h2>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:32 }}>
+          {list.map((m, i) => (
+            <div key={i} style={{ textAlign:'center', padding:'32px 20px', background:'#fafafa', borderRadius:20, border:'1px solid #f0f0f0' }}>
+              {m.image ? <img src={m.image} alt={m.name} style={{ width:100, height:100, borderRadius:'50%', objectFit:'cover', margin:'0 auto 16px', display:'block' }} /> : <div style={{ width:100, height:100, borderRadius:'50%', background:accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, fontWeight:800, margin:'0 auto 16px' }}>{m.name[0]}</div>}
+              <h3 style={{ fontSize:17, fontWeight:700, margin:'0 0 4px' }}>{m.name}</h3>
+              <p style={{ fontSize:13, color:accent, fontWeight:600, margin:0 }}>{m.role}</p>
+              {m.bio && <p style={{ fontSize:13, color:'#888', marginTop:10, lineHeight:1.6 }}>{m.bio}</p>}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
