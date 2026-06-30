@@ -70,7 +70,7 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <a href="#" onClick={onNavigate ? (e) => { e.preventDefault(); onNavigate('home'); } : undefined} style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
-          {logoSrc ? <img src={logoSrc} alt={brandName} style={{ height: scrolled ? 32 : 40, width:'auto', transition:'height 0.3s ease', objectFit:'contain' }} /> : <span style={{ fontSize:20, fontWeight:800, color:'#111', letterSpacing:'-0.02em' }}>{brandName}</span>}
+          {logoSrc ? <img src={logoSrc} alt={brandName} style={{ height: scrolled ? 32 : 40, width:'auto', transition:'height 0.3s ease', objectFit:'contain' }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }} /> : <span style={{ fontSize:20, fontWeight:800, color:'#111', letterSpacing:'-0.02em' }}>{brandName}</span>}
         </a>
         {!isMobile ? (
           <div style={{ display:'flex', gap:28, alignItems:'center' }}>
@@ -967,9 +967,11 @@ export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  React.useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'80px 40px', background: dark ? 'var(--accent,#111)' : 'var(--card,#faf9f7)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:\`repeat(\${Math.min(safeItems.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '80px 40px', background: dark ? 'var(--accent,#111)' : 'var(--card,#faf9f7)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : \`repeat(\${Math.min(safeItems.length, 4)}, 1fr)\`, gap:32, textAlign:'center' }}>
         {safeItems.map((s, i) => (
           <div key={i} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: \`opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\` }}>
             <AnimatedStat value={s.value} dark={dark} />
