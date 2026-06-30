@@ -90,13 +90,14 @@ type MenuItem = { id?: number; name: string; price: number | string; desc: strin
 type CartItem = { item: MenuItem; qty: number };
 export default function MenuGrid({ title, subtitle, items, categories, accentColor }: { title: string; subtitle?: string; items: MenuItem[]; categories?: string[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const cats = categories || [...new Set(items.map(i => i.category))];
+  const safeItems = (items || []).filter(Boolean) as MenuItem[];
+  const cats = categories || [...new Set(safeItems.map(i => i.category))];
   const [active, setActive] = useState('All');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkedOut, setCheckedOut] = useState(false);
   const [adding, setAdding] = useState<string|null>(null);
-  const filtered = active === 'All' ? items : items.filter(i => i.category === active);
+  const filtered = active === 'All' ? safeItems : safeItems.filter(i => i.category === active);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
   const cartTotal = cart.reduce((s, c) => s + (parseFloat(String(c.item.price)) * c.qty), 0);
   useEffect(() => { window.dispatchEvent(new CustomEvent('cartupdate', { detail: { count: cartCount, open: () => setCartOpen(true) } })); }, [cartCount]);
@@ -220,6 +221,7 @@ export default function Testimonials({ title, items }: { title: string; items: T
 "/components/sections/Contact.tsx": `import React, { useState } from 'react';
 type ContactInfo = { label: string; value: string; href?: string; icon?: string };
 export default function Contact({ title, subtitle, items }: { title: string; subtitle?: string; items: ContactInfo[] }) {
+  const safeItems = (items || []).filter(Boolean);
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
   const accent = 'var(--accent, #c2410c)';
@@ -231,7 +233,7 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
         {subtitle && <p style={{ color: '#666', fontSize: 16, marginBottom: 56 }}>{subtitle}</p>}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 80, alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-            {items.map((c, i) => (
+            {safeItems.map((c, i) => (
               <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                 {c.icon && <span style={{ fontSize: 20, marginTop: 2 }}>{c.icon}</span>}
                 <div>
@@ -319,11 +321,13 @@ type Product = { id: number; name: string; price: number; desc: string; category
 type CartItem = Product & { qty: number };
 
 export default function ShopGrid({ title, subtitle, items, onCheckout }: { title: string; subtitle?: string; items: Product[]; onCheckout?: (items: CartItem[]) => void }) {
+  const safeItems = (items || []).filter(Boolean) as Product[];
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
-  const cats = ['All', ...new Set(items.map(i => i.category))];
+  const [checkedOut, setCheckedOut] = useState(false);
+  const cats = ['All', ...new Set(safeItems.map(i => i.category))];
   const [active, setActive] = useState('All');
-  const filtered = active === 'All' ? items : items.filter(i => i.category === active);
+  const filtered = active === 'All' ? safeItems : safeItems.filter(i => i.category === active);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -399,7 +403,15 @@ export default function ShopGrid({ title, subtitle, items, onCheckout }: { title
                 <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:700, marginBottom:16 }}>
                   <span>Total</span><span>\${cartTotal.toFixed(2)}</span>
                 </div>
-                <button onClick={() => { alert('Order placed! Total: $' + cartTotal.toFixed(2)); setCart([]); setShowCart(false); }} style={{ width:'100%', background:'var(--accent, #c2410c)', color:'#fff', border:'none', padding:'14px', borderRadius:50, fontSize:16, fontWeight:600, cursor:'pointer' }}>Checkout — \${cartTotal.toFixed(2)}</button>
+                {checkedOut ? (
+                  <div style={{ background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:14, padding:'20px', textAlign:'center' }}>
+                    <div style={{ fontSize:28, marginBottom:6 }}>✓</div>
+                    <div style={{ fontWeight:800, fontSize:15, color:'#166534' }}>Order Placed!</div>
+                    <div style={{ fontSize:13, color:'#4ade80', marginTop:4 }}>We'll have it ready shortly.</div>
+                  </div>
+                ) : (
+                  <button onClick={() => { setCheckedOut(true); setTimeout(() => { setCart([]); setCheckedOut(false); setShowCart(false); }, 3000); }} style={{ width:'100%', background:'var(--accent, #c2410c)', color:'#fff', border:'none', padding:'14px', borderRadius:50, fontSize:16, fontWeight:600, cursor:'pointer' }}>Checkout — \${cartTotal.toFixed(2)}</button>
+                )}
               </div>
             )}
           </div>
@@ -885,6 +897,7 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
 type Step = { title: string; desc: string; icon?: string };
 export default function StepProcess({ title, subtitle, steps, accentColor, layout }: { title: string; subtitle?: string; steps: Step[]; accentColor?: string; layout?: 'horizontal'|'vertical' }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeSteps = (steps || []).filter(Boolean);
   const horiz = layout !== 'vertical';
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
@@ -893,12 +906,12 @@ export default function StepProcess({ title, subtitle, steps, accentColor, layou
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
           {subtitle&&<p style={{color:'#888',fontSize:17,maxWidth:540,margin:'0 auto'}}>{subtitle}</p>}
         </div>
-        <div style={{display:'grid',gridTemplateColumns:horiz?\`repeat(\${steps.length},1fr)\`:'1fr',gap:horiz?24:0,position:'relative'}}>
-          {steps.map((s,i)=>(
-            <div key={i} style={{display:'flex',flexDirection:horiz?'column':'row',alignItems:horiz?'center':'flex-start',gap:horiz?16:24,textAlign:horiz?'center':'left',paddingBottom:horiz?0:40,borderLeft:!horiz&&i<steps.length-1?\`2px dashed \${accent}33\`:!horiz?'2px solid transparent':'none',marginLeft:!horiz?20:0,paddingLeft:!horiz?32:0,position:'relative'}}>
+        <div style={{display:'grid',gridTemplateColumns:horiz?\`repeat(\${safeSteps.length||1},1fr)\`:'1fr',gap:horiz?24:0,position:'relative'}}>
+          {safeSteps.map((s,i)=>(
+            <div key={i} style={{display:'flex',flexDirection:horiz?'column':'row',alignItems:horiz?'center':'flex-start',gap:horiz?16:24,textAlign:horiz?'center':'left',paddingBottom:horiz?0:40,borderLeft:!horiz&&i<safeSteps.length-1?\`2px dashed \${accent}33\`:!horiz?'2px solid transparent':'none',marginLeft:!horiz?20:0,paddingLeft:!horiz?32:0,position:'relative'}}>
               {!horiz&&<div style={{position:'absolute',left:-21,top:0,width:40,height:40,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:16,flexShrink:0,zIndex:1}}>{s.icon||i+1}</div>}
               {horiz&&<div style={{width:56,height:56,borderRadius:50,background:accent,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:20,marginBottom:4}}>{s.icon||i+1}</div>}
-              {horiz&&i<steps.length-1&&<div style={{position:'absolute',top:28,left:'calc(50% + 28px)',width:'calc(100% - 56px)',height:2,background:\`\${accent}33\`,zIndex:0}}/>}
+              {horiz&&i<safeSteps.length-1&&<div style={{position:'absolute',top:28,left:'calc(50% + 28px)',width:'calc(100% - 56px)',height:2,background:\`\${accent}33\`,zIndex:0}}/>}
               <div><h3 style={{fontSize:17,fontWeight:700,margin:'0 0 6px'}}>{s.title}</h3><p style={{fontSize:14,color:'#888',lineHeight:1.6,margin:0}}>{s.desc}</p></div>
             </div>
           ))}
@@ -967,6 +980,8 @@ type Plan = { name: string; highlighted?: boolean };
 type Row = { feature: string; values: (string|boolean)[] };
 export default function Comparison({ title, subtitle, plans, rows, accentColor }: { title: string; subtitle?: string; plans: Plan[]; rows: Row[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safePlans = (plans || []).filter(Boolean);
+  const safeRows = (rows || []).filter(Boolean);
   const cell = (v: string|boolean) => typeof v === 'boolean' ? (v ? <span style={{color:'#22c55e',fontSize:20,fontWeight:800}}>✓</span> : <span style={{color:'#e5e7eb',fontSize:20}}>—</span>) : <span style={{fontSize:14,fontWeight:600}}>{v}</span>;
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
@@ -976,14 +991,14 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>
         <div style={{borderRadius:24,overflow:'hidden',border:'1px solid #f0f0f0',boxShadow:'0 4px 24px rgba(0,0,0,0.06)'}}>
-          <div style={{display:'grid',gridTemplateColumns:\`2fr \${plans.map(()=>'1fr').join(' ')}\`,background:'#fafafa',borderBottom:'1px solid #f0f0f0'}}>
+          <div style={{display:'grid',gridTemplateColumns:\`2fr \${safePlans.map(()=>'1fr').join(' ')}\`,background:'#fafafa',borderBottom:'1px solid #f0f0f0'}}>
             <div style={{padding:'20px 24px'}}/>
-            {plans.map((p,i)=><div key={i} style={{padding:'20px 16px',textAlign:'center',background:p.highlighted?accent:'transparent',position:'relative'}}>{p.highlighted&&<div style={{position:'absolute',top:-1,left:0,right:0,height:3,background:accent,borderRadius:'3px 3px 0 0'}}/>}<div style={{fontWeight:800,fontSize:16,color:p.highlighted?'#fff':'#222'}}>{p.name}</div></div>)}
+            {safePlans.map((p,i)=><div key={i} style={{padding:'20px 16px',textAlign:'center',background:p.highlighted?accent:'transparent',position:'relative'}}>{p.highlighted&&<div style={{position:'absolute',top:-1,left:0,right:0,height:3,background:accent,borderRadius:'3px 3px 0 0'}}/>}<div style={{fontWeight:800,fontSize:16,color:p.highlighted?'#fff':'#222'}}>{p.name}</div></div>)}
           </div>
-          {rows.map((r,i)=>(
-            <div key={i} style={{display:'grid',gridTemplateColumns:\`2fr \${plans.map(()=>'1fr').join(' ')}\`,borderBottom:i<rows.length-1?'1px solid #f5f5f5':'none',background:i%2===0?'#fff':'#fafafa'}}>
+          {safeRows.map((r,i)=>(
+            <div key={i} style={{display:'grid',gridTemplateColumns:\`2fr \${safePlans.map(()=>'1fr').join(' ')}\`,borderBottom:i<safeRows.length-1?'1px solid #f5f5f5':'none',background:i%2===0?'#fff':'#fafafa'}}>
               <div style={{padding:'16px 24px',fontSize:14,fontWeight:500,color:'#444'}}>{r.feature}</div>
-              {r.values.map((v,j)=><div key={j} style={{padding:'16px 16px',textAlign:'center',background:plans[j]?.highlighted?'rgba(0,0,0,0.03)':'transparent'}}>{cell(v)}</div>)}
+              {r.values.map((v,j)=><div key={j} style={{padding:'16px 16px',textAlign:'center',background:safePlans[j]?.highlighted?'rgba(0,0,0,0.03)':'transparent'}}>{cell(v)}</div>)}
             </div>
           ))}
         </div>
@@ -996,10 +1011,11 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
 type Project = { title: string; category: string; image: string; desc?: string; link?: string };
 export default function Portfolio({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Project[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const cats = ['All', ...Array.from(new Set(items.map(p=>p.category)))];
+  const safeItems = (items || []).filter(Boolean) as Project[];
+  const cats = ['All', ...Array.from(new Set(safeItems.map(p=>p.category)))];
   const [active, setActive] = useState('All');
   const [hover, setHover] = useState<number|null>(null);
-  const filtered = active==='All'?items:items.filter(p=>p.category===active);
+  const filtered = active==='All'?safeItems:safeItems.filter(p=>p.category===active);
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -1029,6 +1045,7 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
 type Event = { title: string; date: string; time?: string; location?: string; desc?: string; image?: string; link?: string; badge?: string };
 export default function EventsList({ title, subtitle, items, accentColor, layout }: { title: string; subtitle?: string; items: Event[]; accentColor?: string; layout?: 'list'|'grid' }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || []).filter(Boolean) as Event[];
   const grid = layout === 'grid';
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
@@ -1038,8 +1055,8 @@ export default function EventsList({ title, subtitle, items, accentColor, layout
           {subtitle&&<p style={{color:'#888',fontSize:16,margin:0}}>{subtitle}</p>}
         </div>
         <div style={{display:grid?'grid':'flex',gridTemplateColumns:grid?'repeat(auto-fill,minmax(300px,1fr))':undefined,flexDirection:grid?undefined:'column',gap:grid?24:0}}>
-          {items.map((ev,i)=>(
-            <div key={i} style={{background:'#fafafa',borderRadius:grid?20:0,overflow:'hidden',borderBottom:!grid&&i<items.length-1?'1px solid #f0f0f0':'none',display:'flex',flexDirection:grid?'column':'row',alignItems:grid?'stretch':'center',gap:grid?0:24,padding:grid?0:'20px 0',transition:'box-shadow 0.2s'}} onMouseOver={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)')} onMouseOut={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='none')}>
+          {safeItems.map((ev,i)=>(
+            <div key={i} style={{background:'#fafafa',borderRadius:grid?20:0,overflow:'hidden',borderBottom:!grid&&i<safeItems.length-1?'1px solid #f0f0f0':'none',display:'flex',flexDirection:grid?'column':'row',alignItems:grid?'stretch':'center',gap:grid?0:24,padding:grid?0:'20px 0',transition:'box-shadow 0.2s'}} onMouseOver={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.08)')} onMouseOut={e=>grid&&((e.currentTarget as HTMLElement).style.boxShadow='none')}>
               {ev.image&&<img src={ev.image} alt={ev.title} style={{width:grid?'100%':100,height:grid?180:100,objectFit:'cover',flexShrink:0,borderRadius:grid?'0':'12px'}}/>}
               <div style={{padding:grid?20:0,flex:1}}>
                 {ev.badge&&<span style={{background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:50,display:'inline-block',marginBottom:8,textTransform:'uppercase',letterSpacing:'0.05em'}}>{ev.badge}</span>}
@@ -1096,12 +1113,13 @@ export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, a
 type Badge = { label: string; icon?: string; sub?: string };
 export default function TrustBadges({ items, title, accentColor }: { items: Badge[]; title?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || []).filter(Boolean);
   return (
     <section style={{padding:'48px 40px',background:'var(--bg,#fafafa)',borderTop:'1px solid #f0f0f0',borderBottom:'1px solid #f0f0f0'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {title&&<p style={{textAlign:'center',fontSize:13,fontWeight:600,color:'#bbb',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:28}}>{title}</p>}
         <div style={{display:'flex',flexWrap:'wrap',gap:24,justifyContent:'center',alignItems:'center'}}>
-          {items.map((b,i)=>(
+          {safeItems.map((b,i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 24px',background:'#fff',borderRadius:50,border:'1.5px solid #f0f0f0',boxShadow:'0 2px 8px rgba(0,0,0,0.04)'}}>
               {b.icon&&<span style={{fontSize:22}}>{b.icon}</span>}
               <div><div style={{fontSize:13,fontWeight:700,color:'#222'}}>{b.label}</div>{b.sub&&<div style={{fontSize:11,color:'#aaa'}}>{b.sub}</div>}</div>
@@ -1169,9 +1187,10 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
 type Hour = { day: string; open?: string; close?: string; closed?: boolean };
 export default function HoursTable({ title, hours, note, accentColor }: { title?: string; hours: Hour[]; note?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeHours = (hours || []).filter(Boolean);
   const today = new Date().toLocaleDateString('en-US',{weekday:'long'});
   const now = new Date();
-  const todayHours = hours.find(h=>h.day===today);
+  const todayHours = safeHours.find(h=>h.day===today);
   const isOpenNow = ()=>{if(!todayHours||todayHours.closed||!todayHours.open||!todayHours.close)return false;const[oh,om]=todayHours.open.split(':').map(Number);const[ch,cm]=todayHours.close.split(':').map(Number);const cur=now.getHours()*60+now.getMinutes();return cur>=oh*60+om&&cur<=ch*60+cm;};
   return (
     <section style={{padding:'60px 40px',background:'var(--bg,#fff)'}}>
@@ -1182,7 +1201,7 @@ export default function HoursTable({ title, hours, note, accentColor }: { title?
             <span style={{color:'#fff',fontWeight:700,fontSize:15}}>Hours</span>
             <span style={{background:isOpenNow()?'#22c55e':'#ef4444',color:'#fff',fontSize:12,fontWeight:700,padding:'3px 12px',borderRadius:50}}>{isOpenNow()?'Open Now':'Closed Now'}</span>
           </div>
-          {hours.map((h,i)=>{const isT=h.day===today;return(<div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 24px',borderBottom:i<hours.length-1?'1px solid #f0f0f0':'none',background:isT?'rgba(0,0,0,0.02)':'transparent'}}>
+          {safeHours.map((h,i)=>{const isT=h.day===today;return(<div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 24px',borderBottom:i<safeHours.length-1?'1px solid #f0f0f0':'none',background:isT?'rgba(0,0,0,0.02)':'transparent'}}>
             <span style={{fontSize:14,fontWeight:isT?800:500,color:isT?accent:'#555'}}>{h.day}{isT&&' (Today)'}</span>
             <span style={{fontSize:14,color:h.closed?'#ef4444':isT?accent:'#666',fontWeight:isT?700:400}}>{h.closed?'Closed':\`\${h.open} – \${h.close}\`}</span>
           </div>);})}
@@ -1221,6 +1240,7 @@ export default function ProductSpotlight({ title, subtitle, description, image, 
 type Location = { name: string; address: string; phone?: string; hours?: string; image?: string; link?: string };
 export default function LocationCards({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Location[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || []).filter(Boolean) as Location[];
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
@@ -1229,7 +1249,7 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:24}}>
-          {items.map((loc,i)=>(
+          {safeItems.map((loc,i)=>(
             <div key={i} style={{background:'#fafafa',borderRadius:20,overflow:'hidden',border:'1px solid #f0f0f0',transition:'box-shadow 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.boxShadow='0 8px 32px rgba(0,0,0,0.1)'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.boxShadow='none'}>
               {loc.image&&<img src={loc.image} alt={loc.name} style={{width:'100%',height:180,objectFit:'cover',display:'block'}}/>}
               <div style={{padding:24}}>
@@ -1337,10 +1357,11 @@ export default function VideoHero({ title, subtitle, cta, ctaHref, cta2, cta2Hre
 type Block = { type: 'h2'|'h3'|'p'|'quote'|'list'; content: string; items?: string[] };
 export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Block[]; accentColor?: string; maxWidth?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeBlocks = (blocks || []).filter(Boolean);
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:maxWidth||720,margin:'0 auto'}}>
-        {blocks.map((b,i)=>{
+        {safeBlocks.map((b,i)=>{
           if(b.type==='h2')return<h2 key={i} style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 16px'}}>{b.content}</h2>;
           if(b.type==='h3')return<h3 key={i} style={{fontSize:22,fontWeight:700,margin:'0 0 12px'}}>{b.content}</h3>;
           if(b.type==='p')return<p key={i} style={{fontSize:17,color:'#555',lineHeight:1.8,margin:'0 0 20px'}}>{b.content}</p>;
@@ -1357,6 +1378,7 @@ export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Bl
 type Partner = { name: string; logo?: string; desc?: string; url?: string };
 export default function Partners({ title, subtitle, items, accentColor, showDesc }: { title?: string; subtitle?: string; items: Partner[]; accentColor?: string; showDesc?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || []).filter(Boolean) as Partner[];
   return (
     <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -1365,7 +1387,7 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
           {subtitle&&<p style={{color:'#888',fontSize:16}}>{subtitle}</p>}
         </div>}
         <div style={{display:'grid',gridTemplateColumns:showDesc?\`repeat(auto-fill,minmax(240px,1fr))\`:\`repeat(auto-fill,minmax(160px,1fr))\`,gap:showDesc?24:16,alignItems:'center'}}>
-          {items.map((p,i)=>(
+          {safeItems.map((p,i)=>(
             <a key={i} href={p.url||'#'} style={{textDecoration:'none',display:'flex',flexDirection:showDesc?'column':'row',alignItems:'center',gap:12,padding:showDesc?24:16,borderRadius:16,border:'1.5px solid #f0f0f0',background:'#fafafa',transition:'all 0.2s',color:'inherit'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.borderColor=accent;(e.currentTarget as HTMLElement).style.background='#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.borderColor='#f0f0f0';(e.currentTarget as HTMLElement).style.background='#fafafa'}}>
               {p.logo?<img src={p.logo} alt={p.name} style={{height:36,objectFit:'contain',filter:'grayscale(1)',transition:'filter 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.filter='none'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.filter='grayscale(1)'}/>:<div style={{fontWeight:800,fontSize:16,color:'#bbb'}}>{p.name}</div>}
               {showDesc&&<div><div style={{fontWeight:700,fontSize:14}}>{p.name}</div>{p.desc&&<p style={{fontSize:13,color:'#888',margin:'4px 0 0'}}>{p.desc}</p>}</div>}
@@ -1381,6 +1403,7 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
 type Award = { title: string; org?: string; year?: string; icon?: string; image?: string };
 export default function Awards({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Award[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeItems = (items || []).filter(Boolean) as Award[];
   return (
     <section style={{padding:'60px 40px',background:'var(--bg,#fafafa)'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -1389,7 +1412,7 @@ export default function Awards({ title, subtitle, items, accentColor }: { title?
           {subtitle&&<p style={{color:'#888',fontSize:15}}>{subtitle}</p>}
         </div>}
         <div style={{display:'flex',flexWrap:'wrap',gap:20,justifyContent:'center'}}>
-          {items.map((a,i)=>(
+          {safeItems.map((a,i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'16px 24px',background:'#fff',borderRadius:16,border:'1.5px solid #f0f0f0',boxShadow:'0 2px 12px rgba(0,0,0,0.04)'}}>
               {a.image?<img src={a.image} alt={a.title} style={{height:48,objectFit:'contain'}}/>:<div style={{fontSize:32}}>{a.icon||'🏆'}</div>}
               <div><div style={{fontWeight:700,fontSize:15,color:'#222'}}>{a.title}</div>{(a.org||a.year)&&<div style={{fontSize:12,color:'#aaa'}}>{[a.org,a.year].filter(Boolean).join(' · ')}</div>}</div>
