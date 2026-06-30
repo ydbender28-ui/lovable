@@ -75,41 +75,48 @@ export default function Features({ tag, title, items }: { tag?: string; title: s
 type MenuItem = { id?: number; name: string; price: number | string; desc: string; category: string; badge?: string; image?: string };
 type CartItem = { item: MenuItem; qty: number };
 export default function MenuGrid({ title, subtitle, items, categories, accentColor }: { title: string; subtitle?: string; items: MenuItem[]; categories?: string[]; accentColor?: string }) {
-  const accent = accentColor || '#c2410c';
+  const accent = accentColor || 'var(--accent,#111)';
   const cats = categories || [...new Set(items.map(i => i.category))];
   const [active, setActive] = useState('All');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [checkedOut, setCheckedOut] = useState(false);
+  const [adding, setAdding] = useState<string|null>(null);
   const filtered = active === 'All' ? items : items.filter(i => i.category === active);
   const cartCount = cart.reduce((s, c) => s + c.qty, 0);
   const cartTotal = cart.reduce((s, c) => s + (parseFloat(String(c.item.price)) * c.qty), 0);
   useEffect(() => { window.dispatchEvent(new CustomEvent('cartupdate', { detail: { count: cartCount, open: () => setCartOpen(true) } })); }, [cartCount]);
   useEffect(() => { const h = (e: Event) => { if ((e as CustomEvent).detail === 'open') setCartOpen(true); }; window.addEventListener('carttrigger', h); return () => window.removeEventListener('carttrigger', h); }, []);
-  const addToCart = (item: MenuItem) => setCart(prev => { const ex = prev.find(c => c.item.name === item.name); return ex ? prev.map(c => c.item.name === item.name ? {...c, qty: c.qty+1} : c) : [...prev, {item, qty:1}]; });
+  const addToCart = (item: MenuItem) => {
+    setAdding(item.name);
+    setTimeout(() => setAdding(null), 700);
+    setCart(prev => { const ex = prev.find(c => c.item.name === item.name); return ex ? prev.map(c => c.item.name === item.name ? {...c, qty: c.qty+1} : c) : [...prev, {item, qty:1}]; });
+  };
   const updateQty = (name: string, delta: number) => setCart(prev => prev.map(c => c.item.name === name ? {...c, qty: Math.max(0, c.qty+delta)} : c).filter(c => c.qty > 0));
+  const handleCheckout = () => { setCheckedOut(true); setTimeout(() => { setCart([]); setCheckedOut(false); setCartOpen(false); }, 3000); };
   return (
-    <section id="menu" style={{ padding:'80px 40px', background:'#faf9f7' }}>
+    <section id="menu" style={{ padding:'80px 40px', background:'var(--bg,#faf9f7)' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
-        <div style={{ marginBottom:8 }}>
-          <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
-        </div>
-        {subtitle && <p style={{ color:'#666', fontSize:16, marginBottom:32 }}>{subtitle}</p>}
+        <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:8 }}>{title}</h2>
+        {subtitle && <p style={{ color:'#888', fontSize:16, marginBottom:32 }}>{subtitle}</p>}
         <div style={{ display:'flex', gap:8, marginBottom:40, flexWrap:'wrap' }}>
           {['All', ...cats].map(c => (
-            <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1px solid #ddd', background: active===c ? accent : '#fff', color: active===c ? '#fff' : '#555', fontSize:14, fontWeight:500, cursor:'pointer', transition:'all 0.2s' }}>{c}</button>
+            <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1.5px solid #e5e5e5', background: active===c ? accent : 'transparent', color: active===c ? '#fff' : '#666', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s', letterSpacing:'0.01em' }}>{c}</button>
           ))}
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(290px, 1fr))', gap:24 }}>
           {filtered.map((item, i) => (
-            <div key={i} style={{ background:'#fff', borderRadius:16, border:'1px solid #eee', overflow:'hidden', transition:'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 12px 32px rgba(0,0,0,0.1)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
-              {item.image && <div style={{ position:'relative' }}><img src={item.image} alt={item.name} style={{ width:'100%', height:200, objectFit:'cover', display:'block' }} />{item.badge && <span style={{ position:'absolute', top:10, left:10, background:accent, color:'#fff', fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:50 }}>{item.badge}</span>}<span style={{ position:'absolute', top:10, right:10, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:50 }}>{item.category}</span></div>}
-              <div style={{ padding:'16px 18px 18px' }}>
-                {!item.image && item.badge && <span style={{ fontSize:11, background:accent, color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600, marginBottom:8, display:'inline-block' }}>{item.badge}</span>}
-                <h3 style={{ fontSize:17, fontWeight:700, margin:'0 0 6px' }}>{item.name}</h3>
-                <p style={{ fontSize:13, color:'#888', margin:'0 0 14px', lineHeight:1.5 }}>{item.desc}</p>
+            <div key={i} style={{ background:'#fff', borderRadius:20, overflow:'hidden', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', transition:'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 16px 40px rgba(0,0,0,0.12)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 12px rgba(0,0,0,0.06)'}}>
+              {item.image && <div style={{ position:'relative' }}><img src={item.image} alt={item.name} style={{ width:'100%', height:210, objectFit:'cover', display:'block' }} />{item.badge && <span style={{ position:'absolute', top:12, left:12, background:'rgba(0,0,0,0.75)', backdropFilter:'blur(8px)', color:'#fff', fontSize:11, fontWeight:700, padding:'4px 12px', borderRadius:50, letterSpacing:'0.05em', textTransform:'uppercase' }}>{item.badge}</span>}</div>}
+              <div style={{ padding:'18px 20px 20px' }}>
+                {!item.image && item.badge && <span style={{ fontSize:11, background:accent, color:'#fff', padding:'3px 10px', borderRadius:50, fontWeight:700, marginBottom:10, display:'inline-block', textTransform:'uppercase', letterSpacing:'0.05em' }}>{item.badge}</span>}
+                <h3 style={{ fontSize:16, fontWeight:700, margin:'0 0 5px', letterSpacing:'-0.01em' }}>{item.name}</h3>
+                <p style={{ fontSize:13, color:'#999', margin:'0 0 16px', lineHeight:1.55 }}>{item.desc}</p>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <span style={{ fontSize:19, fontWeight:800, color:accent }}>\${parseFloat(String(item.price)).toFixed(2)}</span>
-                  <button onClick={() => addToCart(item)} style={{ background:accent, color:'#fff', border:'none', borderRadius:8, padding:'8px 16px', fontWeight:700, fontSize:13, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>Add to Cart +</button>
+                  <span style={{ fontSize:20, fontWeight:800, letterSpacing:'-0.02em' }}>\${parseFloat(String(item.price)).toFixed(2)}</span>
+                  <button onClick={() => addToCart(item)} style={{ background: adding===item.name ? '#22c55e' : accent, color:'#fff', border:'none', borderRadius:50, padding:'9px 20px', fontWeight:700, fontSize:13, cursor:'pointer', transition:'all 0.2s', display:'flex', alignItems:'center', gap:6 }}>
+                    {adding===item.name ? '✓ Added' : '+ Add'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -117,34 +124,53 @@ export default function MenuGrid({ title, subtitle, items, categories, accentCol
         </div>
       </div>
       {cartOpen && (
-        <div style={{ position:'fixed', inset:0, zIndex:500 }}>
-          <div onClick={() => setCartOpen(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.5)' }} />
-          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:400, background:'#fff', display:'flex', flexDirection:'column', boxShadow:'-4px 0 40px rgba(0,0,0,0.15)' }}>
-            <div style={{ padding:'20px 24px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Your Order ({cartCount})</h2>
-              <button onClick={() => setCartOpen(false)} style={{ background:'#f0f0f0', border:'none', borderRadius:8, width:34, height:34, cursor:'pointer', fontSize:16 }}>✕</button>
+        <div style={{ position:'fixed', inset:0, zIndex:1000 }}>
+          <div onClick={() => setCartOpen(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)' }} />
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:420, background:'#fff', display:'flex', flexDirection:'column', boxShadow:'-8px 0 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding:'24px 28px 20px', borderBottom:'1px solid #f0f0f0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div>
+                <h2 style={{ fontSize:22, fontWeight:800, margin:0, letterSpacing:'-0.02em' }}>Your Order</h2>
+                <p style={{ fontSize:13, color:'#999', margin:'2px 0 0' }}>{cartCount} {cartCount===1?'item':'items'}</p>
+              </div>
+              <button onClick={() => setCartOpen(false)} style={{ background:'#f5f5f5', border:'none', borderRadius:50, width:38, height:38, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center', color:'#666', transition:'background 0.15s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#eee'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#f5f5f5'}>✕</button>
             </div>
-            <div style={{ flex:1, overflowY:'auto', padding:'16px 24px' }}>
+            <div style={{ flex:1, overflowY:'auto', padding:'20px 28px' }}>
+              {cart.length === 0 && <div style={{ textAlign:'center', padding:'60px 0', color:'#ccc' }}><div style={{ fontSize:48, marginBottom:12 }}>🛍️</div><p style={{ fontSize:15, fontWeight:500 }}>Your cart is empty</p></div>}
               {cart.map((c, i) => (
-                <div key={i} style={{ background:'#faf9f7', borderRadius:12, padding:'14px 16px', marginBottom:12 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-                    <div style={{ fontWeight:700, fontSize:15 }}>{c.item.name}</div>
-                    <div style={{ fontWeight:700, color:accent }}>\${(parseFloat(String(c.item.price))*c.qty).toFixed(2)}</div>
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 0', borderBottom:'1px solid #f5f5f5' }}>
+                  {c.item.image && <img src={c.item.image} alt={c.item.name} style={{ width:56, height:56, borderRadius:12, objectFit:'cover', flexShrink:0 }} />}
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontWeight:700, fontSize:14, marginBottom:2, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.item.name}</div>
+                    <div style={{ fontSize:13, color:'#999' }}>\${parseFloat(String(c.item.price)).toFixed(2)} each</div>
                   </div>
-                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                    <button onClick={() => updateQty(c.item.name, -1)} style={{ background:'#eee', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontWeight:700, fontSize:14 }}>−</button>
-                    <span style={{ fontWeight:700, minWidth:20, textAlign:'center' }}>{c.qty}</span>
-                    <button onClick={() => updateQty(c.item.name, 1)} style={{ background:accent, color:'#fff', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontWeight:700, fontSize:14 }}>+</button>
+                  <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+                    <button onClick={() => updateQty(c.item.name, -1)} style={{ background:'#f5f5f5', border:'none', borderRadius:50, width:30, height:30, cursor:'pointer', fontWeight:700, fontSize:15, display:'flex', alignItems:'center', justifyContent:'center', color:'#333', transition:'background 0.15s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.background='#eee'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.background='#f5f5f5'}>−</button>
+                    <span style={{ fontWeight:700, fontSize:15, minWidth:20, textAlign:'center' }}>{c.qty}</span>
+                    <button onClick={() => updateQty(c.item.name, 1)} style={{ background:accent, color:'#fff', border:'none', borderRadius:50, width:30, height:30, cursor:'pointer', fontWeight:700, fontSize:15, display:'flex', alignItems:'center', justifyContent:'center', transition:'opacity 0.15s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>+</button>
                   </div>
+                  <div style={{ fontWeight:800, fontSize:15, minWidth:52, textAlign:'right' }}>\${(parseFloat(String(c.item.price))*c.qty).toFixed(2)}</div>
                 </div>
               ))}
             </div>
-            <div style={{ padding:'20px 24px', borderTop:'1px solid #eee' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:16, fontSize:18, fontWeight:800 }}>
-                <span>Total</span><span style={{ color:accent }}>\${cartTotal.toFixed(2)}</span>
+            {cart.length > 0 && (
+              <div style={{ padding:'20px 28px 28px', borderTop:'1px solid #f0f0f0' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6, fontSize:13, color:'#999' }}>
+                  <span>Subtotal</span><span>\${cartTotal.toFixed(2)}</span>
+                </div>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:20, fontSize:19, fontWeight:800, letterSpacing:'-0.02em' }}>
+                  <span>Total</span><span>\${cartTotal.toFixed(2)}</span>
+                </div>
+                {checkedOut ? (
+                  <div style={{ background:'#f0fdf4', border:'1.5px solid #bbf7d0', borderRadius:16, padding:'20px', textAlign:'center' }}>
+                    <div style={{ fontSize:32, marginBottom:8 }}>✓</div>
+                    <div style={{ fontWeight:800, fontSize:16, color:'#166534' }}>Order Placed!</div>
+                    <div style={{ fontSize:13, color:'#4ade80', marginTop:4 }}>We'll have it ready shortly.</div>
+                  </div>
+                ) : (
+                  <button onClick={handleCheckout} style={{ width:'100%', background:accent, color:'#fff', border:'none', borderRadius:14, padding:'16px', fontWeight:800, fontSize:16, cursor:'pointer', letterSpacing:'-0.01em', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>Place Order · \${cartTotal.toFixed(2)}</button>
+                )}
               </div>
-              <button style={{ width:'100%', background:accent, color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor:'pointer' }}>Checkout →</button>
-            </div>
+            )}
           </div>
         </div>
       )}
