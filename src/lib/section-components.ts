@@ -1401,8 +1401,15 @@ export default function HoursTable({ title, hours, note, accentColor }: { title?
   const now = new Date();
   const todayHours = safeHours.find(h=>h.day===today);
   const isOpenNow = ()=>{if(!todayHours||todayHours.closed||!todayHours.open||!todayHours.close)return false;const[oh,om]=todayHours.open.split(':').map(Number);const[ch,cm]=todayHours.close.split(':').map(Number);const cur=now.getHours()*60+now.getMinutes();return cur>=oh*60+om&&cur<=ch*60+cm;};
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'60px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:560,margin:'0 auto'}}>
         {title&&<h2 style={{fontSize:32,fontWeight:700,letterSpacing:'-0.02em',marginBottom:24,textAlign:'center'}}>{title}</h2>}
         <div style={{background:'#fafafa',borderRadius:20,overflow:'hidden',border:'1px solid #f0f0f0'}}>
@@ -1425,8 +1432,15 @@ export default function HoursTable({ title, hours, note, accentColor }: { title?
 type Feature = { icon?: string; label: string };
 export default function ProductSpotlight({ title, subtitle, description, image, price, originalPrice, cta, ctaHref, features, badge, accentColor, imageLeft }: { title: string; subtitle?: string; description?: string; image: string; price?: string; originalPrice?: string; cta?: string; ctaHref?: string; features?: Feature[]; badge?: string; accentColor?: string; imageLeft?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 1fr',gap:64,alignItems:'center',direction:imageLeft?'rtl':'ltr'}}>
         <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.1)',position:'relative',direction:'ltr'}}>
           <img src={image} alt={title} style={{width:'100%',display:'block',aspectRatio:'4/3',objectFit:'cover'}} />
@@ -1450,8 +1464,15 @@ type Location = { name: string; address: string; phone?: string; hours?: string;
 export default function LocationCards({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Location[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
   const safeItems = (items || []).filter(Boolean) as Location[];
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1200,margin:'0 auto'}}>
         <div style={{textAlign:'center',marginBottom:48}}>
           <h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>
@@ -1481,8 +1502,15 @@ export default function QuoteBlock({ quote, author, role, image, accentColor, da
   const accent = accentColor || 'var(--accent,#111)';
   const bg = dark ? accent : 'var(--bg,#fafafa)';
   const fg = dark ? '#fff' : '#111';
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:bg}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:bg, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:800,margin:'0 auto',textAlign:'center'}}>
         <div style={{fontSize:80,lineHeight:0.8,color:dark?'rgba(255,255,255,0.2)':accent,marginBottom:24,fontFamily:'Georgia,serif'}}>"</div>
         <blockquote style={{fontSize:28,fontWeight:700,lineHeight:1.4,letterSpacing:'-0.02em',color:fg,margin:'0 0 40px',fontStyle:'italic'}}>{quote}</blockquote>
@@ -1506,8 +1534,15 @@ export default function IconFeatures({ title, subtitle, items, accentColor, colu
   const cols = columns || (safeItems.length <= 3 ? Math.max(1, safeItems.length) : safeItems.length <= 4 ? 4 : safeItems.length <= 6 ? 3 : 4);
   const bg = dark ? '#0f0f0f' : 'var(--bg,#fff)';
   const fg = dark ? '#fff' : '#111';
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:bg}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:bg, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:56}}>
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px',color:fg}}>{title}</h2>}
@@ -1530,13 +1565,12 @@ export default function IconFeatures({ title, subtitle, items, accentColor, colu
 "/components/sections/StickyBar.tsx": `import React, { useState, useEffect } from 'react';
 export default function StickyBar({ text, cta, ctaHref, accentColor, showAfterScroll }: { text: string; cta: string; ctaHref?: string; accentColor?: string; showAfterScroll?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const [visible, setVisible] = useState(!showAfterScroll);
-  useEffect(()=>{if(!showAfterScroll)return;const h=()=>setVisible(window.scrollY>showAfterScroll);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h);},[showAfterScroll]);
-  if(!visible)return null;
+  const [shown, setShown] = useState(!showAfterScroll);
+  useEffect(()=>{if(!showAfterScroll)return;const h=()=>setShown(window.scrollY>showAfterScroll);window.addEventListener('scroll',h);return()=>window.removeEventListener('scroll',h);},[showAfterScroll]);
   return (
-    <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:999,background:accent,color:'#fff',padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 -4px 24px rgba(0,0,0,0.15)',backdropFilter:'blur(8px)'}}>
+    <div style={{position:'fixed',bottom:0,left:0,right:0,zIndex:999,background:accent,color:'#fff',padding:'14px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 -4px 24px rgba(0,0,0,0.15)',backdropFilter:'blur(8px)',transform: shown ? 'translateY(0)' : 'translateY(100%)',transition:'transform 0.3s ease'}}>
       <span style={{fontSize:15,fontWeight:600}}>{text}</span>
-      <a href={ctaHref||'#'} style={{background:'#fff',color:accent,borderRadius:50,padding:'10px 24px',fontWeight:800,fontSize:14,textDecoration:'none',flexShrink:0,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>{cta}</a>
+      <a href={ctaHref||'#'} style={{background:'#fff',color:accent,borderRadius:50,padding:'10px 24px',fontWeight:800,fontSize:14,textDecoration:'none',flexShrink:0,transition:'opacity 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.88'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta}</a>
     </div>
   );
 }`,
@@ -1567,8 +1601,15 @@ type Block = { type: 'h2'|'h3'|'p'|'quote'|'list'; content: string; items?: stri
 export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Block[]; accentColor?: string; maxWidth?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
   const safeBlocks = (blocks || []).filter(Boolean);
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:maxWidth||720,margin:'0 auto'}}>
         {safeBlocks.map((b,i)=>{
           if(b.type==='h2')return<h2 key={i} style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 16px'}}>{b.content}</h2>;
@@ -1588,8 +1629,15 @@ type Partner = { name: string; logo?: string; desc?: string; url?: string };
 export default function Partners({ title, subtitle, items, accentColor, showDesc }: { title?: string; subtitle?: string; items: Partner[]; accentColor?: string; showDesc?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
   const safeItems = (items || []).filter(Boolean) as Partner[];
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:48}}>
           {title&&<h2 style={{fontSize:38,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 12px'}}>{title}</h2>}
@@ -1613,8 +1661,15 @@ type Award = { title: string; org?: string; year?: string; icon?: string; image?
 export default function Awards({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Award[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
   const safeItems = (items || []).filter(Boolean) as Award[];
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'60px 40px',background:'var(--bg,#fafafa)'}}>
+    <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fafafa)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {(title||subtitle)&&<div style={{textAlign:'center',marginBottom:40}}>
           {title&&<h2 style={{fontSize:34,fontWeight:700,letterSpacing:'-0.02em',margin:'0 0 8px'}}>{title}</h2>}
@@ -1639,8 +1694,15 @@ type Quote = { text: string; author: string; image?: string };
 export default function SocialProof({ stats, quotes, accentColor, dark }: { stats?: Stat[]; quotes?: Quote[]; accentColor?: string; dark?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
   const bg = dark ? '#0f0f0f' : accent;
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'80px 40px',background:bg,color:'#fff'}}>
+    <section ref={ref as any} style={{padding:'80px 40px',background:bg,color:'#fff', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
         {stats&&<div style={{display:'grid',gridTemplateColumns:\`repeat(\${stats.length},1fr)\`,gap:32,marginBottom:quotes?60:0}}>
           {stats.map((s,i)=>(
@@ -1671,8 +1733,15 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
 type Block = { image: string; title: string; desc: string; cta?: string; ctaHref?: string; badge?: string; imageLeft?: boolean };
 export default function ImageText({ blocks, accentColor }: { blocks: Block[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const ref = React.useRef<HTMLElement>(null);
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
+    if(ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
   return (
-    <section style={{padding:'60px 40px',background:'var(--bg,#fff)'}}>
+    <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'flex',flexDirection:'column',gap:80}}>
         {blocks.map((b,i)=>{
           const left = b.imageLeft !== undefined ? b.imageLeft : i%2===0;
