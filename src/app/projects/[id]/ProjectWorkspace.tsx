@@ -324,6 +324,8 @@ export default function ProjectWorkspace({
   }
   const abortRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [generationSuggestion, setGenerationSuggestion] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [iframeError, setIframeError] = useState<string | null>(null);
   const handleSandpackError = useCallback((err: SandpackErr | null) => {
@@ -1325,6 +1327,8 @@ export default function ProjectWorkspace({
     streamAccum.current = "";
     preStreamFiles.current = { ...files };
     setError(null);
+    setGenerationError(null);
+    setGenerationSuggestion(null);
     setIframeError(null);
     setLastPrompt(text);
 
@@ -1454,7 +1458,10 @@ export default function ProjectWorkspace({
               setMobileTab("preview");
             } else if (eventLine === "error") {
               const errMsg = payload.error ?? "Generation failed";
-              setMessages(prev => [...prev, { id: `err-${Date.now()}`, role: "assistant", content: `Error: ${errMsg}. Try again or rephrase your request.` }]);
+              const errSuggestion = payload.suggestion ?? null;
+              setGenerationError(errMsg);
+              setGenerationSuggestion(errSuggestion);
+              setMessages(prev => [...prev, { id: `err-${Date.now()}`, role: "assistant", content: `❌ ${errMsg}${errSuggestion ? '. ' + errSuggestion : ''}` }]);
               setSuggestions([]);
             }
           } catch { /* ignore */ }
@@ -2486,6 +2493,21 @@ export default function ProjectWorkspace({
               <button onClick={() => setEditingText(null)} className="text-xs text-[#9090a0] hover:text-[#17171c] px-3 py-1">Cancel</button>
               <button onClick={applyTextEdit} className="text-xs rounded-lg bg-gradient-to-r from-[#6a1ff7] to-[#0a8ff0] text-white px-4 py-1.5 font-medium hover:opacity-90">Save</button>
             </div>
+          </div>
+        )}
+        {generationError && !loading && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-b border-red-200 shrink-0">
+            <div className="flex-1 min-w-0">
+              <span className="text-xs text-red-600 font-semibold">❌ {generationError}</span>
+              {generationSuggestion && <span className="text-xs text-red-400 ml-2">{generationSuggestion}</span>}
+            </div>
+            {lastPrompt && (
+              <button onClick={() => { setGenerationError(null); setGenerationSuggestion(null); runGenerate(lastPrompt); }}
+                className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium hover:bg-red-700 transition-colors whitespace-nowrap shrink-0">
+                ↺ Try Again
+              </button>
+            )}
+            <button onClick={() => { setGenerationError(null); setGenerationSuggestion(null); }} className="text-red-400 hover:text-red-600 text-sm shrink-0">✕</button>
           </div>
         )}
         {autoFixAttempt > 0 && loading && (

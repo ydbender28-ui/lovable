@@ -207,8 +207,29 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       return { result, actualCredits, aiCostUsd: actualCost, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
-      await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } }).catch(() => {});
-      return { error: message };
+
+      // Categorize error for better UX
+      let userMessage = message;
+      let suggestion = '';
+
+      if (message.includes('overloaded') || message.includes('529')) {
+        userMessage = 'Claude is experiencing high traffic right now';
+        suggestion = 'Please try again in 30 seconds';
+      } else if (message.includes('timeout') || message.includes('ETIMEDOUT')) {
+        userMessage = 'The request took too long to complete';
+        suggestion = 'Try a simpler prompt or try again';
+      } else if (message.includes('credits') || message.includes('quota')) {
+        userMessage = 'Insufficient API credits';
+        suggestion = 'Please add more credits to continue';
+      } else if (message.includes('output') || message.includes('token')) {
+        userMessage = 'Response was too long to complete';
+        suggestion = 'Try breaking your request into smaller pieces';
+      }
+
+      await prisma.message.create({
+        data: { projectId: id, role: "assistant", content: `❌ ${userMessage}${suggestion ? '. ' + suggestion : ''}` }
+      }).catch(() => {});
+      return { error: userMessage, suggestion };
     }
   })();
 
@@ -247,7 +268,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       }
 
       if ("error" in outcome) {
-        send("error", { error: outcome.error });
+        send("error", { error: outcome.error, suggestion: outcome.suggestion });
       } else {
         send("done", {
           files: outcome.result.files,
