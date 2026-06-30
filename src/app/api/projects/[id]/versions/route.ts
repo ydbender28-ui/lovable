@@ -14,7 +14,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     where: { projectId: id },
     orderBy: { createdAt: "desc" },
     take: 20,
-    select: { id: true, createdAt: true, modelUsed: true },
+    select: { id: true, createdAt: true, modelUsed: true, bookmarked: true, bookmarkNote: true },
   });
 
   return Response.json(versions);
