@@ -3577,6 +3577,393 @@ export default function DashboardShell({ brand, navItems=DN, pageTitle='Dashboar
 
 };
 
+﻿
+"/components/sections/ComingSoon.tsx": `
+import React, { useState, useEffect } from 'react';
+interface Social { platform: string; href: string; }
+interface ComingSoonProps { title?: string; subtitle?: string; launchDate?: string; backgroundImage?: string; socials?: Social[]; accentColor?: string; }
+export default function ComingSoon({ title = 'Coming Soon', subtitle = 'Something amazing is on the way.', launchDate, backgroundImage, socials = [], accentColor = '#6366f1' }: ComingSoonProps) {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    if (!launchDate) return;
+    const calc = () => {
+      const diff = new Date(launchDate).getTime() - Date.now();
+      if (diff <= 0) return;
+      setTimeLeft({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), minutes: Math.floor((diff % 3600000) / 60000), seconds: Math.floor((diff % 60000) / 1000) });
+    };
+    calc(); const id = setInterval(calc, 1000); return () => clearInterval(id);
+  }, [launchDate]);
+  const icons: Record<string, string> = { instagram: 'IG', twitter: 'TW', facebook: 'FB', linkedin: 'LI', youtube: 'YT', tiktok: 'TK' };
+  return (
+    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px', position: 'relative', background: backgroundImage ? `url(${backgroundImage}) center/cover no-repeat` : `linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)`, color: '#fff' }}>
+      {backgroundImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 640, width: '100%' }}>
+        <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: 40, border: `1px solid ${accentColor}60`, color: accentColor, fontSize: 13, fontWeight: 600, marginBottom: 24, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>We Are Launching</div>
+        <h1 style={{ fontSize: 'clamp(40px, 8vw, 80px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 20px', lineHeight: 1.05 }}>{title}</h1>
+        <p style={{ fontSize: 18, opacity: 0.75, marginBottom: 48, lineHeight: 1.6 }}>{subtitle}</p>
+        {launchDate && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 48, flexWrap: 'wrap' as const }}>
+            {([['days','Days'],['hours','Hours'],['minutes','Min'],['seconds','Sec']] as [string,string][]).map(([k, lbl]) => (
+              <div key={k} style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 16, padding: '20px 24px', minWidth: 80 }}>
+                <div style={{ fontSize: 'clamp(32px,5vw,52px)', fontWeight: 900, color: accentColor, lineHeight: 1 }}>{String((timeLeft as any)[k]).padStart(2,'0')}</div>
+                <div style={{ fontSize: 11, opacity: 0.5, marginTop: 6, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>{lbl}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {submitted ? (
+          <div style={{ padding: '20px 32px', borderRadius: 16, background: `${accentColor}20`, border: `1px solid ${accentColor}40`, color: accentColor, fontWeight: 700, fontSize: 16 }}>You are on the list!</div>
+        ) : (
+          <form onSubmit={e => { e.preventDefault(); if (email) setSubmitted(true); }} style={{ display: 'flex', gap: 10, maxWidth: 440, margin: '0 auto', flexWrap: 'wrap' as const }}>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" required style={{ flex: 1, minWidth: 200, padding: '14px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 15, outline: 'none' }} />
+            <button type="submit" style={{ padding: '14px 28px', borderRadius: 12, background: accentColor, color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap' as const }}>Notify Me</button>
+          </form>
+        )}
+        {socials.length > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 }}>
+            {socials.map((s, i) => (
+              <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', fontSize: 12, fontWeight: 700, textDecoration: 'none', color: '#fff' }}>{icons[s.platform] || s.platform.slice(0,2).toUpperCase()}</a>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/MaintenanceMode.tsx": `
+import React, { useEffect, useState } from 'react';
+interface MaintenanceModeProps { title?: string; message?: string; returnTime?: string; email?: string; accentColor?: string; }
+export default function MaintenanceMode({ title = "We will Be Right Back", message = 'We are performing scheduled maintenance to improve your experience.', returnTime, email, accentColor = '#6366f1' }: MaintenanceModeProps) {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setPct(p => { if (p >= 85) { clearInterval(id); return 85; } return p + 1; }), 60);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d0d14', color: '#f0f0f8', textAlign: 'center', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 520 }}>
+        <div style={{ fontSize: 72, marginBottom: 24 }}>🔧</div>
+        <h1 style={{ fontSize: 'clamp(28px,6vw,48px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 16px' }}>{title}</h1>
+        <p style={{ fontSize: 17, opacity: 0.65, lineHeight: 1.7, marginBottom: 40 }}>{message}</p>
+        <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 999, overflow: 'hidden', height: 8, marginBottom: 12 }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}99)`, borderRadius: 999, transition: 'width 0.6s ease' }} />
+        </div>
+        <div style={{ fontSize: 12, opacity: 0.4, marginBottom: 40 }}>Estimated progress: {pct}%</div>
+        {returnTime && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 14, marginBottom: 28 }}>Expected back: <strong>{returnTime}</strong></div>}
+        {email && <div style={{ fontSize: 14, opacity: 0.55 }}>Questions? <a href={`mailto:${email}`} style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>{email}</a></div>}
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/StickyContactBar.tsx": `
+import React, { useState, useEffect } from 'react';
+interface StickyContactBarProps { phone?: string; ctaText?: string; ctaHref?: string; message?: string; accentColor?: string; }
+export default function StickyContactBar({ phone = '(555) 123-4567', ctaText = 'Book Now', ctaHref = '#booking', message, accentColor = '#6366f1' }: StickyContactBarProps) {
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    const h = () => setVisible(window.scrollY > 400);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  if (!visible || dismissed) return null;
+  return (
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, background: '#fff', borderTop: '1px solid #e5e7eb', boxShadow: '0 -4px 24px rgba(0,0,0,0.1)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' as const }}>
+      {message && <span style={{ flex: 1, fontSize: 14, color: '#374151', minWidth: 150 }}>{message}</span>}
+      {phone && <a href={`tel:${phone.replace(/\D/g,'')}`} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151', textDecoration: 'none', fontWeight: 600, fontSize: 15, whiteSpace: 'nowrap' as const }}>📞 {phone}</a>}
+      <a href={ctaHref} style={{ padding: '10px 24px', borderRadius: 10, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap' as const, marginLeft: 'auto' }}>{ctaText}</a>
+      <button onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#9ca3af', lineHeight: 1, padding: '0 4px' }}>x</button>
+    </div>
+  );
+}`,
+
+"/components/sections/PopupModal.tsx": `
+import React, { useState, useEffect } from 'react';
+interface PopupModalProps { title?: string; description?: string; ctaText?: string; ctaHref?: string; image?: string; delay?: number; accentColor?: string; }
+export default function PopupModal({ title = 'Special Offer', description = 'Sign up now and get 20% off your first order.', ctaText = 'Claim Offer', ctaHref = '#contact', image, delay = 5000, accentColor = '#6366f1' }: PopupModalProps) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    try { if (localStorage.getItem('popup_dismissed')) return; } catch {}
+    const id = setTimeout(() => setOpen(true), delay);
+    return () => clearTimeout(id);
+  }, [delay]);
+  const dismiss = () => { setOpen(false); try { localStorage.setItem('popup_dismissed', String(Date.now() + 7 * 86400000)); } catch {} };
+  if (!open) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div onClick={dismiss} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }} />
+      <div style={{ position: 'relative', background: '#fff', borderRadius: 24, overflow: 'hidden', maxWidth: 480, width: '100%', boxShadow: '0 32px 80px rgba(0,0,0,0.25)' }}>
+        {image && <img src={image} alt="" style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }} />}
+        <button onClick={dismiss} style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(0,0,0,0.35)', color: '#fff', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>x</button>
+        <div style={{ padding: 36 }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em' }}>{title}</h2>
+          <p style={{ margin: '0 0 28px', color: '#6b7280', lineHeight: 1.6 }}>{description}</p>
+          {done ? (
+            <div style={{ padding: '14px 20px', borderRadius: 12, background: `${accentColor}15`, color: accentColor, fontWeight: 700, textAlign: 'center' as const }}>You are in!</div>
+          ) : (
+            <form onSubmit={e => { e.preventDefault(); setDone(true); }} style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email address" required style={{ padding: '13px 18px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 15, outline: 'none' }} />
+              <a href={ctaHref} onClick={() => setDone(true)} style={{ display: 'block', padding: '14px', borderRadius: 12, background: accentColor, color: '#fff', textAlign: 'center' as const, textDecoration: 'none', fontWeight: 700, fontSize: 16 }}>{ctaText}</a>
+            </form>
+          )}
+          <button onClick={dismiss} style={{ display: 'block', marginTop: 14, background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 13, width: '100%', textAlign: 'center' as const }}>No thanks</button>
+        </div>
+      </div>
+    </div>
+  );
+}`,
+
+"/components/sections/InteractiveMap.tsx": `
+import React from 'react';
+interface HoursRow { day: string; time: string; }
+interface InteractiveMapProps { businessName?: string; address?: string; phone?: string; hours?: HoursRow[]; mapQuery?: string; accentColor?: string; }
+export default function InteractiveMap({ businessName = 'Our Location', address = '123 Main St, City, ST 00000', phone = '(555) 123-4567', hours = [], mapQuery, accentColor = '#6366f1' }: InteractiveMapProps) {
+  const query = encodeURIComponent(mapQuery || address);
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${query}`;
+  const embedSrc = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  return (
+    <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', gap: 40, flexWrap: 'wrap' as const, alignItems: 'stretch' }}>
+        <div style={{ flex: '1 1 320px', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 32px rgba(0,0,0,0.1)', minHeight: 360 }}>
+          <iframe title="map" src={embedSrc} width="100%" height="100%" style={{ border: 0, display: 'block', minHeight: 360 }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+        </div>
+        <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', gap: 20 }}>
+          <h2 style={{ margin: 0, fontSize: 'clamp(22px,4vw,34px)', fontWeight: 800, letterSpacing: '-0.02em' }}>{businessName}</h2>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 20 }}>📍</span><span style={{ fontSize: 15, lineHeight: 1.6, color: '#374151' }}>{address}</span></div>
+          {phone && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 20 }}>📞</span><a href={`tel:${phone.replace(/\D/g,'')}`} style={{ fontSize: 15, color: accentColor, fontWeight: 600, textDecoration: 'none' }}>{phone}</a></div>}
+          {hours.length > 0 && (
+            <div style={{ background: 'var(--card, #f9fafb)', borderRadius: 14, padding: '16px 20px' }}>
+              {hours.map((h, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14, borderBottom: i < hours.length - 1 ? '1px solid #f0f0f0' : 'none' }}><span style={{ fontWeight: 600 }}>{h.day}</span><span style={{ color: '#6b7280' }}>{h.time}</span></div>)}
+            </div>
+          )}
+          <a href={mapsHref} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>Get Directions</a>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/TestimonialsCarousel.tsx": `
+import React, { useState, useEffect, useRef } from 'react';
+interface TItem { name: string; text: string; rating?: number; image?: string; role?: string; }
+interface TestimonialsCarouselProps { title?: string; items?: TItem[]; accentColor?: string; }
+export default function TestimonialsCarousel({ title = 'What Our Clients Say', items = [], accentColor = '#6366f1' }: TestimonialsCarouselProps) {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const list = items.length > 0 ? items : [{ name: 'Sarah K.', role: 'Verified Customer', text: 'Absolutely incredible experience from start to finish. Would recommend to anyone.', rating: 5, image: '' }];
+  useEffect(() => {
+    if (paused) return;
+    timerRef.current = setInterval(() => setIdx(i => (i + 1) % list.length), 5000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [paused, list.length]);
+  const prev = () => setIdx(i => (i - 1 + list.length) % list.length);
+  const next = () => setIdx(i => (i + 1) % list.length);
+  const item = list[idx];
+  return (
+    <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' as const }}>
+        <h2 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 800, marginBottom: 48, letterSpacing: '-0.02em' }}>{title}</h2>
+        <div style={{ position: 'relative', background: 'var(--card, #f9fafb)', borderRadius: 24, padding: '48px 52px', boxShadow: '0 4px 32px rgba(0,0,0,0.07)' }}>
+          <div style={{ fontSize: 56, color: accentColor, lineHeight: 1, marginBottom: 20, opacity: 0.3 }}>"</div>
+          <p style={{ fontSize: 'clamp(16px,2.5vw,20px)', lineHeight: 1.75, margin: '0 0 28px', color: '#374151', fontStyle: 'italic' as const }}>{item.text}</p>
+          {item.rating && <div style={{ color: '#f59e0b', fontSize: 22, marginBottom: 20 }}>{'★'.repeat(item.rating)}{'☆'.repeat(5 - item.rating)}</div>}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+            {item.image && <img src={item.image} alt={item.name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }} />}
+            <div style={{ textAlign: 'left' as const }}>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{item.name}</div>
+              {item.role && <div style={{ fontSize: 13, color: '#9ca3af' }}>{item.role}</div>}
+            </div>
+          </div>
+          <button onClick={prev} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '50%', width: 40, height: 40, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>&#8249;</button>
+          <button onClick={next} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '50%', width: 40, height: 40, cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>&#8250;</button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+          {list.map((_, i) => <button key={i} onClick={() => setIdx(i)} style={{ width: i === idx ? 24 : 8, height: 8, borderRadius: 4, background: i === idx ? accentColor : '#d1d5db', border: 'none', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} />)}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/ImageCompare.tsx": `
+import React, { useState, useRef, useCallback } from 'react';
+interface Pair { before: string; after: string; caption?: string; }
+interface ImageCompareProps { pairs?: Pair[]; accentColor?: string; title?: string; }
+export default function ImageCompare({ pairs = [], accentColor = '#6366f1', title }: ImageCompareProps) {
+  const [sliders, setSliders] = useState<number[]>((pairs.length > 0 ? pairs : [{}]).map(() => 50));
+  const dragging = useRef<number | null>(null);
+  const list = pairs.length > 0 ? pairs : [{ before: 'https://source.unsplash.com/600x400/?before,dull', after: 'https://source.unsplash.com/600x400/?after,bright', caption: 'Before and After' }];
+  const onMove = useCallback((e: React.MouseEvent | React.TouchEvent, i: number) => {
+    if (dragging.current !== i) return;
+    const el = (e.currentTarget as HTMLElement).parentElement!;
+    const rect = el.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    setSliders(s => { const c = [...s]; c[i] = pct; return c; });
+  }, []);
+  return (
+    <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        {title && <h2 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 800, textAlign: 'center', marginBottom: 48, letterSpacing: '-0.02em' }}>{title}</h2>}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 32 }}>
+          {list.map((p, i) => (
+            <div key={i}>
+              <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', cursor: 'col-resize', userSelect: 'none' as const, aspectRatio: '3/2' }}
+                onMouseMove={e => onMove(e, i)} onTouchMove={e => onMove(e, i)}
+                onMouseUp={() => { dragging.current = null; }} onMouseLeave={() => { dragging.current = null; }}>
+                <img src={p.after} alt="After" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', width: `${sliders[i]}%` }}>
+                  <img src={p.before} alt="Before" style={{ width: '100%', height: '100%', objectFit: 'cover', minWidth: '200%' }} />
+                </div>
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${sliders[i]}%`, transform: 'translateX(-50%)', width: 3, background: '#fff', cursor: 'col-resize' }}
+                  onMouseDown={() => { dragging.current = i; }} onTouchStart={() => { dragging.current = i; }}>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 36, height: 36, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>||</div>
+                </div>
+                <span style={{ position: 'absolute', top: 12, left: 12, background: 'rgba(0,0,0,0.5)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Before</span>
+                <span style={{ position: 'absolute', top: 12, right: 12, background: accentColor, color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>After</span>
+              </div>
+              {p.caption && <p style={{ textAlign: 'center', marginTop: 12, fontSize: 14, color: '#6b7280' }}>{p.caption}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/VideoTestimonial.tsx": `
+import React, { useState } from 'react';
+interface VItem { videoId: string; thumbnail?: string; name: string; role?: string; }
+interface VideoTestimonialProps { title?: string; videos?: VItem[]; accentColor?: string; }
+export default function VideoTestimonial({ title = 'Hear From Our Customers', videos = [], accentColor = '#6366f1' }: VideoTestimonialProps) {
+  const [active, setActive] = useState<string | null>(null);
+  const list = videos.length > 0 ? videos : [{ videoId: 'dQw4w9WgXcQ', name: 'Jane D.', role: 'CEO, Acme Corp' }];
+  return (
+    <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        {title && <h2 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 800, textAlign: 'center', marginBottom: 48, letterSpacing: '-0.02em' }}>{title}</h2>}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 28 }}>
+          {list.map((v, i) => (
+            <div key={i} onClick={() => setActive(v.videoId)} style={{ cursor: 'pointer', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.1)', transition: 'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 12px 40px rgba(0,0,0,0.15)'; }} onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform=''; (e.currentTarget as HTMLElement).style.boxShadow='0 4px 24px rgba(0,0,0,0.1)'; }}>
+              <div style={{ position: 'relative', aspectRatio: '16/9', background: '#000' }}>
+                <img src={v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: `0 0 0 8px ${accentColor}40`, color: '#fff', fontWeight: 700 }}>&#9654;</div>
+                </div>
+              </div>
+              <div style={{ padding: '16px 20px', background: 'var(--card, #fff)' }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{v.name}</div>
+                {v.role && <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 2 }}>{v.role}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {active && (
+        <div onClick={() => setActive(null)} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ position: 'relative', width: '100%', maxWidth: 860, aspectRatio: '16/9' }}>
+            <iframe src={`https://www.youtube.com/embed/${active}?autoplay=1`} title="video" allow="autoplay; fullscreen" style={{ width: '100%', height: '100%', border: 'none', borderRadius: 16 }} />
+            <button onClick={() => setActive(null)} style={{ position: 'absolute', top: -44, right: 0, background: 'none', border: 'none', color: '#fff', fontSize: 32, cursor: 'pointer', lineHeight: 1 }}>x</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}`,
+
+"/components/sections/AffiliatePartners.tsx": `
+import React from 'react';
+interface Partner { name: string; logo?: string; url?: string; tier?: string; }
+interface AffiliatePartnersProps { title?: string; subtitle?: string; partners?: Partner[]; accentColor?: string; }
+export default function AffiliatePartners({ title = 'Our Partners', subtitle, partners = [], accentColor = '#6366f1' }: AffiliatePartnersProps) {
+  const tierOrder = ['gold','silver','bronze',''];
+  const sorted = [...partners].sort((a, b) => tierOrder.indexOf(a.tier || '') - tierOrder.indexOf(b.tier || ''));
+  const tierColors: Record<string, string> = { gold: '#d4a843', silver: '#94a3b8', bronze: '#cd7f32' };
+  const defaults = ['Acme Corp','TechFlow','BuildRight','SwiftLabs','NovaCo','Meridian'];
+  return (
+    <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' as const }}>
+        <h2 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 800, marginBottom: subtitle ? 12 : 48, letterSpacing: '-0.02em' }}>{title}</h2>
+        {subtitle && <p style={{ fontSize: 17, color: '#6b7280', marginBottom: 48 }}>{subtitle}</p>}
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 24, justifyContent: 'center' }}>
+          {(sorted.length > 0 ? sorted : defaults.map(n => ({ name: n }))).map((p, i) => {
+            const tc = tierColors[p.tier || ''] || 'transparent';
+            const inner = (<div style={{ padding: '20px 32px', borderRadius: 14, border: p.tier ? `2px solid ${tc}60` : '1.5px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8, transition: 'all 0.25s', minWidth: 140, cursor: 'pointer' }} onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 8px 28px rgba(0,0,0,0.1)'; }} onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform=''; (e.currentTarget as HTMLElement).style.boxShadow=''; }}>
+              {p.tier && <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: tc }}>{p.tier}</span>}
+              {p.logo ? <img src={p.logo} alt={p.name} style={{ width: 80, height: 40, objectFit: 'contain', filter: 'grayscale(1)', transition: 'filter 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLImageElement).style.filter=''} onMouseOut={e => (e.currentTarget as HTMLImageElement).style.filter='grayscale(1)'} /> : <span style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>{p.name}</span>}
+            </div>);
+            return p.url ? <a key={i} href={p.url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>{inner}</a> : <div key={i}>{inner}</div>;
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"/components/sections/StatsCounter.tsx": `
+import React, { useEffect, useRef, useState } from 'react';
+interface StatItem { value: string; label: string; icon?: string; prefix?: string; suffix?: string; }
+interface StatsCounterProps { stats?: StatItem[]; background?: string; accentColor?: string; title?: string; }
+export default function StatsCounter({ stats = [], background = 'dark', accentColor = '#6366f1', title }: StatsCounterProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [triggered, setTriggered] = useState(false);
+  const [counts, setCounts] = useState<number[]>([]);
+  const list = stats.length > 0 ? stats : [{ value: '10000', label: 'Happy Customers', icon: '😊', suffix: '+' }, { value: '4.9', label: 'Average Rating', icon: '⭐', suffix: ' stars' }, { value: '98', label: 'Satisfaction Rate', icon: '❤️', suffix: '%' }, { value: '24', label: 'Support Hours', icon: '🛠', suffix: '/7' }];
+  useEffect(() => {
+    setCounts(list.map(() => 0));
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting && !triggered) { setTriggered(true); obs.disconnect(); } }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!triggered) return;
+    const targets = list.map(s => parseFloat(s.value.replace(/[^0-9.]/g, '')) || 0);
+    const duration = 1800; const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(1, elapsed / duration);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setCounts(targets.map(t => t * ease));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [triggered]);
+  const isDark = background === 'dark';
+  const isAccent = background === 'accent';
+  const bg = isDark ? 'linear-gradient(135deg,#0f0f1a,#1a1a2e)' : isAccent ? `linear-gradient(135deg,${accentColor},${accentColor}cc)` : 'var(--bg,#fff)';
+  const fg = (isDark || isAccent) ? '#fff' : 'var(--fg,#111)';
+  return (
+    <section ref={ref} style={{ padding: '80px 40px', background: bg, color: fg }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' as const }}>
+        {title && <h2 style={{ fontSize: 'clamp(26px,5vw,44px)', fontWeight: 800, marginBottom: 56, letterSpacing: '-0.02em', color: fg }}>{title}</h2>}
+        <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 40, justifyContent: 'center' }}>
+          {list.map((s, i) => {
+            const decimals = s.value.includes('.') ? 1 : 0;
+            const hasLetters = /[a-zA-Z/]/.test(s.value);
+            const num = (counts[i] || 0).toFixed(decimals);
+            const display = triggered && !hasLetters ? (s.prefix || '') + num + (s.suffix || s.value.replace(/[0-9.]/g, '')) : (s.prefix || '') + s.value + (s.suffix || '');
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', minWidth: 160 }}>
+                {s.icon && <div style={{ fontSize: 36, marginBottom: 12 }}>{s.icon}</div>}
+                <div style={{ fontSize: 'clamp(42px,7vw,72px)', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.03em', color: (isDark || isAccent) ? accentColor : fg }}>{display}</div>
+                <div style={{ fontSize: 15, marginTop: 8, opacity: 0.65, fontWeight: 500 }}>{s.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+
 export const SECTION_COMPONENT_LIST = `
 ## Pre-built page sections (USE THESE to build pages — don't write layouts from scratch):
 Import using: import Navbar from '/components/sections/Navbar';
@@ -3608,6 +3995,27 @@ Import using: import Navbar from '/components/sections/Navbar';
 - Banner: <Banner text="Free shipping today!" cta="Shop now" />
 - Booking: <Booking title="Reserve a Table" subtitle="Book online in seconds" fields={["name","email","date","time","guests","notes"]} cta="Confirm Reservation →" />
   → Fully styled reservation/booking form. Use for restaurants, spas, salons, services. NEVER write a custom booking form.
+
+- ComingSoon: <ComingSoon title="Coming Soon" subtitle="We are launching something incredible." launchDate="2026-12-31" accentColor="var(--primary)" socials={[{platform:"instagram",href:"#"},{platform:"twitter",href:"#"}]} />
+  → Full-page coming soon with live countdown timer, email capture form, and social links.
+- MaintenanceMode: <MaintenanceMode title="We will Be Right Back" message="Scheduled maintenance in progress." returnTime="2:00 AM EST" email="support@brand.com" accentColor="var(--primary)" />
+  → Full-page dark maintenance screen with animated progress bar.
+- StickyContactBar: <StickyContactBar phone="(555) 123-4567" ctaText="Book Now" ctaHref="#booking" message="Limited availability this week!" accentColor="var(--primary)" />
+  → Fixed bottom bar shown after 400px scroll. Dismissible. Mobile-optimized.
+- PopupModal: <PopupModal title="Special Offer" description="Sign up and get 20% off your first order." ctaText="Claim Offer" ctaHref="#contact" delay={5000} accentColor="var(--primary)" />
+  → Timed popup (default 5s). Cookie-based dismissal (7 days). Email capture.
+- InteractiveMap: <InteractiveMap businessName="Our Studio" address="123 Main St, San Francisco, CA" phone="(555) 123-4567" hours={[{day:"Monday",time:"9am-6pm"},{day:"Sunday",time:"Closed"}]} accentColor="var(--primary)" />
+  → Embedded Google Map + address + hours + Get Directions button.
+- TestimonialsCarousel: <TestimonialsCarousel title="What Our Clients Say" items={[{name:"Sarah K.",role:"CEO",text:"Incredible!",rating:5,image:"{{unsplash:professional woman portrait|100x100}}"}]} accentColor="var(--primary)" />
+  → Auto-advancing carousel with arrows, dots, pause-on-hover.
+- ImageCompare: <ImageCompare title="See The Results" pairs={[{before:"{{unsplash:before dull|600x400}}",after:"{{unsplash:after bright|600x400}}",caption:"After one session"}]} accentColor="var(--primary)" />
+  → Drag-slider before/after image comparison. Multiple pairs supported.
+- VideoTestimonial: <VideoTestimonial title="Hear From Our Customers" videos={[{videoId:"dQw4w9WgXcQ",name:"Jane D.",role:"CEO, Acme Corp"}]} accentColor="var(--primary)" />
+  → YouTube video cards with play button. Lightbox on click.
+- AffiliatePartners: <AffiliatePartners title="As Featured In" subtitle="Trusted by industry leaders" partners={[{name:"Forbes",logo:"https://...",url:"#",tier:"gold"}]} accentColor="var(--primary)" />
+  → Partner/sponsor logos with tier badges (gold/silver/bronze), grayscale-to-color hover.
+- StatsCounter: <StatsCounter title="By The Numbers" stats={[{value:"10000",label:"Happy Customers",icon:"😊",suffix:"+"},{value:"4.9",label:"Rating",icon:"⭐",suffix:"★"}]} background="dark" accentColor="var(--primary)" />
+  → Scroll-triggered count-up animation. background: "dark" | "light" | "accent".
 
 RULES:
 - The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
