@@ -196,7 +196,7 @@ async function runTraining(req: Request) {
 
     // 2. Score each build
     for (const build of builds) {
-      const score = await scoreB build(build.prompt, build.app_tsx);
+      const score = await scoreBuild(build.prompt, build.app_tsx);
       if (!score) continue;
       await updateBuildScore(build.id, score.overall);
       allIssues.push(...score.issues);
