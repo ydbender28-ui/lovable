@@ -4,14 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import Logo from "@/components/Logo";
+import ReferralCapture from "@/components/ReferralCapture";
 
 type LabsFeature = { key: string; name: string; description: string };
 type WorkspaceMember = { id: string; role: string; user: { id: string; name: string | null; email: string } };
 type Workspace = { id: string; name: string; members: WorkspaceMember[]; _count: { projects: number } };
-type UserProfile = { name: string | null; email: string; credits: number; plan: string; createdAt: string };
+type UserProfile = { name: string | null; email: string; credits: number; plan: string; createdAt: string; referralCount: number };
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<"labs" | "workspace" | "account">("labs");
+  const [tab, setTab] = useState<"labs" | "workspace" | "account" | "referral">("labs");
 
   // Labs
   const [labsEnabled, setLabsEnabled] = useState<string[]>([]);
@@ -26,6 +27,12 @@ export default function SettingsPage() {
   const [inviteRole, setInviteRole] = useState("editor");
   const [workspaceMsg, setWorkspaceMsg] = useState("");
 
+  // Referral
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralLink, setReferralLink] = useState<string | null>(null);
+  const [referralCount, setReferralCount] = useState<number>(0);
+  const [referralCopied, setReferralCopied] = useState(false);
+
   // Account
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editName, setEditName] = useState("");
@@ -35,6 +42,10 @@ export default function SettingsPage() {
   const [profileSaving, setProfileSaving] = useState(false);
 
   useEffect(() => {
+    fetch("/api/referral/code").then(r => r.json()).then(d => {
+      if (d.code) setReferralCode(d.code);
+      if (d.link) setReferralLink(d.link);
+    });
     fetch("/api/user/labs").then(r => r.json()).then(d => {
       setLabsEnabled(d.enabled ?? []);
       setLabsFeatures(d.features ?? []);
@@ -45,6 +56,11 @@ export default function SettingsPage() {
     fetch("/api/user/profile").then(r => r.json()).then(d => {
       setProfile(d);
       setEditName(d.name ?? "");
+      if (typeof d.referralCount === 'number') setReferralCount(d.referralCount);
+    });
+    fetch("/api/referral/code").then(r => r.json()).then(d => {
+      if (d.code) setReferralCode(d.code);
+      if (d.link) setReferralLink(d.link);
     });
   }, []);
 
@@ -91,14 +107,23 @@ export default function SettingsPage() {
     fetch("/api/workspaces").then(r => r.json()).then(d => { if (Array.isArray(d)) setWorkspaces(d); });
   }
 
+  async function copyReferralLink() {
+    if (!referralLink) return;
+    await navigator.clipboard.writeText(referralLink);
+    setReferralCopied(true);
+    setTimeout(() => setReferralCopied(false), 2000);
+  }
+
   const tabs = [
     { key: "labs", label: "🧪 Labs" },
     { key: "workspace", label: "👥 Workspace" },
     { key: "account", label: "👤 Account" },
+    { key: "referral", label: "🎁 Invite Friends" },
   ] as const;
 
   return (
     <div className="min-h-screen bg-[#f6f6f8] text-[#17171c]">
+      <ReferralCapture />
       <header className="border-b border-[#ececf1] bg-[#f6f6f8]/90 backdrop-blur px-6 py-3 flex items-center gap-4">
         <Link href="/dashboard"><Logo size="sm" /></Link>
         <span className="text-[#71717f]">/</span>
@@ -284,6 +309,64 @@ export default function SettingsPage() {
                 ✉️ support@thatcode.dev →
               </a>
             </div>
+
+        {/* Referral */}
+        {tab === "referral" && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-semibold text-[#17171c] mb-1">Invite Friends</h2>
+              <p className="text-xs text-[#71717f]">Share your link and earn credits when friends sign up.</p>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4">
+                <p className="text-xs text-[#71717f] uppercase tracking-wide mb-1">Friends Referred</p>
+                <p className="text-2xl font-bold text-[#17171c]">{referralCount}</p>
+              </div>
+              <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4">
+                <p className="text-xs text-[#71717f] uppercase tracking-wide mb-1">Credits Earned</p>
+                <p className="text-2xl font-bold text-[#17171c]">{referralCount * 5}</p>
+              </div>
+            </div>
+
+            {/* How it works */}
+            <div className="rounded-xl border border-[#ececf1] bg-[#fbfbfc] p-4 space-y-2">
+              <p className="text-xs font-semibold text-[#17171c] mb-2">How it works</p>
+              <div className="flex items-start gap-2 text-xs text-[#51515c]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eef2ff] text-[#6a1ff7] text-[10px] font-bold">1</span>
+                <span>Share your unique referral link with friends</span>
+              </div>
+              <div className="flex items-start gap-2 text-xs text-[#51515c]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eef2ff] text-[#6a1ff7] text-[10px] font-bold">2</span>
+                <span>They sign up through your link</span>
+              </div>
+              <div className="flex items-start gap-2 text-xs text-[#51515c]">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#eef2ff] text-[#6a1ff7] text-[10px] font-bold">3</span>
+                <span>You get <strong>5 credits</strong> · They get <strong>3 bonus credits</strong></span>
+              </div>
+            </div>
+
+            {/* Referral link */}
+            <div>
+              <label className="block text-xs text-[#71717f] mb-2 uppercase tracking-wide">Your referral link</label>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={referralLink ?? "Loading…"}
+                  className="flex-1 bg-white border border-[#ececf1] rounded-lg px-3 py-2 text-sm text-[#17171c] focus:outline-none font-mono text-xs"
+                />
+                <button
+                  onClick={copyReferralLink}
+                  className="shrink-0 bg-[#eef2ff] border border-[#6a1ff7]/20 text-[#6a1ff7] rounded-lg px-4 py-2 text-sm hover:bg-[#e0e4ff] transition-colors"
+                >
+                  {referralCopied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <p className="mt-1.5 text-xs text-[#9a9aaa]">Code: <span className="font-mono font-medium text-[#51515c]">{referralCode ?? "—"}</span></p>
+            </div>
+          </div>
+        )}
 
             {/* Sign out */}
             <button onClick={() => signOut({ callbackUrl: "/login" })}

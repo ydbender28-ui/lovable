@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -11,38 +8,41 @@ datasource db {
 }
 
 model User {
-  id           String              @id @default(cuid())
-  name         String?
-  email        String              @unique
-  password     String
-  createdAt    DateTime            @default(now())
-  projects     Project[]
-  agents       Agent[]
-  memberships  WorkspaceMember[]
+  id              String            @id @default(cuid())
+  name            String?
+  email           String            @unique
+  password        String
+  createdAt       DateTime          @default(now())
+  labsFlags       String            @default("[]")
+  credits         Float             @default(100)
+  plan            String            @default("free")
+  referralCode    String?           @unique
+  referredBy      String?
+  referralCount   Int               @default(0)
+  agents          Agent[]
+  projects        Project[]
   ownedWorkspaces Workspace[]
-  labsFlags    String              @default("[]") // JSON: string[] of enabled lab feature keys
-  credits      Float               @default(100)  // free tier starts with 100 credits; fractional allowed
-  plan         String              @default("free") // free | pro | team | owner
+  memberships     WorkspaceMember[]
 }
 
 model Workspace {
   id        String            @id @default(cuid())
   name      String
   ownerId   String
+  createdAt DateTime          @default(now())
+  projects  Project[]
   owner     User              @relation(fields: [ownerId], references: [id])
   members   WorkspaceMember[]
-  projects  Project[]
-  createdAt DateTime          @default(now())
 }
 
 model WorkspaceMember {
   id          String    @id @default(cuid())
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
-  role        String    @default("editor") // owner | admin | editor
+  role        String    @default("editor")
   createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   @@unique([workspaceId, userId])
 }
@@ -56,58 +56,60 @@ model Agent {
   avatar       String   @default("🤖")
   slug         String   @unique
   ownerId      String
-  owner        User     @relation(fields: [ownerId], references: [id])
   public       Boolean  @default(true)
-  tools        String   @default("[]") // JSON: AgentTool[]
-  knowledge    String   @default("[]") // JSON: { id, title, content }[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  tools        String   @default("[]")
+  knowledge    String   @default("[]")
+  owner        User     @relation(fields: [ownerId], references: [id])
 }
 
 model Project {
-  id            String    @id @default(cuid())
-  name          String
-  ownerId       String
-  owner         User      @relation(fields: [ownerId], references: [id])
-  workspaceId   String?
-  workspace     Workspace? @relation(fields: [workspaceId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  messages      Message[]
-  versions      Version[]
-  publishSlug     String?   @unique
-  publishedHtml   String?
-  publishedAt     DateTime?
-  envVars         String?   // JSON: { KEY: VALUE }
-  customDomain    String?   @unique
-  publishPassword String?
-  visitCount      Int       @default(0)
-  knowledge       String    @default("[]") // JSON: { id, title, content }[]
+  id                String     @id @default(cuid())
+  name              String
+  ownerId           String
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  publishSlug       String?    @unique
+  publishedHtml     String?
+  publishedAt       DateTime?
+  envVars           String?
+  customDomain      String?    @unique
+  publishPassword   String?
+  visitCount        Int        @default(0)
+  knowledge         String     @default("[]")
+  supabaseAnonKey   String?
   supabaseProjectId String?
   supabaseUrl       String?
-  supabaseAnonKey   String?
-  deletedAt         DateTime? // soft-delete — preserves version/cost history in admin
-  isPrivate         Boolean   @default(false) // paid plans only; free always public
-  appData           String?   // JSON: key-value store for the published app's runtime data
+  workspaceId       String?
+  deletedAt         DateTime?
+  isPrivate         Boolean    @default(false)
+  appData           String?
+  thumbnail         String?
+  messages          Message[]
+  owner             User       @relation(fields: [ownerId], references: [id])
+  workspace         Workspace? @relation(fields: [workspaceId], references: [id])
+  versions          Version[]
+  visits            SiteVisit[]
 }
 
 model Version {
   id           String   @id @default(cuid())
   projectId    String
-  project      Project  @relation(fields: [projectId], references: [id])
-  files        String   // JSON: { [path]: content }
-  modelUsed    String?
-  inputTokens  Int?
-  outputTokens Int?
-  bookmarked   Boolean  @default(false)
-  bookmarkNote String?
+  files        String
   createdAt    DateTime @default(now())
+  inputTokens  Int?
+  modelUsed    String?
+  outputTokens Int?
+  bookmarkNote String?
+  bookmarked   Boolean  @default(false)
+  project      Project  @relation(fields: [projectId], references: [id])
 }
 
 model AnalyticsEvent {
   id        String   @id @default(cuid())
   projectId String
-  eventType String   // pageview | click | ragclick | form_submit
+  eventType String
   path      String?
   element   String?
   createdAt DateTime @default(now())
@@ -115,11 +117,22 @@ model AnalyticsEvent {
   @@index([projectId, createdAt])
 }
 
+model SiteVisit {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  date      String  // "2026-06-30" format — one record per day per project
+  count     Int     @default(0)
+
+  @@unique([projectId, date])
+  @@index([projectId])
+}
+
 model ShareLink {
   id        String   @id @default(cuid())
   token     String   @unique @default(cuid())
   projectId String
-  filesJson String   // JSON: { [path]: content }
+  filesJson String
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
@@ -127,8 +140,8 @@ model ShareLink {
 model Message {
   id        String   @id @default(cuid())
   projectId String
-  project   Project  @relation(fields: [projectId], references: [id])
   role      String
   content   String
   createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
 }

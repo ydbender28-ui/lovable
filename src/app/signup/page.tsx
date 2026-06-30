@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import ReferralCapture from "@/components/ReferralCapture";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -35,6 +36,18 @@ export default function SignupPage() {
       setError("Account created — try logging in.");
       return;
     }
+    // Apply referral code if one was captured
+    const savedRef = localStorage.getItem('referral_code');
+    if (savedRef) {
+      try {
+        await fetch("/api/referral/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ referralCode: savedRef }),
+        });
+      } catch {}
+      localStorage.removeItem('referral_code');
+    }
     router.push("/dashboard");
     router.refresh();
   }
@@ -62,6 +75,7 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen" style={{ background: "#f6f6f8" }}>
+      <ReferralCapture />
       {/* Left panel */}
       <div
         className="relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden px-12 py-12 lg:flex"

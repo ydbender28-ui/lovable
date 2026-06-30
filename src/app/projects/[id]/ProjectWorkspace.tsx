@@ -413,6 +413,11 @@ export default function ProjectWorkspace({
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [csvData, setCsvData] = useState<string | null>(null);
 
+  // Custom domain (post-publish)
+  const [customDomain, setCustomDomain] = useState("");
+  const [showDomainPanel, setShowDomainPanel] = useState(false);
+  const [domainSaved, setDomainSaved] = useState(false);
+
   // User testing
   type UserTestResult = { overallScore: number; testers: Array<{ persona: string; goal: string; steps: string[]; issues: string[]; verdict: string }>; criticalIssues: string[]; quickWins: string[] };
   const [showUserTest, setShowUserTest] = useState(false);
@@ -505,7 +510,7 @@ export default function ProjectWorkspace({
 
   // Analytics
   const [showAnalytics, setShowAnalytics] = useState(false);
-  type AnalyticsData = { pageviews: number; clicks: number; rageclicks: number; formSubmits: number; daily: Array<{ date: string; pageviews: number; clicks: number; rageclicks: number }>; topRageClicks: Array<{ el: string; count: number }> };
+  type AnalyticsData = { pageviews: number; clicks: number; rageclicks: number; formSubmits: number; daily: Array<{ date: string; pageviews: number; clicks: number; rageclicks: number }>; topRageClicks: Array<{ el: string; count: number }>; totalVisits?: number; isPublished?: boolean; dailyVisits?: Array<{ date: string; count: number }> };
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
@@ -1774,6 +1779,24 @@ export default function ProjectWorkspace({
     e.target.value = "";
   }
 
+  async function handleSaveDomain() {
+    const domain = customDomain.trim().replace(/^https?:\/\//, "");
+    if (!domain) return;
+    try {
+      await fetch(`/api/projects/${projectId}/publish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: publishSlug, customDomain: domain }),
+      });
+      setDomainSaved(true);
+      setTimeout(() => setDomainSaved(false), 3000);
+      setShowDomainPanel(false);
+      showToast(`Custom domain saved! Add a CNAME → cname.thatcode.dev in your DNS.`, "success");
+    } catch {
+      showToast("Failed to save domain", "info");
+    }
+  }
+
   async function handleUnpublish() {
     await fetch(`/api/projects/${projectId}/publish`, { method: "DELETE" });
     setPublishSlug(null);
@@ -2786,6 +2809,7 @@ export default function ProjectWorkspace({
                     { icon: "📤", label: "Export HTML", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export`; a.download = ""; a.click(); } },
                     { icon: "📋", label: "Copy HTML", action: async () => { try { const res = await fetch(`/api/projects/${projectId}/export`); const html = await res.text(); await navigator.clipboard.writeText(html); showToast("HTML copied to clipboard", "success"); } catch { showToast("Failed to copy HTML", "error"); } } },
                     { icon: "📱", label: "Export App", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export-app`; a.download = ""; a.click(); showToast("Downloading app package", "info"); } },
+                    { icon: "⬇️", label: "Source (.tsx)", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export-zip`; a.download = ""; a.click(); showToast("Downloading source file", "info"); } },
                     { icon: "⬆️", label: "GitHub", action: () => { setShowGithub(true); setGithubResult(null); } },
                   ] as { icon: string; label: string; action: () => void }[]).map(({ icon, label, action }) => (
                     <button key={label} onClick={action}
@@ -2830,6 +2854,38 @@ export default function ProjectWorkspace({
               )}
               <button onClick={() => navigator.clipboard.writeText(publishUrl ?? "")}
                 className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#3a3a4a] px-2 py-1.5 hover:bg-white/10 hidden sm:block">Copy</button>
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setShowDomainPanel(v => !v)}
+                  title="Custom domain"
+                  className="text-xs rounded-lg border border-[#ececf1] bg-[#f0f0f5] text-[#71717f] px-2 py-1.5 hover:bg-white/10 transition-colors">
+                  🌐
+                </button>
+                {showDomainPanel && (
+                  <div className="absolute right-0 top-full mt-1 w-64 rounded-xl border border-[#ececf1] bg-white shadow-2xl z-50 p-3" onClick={e => e.stopPropagation()}>
+                    <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4, color: '#17171c' }}>Custom Domain</div>
+                    <div style={{ fontSize: 11, color: '#9090a0', marginBottom: 8 }}>
+                      Add a CNAME → <code style={{ background: '#f0f0f5', padding: '1px 4px', borderRadius: 3 }}>cname.thatcode.dev</code> then enter your domain below.
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        type="text"
+                        placeholder="yourdomain.com"
+                        value={customDomain}
+                        onChange={e => setCustomDomain(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleSaveDomain(); if (e.key === 'Escape') setShowDomainPanel(false); }}
+                        style={{ flex: 1, padding: '5px 8px', borderRadius: 6, border: '1px solid #ececf1', background: '#f0f0f5', color: '#17171c', fontSize: 11 }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleSaveDomain}
+                        style={{ padding: '5px 10px', borderRadius: 6, background: '#6a1ff7', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
+                        {domainSaved ? '✓' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               <button onClick={handleUnpublish} className="text-xs text-[#9090a0] hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
             </div>
           ) : (
