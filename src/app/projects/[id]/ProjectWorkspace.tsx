@@ -21,6 +21,12 @@ type ProjectFiles = Record<string, string>;
 type EnvVars = Record<string, string>;
 type PreviewMode = "desktop" | "tablet" | "mobile";
 
+const PREVIEW_SIZES: Record<PreviewMode, { width: string; label: string; icon: string }> = {
+  desktop: { width: "100%", label: "Desktop", icon: "🖥" },
+  tablet: { width: "768px", label: "Tablet", icon: "📟" },
+  mobile: { width: "390px", label: "Mobile", icon: "📱" },
+};
+
 const API_DETECTORS = [
   { keywords: ["stripe", "payment", "checkout", "subscription", "billing", "accept card", "credit card"], name: "Stripe", key: "STRIPE_PUBLISHABLE_KEY", hint: "stripe.com → Developers → API Keys", placeholder: "pk_live_...", description: "needed to process real payments and card charges" },
   { keywords: ["supabase", "postgres", "realtime database", "supabase auth"], name: "Supabase", key: "SUPABASE_URL", hint: "app.supabase.com → Project Settings → API", placeholder: "https://xyz.supabase.co", description: "needed to connect to your Postgres database and auth" },
@@ -2248,7 +2254,7 @@ export default function ProjectWorkspace({
 
         {/* Undo */}
         {showUndo && previousFiles && !loading && (
-          <button onClick={handleUndo}
+          <button data-undo-btn onClick={handleUndo}
             className="text-xs rounded-xl border border-orange-400/20 bg-orange-500/5 text-orange-300/80 px-3.5 py-2 hover:bg-orange-500/10 transition-colors w-fit">
             ↩ Undo last change
           </button>
@@ -2456,6 +2462,30 @@ export default function ProjectWorkspace({
                   </span>
                 )
               )}
+              {/* Keyboard shortcuts hint */}
+              <div style={{ position: "relative" }}>
+                <button type="button" onClick={() => setShowShortcuts(v => !v)} title="Keyboard shortcuts"
+                  style={{ padding: "4px 8px", background: "none", border: "1px solid #ececf1", borderRadius: 6, cursor: "pointer", fontSize: 12, color: "#71717f", opacity: 0.6 }}>
+                  ⌨️
+                </button>
+                {showShortcuts && (
+                  <div style={{ position: "absolute", bottom: "100%", right: 0, background: "white", border: "1px solid #ececf1", borderRadius: 12, padding: 16, boxShadow: "0 8px 30px rgba(0,0,0,0.1)", zIndex: 100, minWidth: 240, marginBottom: 8 }}>
+                    <p style={{ fontWeight: 700, marginBottom: 10, color: "#17171c", fontSize: 13 }}>Keyboard Shortcuts</p>
+                    {([
+                      ["⌘↵", "Send prompt"],
+                      ["⌘Z", "Undo last change"],
+                      ["⌘⇧P", "Publish site"],
+                      ["/", "Focus prompt input"],
+                      ["Esc", "Unfocus input"],
+                    ] as [string, string][]).map(([key, action]) => (
+                      <div key={action} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0" }}>
+                        <span style={{ fontSize: 12, color: "#71717f" }}>{action}</span>
+                        <kbd style={{ background: "#f0f0f5", border: "1px solid #ececf1", borderRadius: 4, padding: "2px 6px", fontSize: 11, fontFamily: "monospace", color: "#17171c" }}>{key}</kbd>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               {loading && !chatMode ? (
                 <button onClick={stopGenerating}
                   className="rounded-lg bg-red-500/80 hover:bg-red-500 text-white px-4 py-1.5 text-sm font-medium transition-colors">
@@ -2625,7 +2655,27 @@ export default function ProjectWorkspace({
           </div>
         )}
         {hasFiles ? (
-          <div style={{ flex: 1, minHeight: 0, height: "100%", position: "relative" }}>
+          <div style={{
+            flex: 1, minHeight: 0, height: "100%", position: "relative",
+            display: "flex", justifyContent: "center",
+            background: activeTab === "preview" && previewMode !== "desktop" ? "#e8e8ed" : "transparent",
+            padding: activeTab === "preview" && previewMode !== "desktop" ? "16px" : 0,
+            overflow: "auto",
+          }}>
+            <div style={{
+              width: activeTab === "preview" ? PREVIEW_SIZES[previewMode].width : "100%",
+              maxWidth: "100%",
+              height: "100%",
+              position: "relative",
+              flexShrink: 0,
+              ...(activeTab === "preview" && previewMode !== "desktop" ? {
+                borderRadius: previewMode === "mobile" ? 40 : 16,
+                boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+                overflow: "hidden",
+                border: "8px solid #1a1a1a",
+                background: "white",
+              } : {}),
+            }}>
             <SandpackPreview files={visualEditMode ? injectVisualEditHelper(files) : files} onError={handleSandpackError} view={activeTab} />
             {circleSelectMode && (
               <div
@@ -2679,6 +2729,7 @@ export default function ProjectWorkspace({
                 })()}
               </div>
             )}
+            </div>
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-[#9090a0] text-sm">
@@ -2765,7 +2816,7 @@ export default function ProjectWorkspace({
           </button>
           {publishUrl ? (
             <div className="flex items-center gap-1.5">
-              <button onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
+              <button data-publish-btn onClick={() => handlePublish(publishSlug ?? undefined)} disabled={!hasFiles || publishing}
                 className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-[#eef2ff] text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5">
                 {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-[#6a1ff7] animate-pulse" />Updating...</>
                   : publishedFilesHash && hashFiles(files) !== publishedFilesHash
@@ -2782,7 +2833,7 @@ export default function ProjectWorkspace({
               <button onClick={handleUnpublish} className="text-xs text-[#9090a0] hover:text-red-400 px-1 py-1.5 transition-colors">×</button>
             </div>
           ) : (
-            <button onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
+            <button data-publish-btn onClick={() => setShowPublishDialog(true)} disabled={!hasFiles || publishing}
               className="text-xs rounded-lg border border-[#6a1ff7]/30 bg-[#eef2ff] text-[#6a1ff7] px-3 py-1.5 hover:bg-fuchsia-500/20 transition-colors disabled:opacity-40 flex items-center gap-1.5 relative">
               {publishing ? <><span className="h-1.5 w-1.5 rounded-full bg-[#6a1ff7] animate-pulse" />Publishing...</> : <>Publish {hasFiles && <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />}</>}
             </button>

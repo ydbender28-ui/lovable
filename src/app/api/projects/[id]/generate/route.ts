@@ -10,6 +10,7 @@ import { buildWebsiteKnowledge } from "@/lib/website-knowledge"
 import { getRelevantComponents, getSiteTypeKnowledge } from "@/lib/component-retrieval";
 import { getBuilderConfig, saveUserBuild, getSimilarBuilds } from "@/lib/builder-config";
 import { generateSuggestions } from "@/lib/suggestions";
+import { nameFromPrompt, isGenericName } from "@/lib/project-namer";
 
 export const maxDuration = 300;
 
@@ -161,6 +162,12 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       const actualCost = result.estimatedCostUsd ?? estimateCost(result.modelUsed, result.inputTokens, result.outputTokens);
       const actualCredits = costToCredits(actualCost);
 
+      // Auto-rename project after first successful build if still using a generic name
+      const autoRenameData: Record<string, unknown> = {};
+      if (!hasExisting && isGenericName(project.name)) {
+        autoRenameData.name = await nameFromPrompt(prompt).catch(() => undefined);
+      }
+
       await Promise.all([
         prisma.version.create({
           data: {
@@ -176,6 +183,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           where: { id },
           data: {
             updatedAt: new Date(),
+            ...autoRenameData,
             ...(wasPublished && newHtml ? { publishedHtml: newHtml, publishedAt: new Date() } : {}),
           },
         }),
