@@ -218,28 +218,59 @@ const PALETTES = [
   { name: 'mint',        bg: '#f0fdf4', fg: '#1a2e1a', card: '#ffffff', primary: '#16a34a', primaryFg: '#ffffff', secondary: '#dcfce7', muted: '#5c8c5c', border: '#bbf7d0', accent: '#22c55e' },
   { name: 'lavender',    bg: '#faf5ff', fg: '#1a1028', card: '#ffffff', primary: '#7e22ce', primaryFg: '#ffffff', secondary: '#f3e8ff', muted: '#7c6c9c', border: '#e9d5ff', accent: '#9333ea' },
   { name: 'peach',       bg: '#fff7ed', fg: '#1a1209', card: '#ffffff', primary: '#ea580c', primaryFg: '#ffffff', secondary: '#ffedd5', muted: '#9a6c4a', border: '#fed7aa', accent: '#f97316' },
+
+  // Warm & Inviting (new)
+  { name: 'warm-cream',      bg: '#FDF6EC', fg: '#2C1810', card: '#FFFFFF', primary: '#C45B24', primaryFg: '#FFFFFF', secondary: '#E8A87C', muted: '#F5ECD7', border: '#E8D5B7', accent: '#D4773A' },
+  { name: 'terracotta-new',  bg: '#FBF0E9', fg: '#2D1B0E', card: '#FFFFFF', primary: '#C05621', primaryFg: '#FFFFFF', secondary: '#E07B39', muted: '#F5E0D0', border: '#E8C4A0', accent: '#D45B1E' },
+  { name: 'dusty-rose',      bg: '#FDF0F0', fg: '#2D1515', card: '#FFFFFF', primary: '#C06070', primaryFg: '#FFFFFF', secondary: '#E8939F', muted: '#F5DEDE', border: '#E8C0C0', accent: '#D4505F' },
+
+  // Cool & Professional (new)
+  { name: 'slate-pro',       bg: '#F8FAFC', fg: '#0F172A', card: '#FFFFFF', primary: '#3B82F6', primaryFg: '#FFFFFF', secondary: '#60A5FA', muted: '#F1F5F9', border: '#E2E8F0', accent: '#2563EB' },
+  { name: 'ocean-blue',      bg: '#F0F7FF', fg: '#0C2340', card: '#FFFFFF', primary: '#0369A1', primaryFg: '#FFFFFF', secondary: '#38BDF8', muted: '#E0F2FE', border: '#BAE6FD', accent: '#0284C7' },
+  { name: 'teal-fresh',      bg: '#F0FDFB', fg: '#0D2622', card: '#FFFFFF', primary: '#0D9488', primaryFg: '#FFFFFF', secondary: '#2DD4BF', muted: '#CCFBF1', border: '#99F6E4', accent: '#0F766E' },
+
+  // Dark & Premium (new)
+  { name: 'midnight-pro',    bg: '#0A0A0F', fg: '#E8E8F0', card: '#12121A', primary: '#7C3AED', primaryFg: '#FFFFFF', secondary: '#A855F7', muted: '#1A1A28', border: '#2D2D42', accent: '#8B5CF6' },
+  { name: 'dark-ocean',      bg: '#060E1E', fg: '#C7D9EE', card: '#0E1A2E', primary: '#3B82F6', primaryFg: '#FFFFFF', secondary: '#60A5FA', muted: '#152033', border: '#1E3354', accent: '#2563EB' },
+  { name: 'obsidian',        bg: '#0A0A0A', fg: '#F5F5F5', card: '#141414', primary: '#22C55E', primaryFg: '#000000', secondary: '#4ADE80', muted: '#1A1A1A', border: '#2A2A2A', accent: '#16A34A' },
+  { name: 'carbon',          bg: '#111111', fg: '#EEEEEE', card: '#1C1C1C', primary: '#EF4444', primaryFg: '#FFFFFF', secondary: '#F87171', muted: '#1F1F1F', border: '#2D2D2D', accent: '#DC2626' },
+
+  // Nature & Organic (new)
+  { name: 'forest-deep',     bg: '#F0F7F0', fg: '#0D2010', card: '#FFFFFF', primary: '#166534', primaryFg: '#FFFFFF', secondary: '#4ADE80', muted: '#DCFCE7', border: '#BBF7D0', accent: '#15803D' },
+  { name: 'sage-green',      bg: '#F4F7F4', fg: '#1A2E1A', card: '#FFFFFF', primary: '#4D7C5A', primaryFg: '#FFFFFF', secondary: '#86B894', muted: '#E8F0E8', border: '#C8DCC8', accent: '#3D6B49' },
+  { name: 'lavender-soft',   bg: '#F5F0FF', fg: '#1E0A40', card: '#FFFFFF', primary: '#7C3AED', primaryFg: '#FFFFFF', secondary: '#A78BFA', muted: '#EDE9FE', border: '#DDD6FE', accent: '#6D28D9' },
+  { name: 'golden-hour',     bg: '#FFFBF0', fg: '#2D1F00', card: '#FFFFFF', primary: '#D97706', primaryFg: '#FFFFFF', secondary: '#FCD34D', muted: '#FEF3C7', border: '#FDE68A', accent: '#B45309' },
+
+  // Bold & Vibrant (new)
+  { name: 'neon-dark',       bg: '#050510', fg: '#E0E0FF', card: '#0C0C20', primary: '#00F5FF', primaryFg: '#000020', secondary: '#7B2FFF', muted: '#10101E', border: '#1E1E40', accent: '#00D4FF' },
+  { name: 'hot-pink',        bg: '#FFF0F7', fg: '#2D0015', card: '#FFFFFF', primary: '#DB2777', primaryFg: '#FFFFFF', secondary: '#F472B6', muted: '#FCE7F3', border: '#FBCFE8', accent: '#BE185D' },
+  { name: 'electric-orange', bg: '#FFF7F0', fg: '#2D1000', card: '#FFFFFF', primary: '#EA580C', primaryFg: '#FFFFFF', secondary: '#FB923C', muted: '#FFEDD5', border: '#FED7AA', accent: '#C2410C' },
+
+  // Minimal & Clean (new)
+  { name: 'pure-minimal',    bg: '#FFFFFF', fg: '#111111', card: '#F9F9F9', primary: '#111111', primaryFg: '#FFFFFF', secondary: '#555555', muted: '#F5F5F5', border: '#E5E5E5', accent: '#333333' },
+  { name: 'swiss-clean',     bg: '#FAFAFA', fg: '#0A0A0A', card: '#FFFFFF', primary: '#E11D48', primaryFg: '#FFFFFF', secondary: '#FB7185', muted: '#F4F4F5', border: '#E4E4E7', accent: '#BE123C' },
+  { name: 'nordic',          bg: '#F7F9FC', fg: '#1A2235', card: '#FFFFFF', primary: '#2563EB', primaryFg: '#FFFFFF', secondary: '#93C5FD', muted: '#EFF3FA', border: '#DBEAFE', accent: '#1D4ED8' },
 ]
 
 // ─── INDUSTRY → MOOD + PALETTE MAPPING ──────────────────────────────────────
 const INDUSTRY_DEFAULTS = {
-  food:         { moods: ['warm','editorial','rustic','elegant','japanese'], palettes: ['espresso','terracotta','cream','dark_gold','sand'] },
-  beauty:       { moods: ['elegant','minimal','luxury','scandinavian','friendly'], palettes: ['blush','rose','lavender','cream','peach'] },
-  wellness:     { moods: ['natural','minimal','scandinavian','japanese','friendly'], palettes: ['sage','mint','teal','sand','blush'] },
-  medical:      { moods: ['clinical','modern','friendly','minimal','corporate'], palettes: ['cyan','arctic','teal','slate','ocean'] },
-  fitness:      { moods: ['bold','sporty','dark','industrial','futuristic'], palettes: ['dark_red','crimson','midnight','charcoal','dark_blue'] },
-  professional: { moods: ['corporate','modern','elegant','minimal','editorial'], palettes: ['navy','gold_navy','slate','arctic','stone'] },
-  realestate:   { moods: ['modern','corporate','elegant','minimal','luxury'], palettes: ['navy','slate','arctic','monochrome','gold_navy'] },
-  trades:       { moods: ['bold','industrial','sporty','modern','friendly'], palettes: ['amber','coral','charcoal','slate','forest'] },
-  tech:         { moods: ['modern','futuristic','minimal','dark','brutalist'], palettes: ['indigo','violet','dark_purple','dark_blue','monochrome'] },
-  education:    { moods: ['friendly','playful','modern','warm','natural'], palettes: ['indigo','emerald','coral','ocean','forest'] },
-  creative:     { moods: ['artistic','editorial','minimal','dark','brutalist'], palettes: ['midnight','monochrome','dark_gold','lavender','stone'] },
-  events:       { moods: ['elegant','luxury','playful','editorial','warm'], palettes: ['dark_gold','rose','cream','blush','burgundy'] },
-  travel:       { moods: ['tropical','coastal','warm','editorial','modern'], palettes: ['ocean','coral','teal','sand','emerald'] },
-  retail:       { moods: ['modern','minimal','elegant','playful','luxury'], palettes: ['monochrome','slate','indigo','rose','dark_gold'] },
-  nonprofit:    { moods: ['warm','friendly','natural','modern','rustic'], palettes: ['forest','sage','emerald','ocean','amber'] },
-  automotive:   { moods: ['bold','dark','industrial','modern','sporty'], palettes: ['charcoal','dark_red','midnight','crimson','slate'] },
-  wellness:     { moods: ['natural','minimal','scandinavian','japanese','friendly'], palettes: ['sage','mint','teal','sand','blush'] },
-  pet:          { moods: ['playful','friendly','warm','modern','natural'], palettes: ['coral','emerald','forest','amber','ocean'] },
+  food:         { moods: ['warm','editorial','rustic','elegant','japanese'], palettes: ['espresso','terracotta','cream','dark_gold','sand','warm-cream','terracotta-new','golden-hour'] },
+  beauty:       { moods: ['elegant','minimal','luxury','scandinavian','friendly'], palettes: ['blush','rose','lavender','cream','peach','dusty-rose','lavender-soft','hot-pink'] },
+  wellness:     { moods: ['natural','minimal','scandinavian','japanese','friendly'], palettes: ['sage','mint','teal','sand','blush','sage-green','forest-deep','lavender-soft'] },
+  medical:      { moods: ['clinical','modern','friendly','minimal','corporate'], palettes: ['cyan','arctic','teal','slate','ocean','slate-pro','ocean-blue','teal-fresh','nordic'] },
+  fitness:      { moods: ['bold','sporty','dark','industrial','futuristic'], palettes: ['dark_red','crimson','midnight','charcoal','dark_blue','midnight-pro','carbon','obsidian','neon-dark'] },
+  professional: { moods: ['corporate','modern','elegant','minimal','editorial'], palettes: ['navy','gold_navy','slate','arctic','stone','slate-pro','ocean-blue','nordic','swiss-clean'] },
+  realestate:   { moods: ['modern','corporate','elegant','minimal','luxury'], palettes: ['navy','slate','arctic','monochrome','gold_navy','slate-pro','pure-minimal','nordic'] },
+  trades:       { moods: ['bold','industrial','sporty','modern','friendly'], palettes: ['amber','coral','charcoal','slate','forest','electric-orange','warm-cream'] },
+  tech:         { moods: ['modern','futuristic','minimal','dark','brutalist'], palettes: ['indigo','violet','dark_purple','dark_blue','monochrome','midnight-pro','dark-ocean','neon-dark','slate-pro'] },
+  education:    { moods: ['friendly','playful','modern','warm','natural'], palettes: ['indigo','emerald','coral','ocean','forest','ocean-blue','teal-fresh','warm-cream'] },
+  creative:     { moods: ['artistic','editorial','minimal','dark','brutalist'], palettes: ['midnight','monochrome','dark_gold','lavender','stone','midnight-pro','neon-dark','hot-pink'] },
+  events:       { moods: ['elegant','luxury','playful','editorial','warm'], palettes: ['dark_gold','rose','cream','blush','burgundy','dusty-rose','golden-hour','hot-pink'] },
+  travel:       { moods: ['tropical','coastal','warm','editorial','modern'], palettes: ['ocean','coral','teal','sand','emerald','ocean-blue','teal-fresh','warm-cream'] },
+  retail:       { moods: ['modern','minimal','elegant','playful','luxury'], palettes: ['monochrome','slate','indigo','rose','dark_gold','pure-minimal','swiss-clean','nordic','electric-orange'] },
+  nonprofit:    { moods: ['warm','friendly','natural','modern','rustic'], palettes: ['forest','sage','emerald','ocean','amber','forest-deep','sage-green','warm-cream'] },
+  automotive:   { moods: ['bold','dark','industrial','modern','sporty'], palettes: ['charcoal','dark_red','midnight','crimson','slate','carbon','obsidian','dark-ocean'] },
+  pet:          { moods: ['playful','friendly','warm','modern','natural'], palettes: ['coral','emerald','forest','amber','ocean','forest-deep','sage-green','electric-orange'] },
 }
 
 // ─── TYPOGRAPHY SYSTEM ──────────────────────────────────────────────────────
@@ -389,11 +420,19 @@ export function matchDesign(prompt: string) {
   const brightHint = /\b(bright|colorful|vibrant|fun|playful)\b/.test(p)
   const elegantHint = /\b(elegant|luxury|premium|upscale|high.?end)\b/.test(p)
   const minimalHint = /\b(minimal|simple|clean|modern)\b/.test(p)
+  const warmHint = /\b(warm|cozy|inviting|romantic)\b/.test(p)
+  const naturalHint = /\b(natural|organic|eco|green|wellness)\b/.test(p)
+  const boldHint = /\b(bold|energetic|youthful|neon|electric)\b/.test(p)
+  const corporateHint = /\b(professional|corporate|tech|business)\b/.test(p)
 
   if (darkHint) mood = MOODS.dark
+  else if (boldHint) mood = MOODS.bold
   else if (brightHint) mood = MOODS.playful
   else if (elegantHint) mood = MOODS.luxury
   else if (minimalHint) mood = MOODS.minimal
+  else if (warmHint) mood = MOODS.warm
+  else if (naturalHint) mood = MOODS.natural
+  else if (corporateHint) mood = MOODS.corporate
   else {
     const moodKey = industry.moods[Math.floor(r * industry.moods.length)]
     mood = MOODS[moodKey]
@@ -401,12 +440,25 @@ export function matchDesign(prompt: string) {
 
   // Pick palette randomly from industry palettes — prefer dark palettes for dark moods
   let palette
-  if (darkHint) {
-    const darkPalettes = PALETTES.filter(p => p.bg.startsWith('#0') || p.bg.startsWith('#1'))
+  if (darkHint || boldHint) {
+    const darkNames = ['midnight-pro','dark-ocean','obsidian','carbon','neon-dark','midnight','charcoal','dark_gold','dark_blue','dark_purple','dark_red','dark_green']
+    const darkPalettes = PALETTES.filter(pal => darkNames.includes(pal.name) || pal.bg.startsWith('#0') || pal.bg.startsWith('#1'))
     palette = darkPalettes[Math.floor(r * darkPalettes.length)]
+  } else if (warmHint) {
+    const warmNames = ['warm-cream','terracotta-new','dusty-rose','espresso','terracotta','cream','blush','peach','golden-hour']
+    const warmPalettes = PALETTES.filter(pal => warmNames.includes(pal.name))
+    palette = warmPalettes[Math.floor(r * warmPalettes.length)]
+  } else if (naturalHint) {
+    const naturalNames = ['forest-deep','sage-green','lavender-soft','golden-hour','forest','sage','mint','olive']
+    const naturalPalettes = PALETTES.filter(pal => naturalNames.includes(pal.name))
+    palette = naturalPalettes[Math.floor(r * naturalPalettes.length)]
+  } else if (minimalHint || corporateHint) {
+    const cleanNames = ['pure-minimal','swiss-clean','nordic','slate-pro','ocean-blue','teal-fresh','monochrome','slate','zinc']
+    const cleanPalettes = PALETTES.filter(pal => cleanNames.includes(pal.name))
+    palette = cleanPalettes[Math.floor(r * cleanPalettes.length)]
   } else {
     const paletteName = industry.palettes[Math.floor(r2 * industry.palettes.length)]
-    palette = PALETTES.find(p => p.name === paletteName) || PALETTES[Math.floor(r * PALETTES.length)]
+    palette = PALETTES.find(pal => pal.name === paletteName) || PALETTES[Math.floor(r * PALETTES.length)]
   }
 
   return { category: bestCat, mood, palette }
