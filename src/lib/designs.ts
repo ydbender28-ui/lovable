@@ -288,15 +288,27 @@ export function buildDesignContext(match: ReturnType<typeof matchDesign>) {
   return `
 DESIGN SYSTEM — Follow this exactly:
 Style: ${mood.desc}
-Fonts: @import url('https://fonts.googleapis.com/css2?family=${mood.headingFont.replace(/ /g, '+')}:wght@400;700;800&family=${mood.bodyFont.replace(/ /g, '+')}:wght@400;500;600&display=swap');
-CSS variables for styles.css :root:
-  --bg: ${palette.bg}; --fg: ${palette.fg}; --card: ${palette.card};
-  --primary: ${palette.primary}; --primary-fg: ${palette.primaryFg};
-  --secondary: ${palette.secondary}; --muted: ${palette.muted};
-  --border: ${palette.border}; --accent: ${palette.accent};
+
+In /index.css, define EXACTLY these CSS variables:
+@import url('https://fonts.googleapis.com/css2?family=${mood.headingFont.replace(/ /g, '+')}:wght@400;700;800&family=${mood.bodyFont.replace(/ /g, '+')}:wght@400;500;600&display=swap');
+:root {
+  --bg: ${palette.bg};
+  --fg: ${palette.fg};
+  --card: ${palette.card};
+  --primary: ${palette.primary};
+  --primary-fg: ${palette.primaryFg};
+  --secondary: ${palette.secondary};
+  --muted: ${palette.muted};
+  --border: ${palette.border};
+  --accent: ${palette.accent};
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: '${mood.bodyFont}', sans-serif; background: var(--bg); color: var(--fg); }
 h1,h2,h3 { font-family: '${mood.headingFont}', serif; }
-Use var(--primary), var(--bg), etc everywhere. border-radius: ${mood.radius}.
+
+Use var(--primary) for buttons/CTAs, var(--bg) for backgrounds, var(--fg) for text, var(--card) for cards, var(--border) for borders.
+Pass accentColor="var(--primary)" to ALL section components (Navbar, Hero, ServiceCards, Reviews, etc.).
+border-radius everywhere: ${mood.radius}.
 Hero image: {{unsplash:${category.heroQuery}|1600x900}}
 Card images: {{unsplash:${category.cardQuery}|400x300}}`
 }

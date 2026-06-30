@@ -140,25 +140,28 @@ const SYSTEM_BUILD = `You are an expert React developer. Build exactly what the 
 - Section padding: style={{padding:'80px 40px'}} on every section. Never let content touch the edge of the screen.
 - Buttons: ALWAYS have visible background OR border. Never an invisible/unstyled button.
 
-## STYLING — USE TAILWIND ONLY. NO INLINE STYLES. NO CSS VARIABLES.
+## STYLING — USE CSS VARIABLES FROM THE DESIGN SYSTEM:
 
-Use standard Tailwind color classes for everything. Pick colors that match the brand/mood of the site.
-NEVER use style={{}}, NEVER use CSS variables, NEVER use var(--anything).
+The design system below defines CSS variables. USE THEM everywhere:
+- Backgrounds: style={{background:'var(--bg)'}} or style={{background:'var(--primary)'}}
+- Text: style={{color:'var(--fg)'}} or style={{color:'var(--primary)'}}
+- Section components accept accentColor prop — pass the primary color: accentColor="var(--primary)"
+- The --accent variable is an alias for --primary — both work in section component props
 
 Examples of correct usage:
-<nav className="fixed top-0 w-full z-50 bg-gray-900/90 backdrop-blur-lg border-b border-gray-800">
-<button className="px-8 py-3.5 rounded-full bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-all">
-<section className="py-20 bg-white">
-<div className="min-h-screen bg-zinc-950 text-white">
-<div className="rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-gray-200">
+<section style={{background:'var(--bg)', padding:'80px 40px'}}>
+<button style={{background:'var(--primary)', color:'var(--primary-fg)', padding:'12px 28px', borderRadius:50, border:'none', cursor:'pointer', fontSize:15, fontWeight:700}}>
+<div style={{background:'var(--card)', border:'1px solid var(--border)', borderRadius:16, padding:32}}>
+<h2 style={{color:'var(--fg)', fontSize:38, fontWeight:800, letterSpacing:'-0.02em'}}>
 
-Pick a consistent color palette for the whole site. For a pizza shop use warm reds/oranges. For SaaS use blues/purples. For health use greens. Stick to one accent color throughout.
+Tailwind utility classes are also available for layout/spacing:
+className="flex items-center gap-4 max-w-6xl mx-auto"
 
 Other rules:
 - App component MUST be "export default function App()"
 - Only import from: react, lucide-react, react-hot-toast, or /components/sections/
 - Every { must have matching }. Every ( must have matching ).
-- Keep /index.css minimal — just Google Fonts import and body font-family. No CSS variables needed.>
+- /index.css MUST define the CSS variables from the design system AND import Google Fonts.
 
 IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up the layout:
 - Card image: style={{width:'100%', height:220, objectFit:'cover'}} — ALWAYS, no exceptions
@@ -1653,17 +1656,20 @@ export async function generateProject(
 
 In /index.css, define EXACTLY these CSS variables:
 :root {
-  --background: ${pickedDesign!.bg};
+  --bg: ${pickedDesign!.bg};
+  --fg: ${pickedDesign!.text};
   --card: ${pickedDesign!.card};
   --border: ${pickedDesign!.border};
+  --primary: ${pickedDesign!.accent};
+  --primary-fg: #ffffff;
   --accent: ${pickedDesign!.accent};
-  --accent2: ${pickedDesign!.accent2};
-  --text: ${pickedDesign!.text};
   --muted: ${pickedDesign!.muted};
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--fg); }
 
-Use these in inline styles: style={{ background: "var(--accent)", color: "var(--text)" }}
-body background: var(--background). Cards: var(--card). Borders: var(--border).
+Use var(--primary) for buttons/CTAs, var(--bg) for page backgrounds, var(--fg) for text, var(--card) for cards.
+Pass accentColor="var(--primary)" to ALL section components.
 border-radius: ${pickedDesign!.radius} everywhere.${layoutBlock}`;
 
   const hasEnvVars = envVars && Object.keys(envVars).length > 0;
