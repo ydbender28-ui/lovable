@@ -176,8 +176,10 @@ export default function Features({ tag, title, items }: { tag?: string; title: s
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = React.useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  React.useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ padding:'100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {tag && <p style={{ fontSize:13, textTransform:'uppercase', letterSpacing:'0.2em', color:'var(--accent, #c2410c)', marginBottom:8 }}>{tag}</p>}
       <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em', marginBottom:60 }}>{title}</h2>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:32 }}>
@@ -398,36 +400,184 @@ export default function Contact({ title, subtitle, items }: { title: string; sub
   );
 }`,
 
-"/components/sections/Footer.tsx": `import React from 'react';
-export default function Footer({ brand, tagline, links, year }: { brand: string; tagline?: string; links?: string[]; year?: number }) {
-  const y = year || new Date().getFullYear();
-  const safeLinks = (links || []).filter(Boolean);
-  const ref = React.useRef<HTMLElement>(null);
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.15 });
-    if(ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+"/components/sections/Footer.tsx": `
+import React, { useState, useEffect } from 'react';
+
+interface FooterLink { label: string; href: string; }
+interface FooterColumn { heading: string; links: FooterLink[]; }
+interface FooterProps {
+  logo?: string;
+  tagline?: string;
+  columns?: FooterColumn[];
+  links?: FooterLink[];
+  socials?: { platform: string; href: string }[];
+  email?: string;
+  phone?: string;
+  address?: string;
+  copyright?: string;
+  accentColor?: string;
+  showNewsletter?: boolean;
+}
+
+const SOCIAL_ICONS: Record<string, string> = {
+  facebook: 'f', twitter: '𝕏', instagram: '◈', linkedin: 'in', youtube: '▶', tiktok: '♪', pinterest: '𝐏'
+};
+
+export default function Footer({ logo = 'Brand', tagline, columns, links, socials, email, phone, address, copyright, accentColor = '#6366f1', showNewsletter = false }: FooterProps) {
+  const [email_, setEmail_] = React.useState('');
+  const [subscribed, setSubscribed] = React.useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+  const year = new Date().getFullYear();
+
+  // Convert flat links to column if no columns provided
+  const cols: FooterColumn[] = columns || (links && links.length > 0 ? [{ heading: 'Quick Links', links }] : []);
+
   return (
-    <footer ref={ref as any} style={{ borderTop:'1px solid #eee', padding:'48px 40px', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:24 }}>
-        <div>
-          <p style={{ fontWeight:700, fontSize:16 }}>{brand}</p>
-          {tagline && <p style={{ fontSize:14, color:'#888', marginTop:4 }}>{tagline}</p>}
+    <footer style={{ background: 'var(--card)', borderTop: '1px solid var(--border)', paddingTop: isMobile ? 32 : 64 }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: isMobile ? '0 20px' : '0 40px' }}>
+
+        {/* Top section: logo/info + columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: \`2fr \${cols.map(() => '1fr').join(' ')}\`, gap: 48, marginBottom: 48, flexWrap: 'wrap' }}>
+
+          {/* Brand column */}
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: 'var(--fg)', marginBottom: 12, letterSpacing: '-0.02em' }}>
+              <span style={{ color: accentColor }}>{logo.charAt(0)}</span>{logo.slice(1)}
+            </div>
+            {tagline && <p style={{ color: 'var(--fg)', opacity: 0.65, lineHeight: 1.6, marginBottom: 20, maxWidth: 260, fontSize: 15 }}>{tagline}</p>}
+
+            {/* Contact info */}
+            {phone && <a href={\`tel:\${phone.replace(/[^0-9+]/g, '')}\`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', opacity: 0.75, textDecoration: 'none', marginBottom: 8, fontSize: 14, transition: 'opacity 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '1'} onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '0.75'}>
+              <span>📞</span> {phone}
+            </a>}
+            {email && <a href={\`mailto:\${email}\`} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--fg)', opacity: 0.75, textDecoration: 'none', marginBottom: 8, fontSize: 14, transition: 'opacity 0.2s' }} onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '1'} onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '0.75'}>
+              <span>✉️</span> {email}
+            </a>}
+            {address && <p style={{ display: 'flex', alignItems: 'flex-start', gap: 8, color: 'var(--fg)', opacity: 0.65, fontSize: 14, margin: 0 }}>
+              <span>📍</span> {address}
+            </p>}
+
+            {/* Social icons */}
+            {socials && socials.length > 0 && (
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                {socials.map((s, i) => (
+                  <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.platform}
+                    style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg)', textDecoration: 'none', fontSize: 13, fontWeight: 700, transition: 'all 0.2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = accentColor; (e.currentTarget as HTMLAnchorElement).style.borderColor = accentColor; (e.currentTarget as HTMLAnchorElement).style.color = '#fff'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'none'; (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--fg)'; }}>
+                    {SOCIAL_ICONS[s.platform.toLowerCase()] || s.platform.charAt(0).toUpperCase()}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Link columns */}
+          {cols.map((col, ci) => (
+            <div key={ci}>
+              <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg)', opacity: 0.5, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>{col.heading}</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {col.links.map((link, li) => (
+                  <li key={li}>
+                    <a href={link.href} style={{ color: 'var(--fg)', opacity: 0.7, textDecoration: 'none', fontSize: 15, transition: 'opacity 0.15s, color 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; (e.currentTarget as HTMLAnchorElement).style.color = accentColor; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.7'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--fg)'; }}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        {safeLinks.length > 0 && (
-          <div style={{ display:'flex', gap:24, flexWrap:'wrap' }}>
-            {safeLinks.map((l, i) => (
-              <a key={i} href={\`#\${String(l).toLowerCase().replace(/\\s+/g,'-')}\`} style={{ fontSize:14, color:'#888', textDecoration:'none', transition:'color 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.color='#111'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.color='#888'}>{l}</a>
-            ))}
+
+        {/* Newsletter bar */}
+        {showNewsletter && !subscribed && (
+          <div style={{ padding: '32px 40px', background: \`\${accentColor}10\`, borderRadius: 16, marginBottom: 48, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <p style={{ fontWeight: 700, color: 'var(--fg)', margin: '0 0 4px', fontSize: 17 }}>Stay in the loop</p>
+              <p style={{ color: 'var(--fg)', opacity: 0.65, margin: 0, fontSize: 14 }}>Get updates, tips, and exclusive offers.</p>
+            </div>
+            <form onSubmit={e => { e.preventDefault(); setSubscribed(true); }} style={{ display: 'flex', gap: 10, flex: 2, minWidth: 280 }}>
+              <input type="email" value={email_} onChange={e => setEmail_(e.target.value)} placeholder="Enter your email" required autoComplete="email"
+                style={{ flex: 1, padding: '12px 16px', borderRadius: 30, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none' }} />
+              <button type="submit" style={{ background: accentColor, color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 30, fontWeight: 700, fontSize: 15, cursor: 'pointer', whiteSpace: 'nowrap' }}>Subscribe</button>
+            </form>
           </div>
         )}
-        <p style={{ fontSize:13, color:'#999' }}>© {y} {brand}. All rights reserved.</p>
+
+        {/* Bottom bar */}
+        <div style={{ borderTop: '1px solid var(--border)', padding: '24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <p style={{ color: 'var(--fg)', opacity: 0.5, fontSize: 14, margin: 0 }}>
+            © {year} {logo}. {copyright || 'All rights reserved.'}
+          </p>
+          <div style={{ display: 'flex', gap: 24 }}>
+            {['Privacy Policy', 'Terms of Service'].map((label, i) => (
+              <a key={i} href="#" style={{ color: 'var(--fg)', opacity: 0.5, fontSize: 14, textDecoration: 'none', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '1'}
+                onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.opacity = '0.5'}>
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </footer>
   );
-}`,
+}
+`,
+
+"/components/sections/DarkModeToggle.tsx": `
+import React from 'react';
+
+interface DarkModeToggleProps {
+  accentColor?: string;
+  position?: 'fixed-bottom-right' | 'fixed-bottom-left' | 'inline';
+}
+
+export default function DarkModeToggle({ accentColor = '#6366f1', position = 'fixed-bottom-right' }: DarkModeToggleProps) {
+  const [dark, setDark] = React.useState(() => {
+    if (typeof window === 'undefined') return false;
+    return document.documentElement.getAttribute('data-theme') === 'dark' ||
+           window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  const toggle = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
+    // Swap CSS variables
+    const root = document.documentElement;
+    if (next) {
+      root.style.setProperty('--bg', '#0f172a');
+      root.style.setProperty('--fg', '#f1f5f9');
+      root.style.setProperty('--card', '#1e293b');
+      root.style.setProperty('--border', '#334155');
+      root.style.setProperty('--muted', '#1e293b');
+    } else {
+      root.style.removeProperty('--bg');
+      root.style.removeProperty('--fg');
+      root.style.removeProperty('--card');
+      root.style.removeProperty('--border');
+      root.style.removeProperty('--muted');
+    }
+  };
+
+  const posStyle = position === 'fixed-bottom-right' ? { position: 'fixed' as const, bottom: 24, right: 84, zIndex: 999 }
+    : position === 'fixed-bottom-left' ? { position: 'fixed' as const, bottom: 24, left: 24, zIndex: 999 }
+    : {};
+
+  return (
+    <button type="button" onClick={toggle} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      style={{ ...posStyle, width: 48, height: 48, borderRadius: '50%', background: 'var(--card)', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
+      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)'}
+      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.transform = ''}>
+      {dark ? '☀️' : '🌙'}
+    </button>
+  );
+}
+`,
 
 "/components/sections/SplitSection.tsx": `import React from 'react';
 export default function SplitSection({ tag, title, text, image, reverse }: { tag?: string; title: string; text: string; image: string; reverse?: boolean }) {
@@ -3262,7 +3412,8 @@ Import using: import Navbar from '/components/sections/Navbar';
 - Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
 - Contact: <Contact title="Get in touch" subtitle="We'd love to hear from you." items={[{icon:"📍", label:"Address", value:"123 Main St"},{icon:"📞", label:"Phone", value:"(555) 123-4567", href:"tel:5551234567"},{icon:"✉️", label:"Email", value:"hello@brand.com", href:"mailto:hello@brand.com"},{icon:"🕐", label:"Hours", value:"Mon–Fri 9am–6pm"}]} />
   → Has a styled contact form (name, email, message) built-in on the right + contact info on the left. DO NOT write your own form.
-- Footer: <Footer brand="Name" tagline="Tagline" />
+- Footer: <Footer logo="Name" tagline="Tagline" columns={[{heading:"Links",links:[{label:"About",href:"#"}]}]} email="hello@brand.com" socials={[{platform:"instagram",href:"#"}]} accentColor="var(--primary)" />
+- DarkModeToggle: <DarkModeToggle position="fixed-bottom-right" />
 - ShopGrid: <ShopGrid title="Shop" items={[{id:1, name:"Item", price:3.50, desc:"Desc", category:"Cat", badge:"Popular", image:"{{unsplash:product|400x300}}"}]} />
   → Built-in cart + checkout. Use instead of MenuGrid for ordering.
 - PricingTable: <PricingTable title="Pricing" plans={[{name:"Pro", price:"$29", period:"mo", features:["Feature 1","Feature 2"], cta:"Get Started", popular:true}]} />
@@ -3285,4 +3436,183 @@ RULES:
 - ALWAYS prefer these sections over writing raw HTML. They are pre-styled and look professional.
 - When user asks for "checkout", "cart", "ordering", "e-commerce" → use ShopGrid instead of MenuGrid.
 - When editing: if the current code uses MenuGrid and user wants cart/checkout, REPLACE MenuGrid with ShopGrid.
-- CRITICAL: ONLY import from this exact list. NEVER invent component names like CartDrawer, PizzaBuilder, OrderTracker, ProductCard, HeroSection, etc. If you need a feature not in this list, BUILD IT IN /App.tsx as a regular React component — do NOT import it from /components/sections/. Importing a non-existent component causes a fatal crash.`;
+- CRITICAL: ONLY import from this exact list. NEVER invent component names like CartDrawer, PizzaBuilder, OrderTracker, ProductCard, HeroSection, etc. If you need a feature not in this list, BUILD IT IN /App.tsx as a regular React component — do NOT import it from /components/sections/. Importing a non-existent component causes a fatal crash.`,
+"/components/sections/HeroCentered.tsx": `
+import React from 'react';
+
+interface HeroCenteredProps {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  backgroundImage?: string;
+  accentColor?: string;
+  badge?: string;
+}
+
+export default function HeroCentered({ title = 'Welcome', subtitle, description, ctaText = 'Get Started', ctaHref = '#contact', secondaryCtaText, secondaryCtaHref = '#features', backgroundImage, accentColor = '#6366f1', badge }: HeroCenteredProps) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => { const t = setTimeout(() => setVisible(true), 100); return () => clearTimeout(t); }, []);
+
+  return (
+    <section id="hero" style={{
+      position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      textAlign: 'center', padding: '120px 40px 80px',
+      background: backgroundImage ? `url(${backgroundImage}) center/cover no-repeat` : `linear-gradient(135deg, ${accentColor}18 0%, var(--bg) 60%)`,
+      overflow: 'hidden',
+    }}>
+      {backgroundImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />}
+
+      <div style={{
+        position: 'relative', maxWidth: 800, margin: '0 auto',
+        opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: 'opacity 0.7s ease, transform 0.7s ease',
+      }}>
+        {badge && (
+          <div style={{ display: 'inline-block', background: `${accentColor}20`, border: `1px solid ${accentColor}40`,
+            color: accentColor, padding: '6px 16px', borderRadius: 30, fontSize: 13, fontWeight: 700,
+            letterSpacing: '0.05em', marginBottom: 24, textTransform: 'uppercase' }}>
+            {badge}
+          </div>
+        )}
+        <h1 style={{
+          fontSize: 'clamp(42px, 7vw, 84px)', fontWeight: 900, lineHeight: 1.05,
+          color: backgroundImage ? '#fff' : 'var(--fg)', marginBottom: 20,
+          letterSpacing: '-0.03em',
+        }}>{title}</h1>
+        {subtitle && <p style={{ fontSize: 'clamp(18px, 2.5vw, 26px)', color: backgroundImage ? 'rgba(255,255,255,0.9)' : 'var(--fg)', opacity: backgroundImage ? 1 : 0.75, marginBottom: 12, fontWeight: 400, lineHeight: 1.4 }}>{subtitle}</p>}
+        {description && <p style={{ fontSize: 17, color: backgroundImage ? 'rgba(255,255,255,0.8)' : 'var(--fg)', opacity: backgroundImage ? 1 : 0.65, marginBottom: 36, lineHeight: 1.6, maxWidth: 600, margin: '0 auto 36px' }}>{description}</p>}
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href={ctaHref} style={{
+            background: accentColor, color: '#fff', padding: '16px 36px', borderRadius: 50,
+            textDecoration: 'none', fontWeight: 800, fontSize: 17,
+            boxShadow: `0 8px 30px ${accentColor}50`, transition: 'all 0.2s',
+            display: 'inline-block',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 12px 40px ${accentColor}60`; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 8px 30px ${accentColor}50`; }}>
+            {ctaText}
+          </a>
+          {secondaryCtaText && (
+            <a href={secondaryCtaHref} style={{
+              background: 'transparent', color: backgroundImage ? '#fff' : 'var(--fg)',
+              padding: '16px 36px', borderRadius: 50, textDecoration: 'none', fontWeight: 700, fontSize: 17,
+              border: `2px solid ${backgroundImage ? 'rgba(255,255,255,0.4)' : 'var(--border)'}`,
+              transition: 'all 0.2s', display: 'inline-block',
+            }}>{secondaryCtaText}</a>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+`,
+
+"/components/sections/HeroSplit.tsx": `
+import React from 'react';
+
+interface HeroSplitProps {
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  image?: string;
+  accentColor?: string;
+  badge?: string;
+  imagePosition?: 'left' | 'right';
+  stats?: { value: string; label: string }[];
+}
+
+export default function HeroSplit({ title = 'Build Something Amazing', subtitle, description, ctaText = 'Get Started', ctaHref = '#contact', secondaryCtaText, secondaryCtaHref = '#features', image, accentColor = '#6366f1', badge, imagePosition = 'right', stats }: HeroSplitProps) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => { const t = setTimeout(() => setVisible(true), 100); return () => clearTimeout(t); }, []);
+
+  const textContent = (
+    <div style={{ flex: 1, padding: '0 20px', opacity: visible ? 1 : 0, transform: visible ? 'translateX(0)' : 'translateX(-30px)', transition: 'all 0.7s ease' }}>
+      {badge && <span style={{ display: 'inline-block', background: `${accentColor}15`, color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{badge}</span>}
+      <h1 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 900, lineHeight: 1.1, color: 'var(--fg)', marginBottom: 16, letterSpacing: '-0.03em' }}>{title}</h1>
+      {subtitle && <p style={{ fontSize: 'clamp(18px, 2vw, 22px)', color: 'var(--fg)', opacity: 0.75, marginBottom: 12, fontWeight: 400, lineHeight: 1.4 }}>{subtitle}</p>}
+      {description && <p style={{ fontSize: 16, color: 'var(--fg)', opacity: 0.65, marginBottom: 32, lineHeight: 1.7 }}>{description}</p>}
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: stats ? 40 : 0 }}>
+        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '14px 32px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 16, boxShadow: `0 6px 24px ${accentColor}45`, display: 'inline-block' }}>{ctaText}</a>
+        {secondaryCtaText && <a href={secondaryCtaHref} style={{ color: 'var(--fg)', padding: '14px 32px', borderRadius: 50, textDecoration: 'none', fontWeight: 700, fontSize: 16, border: '2px solid var(--border)', display: 'inline-block' }}>{secondaryCtaText}</a>}
+      </div>
+      {stats && stats.length > 0 && (
+        <div style={{ display: 'flex', gap: 32, paddingTop: 32, borderTop: '1px solid var(--border)' }}>
+          {stats.map((s, i) => (
+            <div key={i}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: accentColor }}>{s.value}</div>
+              <div style={{ fontSize: 13, color: 'var(--fg)', opacity: 0.6, marginTop: 2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const imageContent = (
+    <div style={{ flex: 1, padding: '0 20px', opacity: visible ? 1 : 0, transform: visible ? 'translateX(0)' : 'translateX(30px)', transition: 'all 0.7s ease 0.15s' }}>
+      {image ? (
+        <img src={image} alt={title} style={{ width: '100%', height: '100%', maxHeight: 520, objectFit: 'cover', borderRadius: 24, boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }} />
+      ) : (
+        <div style={{ width: '100%', paddingTop: '75%', borderRadius: 24, background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`, border: `2px solid ${accentColor}20` }} />
+      )}
+    </div>
+  );
+
+  return (
+    <section id="hero" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '100px 40px', background: 'var(--bg)', overflow: 'hidden' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 40, flexWrap: 'wrap' }}>
+        {imagePosition === 'left' ? <>{imageContent}{textContent}</> : <>{textContent}{imageContent}</>}
+      </div>
+    </section>
+  );
+}
+`,
+
+"/components/sections/HeroVideo.tsx": `
+import React from 'react';
+
+interface HeroVideoProps {
+  title?: string;
+  subtitle?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  videoUrl?: string;
+  accentColor?: string;
+  overlayOpacity?: number;
+}
+
+export default function HeroVideo({ title = 'Experience the Difference', subtitle, ctaText = 'Learn More', ctaHref = '#about', videoUrl, accentColor = '#6366f1', overlayOpacity = 0.55 }: HeroVideoProps) {
+  const [visible, setVisible] = React.useState(false);
+  React.useEffect(() => { const t = setTimeout(() => setVisible(true), 300); return () => clearTimeout(t); }, []);
+
+  return (
+    <section id="hero" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', overflow: 'hidden' }}>
+      {videoUrl ? (
+        <video autoPlay muted loop playsInline style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}>
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, #0f0f1a, #1a0a2e, #0d1b2a)`, zIndex: 0 }} />
+      )}
+      <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2, maxWidth: 800, padding: '0 40px', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.9s ease' }}>
+        <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 900, color: '#fff', lineHeight: 1.05, marginBottom: 20, letterSpacing: '-0.03em', textShadow: '0 4px 40px rgba(0,0,0,0.3)' }}>{title}</h1>
+        {subtitle && <p style={{ fontSize: 'clamp(18px, 2.5vw, 24px)', color: 'rgba(255,255,255,0.85)', marginBottom: 40, lineHeight: 1.5 }}>{subtitle}</p>}
+        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '18px 44px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 18, display: 'inline-block', boxShadow: `0 8px 40px ${accentColor}70`, letterSpacing: '0.01em' }}>{ctaText}</a>
+        <div style={{ position: 'absolute', bottom: -80, left: '50%', transform: 'translateX(-50%)', animation: 'heroScroll 2s ease-in-out infinite' }}>
+          <div style={{ width: 2, height: 40, background: 'rgba(255,255,255,0.4)', margin: '0 auto', borderRadius: 2 }} />
+        </div>
+      </div>
+      <style>{'.heroScroll { animation: heroScrollAnim 2s ease-in-out infinite; } @keyframes heroScrollAnim { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(8px)} }'}</style>
+    </section>
+  );
+}
+`;

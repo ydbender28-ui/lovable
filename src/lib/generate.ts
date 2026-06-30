@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+﻿import Anthropic from "@anthropic-ai/sdk";
 import { UI_COMPONENT_LIST } from "./ui-components";
 import { SECTION_COMPONENT_LIST } from "./section-components";
 import { EXTRA_COMPONENT_LIST } from "./extra-components";
@@ -313,6 +313,11 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
    Guest options: ['1 guest','2 guests','3 guests','4 guests','5+ guests']
    Wrap in a card: background:#fff, borderRadius:24, padding:48, boxShadow:'0 4px 32px rgba(0,0,0,0.08)'
 
+## DARKTOGGLE & FOOTER GUIDANCE:
+- DarkModeToggle: Add near the bottom of App (before Footer) for sites that benefit from dark/light toggle. Especially good for: tech sites, portfolios, blogs. Use position="fixed-bottom-right".
+- Footer: Now supports columns prop for multi-column layout, socials prop for social media icons, email/phone/address props for contact info, and showNewsletter prop. Always pass these to make the footer look complete.
+  Example: <Footer logo="Business Name" tagline="Short description" columns={[{heading:"Services",links:[{label:"Service 1",href:"#"},{label:"Service 2",href:"#"}]},{heading:"Company",links:[{label:"About",href:"#"},{label:"Contact",href:"#"}]}]} phone="(555) 123-4567" email="hello@business.com" socials={[{platform:"instagram",href:"#"},{platform:"facebook",href:"#"}]} accentColor="var(--primary)" />
+
 ## ADMIN DASHBOARD BUILDS — use these components:
 
 When the user asks for "admin", "dashboard", "CRM", "backend", "management panel", "analytics", or "internal tool":
@@ -417,13 +422,23 @@ ADMIN DESIGN RULES:
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
 - import MapSection from '/components/sections/MapSection' → <MapSection address="123 Main St, City" phone="555-0100" hours={[{day:"Monday",open:"9:00",close:"17:00"},{day:"Sunday",closed:true}]} />  ← embedded map + hours + contact
 - import HoursTable from '/components/sections/HoursTable' → <HoursTable hours={[{day:"Monday",open:"9:00",close:"21:00"},{day:"Sunday",closed:true}]} />  ← shows open/closed status live
-- import Footer from '/components/sections/Footer' → <Footer brand="Name" tagline="Tagline" links={["Menu","About"]} />
+- import Footer from '/components/sections/Footer' → <Footer logo="Business Name" tagline="Short description" columns={[{heading:"Services",links:[{label:"Web Design",href:"#"},{label:"Branding",href:"#"}]},{heading:"Company",links:[{label:"About",href:"#"},{label:"Contact",href:"#"}]}]} phone="(555) 123-4567" email="hello@business.com" socials={[{platform:"instagram",href:"#"},{platform:"facebook",href:"#"}]} accentColor="var(--primary)" showNewsletter={false} />
+- import DarkModeToggle from '/components/sections/DarkModeToggle' → <DarkModeToggle position="fixed-bottom-right" />
 - import FAQ from '/components/sections/FAQ' → <FAQ title="FAQ" items={[{q:"Question?",a:"Answer."}]} />
 - import Stats from '/components/sections/Stats' → <Stats items={[{value:"100+",label:"Customers"}]} />
 - import ServiceCards from '/components/sections/ServiceCards' → <ServiceCards title="Services" items={[{title:"Haircut",desc:"...",price:"$45",icon:"✂️",features:["30 min","All hair types"]}]} />  ← for salons, agencies, consultants
 - import StepProcess from '/components/sections/StepProcess' → <StepProcess title="How It Works" steps={[{icon:"1",title:"Step",desc:"..."}]} layout="horizontal" />
 - import VideoSection from '/components/sections/VideoSection' → <VideoSection title="See It In Action" videoUrl="https://youtube.com/watch?v=..." thumbnail="url" />
 - import VideoHero from '/components/sections/VideoHero' → <VideoHero title="Headline" subtitle="..." videoUrl="https://..." cta="Get Started" />  ← full-screen video background hero
+- import HeroCentered from '/components/sections/HeroCentered' → <HeroCentered title="Headline" subtitle="..." description="..." ctaText="Get Started" ctaHref="#contact" backgroundImage="url" accentColor="#6366f1" badge="NEW" secondaryCtaText="Learn More" />
+- import HeroSplit from '/components/sections/HeroSplit' → <HeroSplit title="Headline" subtitle="..." description="..." ctaText="Get Started" ctaHref="#contact" image="url" accentColor="#6366f1" badge="NEW" imagePosition="right" stats={[{value:"10K+",label:"Users"},{value:"4.9★",label:"Rating"}]} />
+- import HeroVideo from '/components/sections/HeroVideo' → <HeroVideo title="Headline" subtitle="..." ctaText="Learn More" ctaHref="#about" videoUrl="https://..." accentColor="#6366f1" overlayOpacity={0.55} />
+
+## HERO VARIANTS — Choose the right one:
+- Hero: default, flexible layout with image support. Good for most sites.
+- HeroCentered: full-width centered layout. Best for restaurants, spas, hotels with background photos. Pass backgroundImage="https://source.unsplash.com/1600x900/?[keywords]"
+- HeroSplit: 50/50 text+image. Best for SaaS, tech, professional services, real estate. Pass stats array for social proof.
+- HeroVideo: full-screen video background. Best for gyms, nightclubs, luxury brands, agencies. If no video URL, uses dark gradient.
 - import AppDownload from '/components/sections/AppDownload' → <AppDownload title="Get the App" appStoreUrl="#" playStoreUrl="#" features={["Free to use","Works offline"]} />
 - import Comparison from '/components/sections/Comparison' → <Comparison title="Compare Plans" plans={[{name:"Basic"},{name:"Pro",highlighted:true}]} rows={[{feature:"Users",values:["1","Unlimited"]},{feature:"Storage",values:["5GB","100GB"]},{feature:"API",values:[false,true]}]} />
 - import Portfolio from '/components/sections/Portfolio' → <Portfolio title="Our Work" items={[{title:"Project",category:"Web",image:"url",desc:"..."}]} />  ← filterable masonry grid
@@ -2765,7 +2780,7 @@ complete file here
 
   // Auto-fix missing section component imports in App.tsx
   if (finalFiles['/App.tsx']) {
-    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router'];
+    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','HeroCentered','HeroSplit','HeroVideo','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','DarkModeToggle','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router'];
     let appCode = finalFiles['/App.tsx'];
     const missingImports: string[] = [];
     for (const comp of KNOWN_SECTIONS) {
