@@ -195,6 +195,10 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 3. NEVER add a cart button, cart icon, or cart state (useState for cart) anywhere — Navbar + MenuGrid handle cart automatically
 4. NEVER write useState for cart, cartOpen, cartItems, or cartCount — these are built into the components
 5. Any custom cart/nav code you write will conflict with the built-in system and show a duplicate cart button
+6. NEVER write a custom booking/reservation form — use <Booking> component only
+   WRONG: <input type="date"/> <input type="time"/> <select>2 guests</select> written by hand — looks broken
+   CORRECT: import Booking from '/components/sections/Booking'; → <Booking title="Reserve a Table" fields={["name","email","date","time","guests","notes"]} />
+7. NEVER use <input type="date"> or <input type="time"> anywhere — they render as ugly browser-native pickers
 
 ## USE PRE-BUILT SECTION COMPONENTS — they have proper styling built in:
 - import Navbar from '/components/sections/Navbar' → <Navbar brand="Name" links={["Menu","About","Contact","Reviews"]} cta="Order Now" />
