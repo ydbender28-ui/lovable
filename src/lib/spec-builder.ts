@@ -19,18 +19,24 @@ export async function buildSpec(prompt: string): Promise<BuildSpec> {
     }),
     client.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 800,
-      system: `You are an expert software architect. Given a build request, produce a concise implementation plan. Be specific and concrete.
+      max_tokens: 400,
+      system: `You are a web page architect. Given a build request, choose which pre-built sections to use and in what order.
+
+AVAILABLE SECTIONS (use ONLY these names):
+Navbar, Hero, Banner, Stats, Features, SplitSection, MenuGrid, ShopGrid, Gallery, Team, Timeline, Testimonials, LogoCloud, BlogGrid, PricingTable, FAQ, Newsletter, CTA, Contact, Footer, Tabs
+
+Rules:
+- ALWAYS start with Navbar, then Hero
+- ALWAYS end with Contact (if relevant) and Footer
+- MenuGrid = food menus with cart. ShopGrid = product stores with cart. Never use both.
+- Pick 6-10 sections total that make sense for this type of site
 
 Return JSON only:
 {
-  "title": "What we'll build",
-  "overview": "2-sentence summary",
-  "components": ["list of key UI components"],
-  "dataModels": ["key data structures/entities"],
-  "features": ["specific interactive features"]
+  "sections": ["Navbar", "Hero", "...in order...", "Footer"],
+  "features": ["2-3 specific content/interactive features to include"]
 }`,
-      messages: [{ role: "user", content: `This is a new project. Build request: ${prompt}` }],
+      messages: [{ role: "user", content: `Build request: ${prompt}` }],
     }),
   ]);
 
@@ -41,12 +47,11 @@ Return JSON only:
   let componentPlan = "";
   try {
     const raw = (architectRes.content[0] as { type: string; text: string }).text;
-    const plan = JSON.parse(raw);
+    const cleaned = raw.includes("```") ? raw.split("```")[1].replace("json","").trim() : raw.trim();
+    const plan = JSON.parse(cleaned);
     const parts: string[] = [];
-    if (plan.overview) parts.push(plan.overview);
-    if (plan.components?.length) parts.push(`Components: ${plan.components.join(", ")}`);
-    if (plan.dataModels?.length) parts.push(`Data: ${plan.dataModels.join(", ")}`);
-    if (plan.features?.length) parts.push(`Features: ${plan.features.join(", ")}`);
+    if (plan.sections?.length) parts.push(`Use these sections in this order: ${plan.sections.join(" → ")}`);
+    if (plan.features?.length) parts.push(`Include: ${plan.features.join(", ")}`);
     componentPlan = parts.join("\n");
   } catch {
     // Architect call failed to parse — proceed without plan
