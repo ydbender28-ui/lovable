@@ -63,36 +63,81 @@ export default function Features({ tag, title, items }: { tag?: string; title: s
 }`,
 
 "/components/sections/MenuGrid.tsx": `import React, { useState } from 'react';
-type MenuItem = { name: string; price: string; desc: string; category: string; badge?: string; image?: string };
-export default function MenuGrid({ title, subtitle, items, categories }: { title: string; subtitle?: string; items: MenuItem[]; categories?: string[] }) {
+type MenuItem = { id?: number; name: string; price: number | string; desc: string; category: string; badge?: string; image?: string };
+type CartItem = { item: MenuItem; qty: number };
+export default function MenuGrid({ title, subtitle, items, categories, accentColor }: { title: string; subtitle?: string; items: MenuItem[]; categories?: string[]; accentColor?: string }) {
+  const accent = accentColor || '#c2410c';
   const cats = categories || [...new Set(items.map(i => i.category))];
   const [active, setActive] = useState('All');
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
   const filtered = active === 'All' ? items : items.filter(i => i.category === active);
+  const cartCount = cart.reduce((s, c) => s + c.qty, 0);
+  const cartTotal = cart.reduce((s, c) => s + (parseFloat(String(c.item.price)) * c.qty), 0);
+  const addToCart = (item: MenuItem) => setCart(prev => { const ex = prev.find(c => c.item.name === item.name); return ex ? prev.map(c => c.item.name === item.name ? {...c, qty: c.qty+1} : c) : [...prev, {item, qty:1}]; });
+  const updateQty = (name: string, delta: number) => setCart(prev => prev.map(c => c.item.name === name ? {...c, qty: Math.max(0, c.qty+delta)} : c).filter(c => c.qty > 0));
   return (
-    <section id="menu" style={{ padding:'100px 40px', background:'#faf9f7' }}>
+    <section id="menu" style={{ padding:'80px 40px', background:'#faf9f7' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
-        <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em' }}>{title}</h2>
-        {subtitle && <p style={{ textAlign:'center', color:'#666', fontSize:16, marginTop:12, marginBottom:40 }}>{subtitle}</p>}
-        <div style={{ display:'flex', gap:8, justifyContent:'center', marginBottom:48, flexWrap:'wrap' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+          <h2 style={{ fontSize:40, fontWeight:700, letterSpacing:'-0.02em' }}>{title}</h2>
+          {cartCount > 0 && <button onClick={() => setCartOpen(true)} style={{ background:accent, color:'#fff', border:'none', borderRadius:50, padding:'10px 24px', fontWeight:600, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}>🛒 Cart ({cartCount}) · ${cartTotal.toFixed(2)}</button>}
+        </div>
+        {subtitle && <p style={{ color:'#666', fontSize:16, marginBottom:32 }}>{subtitle}</p>}
+        <div style={{ display:'flex', gap:8, marginBottom:40, flexWrap:'wrap' }}>
           {['All', ...cats].map(c => (
-            <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1px solid #ddd', background: active===c ? 'var(--accent, #c2410c)' : '#fff', color: active===c ? '#fff' : '#555', fontSize:14, fontWeight:500, cursor:'pointer', transition:'all 0.2s' }}>{c}</button>
+            <button key={c} onClick={() => setActive(c)} style={{ padding:'8px 20px', borderRadius:50, border: active===c ? 'none' : '1px solid #ddd', background: active===c ? accent : '#fff', color: active===c ? '#fff' : '#555', fontSize:14, fontWeight:500, cursor:'pointer', transition:'all 0.2s' }}>{c}</button>
           ))}
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:24 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:24 }}>
           {filtered.map((item, i) => (
-            <div key={i} style={{ background:'#fff', borderRadius:12, border:'1px solid #eee', padding:24, display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:16 }}>
-              <div>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <h3 style={{ fontSize:17, fontWeight:600 }}>{item.name}</h3>
-                  {item.badge && <span style={{ fontSize:11, background:'var(--accent, #c2410c)', color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600 }}>{item.badge}</span>}
+            <div key={i} style={{ background:'#fff', borderRadius:16, border:'1px solid #eee', overflow:'hidden', transition:'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-4px)';(e.currentTarget as HTMLElement).style.boxShadow='0 12px 32px rgba(0,0,0,0.1)'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='none';(e.currentTarget as HTMLElement).style.boxShadow='none'}}>
+              {item.image && <div style={{ position:'relative' }}><img src={item.image} alt={item.name} style={{ width:'100%', height:200, objectFit:'cover', display:'block' }} />{item.badge && <span style={{ position:'absolute', top:10, left:10, background:accent, color:'#fff', fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:50 }}>{item.badge}</span>}<span style={{ position:'absolute', top:10, right:10, background:'rgba(0,0,0,0.55)', color:'#fff', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:50 }}>{item.category}</span></div>}
+              <div style={{ padding:'16px 18px 18px' }}>
+                {!item.image && item.badge && <span style={{ fontSize:11, background:accent, color:'#fff', padding:'2px 8px', borderRadius:50, fontWeight:600, marginBottom:8, display:'inline-block' }}>{item.badge}</span>}
+                <h3 style={{ fontSize:17, fontWeight:700, margin:'0 0 6px' }}>{item.name}</h3>
+                <p style={{ fontSize:13, color:'#888', margin:'0 0 14px', lineHeight:1.5 }}>{item.desc}</p>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <span style={{ fontSize:19, fontWeight:800, color:accent }}>from \${parseFloat(String(item.price)).toFixed(2)}</span>
+                  <button onClick={() => addToCart(item)} style={{ background:accent, color:'#fff', border:'none', borderRadius:8, padding:'8px 16px', fontWeight:700, fontSize:13, cursor:'pointer', transition:'opacity 0.2s' }} onMouseOver={e=>(e.currentTarget as HTMLElement).style.opacity='0.85'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.opacity='1'}>Add to Cart +</button>
                 </div>
-                <p style={{ fontSize:14, color:'#888', marginTop:4 }}>{item.desc}</p>
               </div>
-              <span style={{ fontSize:17, fontWeight:700, whiteSpace:'nowrap' }}>{item.price}</span>
             </div>
           ))}
         </div>
       </div>
+      {cartOpen && (
+        <div style={{ position:'fixed', inset:0, zIndex:500 }}>
+          <div onClick={() => setCartOpen(false)} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.5)' }} />
+          <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'100%', maxWidth:400, background:'#fff', display:'flex', flexDirection:'column', boxShadow:'-4px 0 40px rgba(0,0,0,0.15)' }}>
+            <div style={{ padding:'20px 24px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <h2 style={{ fontSize:20, fontWeight:800, margin:0 }}>Your Order ({cartCount})</h2>
+              <button onClick={() => setCartOpen(false)} style={{ background:'#f0f0f0', border:'none', borderRadius:8, width:34, height:34, cursor:'pointer', fontSize:16 }}>✕</button>
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:'16px 24px' }}>
+              {cart.map((c, i) => (
+                <div key={i} style={{ background:'#faf9f7', borderRadius:12, padding:'14px 16px', marginBottom:12 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+                    <div style={{ fontWeight:700, fontSize:15 }}>{c.item.name}</div>
+                    <div style={{ fontWeight:700, color:accent }}>\${(parseFloat(String(c.item.price))*c.qty).toFixed(2)}</div>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <button onClick={() => updateQty(c.item.name, -1)} style={{ background:'#eee', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontWeight:700, fontSize:14 }}>−</button>
+                    <span style={{ fontWeight:700, minWidth:20, textAlign:'center' }}>{c.qty}</span>
+                    <button onClick={() => updateQty(c.item.name, 1)} style={{ background:accent, color:'#fff', border:'none', borderRadius:6, width:28, height:28, cursor:'pointer', fontWeight:700, fontSize:14 }}>+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding:'20px 24px', borderTop:'1px solid #eee' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:16, fontSize:18, fontWeight:800 }}>
+                <span>Total</span><span style={{ color:accent }}>\${cartTotal.toFixed(2)}</span>
+              </div>
+              <button style={{ width:'100%', background:accent, color:'#fff', border:'none', borderRadius:12, padding:'14px', fontWeight:800, fontSize:16, cursor:'pointer' }}>Checkout →</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }`,
