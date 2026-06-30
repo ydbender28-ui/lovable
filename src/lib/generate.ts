@@ -187,9 +187,10 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
   CORRECT: <Navbar brand="..." links={["Menu","About","Contact"]} cta="Order Now" /><Hero ... />
 - import Hero from '/components/sections/Hero' → <Hero tag="EST. 2017" title="Headline" subtitle="Description" cta1={{text:"CTA",href:"#menu"}} image="url" />
 - import MenuGrid from '/components/sections/MenuGrid' → <MenuGrid title="Menu" items={[{id:1,name:"Item",price:5,desc:"...",category:"Cat",image:"url"}]} />
-  CRITICAL: For ANY menu, product list, or card grid — ALWAYS use MenuGrid. NEVER build a custom card grid from scratch.
-  MenuGrid has built-in images, Add to Cart button, and cart drawer. Pass image URLs using {{unsplash:query|400x300}} per item.
-  Example: <MenuGrid title="Our Menu" items={[{name:"Margherita",price:13.99,desc:"Fresh basil, mozzarella",category:"Classic",badge:"Popular",image:"{{unsplash:margherita pizza|400x300}}"}]} />
+  !!!ABSOLUTE RULE!!! For ANY menu, food list, product list, or card grid — you MUST use <MenuGrid>. Writing a custom <div> or <ul> list of items is FORBIDDEN.
+  MenuGrid renders a 3-column grid with images (200px height), category tabs, and Add-to-Cart built in.
+  CORRECT: <MenuGrid title="Our Menu" items={[{name:"Margherita",price:13.99,desc:"Fresh basil, mozzarella",category:"Classic",badge:"Popular",image:"{{unsplash:margherita pizza|400x300}}"},{name:"Pepperoni",price:14.99,desc:"Classic pepperoni",category:"Classic",image:"{{unsplash:pepperoni pizza|400x300}}"}]} />
+  WRONG: <div className="space-y-4">{pizzas.map(p => <div>...</div>)}</div>  ← NEVER DO THIS
 - import Features from '/components/sections/Features' → <Features title="Features" items={[{icon:"☕",title:"Feature",desc:"..."}]} />
 - import Testimonials from '/components/sections/Testimonials' → <Testimonials title="Reviews" items={[{text:"Quote",author:"Name",role:"Customer"}]} />
 - import Contact from '/components/sections/Contact' → <Contact title="Visit" items={[{icon:"📍",label:"Address",value:"123 St"}]} />
@@ -500,12 +501,12 @@ export interface ModelOption {
 export const MODELS: Record<string, ModelOption> = {
   "claude-haiku-4-5-20251001": {
     provider: "anthropic", model: "claude-haiku-4-5-20251001",
-    displayName: "Claude Haiku", maxTokens: 12000,
+    displayName: "Claude Haiku", maxTokens: 8000,
     costPer1kInput: 0.001, costPer1kOutput: 0.005,
   },
   "claude-sonnet-4-6": {
     provider: "anthropic", model: "claude-sonnet-4-6",
-    displayName: "Claude Sonnet", maxTokens: 12000,
+    displayName: "Claude Sonnet", maxTokens: 8000,
     costPer1kInput: 0.003, costPer1kOutput: 0.015,
   },
   "gpt-5.4-mini": {
