@@ -2839,9 +2839,67 @@ complete file here
   }
   trimConversationState();
 
+  // ── sanitizeAppTsx: fix common AI output issues ──
+  function sanitizeAppTsx(code: string): string {
+    let fixed = code;
+    // Remove any markdown code fences that leaked in
+    fixed = fixed.replace(/^```[a-z]*\n?/gm, '').replace(/^```\s*$/gm, '');
+    // Fix double export defaults (keep only the last one)
+    const doubleExport = /export default function App[\s\S]*?export default function App/;
+    if (doubleExport.test(fixed)) {
+      const lastIdx = fixed.lastIndexOf('export default function App');
+      fixed = fixed.slice(lastIdx);
+    }
+    // Ensure proper React import when React is referenced
+    if (!fixed.includes('import React') && fixed.includes('React.')) {
+      fixed = "import React from 'react';\n" + fixed;
+    }
+    // Remove any stray backtick-only lines
+    fixed = fixed.replace(/^`+\s*$/gm, '');
+    return fixed.trim();
+  }
+
+  if (finalFiles['/App.tsx']) {
+    finalFiles['/App.tsx'] = sanitizeAppTsx(finalFiles['/App.tsx']);
+  }
+
+  // ── Improved truncation detection + brace recovery ──
+  if (finalFiles['/App.tsx']) {
+    const appTsx = finalFiles['/App.tsx'];
+    const lastLine = appTsx.trim().split('\n').pop() || '';
+    const incompletePatterns = [
+      /^\s*[{([\`'"]/,
+      /=>\s*$/,
+      /,\s*$/,
+      /\bconst\s+\w+\s*=\s*$/,
+    ];
+    const hasProperEnd = appTsx.trim().endsWith('}') || appTsx.trim().endsWith(');') || appTsx.trim().endsWith('/>');
+    const looksIncomplete = !hasProperEnd || incompletePatterns.some(p => p.test(lastLine));
+    if (looksIncomplete) {
+      const opens = (appTsx.match(/\{/g) || []).length;
+      const closes = (appTsx.match(/\}/g) || []).length;
+      const diff = opens - closes;
+      if (diff > 0 && diff < 10) {
+        finalFiles['/App.tsx'] = appTsx + '\n' + '}'.repeat(diff);
+      }
+    }
+  }
+
+  // ── Missing default export recovery ──
+  if (finalFiles['/App.tsx'] && !finalFiles['/App.tsx'].includes('export default')) {
+    let recovered = finalFiles['/App.tsx'].replace(
+      /^(function App\b)/m,
+      'export default function App'
+    );
+    if (!recovered.includes('export default')) {
+      recovered += '\nexport default App;';
+    }
+    finalFiles['/App.tsx'] = recovered;
+  }
+
   // Auto-fix missing section component imports in App.tsx
   if (finalFiles['/App.tsx']) {
-    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','HeroCentered','HeroSplit','HeroVideo','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','DarkModeToggle','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router'];
+    const KNOWN_SECTIONS = ['MetaTags','Navbar','Hero','Banner','VideoHero','HeroCentered','HeroSplit','HeroVideo','Stats','Features','IconFeatures','SplitSection','ImageText','MenuGrid','ShopGrid','Gallery','Portfolio','Team','Timeline','Testimonials','Reviews','LogoCloud','BlogGrid','PricingTable','Comparison','FAQ','Newsletter','CTA','SocialProof','QuoteBlock','Booking','HoursTable','MapSection','ServiceCards','StepProcess','VideoSection','AppDownload','BeforeAfter','EventsList','Countdown','TrustBadges','LocationCards','ProductSpotlight','Partners','Awards','RichText','StickyBar','Contact','Footer','DarkModeToggle','Tabs','DashboardStats','DataTable','ActivityFeed','RevenueChart','AdminSidebar','KanbanBoard','UserManagement','NotificationCenter','AnalyticsPanel','OrdersTable','FormBuilder','FileManager','CalendarWidget','QuickActions','DashboardShell','PricingCard','TestimonialCard','FeatureCard','StatBadge','ImageCard','ProfileCard','AlertBanner','ProgressBar','CountdownTimer','VideoEmbed','MapEmbed','SocialLinks','NewsletterInline','RatingStars','Breadcrumbs','TabsInline','AccordionItem','ImageGalleryGrid','CallToActionBanner','EmptyState','Router','LoginForm','SignupForm','ChatWidget','CheckoutForm','ProductDetail','BlogPost','JobListing','RestaurantReservation','PropertyListing','DoctorProfile','MenuCategory','PackageComparison','IntegrationGrid','MegaMenu','PressKit','ReferralProgram','MembershipTiers','EventDetail','FilterBar','CartDrawer','CookieBanner','LoadingScreen','SearchBar','PricingToggle','ForgotPassword'];
     let appCode = finalFiles['/App.tsx'];
     const missingImports: string[] = [];
     for (const comp of KNOWN_SECTIONS) {
