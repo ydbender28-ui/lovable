@@ -202,7 +202,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
         ).catch(() => {});
       }
 
-      return { result, actualCredits, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
+      return { result, actualCredits, aiCostUsd: actualCost, creditsAfter: Math.max(0, currentCredits - actualCredits), wasPublished };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed";
       await prisma.message.create({ data: { projectId: id, role: "assistant", content: `Error: ${message}` } }).catch(() => {});
@@ -254,6 +254,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
           tempMessageId: `msg-${Date.now()}`,
           liveUpdated: outcome.wasPublished,
           creditsUsed: outcome.actualCredits,
+          aiCostUsd: outcome.aiCostUsd,
           creditsRemaining: outcome.creditsAfter,
         });
       }
