@@ -1379,7 +1379,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
                   <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:\`\${10000/pos[i]}%\`,maxWidth:'none',height:'100%',objectFit:'cover'}} />
                 </div>
                 <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)',pointerEvents:'none'}}>
-                  <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
+                  <div style={{position:'absolute',top:'50%',left:'50%',animation:'baHandlePulse 2s ease infinite',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
                 </div>
                 <div style={{position:'absolute',bottom:12,left:12,background:'rgba(0,0,0,0.55)',color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50,pointerEvents:'none'}}>{item.beforeLabel||'Before'}</div>
                 <div style={{position:'absolute',bottom:12,right:12,background:accent,color:'#fff',fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:50,pointerEvents:'none'}}>{item.afterLabel||'After'}</div>

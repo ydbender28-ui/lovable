@@ -349,7 +349,14 @@ function storagePolyfill(slug: string): string {
 }
 
 // Used for local export download — uses CDN (needs internet)
-export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string, hideBadge = false, publishSlug?: string): string {
+export function buildStandaloneHtml(
+  projectFiles: ProjectFiles,
+  projectName: string,
+  projectId?: string,
+  hideBadge = false,
+  publishSlug?: string,
+  seoMeta?: { title?: string; description?: string; keywords?: string; ogImage?: string }
+): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
   const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){console.error('App error:',e);showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e){return React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#fff',color:'#333',fontFamily:'system-ui',flexDirection:'column',gap:16,padding:40}},React.createElement('div',{style:{fontSize:40}},'⚠️'),React.createElement('h2',{style:{margin:0}},'Something went wrong'),React.createElement('p',{style:{color:'#666',textAlign:'center'}},'Open browser console (F12) for details.'),React.createElement('a',{href:'https://thatcode.dev',style:{color:'#7c3aed',textDecoration:'none',fontWeight:600}},'✏️ Edit this site'));}return this.props.children;}}`;
@@ -360,8 +367,19 @@ export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: str
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>${title || projectName}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${seoMeta?.title || title || projectName}</title>
+  ${seoMeta?.description ? `<meta name="description" content="${seoMeta.description}">` : ''}
+  ${seoMeta?.keywords ? `<meta name="keywords" content="${seoMeta.keywords}">` : ''}
+  <meta property="og:title" content="${seoMeta?.title || title || projectName}">
+  ${seoMeta?.description ? `<meta property="og:description" content="${seoMeta.description}">` : ''}
+  ${seoMeta?.ogImage ? `<meta property="og:image" content="${seoMeta.ogImage}">` : ''}
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${seoMeta?.title || title || projectName}">
+  ${seoMeta?.description ? `<meta name="twitter:description" content="${seoMeta.description}">` : ''}
+  ${seoMeta?.ogImage ? `<meta name="twitter:image" content="${seoMeta.ogImage}">` : ''}
+  ${publishSlug ? `<link rel="canonical" href="https://thatcode.dev/app/${publishSlug}">` : ''}
   <script src="https://cdn.tailwindcss.com"></script>
   <style>${styles}</style>
 </head>
