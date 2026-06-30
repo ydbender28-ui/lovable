@@ -156,7 +156,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/g
       const hideBadge = user?.plan === "pro" || user?.plan === "team" || user?.plan === "owner";
       const newHtml = wasPublished ? buildStandaloneHtml(result.files, project.name, id, hideBadge, project.publishSlug ?? undefined) : null;
 
-      const actualCost = estimateCost(result.modelUsed, result.inputTokens, result.outputTokens);
+      const actualCost = result.estimatedCostUsd ?? estimateCost(result.modelUsed, result.inputTokens, result.outputTokens);
       const actualCredits = costToCredits(actualCost);
 
       await Promise.all([
