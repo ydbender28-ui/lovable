@@ -352,7 +352,7 @@ function storagePolyfill(slug: string): string {
 export function buildStandaloneHtml(projectFiles: ProjectFiles, projectName: string, projectId?: string, hideBadge = false, publishSlug?: string): string {
   const { code, componentName, styles, title } = buildAppCode(projectFiles);
 
-  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e)return null;return this.props.children;}}`;
+  const errorBoundary = `class __EB extends React.Component{constructor(p){super(p);this.state={e:null};}static getDerivedStateFromError(e){return{e};}componentDidCatch(e,i){console.error('App error:',e);showErr('Render error: '+e.message+'\\n'+(e.stack||''));}render(){if(this.state.e){return React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#fff',color:'#333',fontFamily:'system-ui',flexDirection:'column',gap:16,padding:40}},React.createElement('div',{style:{fontSize:40}},'⚠️'),React.createElement('h2',{style:{margin:0}},'Something went wrong'),React.createElement('p',{style:{color:'#666',textAlign:'center'}},'Open browser console (F12) for details.'),React.createElement('a',{href:'https://thatcode.dev',style:{color:'#7c3aed',textDecoration:'none',fontWeight:600}},'✏️ Edit this site'));}return this.props.children;}}`;
   const renderCall = `${errorBoundary}\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(__EB,null,React.createElement(${componentName},null)));`;
   const fullCode = (LUCIDE_STUB + "\n" + code + "\n" + renderCall).replace(/<\/script>/gi, "<\\/script>");
 

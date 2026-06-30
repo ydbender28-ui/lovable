@@ -8,10 +8,10 @@ export default function Navbar({ brand, links, cta, onNavigate, cartCount: cartC
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [cartCount, setCartCount] = useState(cartCountProp ?? 0);
-  const [cartOpener, setCartOpener] = useState<(() => void) | null>(null);
+  const cartOpenerRef = React.useRef<(() => void) | null>(null);
   useEffect(() => { const h = () => setScrolled(window.scrollY > 10); window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h); }, []);
-  useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) setCartOpener(() => d.open); }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
-  const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpener) cartOpener(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
+  useEffect(() => { const h = (e: Event) => { const d = (e as CustomEvent).detail; setCartCount(d.count); if (d.open) cartOpenerRef.current = d.open; }; window.addEventListener('cartupdate', h); return () => window.removeEventListener('cartupdate', h); }, []);
+  const handleCartClick = () => { if (onCartClick) onCartClick(); else if (cartOpenerRef.current) cartOpenerRef.current(); else window.dispatchEvent(new CustomEvent('carttrigger', { detail: 'open' })); };
   const safeLinks = (Array.isArray(links) ? links : []).map(l => typeof l === 'string' ? l : (l?.label || l?.name || l?.text || String(l)));
   const handleClick = (l: string) => (e: React.MouseEvent) => {
     if (onNavigate) { e.preventDefault(); onNavigate(String(l).toLowerCase()); }
