@@ -115,6 +115,8 @@ export default function DashboardTabs({
   const [showBuyCredits, setShowBuyCredits] = useState(false);
   const [purchaseToast, setPurchaseToast] = useState(false);
   const [credits, setCredits] = useState(initialCredits);
+  const [search, setSearch] = useState("");
+  const [filterTab, setFilterTab] = useState<"all" | "published" | "drafts">("all");
 
   useEffect(() => {
     if (searchParams.get("buy") === "1") {
@@ -224,6 +226,34 @@ export default function DashboardTabs({
       {/* ---------- Apps ---------- */}
       {tab === "apps" && (
         <div>
+          {/* Search + filter row — only show if there are projects */}
+          {projects.length > 0 && (
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <input
+                type="search"
+                placeholder="Search projects…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none sm:max-w-xs"
+                style={{ borderColor: "#ececf1", background: "#fff", color: "#17171c" }}
+              />
+              <div className="flex items-center gap-1">
+                {(["all", "published", "drafts"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilterTab(f)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors"
+                    style={filterTab === f
+                      ? { background: "rgba(106,31,247,0.10)", color: "#6a1ff7" }
+                      : { background: "transparent", color: "#71717f" }}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* New app input */}
           <div
             className="w-full rounded-2xl transition-all"
@@ -267,24 +297,69 @@ export default function DashboardTabs({
             </div>
           </div>
 
-          {projects.length > 0 ? (
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((p) => (
-                <ProjectCard key={p.id} project={p} />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-              <div className="rounded-2xl p-10 text-center" style={{ border: "1px dashed #ececf1", background: "#ffffff" }}>
-                <p className="text-2xl mb-2">✨</p>
-                <p className="text-sm font-medium mb-1" style={{ color: "#17171c" }}>No apps yet</p>
-                <p className="text-xs mb-4" style={{ color: "#71717f" }}>Describe what you want above, or start from a template.</p>
-                <Link href="/templates" className="inline-block rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px" style={{ background: "linear-gradient(135deg,#6a1ff7,#0a8ff0)", boxShadow: "0 4px 16px rgba(106,31,247,0.30)" }}>
-                  Browse templates →
-                </Link>
+          {(() => {
+            const filtered = projects
+              .filter((p) =>
+                p.name.toLowerCase().includes(search.toLowerCase())
+              )
+              .filter((p) => {
+                if (filterTab === "published") return !!p.publishedAt;
+                if (filterTab === "drafts") return !p.publishedAt;
+                return true;
+              });
+
+            if (projects.length === 0) {
+              const EXAMPLE_PROMPTS = [
+                "A landing page for my SaaS product",
+                "A personal portfolio with dark mode",
+                "A simple todo app with local storage",
+                "A restaurant menu with contact form",
+              ];
+              return (
+                <div className="mt-8 rounded-2xl p-10 text-center" style={{ border: "1px dashed #ececf1", background: "#ffffff" }}>
+                  <div className="mb-4 flex justify-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl text-3xl"
+                      style={{ background: "linear-gradient(135deg,rgba(106,31,247,0.12),rgba(10,143,240,0.08))", border: "1px solid rgba(106,31,247,0.15)" }}>
+                      🚀
+                    </div>
+                  </div>
+                  <p className="text-lg font-bold mb-1" style={{ color: "#17171c" }}>Build your first site</p>
+                  <p className="text-sm mb-6" style={{ color: "#71717f" }}>Describe what you want above, or try one of these examples:</p>
+                  <div className="flex flex-wrap justify-center gap-2 mb-6">
+                    {EXAMPLE_PROMPTS.map((ex) => (
+                      <button
+                        key={ex}
+                        onClick={() => setPrompt(ex)}
+                        className="rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:border-[#6a1ff7]/40 hover:text-[#6a1ff7]"
+                        style={{ borderColor: "#ececf1", color: "#71717f" }}
+                      >
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
+                  <Link href="/templates" className="inline-block rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:-translate-y-px" style={{ background: "linear-gradient(135deg,#6a1ff7,#0a8ff0)", boxShadow: "0 4px 16px rgba(106,31,247,0.30)" }}>
+                    Browse templates →
+                  </Link>
+                </div>
+              );
+            }
+
+            if (filtered.length === 0) {
+              return (
+                <div className="mt-8 rounded-2xl p-10 text-center" style={{ border: "1px dashed #ececf1", background: "#ffffff" }}>
+                  <p className="text-sm" style={{ color: "#71717f" }}>No projects match your search.</p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((p) => (
+                  <ProjectCard key={p.id} project={p} />
+                ))}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
