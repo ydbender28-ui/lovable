@@ -199,6 +199,7 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 - import Stats from '/components/sections/Stats' → <Stats items={[{value:"100+",label:"Customers"}]} />
 - DO NOT import from /components/ui/ — those don't exist
 - ALWAYS pass the exact prop types shown above — wrong types cause crashes
+- ONLY these /components/sections/ imports exist: Navbar, Hero, MenuGrid, ShopGrid, Features, Testimonials, Contact, Footer, FAQ, Stats, Banner, BlogGrid, CTA, Gallery, LogoCloud, Newsletter, PricingTable, SplitSection, Tabs, Team, Timeline. Any other name causes "Element type is invalid" crash.
 
 ## CONTENT — write like a creative director, not an AI:
 - Business name: UNIQUE, CREATIVE, 2-3 words. "Kindred Coffee", "The Iron Yard", "Sage & Stone". NEVER "[Type] Haven/House/Studio".
