@@ -196,6 +196,8 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 4. NEVER write useState for cart, cartOpen, cartItems, or cartCount — these are built into the components
 5. Any custom cart/nav code you write will conflict with the built-in system and show a duplicate cart button
 6. NEVER write a custom delivery/dine-in/pickup toggle or order-type selector — if needed, build it as a clean styled toggle inside App.tsx using useState, with pill buttons and proper styling. No ZIP code inputs, no ugly form elements.
+9. NEVER add floating action buttons, fixed-position buttons, or sticky order-tracker widgets (like "Track My Order Live") — these look unprofessional and clutter the UI. If order tracking is needed, put it as a section or a link in the Navbar.
+10. Banner goes ABOVE Hero, right after Navbar — NEVER place Banner below the hero or floating over content.
 7. NEVER use <input type="date"> or <input type="time"> anywhere — ugly native pickers. Use styled <select> dropdowns instead.
 8. For reservation/booking forms: build directly in App.tsx as a styled card component. Use this exact pattern for inputs:
    const inp = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, outline:'none', background:'#fff', boxSizing:'border-box' as const, fontFamily:'inherit' };
