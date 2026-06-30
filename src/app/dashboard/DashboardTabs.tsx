@@ -122,6 +122,7 @@ export default function DashboardTabs({
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<"all" | "published" | "drafts">("all");
   const [showOnboarding, setShowOnboarding] = useState(initialShowOnboarding && projects.length === 0);
+  const [showSearch, setShowSearch] = useState(false);
 
   async function handleOnboardingComplete(onboardingPrompt: string) {
     setShowOnboarding(false);
@@ -164,6 +165,17 @@ export default function DashboardTabs({
     return () => clearInterval(poll);
   }, [searchParams, router, initialCredits]);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowSearch(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   async function build() {
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
@@ -194,6 +206,7 @@ export default function DashboardTabs({
       )}
 
       {showBuyCredits && <BuyCreditsModal onClose={() => setShowBuyCredits(false)} />}
+      {showSearch && <SearchModal onClose={() => setShowSearch(false)} />}
 
       {/* Credits bar */}
       {credits !== null && (
@@ -242,6 +255,15 @@ export default function DashboardTabs({
             )}
           </button>
         ))}
+        <button
+          onClick={() => setShowSearch(true)}
+          className="ml-auto flex items-center gap-2 rounded-lg border border-[#ececf1] bg-white px-3 py-1.5 text-xs text-[#71717f] transition-colors hover:border-[#6a1ff7]/40 hover:text-[#17171c]"
+          style={{ marginBottom: 1 }}
+        >
+          <span>🔍</span>
+          <span className="hidden sm:inline">Search projects</span>
+          <kbd className="hidden rounded border border-[#ececf1] px-1.5 py-0.5 text-[10px] sm:inline">⌘K</kbd>
+        </button>
       </div>
 
       {/* ---------- Apps ---------- */}
