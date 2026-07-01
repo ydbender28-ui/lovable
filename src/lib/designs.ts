@@ -11,9 +11,9 @@ const CATEGORIES = [
   { id: 'bakery', keywords: ['bakery','bread','pastry','cake','bake','patisserie','donut','cupcake','pie'], industry: 'food', heroQuery: 'artisan bakery fresh bread warm morning', cardQuery: 'fresh pastry close up' },
   { id: 'pizza', keywords: ['pizza','pizzeria','italian food'], industry: 'food', heroQuery: 'wood fired pizza oven italian restaurant', cardQuery: 'pizza close up melted cheese' },
   { id: 'sushi', keywords: ['sushi','japanese','ramen','asian food','poke'], industry: 'food', heroQuery: 'japanese sushi restaurant minimal interior', cardQuery: 'sushi roll close up' },
-  { id: 'bar', keywords: ['bar','pub','cocktail','brewery','taproom','wine bar','lounge'], industry: 'food', heroQuery: 'cocktail bar dark moody lighting', cardQuery: 'craft cocktail close up' },
+  { id: 'bar', keywords: ['bar','pub','cocktail','brewery','taproom','wine bar','lounge','winery','vineyard','wine tasting'], industry: 'food', heroQuery: 'cocktail bar dark moody lighting', cardQuery: 'craft cocktail close up' },
   { id: 'food_truck', keywords: ['food truck','street food','taco','burrito','mobile food','caterer'], industry: 'food', heroQuery: 'colorful food truck street scene', cardQuery: 'street food close up' },
-  { id: 'food_delivery', keywords: ['meal prep','meal delivery','meal kit','meal plan','food delivery'], industry: 'food', heroQuery: 'fresh meal prep containers healthy food', cardQuery: 'healthy meal delivery box' },
+  { id: 'food_delivery', keywords: ['meal prep','meal delivery','meal kit','meal plan','food delivery','ghost kitchen','virtual kitchen','cloud kitchen'], industry: 'food', heroQuery: 'fresh meal prep containers healthy food', cardQuery: 'healthy meal delivery box' },
   { id: 'juice', keywords: ['juice','smoothie','acai','health food','organic','vegan'], industry: 'food', heroQuery: 'fresh juice bar bright colorful', cardQuery: 'colorful smoothie bowl' },
   { id: 'ice_cream', keywords: ['ice cream','gelato','frozen yogurt','dessert'], industry: 'food', heroQuery: 'artisan ice cream shop colorful', cardQuery: 'ice cream scoop close up' },
   { id: 'catering', keywords: ['catering','event food','banquet','private chef'], industry: 'food', heroQuery: 'elegant catering event setup', cardQuery: 'catered food display' },
@@ -39,9 +39,10 @@ const CATEGORIES = [
   { id: 'optometry', keywords: ['optometrist','eye doctor','glasses','vision','eyewear','optical'], industry: 'medical', heroQuery: 'modern optical shop eyewear', cardQuery: 'eyeglasses display' },
   { id: 'physical_therapy', keywords: ['physical therapy','physiotherapy','rehab','rehabilitation','sports medicine','pt clinic'], industry: 'medical', heroQuery: 'physical therapy clinic modern', cardQuery: 'physical therapy exercise' },
   { id: 'nutrition', keywords: ['nutritionist','dietitian','nutrition','nutrition coach','acupuncture','acupuncturist'], industry: 'wellness', heroQuery: 'nutrition wellness consultation bright office', cardQuery: 'healthy food nutrition plan' },
+  { id: 'senior_care', keywords: ['senior care','assisted living','elderly care','retirement home','nursing home','memory care','senior living','home care'], industry: 'medical', heroQuery: 'senior care facility warm comfortable interior', cardQuery: 'caregiver helping senior smiling' },
 
   // Fitness & Sports
-  { id: 'gym', keywords: ['gym','fitness','workout','training','crossfit','weightlifting','muscle'], industry: 'fitness', heroQuery: 'modern gym dark dramatic lighting', cardQuery: 'fitness training action' },
+  { id: 'gym', keywords: ['gym','fitness','workout','training','crossfit','weightlifting','muscle','personal trainer','trainer'], industry: 'fitness', heroQuery: 'modern gym dark dramatic lighting', cardQuery: 'fitness training action' },
   { id: 'martial_arts', keywords: ['martial arts','karate','taekwondo','jiu jitsu','boxing','mma','kickboxing'], industry: 'fitness', heroQuery: 'martial arts dojo training', cardQuery: 'martial arts kick action' },
   { id: 'dance', keywords: ['dance','dance studio','ballet','hip hop','salsa','dancing'], industry: 'fitness', heroQuery: 'dance studio elegant interior', cardQuery: 'dancer performance' },
   { id: 'swim', keywords: ['swim','swimming','pool','aquatic','water sports'], industry: 'fitness', heroQuery: 'swimming pool pristine blue water', cardQuery: 'swimmer in pool' },
@@ -56,6 +57,7 @@ const CATEGORIES = [
   { id: 'notary', keywords: ['notary','title company','escrow','title insurance'], industry: 'professional', heroQuery: 'professional legal office document signing', cardQuery: 'notary document signing' },
   { id: 'coaching', keywords: ['coaching','coach','online course','e-learning','bootcamp','workshop','training program','course creator'], industry: 'education', heroQuery: 'coaching session professional modern office', cardQuery: 'coach client success meeting' },
   { id: 'marketing', keywords: ['marketing','advertising','agency','branding','digital marketing','seo','social media','seo agency','ad agency','marketing agency','pr agency','public relations','web design','web agency','web developer','web development agency'], industry: 'professional', heroQuery: 'creative marketing agency office', cardQuery: 'marketing team brainstorming' },
+  { id: 'coworking', keywords: ['coworking','co-working','shared office','office space','workspace rental','flex office','private office rental'], industry: 'professional', heroQuery: 'modern coworking space open office', cardQuery: 'people working coworking space' },
 
   // Real Estate & Property
   { id: 'real_estate', keywords: ['real estate','property','homes','realtor','broker','listing','housing'], industry: 'realestate', heroQuery: 'modern luxury home exterior', cardQuery: 'beautiful home interior' },
@@ -110,6 +112,7 @@ const CATEGORIES = [
   { id: 'dj', keywords: ['dj','music entertainment','party dj','wedding dj','club'], industry: 'events', heroQuery: 'dj performing at event lights', cardQuery: 'dj mixing music' },
   { id: 'golf', keywords: ['golf','golf course','golf club','mini golf','golf lessons','country club'], industry: 'events', heroQuery: 'luxury golf course green morning light', cardQuery: 'golfer swinging club' },
   { id: 'theater', keywords: ['theater','theatre','show','performance','acting','drama','comedy','improv'], industry: 'events', heroQuery: 'theater stage dramatic lighting', cardQuery: 'theater performance actors' },
+  { id: 'escape_room', keywords: ['escape room','puzzle room','entertainment venue','arcade','trampoline park','laser tag','bowling alley','game center'], industry: 'events', heroQuery: 'escape room mystery themed interior', cardQuery: 'people solving puzzle escape room' },
 
   // Travel & Tourism
   { id: 'travel', keywords: ['travel','tourism','tour','vacation','trip','adventure','destination'], industry: 'travel', heroQuery: 'beautiful travel destination landscape', cardQuery: 'travel adventure scenic' },
@@ -126,6 +129,7 @@ const CATEGORIES = [
   { id: 'antique', keywords: ['antique','vintage store','thrift','thrift shop','consignment','vintage shop'], industry: 'retail', heroQuery: 'antique shop vintage items shelves', cardQuery: 'antique vintage item close up' },
   { id: 'grocery', keywords: ['grocery','market','organic','farm','produce','supermarket'], industry: 'retail', heroQuery: 'organic grocery market fresh produce', cardQuery: 'fresh produce vegetables' },
   { id: 'cannabis', keywords: ['cannabis','dispensary','marijuana','cbd','hemp','weed'], industry: 'retail', heroQuery: 'modern cannabis dispensary interior', cardQuery: 'cannabis product display' },
+  { id: 'gift_shop', keywords: ['gift shop','gift store','souvenir shop','boutique gifts','specialty gifts','card and gift shop'], industry: 'retail', heroQuery: 'charming gift shop interior colorful display', cardQuery: 'gift items display close up' },
 
   // Nonprofit & Community
   { id: 'nonprofit', keywords: ['nonprofit','charity','foundation','donate','mission','cause','volunteer'], industry: 'nonprofit', heroQuery: 'community people helping together', cardQuery: 'volunteer community service' },
