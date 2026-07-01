@@ -88,26 +88,26 @@ export function resetConversationState() {
 // ─── Design seeds ─────────────────────────────────────────────────────────────
 
 const DESIGN_THEMES = [
-  { name: "shopify-clean",      bg: "#f6f6f7", card: "#ffffff", border: "#e4e4e7", accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", radius: "8px",  description: "Clean e-commerce — light, professional, Shopify-inspired" },
-  { name: "saas-blue",          bg: "#ffffff", card: "#ffffff", border: "#e5e7eb", accent: "#2563eb", accent2: "#1d4ed8", text: "#111827", muted: "#6b7280", radius: "8px",  description: "Professional SaaS — Linear/Stripe inspired, minimal" },
-  { name: "dark-dashboard",     bg: "#0f1117", card: "#1a1d27", border: "#2a2d3a", accent: "#3b82f6", accent2: "#2563eb", text: "#f1f5f9", muted: "#64748b", radius: "10px", description: "Dark analytics dashboard — Vercel-inspired" },
-  { name: "agency-editorial",   bg: "#0a0a0a", card: "#111111", border: "#222222", accent: "#ffffff", accent2: "#e5e5e5", text: "#ffffff", muted: "#888888", radius: "0px",  description: "Bold agency — Apple/Awwwards editorial, high contrast" },
-  { name: "restaurant-warm",    bg: "#faf8f5", card: "#ffffff", border: "#e8e0d5", accent: "#b45309", accent2: "#92400e", text: "#1c1109", muted: "#78716c", radius: "4px",  description: "Warm restaurant — earthy, artisan, upscale hospitality" },
-  { name: "fintech-teal",       bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0", accent: "#0f766e", accent2: "#0d9488", text: "#0f172a", muted: "#64748b", radius: "6px",  description: "Fintech — Stripe/Wise-inspired, trustworthy" },
-  { name: "startup-purple",     bg: "#ffffff", card: "#f9fafb", border: "#f3f4f6", accent: "#7c3aed", accent2: "#6d28d9", text: "#111827", muted: "#9ca3af", radius: "12px", description: "Modern startup — Loom/Linear marketing style" },
-  { name: "dark-green",         bg: "#111111", card: "#1a1a1a", border: "#2a2a2a", accent: "#22c55e", accent2: "#16a34a", text: "#f5f5f5", muted: "#737373", radius: "8px",  description: "Dark minimal — GitHub/Raycast developer tool" },
-  { name: "terracotta",         bg: "#fdf6f0", card: "#ffffff", border: "#f0e0d0", accent: "#c2410c", accent2: "#9a3412", text: "#1c0f07", muted: "#a16207", radius: "6px",  description: "Terracotta — bold warm tones, Mediterranean feel" },
-  { name: "sage-natural",       bg: "#f4f7f4", card: "#ffffff", border: "#dce8dc", accent: "#4d7c5e", accent2: "#3d6b4f", text: "#1a2e1a", muted: "#6b8f72", radius: "10px", description: "Sage green — natural, wellness, organic brand" },
-  { name: "midnight-gold",      bg: "#0d0d14", card: "#16161f", border: "#2a2a3a", accent: "#d4a843", accent2: "#b8902e", text: "#f5f0e8", muted: "#8b8070", radius: "4px",  description: "Midnight gold — luxury, premium, dark with gold accents" },
-  { name: "blush-minimal",      bg: "#fdf8f8", card: "#ffffff", border: "#f5e8e8", accent: "#be185d", accent2: "#9d174d", text: "#1f0a12", muted: "#9f7a85", radius: "16px", description: "Blush pink — beauty, fashion, feminine minimal" },
-  { name: "ocean-blue",         bg: "#f0f7ff", card: "#ffffff", border: "#d0e8ff", accent: "#0369a1", accent2: "#0c4a6e", text: "#0c1a2e", muted: "#4e7a9e", radius: "8px",  description: "Ocean blue — travel, marine, clean coastal" },
-  { name: "charcoal-orange",    bg: "#1a1a1a", card: "#252525", border: "#333333", accent: "#f97316", accent2: "#ea580c", text: "#f5f5f5", muted: "#888888", radius: "6px",  description: "Charcoal + orange — modern food/tech, bold contrast" },
-  { name: "cream-serif",        bg: "#f9f6f0", card: "#fffff8", border: "#e8e0cc", accent: "#7c5c3a", accent2: "#5c4020", text: "#2a1f10", muted: "#9c8060", radius: "2px",  description: "Cream + brown — editorial, literary, upscale print" },
-  { name: "neon-dark",          bg: "#080812", card: "#10101e", border: "#1e1e30", accent: "#a855f7", accent2: "#9333ea", text: "#e8e8ff", muted: "#6060a0", radius: "8px",  description: "Neon dark — crypto/gaming/futuristic, purple neon" },
-  { name: "slate-red",          bg: "#f8f9fa", card: "#ffffff", border: "#e9ecef", accent: "#dc2626", accent2: "#b91c1c", text: "#1a1a2e", muted: "#6c757d", radius: "6px",  description: "Slate + red — energetic, sports, bold CTAs" },
-  { name: "forest-dark",        bg: "#0a1a0f", card: "#112214", border: "#1a3320", accent: "#86efac", accent2: "#4ade80", text: "#f0fff4", muted: "#6aaa7a", radius: "8px",  description: "Forest dark — eco brand, dark green, natural premium" },
-  { name: "lavender-soft",      bg: "#f8f5ff", card: "#ffffff", border: "#ede8ff", accent: "#6d28d9", accent2: "#5b21b6", text: "#1e1040", muted: "#8b7ab0", radius: "14px", description: "Lavender — wellness, spiritual, soft and calming" },
-  { name: "monochrome-bold",    bg: "#ffffff", card: "#f5f5f5", border: "#d4d4d4", accent: "#000000", accent2: "#262626", text: "#000000", muted: "#737373", radius: "0px",  description: "Monochrome bold — brutalist, type-forward, stark" },
+  { name: "shopify-clean",      bg: "#f6f6f7", card: "#ffffff", border: "#e4e4e7", accent: "#1a1a1a", accent2: "#404040", text: "#1a1a1a", muted: "#6b7280", primaryFg: "#ffffff", radius: "8px",  description: "Clean e-commerce — light, professional, Shopify-inspired" },
+  { name: "saas-blue",          bg: "#ffffff", card: "#ffffff", border: "#e5e7eb", accent: "#2563eb", accent2: "#1d4ed8", text: "#111827", muted: "#6b7280", primaryFg: "#ffffff", radius: "8px",  description: "Professional SaaS — Linear/Stripe inspired, minimal" },
+  { name: "dark-dashboard",     bg: "#0f1117", card: "#1a1d27", border: "#2a2d3a", accent: "#3b82f6", accent2: "#2563eb", text: "#f1f5f9", muted: "#64748b", primaryFg: "#ffffff", radius: "10px", description: "Dark analytics dashboard — Vercel-inspired" },
+  { name: "agency-editorial",   bg: "#0a0a0a", card: "#111111", border: "#222222", accent: "#ffffff", accent2: "#e5e5e5", text: "#ffffff", muted: "#888888", primaryFg: "#000000", radius: "0px",  description: "Bold agency — Apple/Awwwards editorial, high contrast" },
+  { name: "restaurant-warm",    bg: "#faf8f5", card: "#ffffff", border: "#e8e0d5", accent: "#b45309", accent2: "#92400e", text: "#1c1109", muted: "#78716c", primaryFg: "#ffffff", radius: "4px",  description: "Warm restaurant — earthy, artisan, upscale hospitality" },
+  { name: "fintech-teal",       bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0", accent: "#0f766e", accent2: "#0d9488", text: "#0f172a", muted: "#64748b", primaryFg: "#ffffff", radius: "6px",  description: "Fintech — Stripe/Wise-inspired, trustworthy" },
+  { name: "startup-purple",     bg: "#ffffff", card: "#f9fafb", border: "#f3f4f6", accent: "#7c3aed", accent2: "#6d28d9", text: "#111827", muted: "#9ca3af", primaryFg: "#ffffff", radius: "12px", description: "Modern startup — Loom/Linear marketing style" },
+  { name: "dark-green",         bg: "#111111", card: "#1a1a1a", border: "#2a2a2a", accent: "#22c55e", accent2: "#16a34a", text: "#f5f5f5", muted: "#737373", primaryFg: "#000000", radius: "8px",  description: "Dark minimal — GitHub/Raycast developer tool" },
+  { name: "terracotta",         bg: "#fdf6f0", card: "#ffffff", border: "#f0e0d0", accent: "#c2410c", accent2: "#9a3412", text: "#1c0f07", muted: "#a16207", primaryFg: "#ffffff", radius: "6px",  description: "Terracotta — bold warm tones, Mediterranean feel" },
+  { name: "sage-natural",       bg: "#f4f7f4", card: "#ffffff", border: "#dce8dc", accent: "#4d7c5e", accent2: "#3d6b4f", text: "#1a2e1a", muted: "#6b8f72", primaryFg: "#ffffff", radius: "10px", description: "Sage green — natural, wellness, organic brand" },
+  { name: "midnight-gold",      bg: "#0d0d14", card: "#16161f", border: "#2a2a3a", accent: "#d4a843", accent2: "#b8902e", text: "#f5f0e8", muted: "#8b8070", primaryFg: "#000000", radius: "4px",  description: "Midnight gold — luxury, premium, dark with gold accents" },
+  { name: "blush-minimal",      bg: "#fdf8f8", card: "#ffffff", border: "#f5e8e8", accent: "#be185d", accent2: "#9d174d", text: "#1f0a12", muted: "#9f7a85", primaryFg: "#ffffff", radius: "16px", description: "Blush pink — beauty, fashion, feminine minimal" },
+  { name: "ocean-blue",         bg: "#f0f7ff", card: "#ffffff", border: "#d0e8ff", accent: "#0369a1", accent2: "#0c4a6e", text: "#0c1a2e", muted: "#4e7a9e", primaryFg: "#ffffff", radius: "8px",  description: "Ocean blue — travel, marine, clean coastal" },
+  { name: "charcoal-orange",    bg: "#1a1a1a", card: "#252525", border: "#333333", accent: "#f97316", accent2: "#ea580c", text: "#f5f5f5", muted: "#888888", primaryFg: "#000000", radius: "6px",  description: "Charcoal + orange — modern food/tech, bold contrast" },
+  { name: "cream-serif",        bg: "#f9f6f0", card: "#fffff8", border: "#e8e0cc", accent: "#7c5c3a", accent2: "#5c4020", text: "#2a1f10", muted: "#9c8060", primaryFg: "#ffffff", radius: "2px",  description: "Cream + brown — editorial, literary, upscale print" },
+  { name: "neon-dark",          bg: "#080812", card: "#10101e", border: "#1e1e30", accent: "#a855f7", accent2: "#9333ea", text: "#e8e8ff", muted: "#6060a0", primaryFg: "#ffffff", radius: "8px",  description: "Neon dark — crypto/gaming/futuristic, purple neon" },
+  { name: "slate-red",          bg: "#f8f9fa", card: "#ffffff", border: "#e9ecef", accent: "#dc2626", accent2: "#b91c1c", text: "#1a1a2e", muted: "#6c757d", primaryFg: "#ffffff", radius: "6px",  description: "Slate + red — energetic, sports, bold CTAs" },
+  { name: "forest-dark",        bg: "#0a1a0f", card: "#112214", border: "#1a3320", accent: "#86efac", accent2: "#4ade80", text: "#f0fff4", muted: "#6aaa7a", primaryFg: "#000000", radius: "8px",  description: "Forest dark — eco brand, dark green, natural premium" },
+  { name: "lavender-soft",      bg: "#f8f5ff", card: "#ffffff", border: "#ede8ff", accent: "#6d28d9", accent2: "#5b21b6", text: "#1e1040", muted: "#8b7ab0", primaryFg: "#ffffff", radius: "14px", description: "Lavender — wellness, spiritual, soft and calming" },
+  { name: "monochrome-bold",    bg: "#ffffff", card: "#f5f5f5", border: "#d4d4d4", accent: "#000000", accent2: "#262626", text: "#000000", muted: "#737373", primaryFg: "#ffffff", radius: "0px",  description: "Monochrome bold — brutalist, type-forward, stark" },
 ] as const;
 
 let _lastThemeIdx = -1;
@@ -245,7 +245,7 @@ Leave measurementId as empty string if not provided — it renders nothing.
 - Hero images: ALWAYS constrained height. Use the Hero component OR set style={{height:'65vh', objectFit:'cover', width:'100%'}}. NEVER let an image render at natural/unconstrained height.
 - Stats rows: ALWAYS horizontal flex — style={{display:'flex', gap:48, flexWrap:'wrap'}}. NEVER stack stats vertically.
 - Section padding: style={{padding:'80px 40px'}} on every section. Never let content touch the edge of the screen.
-- Buttons: ALWAYS have visible background OR border. Never an invisible/unstyled button.
+- Buttons: ALWAYS have visible background OR border. Never an invisible/unstyled button. For CTA buttons: background:'var(--primary)', color:'var(--primary-fg)' — BOTH are required. NEVER use only one.
 
 ## STYLING — USE CSS VARIABLES FROM THE DESIGN SYSTEM:
 
@@ -2326,7 +2326,7 @@ In /index.css, define EXACTLY these CSS variables:
   --card: ${pickedDesign!.card};
   --border: ${pickedDesign!.border};
   --primary: ${pickedDesign!.accent};
-  --primary-fg: #ffffff;
+  --primary-fg: ${pickedDesign!.primaryFg};
   --accent: ${pickedDesign!.accent};
   --muted: ${pickedDesign!.muted};
 }
