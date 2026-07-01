@@ -939,17 +939,19 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48, color:'var(--fg,#111)' }}>{title}</h2>
-      {safeItems.map((item, i) => (
-        <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
-          <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--fg,#111)', textAlign:'left' }}>
-            {item.q}
-            <span style={{ fontSize:20, transform: open === i ? 'rotate(45deg)' : 'none', transition:'transform 0.2s' }}>+</span>
-          </button>
-          {open === i && <p style={{ padding:'0 0 20px', fontSize:15, lineHeight:1.7, color:'var(--muted,#666)' }}>{item.a}</p>}
-        </div>
-      ))}
+    <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+      <div style={{ maxWidth:800, margin:'0 auto' }}>
+        <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48, color:'var(--fg,#111)' }}>{title}</h2>
+        {safeItems.map((item, i) => (
+          <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
+            <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--fg,#111)', textAlign:'left' }}>
+              {item.q}
+              <span style={{ fontSize:20, transform: open === i ? 'rotate(45deg)' : 'none', transition:'transform 0.2s' }}>+</span>
+            </button>
+            {open === i && <p style={{ padding:'0 0 20px', fontSize:15, lineHeight:1.7, color:'var(--muted,#666)' }}>{item.a}</p>}
+          </div>
+        ))}
+      </div>
     </section>
   );
 }`,
@@ -1229,13 +1231,15 @@ export default function Tabs({ tabs }: { tabs: Tab[] }) {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section style={{ padding: isMobile ? '48px 20px' : '80px 40px', maxWidth:800, margin:'0 auto', background:'var(--bg,#fff)' }}>
-      <div role="tablist" style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
-        {safeTabs.map((t, i) => (
-          <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--fg,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
-        ))}
+    <section style={{ padding: isMobile ? '48px 20px' : '80px 40px', background:'var(--bg,#fff)' }}>
+      <div style={{ maxWidth:800, margin:'0 auto' }}>
+        <div role="tablist" style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
+          {safeTabs.map((t, i) => (
+            <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--fg,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
+          ))}
+        </div>
+        <div role="tabpanel" style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--fg,#333)' }}>{safeTabs[active]?.content}</div>
       </div>
-      <div role="tabpanel" style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--fg,#333)' }}>{safeTabs[active]?.content}</div>
     </section>
   );
 }`,
