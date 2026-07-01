@@ -939,11 +939,11 @@ export default function FAQ({ title, items }: { title: string; items: FAQItem[] 
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
-      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
+    <section ref={ref as any} id="faq" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:800, margin:'0 auto', background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+      <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48, color:'var(--fg,#111)' }}>{title}</h2>
       {safeItems.map((item, i) => (
         <div key={i} style={{ borderBottom:'1px solid var(--border,#eee)' }}>
-          <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--text,#111)', textAlign:'left' }}>
+          <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)} style={{ width:'100%', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'20px 0', background:'none', border:'none', cursor:'pointer', fontSize:16, fontWeight:600, color:'var(--fg,#111)', textAlign:'left' }}>
             {item.q}
             <span style={{ fontSize:20, transform: open === i ? 'rotate(45deg)' : 'none', transition:'transform 0.2s' }}>+</span>
           </button>
@@ -966,10 +966,10 @@ export default function CTA({ title, subtitle, cta, image }: { title: string; su
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section ref={ref as any} style={{ position:'relative', padding: isMobile ? '64px 20px' : '100px 40px', textAlign:'center', overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
+    <section ref={ref as any} style={{ position:'relative', padding: isMobile ? '64px 20px' : '100px 40px', textAlign:'center', overflow:'hidden', background: image ? 'none' : 'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       {image && <><img src={image} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} /><div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} /></>}
       <div style={{ position:'relative', zIndex:1, maxWidth:700, margin:'0 auto' }}>
-        <h2 style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, lineHeight:1.1, color: image ? '#fff' : 'var(--text,#111)', letterSpacing:'-0.02em' }}>{title}</h2>
+        <h2 style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, lineHeight:1.1, color: image ? '#fff' : 'var(--fg,#111)', letterSpacing:'-0.02em' }}>{title}</h2>
         {subtitle && <p style={{ fontSize:18, marginTop:16, color: image ? 'rgba(255,255,255,0.8)' : 'var(--muted,#666)' }}>{subtitle}</p>}
         <a href={cta.href||'#'} style={{ display:'inline-block', marginTop:32, background:'var(--accent,#c2410c)', color:'#fff', padding:'16px 40px', borderRadius:50, fontSize:16, fontWeight:600, textDecoration:'none' }} onMouseDown={e=>(e.currentTarget as HTMLElement).style.transform='scale(0.97)'} onMouseUp={e=>(e.currentTarget as HTMLElement).style.transform='scale(1)'}>{cta.text}</a>
       </div>
@@ -1229,13 +1229,13 @@ export default function Tabs({ tabs }: { tabs: Tab[] }) {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
-    <section style={{ padding: isMobile ? '48px 20px' : '80px 40px', maxWidth:800, margin:'0 auto' }}>
+    <section style={{ padding: isMobile ? '48px 20px' : '80px 40px', maxWidth:800, margin:'0 auto', background:'var(--bg,#fff)' }}>
       <div role="tablist" style={{ display:'flex', gap:0, borderBottom:'2px solid var(--border,#eee)' }}>
         {safeTabs.map((t, i) => (
-          <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--text,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
+          <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding:'12px 24px', background:'none', border:'none', borderBottom: active === i ? '2px solid var(--accent,#c2410c)' : '2px solid transparent', marginBottom:-2, fontSize:14, fontWeight: active === i ? 600 : 400, color: active === i ? 'var(--fg,#111)' : 'var(--muted,#888)', cursor:'pointer', transition:'all 0.2s' }}>{t.label}</button>
         ))}
       </div>
-      <div role="tabpanel" style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--text,#333)' }}>{safeTabs[active]?.content}</div>
+      <div role="tabpanel" style={{ padding:'32px 0', fontSize:15, lineHeight:1.8, color:'var(--fg,#333)' }}>{safeTabs[active]?.content}</div>
     </section>
   );
 }`,
