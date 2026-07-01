@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildStandaloneHtml } from "@/lib/buildHtml";
 import { decrypt, isEncrypted } from "@/lib/crypto";
+import Anthropic from "@anthropic-ai/sdk";
 
 async function addVercelDomain(domain: string): Promise<{ cname: string; error?: string }> {
   const token = process.env.VERCEL_TOKEN;
@@ -81,7 +82,14 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
     slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
   }
 
-  const html = buildStandaloneHtml(files, project.name, id, hideBadge, slug);
+  // Use existing seoDescription or project name as fallback
+  const seoDescription = project.seoDescription ?? undefined;
+  const ogImage = project.thumbnail ?? undefined;
+  const html = buildStandaloneHtml(files, project.name, id, hideBadge, slug, {
+    title: project.name,
+    description: seoDescription,
+    ogImage,
+  });
 
   // Check custom domain uniqueness
   if (customDomain) {
@@ -167,11 +175,33 @@ export async function POST(req: Request, ctx: RouteContext<"/api/projects/[id]/p
   const baseDomain = process.env.PUBLISH_DOMAIN ?? "thatcode.dev";
   const url = `https://${slug}.${baseDomain}`;
 
+  // Fire-and-forget: generate SEO description if not already set
+  if (!project.seoDescription) {
+    setTimeout(async () => {
+      try {
+        const ai = new Anthropic();
+        const appSource = JSON.stringify(files).slice(0, 3000);
+        const msg = await ai.messages.create({
+          model: "claude-haiku-4-5",
+          max_tokens: 120,
+          messages: [{
+            role: "user",
+            content: `Write a 1-2 sentence SEO meta description for a web app named "${project.name}". Be specific and compelling. Source snippet: ${appSource}. Return only the description text, no quotes or labels.`,
+          }],
+        });
+        const desc = (msg.content[0] as { text?: string }).text?.trim();
+        if (desc) {
+          await prisma.project.update({ where: { id }, data: { seoDescription: desc } }).catch(() => {});
+        }
+      } catch { /* best effort */ }
+    }, 1000);
+  }
+
   // Fire-and-forget thumbnail capture after publish
   setTimeout(async () => {
     try {
       const { captureScreenshot } = await import('@/lib/thumbnail');
-      const siteUrl = `${process.env.NEXTAUTH_URL || 'https://thatcode.dev'}/s/${slug}`;
+      const siteUrl = `${process.env.NEXTAUTH_URL || 'https://thatcode.dev'}/p/${slug}`;
       const thumbnail = await captureScreenshot(siteUrl);
       if (thumbnail) {
         await prisma.project.update({ where: { id }, data: { thumbnail } }).catch(() => {});

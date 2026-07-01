@@ -379,7 +379,7 @@ export function buildStandaloneHtml(
   <meta name="twitter:title" content="${seoMeta?.title || title || projectName}">
   ${seoMeta?.description ? `<meta name="twitter:description" content="${seoMeta.description}">` : ''}
   ${seoMeta?.ogImage ? `<meta name="twitter:image" content="${seoMeta.ogImage}">` : ''}
-  ${publishSlug ? `<link rel="canonical" href="https://thatcode.dev/app/${publishSlug}">` : ''}
+  ${publishSlug ? `<link rel="canonical" href="https://thatcode.dev/p/${publishSlug}">` : ''}
   <script>
 (function() {
   try {

@@ -88,6 +88,7 @@ model Project {
   isPrivate         Boolean    @default(false)
   appData           String?
   thumbnail         String?
+  seoDescription    String?
   messages          Message[]
   owner             User       @relation(fields: [ownerId], references: [id])
   workspace         Workspace? @relation(fields: [workspaceId], references: [id])

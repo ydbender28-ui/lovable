@@ -15,23 +15,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ThatCode — Build apps with AI",
-  description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+  description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and publishes it — in minutes. The fastest way to build and ship web apps with AI.",
   metadataBase: new URL("https://thatcode.dev"),
+  keywords: ["AI app builder", "build apps with AI", "no-code AI", "AI website builder", "ship apps fast", "ThatCode"],
   openGraph: {
     title: "ThatCode — Build apps with AI",
-    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and publishes it — in minutes.",
     url: "https://thatcode.dev",
     siteName: "ThatCode",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ThatCode — Build apps with AI" }],
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "ThatCode — Build apps with AI",
-    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and ships it — in minutes.",
+    description: "Describe your app in plain English. ThatCode writes the code, shows a live preview, and publishes it — in minutes.",
     images: ["/opengraph-image"],
+    creator: "@thatcodedev",
   },
   icons: { icon: "/logo.svg", shortcut: "/logo.svg" },
+  alternates: { canonical: "https://thatcode.dev" },
 };
 
 export default function RootLayout({
