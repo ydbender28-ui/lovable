@@ -9,6 +9,7 @@ import Logo from "@/components/Logo";
 import IntegrationsPanel from "./IntegrationsPanel";
 import ThemeSwitcher, { QUICK_THEMES, applyThemeToCss } from "@/components/ThemeSwitcher";
 import ColorPicker from "@/components/ColorPicker";
+import ImageSearchPanel from "@/components/ImageSearchPanel";
 import type { SandpackErr } from "@/components/SandpackPreview";
 
 const SandpackPreview = dynamic(() => import("@/components/SandpackPreview"), {
@@ -353,6 +354,7 @@ export default function ProjectWorkspace({
   const isPaidPlan = ["pro", "team", "owner"].includes(userPlan ?? "");
   const [publishing, setPublishing] = useState(false);
   const [showIntegrations, setShowIntegrations] = useState(false);
+  const [showImageSearch, setShowImageSearch] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [liveUpdated, setLiveUpdated] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type?: "success" | "info" } | null>(null);
@@ -2677,6 +2679,18 @@ export default function ProjectWorkspace({
         {hasFiles && activeTab === "preview" && (
           <ColorPicker currentColor={accentColor} onColorChange={handleColorChange} />
         )}
+        {hasFiles && activeTab === "preview" && (
+          <button
+            onClick={() => setShowImageSearch(v => !v)}
+            title="Search images (Unsplash)"
+            className={`text-xs rounded-lg border px-2.5 py-1 transition-colors flex items-center gap-1.5 ${showImageSearch ? "border-[#6a1ff7]/40 bg-[#6a1ff7]/10 text-[#6a1ff7]" : "border-[#ececf1] bg-white text-[#9090a0] hover:text-[#17171c]"}`}
+          >
+            <svg viewBox="0 0 16 16" className="h-3 w-3 fill-current">
+              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v4.586l2.293-2.293a1 1 0 0 1 1.414 0L8 7.586l1.793-1.793a1 1 0 0 1 1.414 0L13 7.586V4a1 1 0 0 0-1-1H4zm7 5.414-1.5-1.5L7.707 8.707a1 1 0 0 1-1.414 0L4.5 6.914 3 8.414V12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8.414zM10.5 5.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0z"/>
+            </svg>
+            Images
+          </button>
+        )}
         {publishUrl && (
           <a href={publishUrl} target="_blank" rel="noreferrer"
             className="ml-auto text-xs text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors truncate font-medium">
@@ -3002,6 +3016,17 @@ export default function ProjectWorkspace({
           onSaveEnv={async (vars) => { await saveEnvVars(vars); }}
           onAutoPrompt={(prompt, env) => { setShowIntegrations(false); runGenerate(prompt, env); }}
           onClose={() => setShowIntegrations(false)}
+        />
+      )}
+
+      {showImageSearch && (
+        <ImageSearchPanel
+          onInsert={(url) => {
+            setShowImageSearch(false);
+            const insertPrompt = `Replace the hero background (or the most prominent image) with this image URL: ${url}`;
+            runGenerate(insertPrompt);
+          }}
+          onClose={() => setShowImageSearch(false)}
         />
       )}
 
