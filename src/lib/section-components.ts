@@ -1546,8 +1546,6 @@ export default function StepProcess({ title, subtitle, steps, accentColor, layou
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
-  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
     <section ref={ref as any} style={{padding: isMobile ? '48px 20px' : '80px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto'}}>
@@ -2469,8 +2467,8 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
   const [playing, setPlaying] = useState(false);
   const pad = aspectRatio === '4/3' ? '75%' : aspectRatio === '1/1' ? '100%' : '56.25%';
   const getEmbed = () => {
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-    const vmMatch = url.match(/vimeo\.com\/(\d+)/);
+    const ytMatch = url.match(/(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([^&\\s]+)/);
+    const vmMatch = url.match(/vimeo\\.com\\/(\\d+)/);
     if (ytMatch) return \`https://www.youtube.com/embed/\${ytMatch[1]}?autoplay=1\`;
     if (vmMatch) return \`https://player.vimeo.com/video/\${vmMatch[1]}?autoplay=1\`;
     return url;
@@ -2760,13 +2758,13 @@ export default function MetaTags({ title, description, keywords }: MetaTagsProps
 "/components/sections/DashboardStats.tsx": `import { useState, useEffect } from 'react';
 interface StatItem { label: string; value: string; change: string; positive: boolean; icon: string; }
 interface Props { items?: StatItem[]; accentColor?: string; }
-const DEFAULT: StatItem[] = [
+const DEFAULT_STATS: StatItem[] = [
   { label: 'Total Revenue', value: '$84,320', change: '+12.5%', positive: true, icon: '💰' },
   { label: 'Active Users', value: '3,842', change: '+8.1%', positive: true, icon: '👥' },
   { label: 'Churn Rate', value: '2.4%', change: '+0.3%', positive: false, icon: '📉' },
   { label: 'Avg Order', value: '$124', change: '-3.2%', positive: false, icon: '🛒' },
 ];
-export default function DashboardStats({ items = DEFAULT, accentColor }: Props) {
+export default function DashboardStats({ items = DEFAULT_STATS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
@@ -2860,7 +2858,7 @@ export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS,
 "/components/sections/ActivityFeed.tsx": `import { useState } from 'react';
 interface FeedItem { icon: string; title: string; desc?: string; time: string; user: string; color?: string; }
 interface Props { title?: string; items?: FeedItem[]; accentColor?: string; }
-const DEFAULT: FeedItem[] = [
+const DEFAULT_FEED: FeedItem[] = [
   { icon:'✅', title:'Order #1042 completed', desc:'Payment received and confirmed', time:'2 min ago', user:'Alice Chen', color:'#22c55e' },
   { icon:'👤', title:'New user registered', desc:'bob@example.com joined', time:'18 min ago', user:'System', color:'#6366f1' },
   { icon:'🚀', title:'Feature deployed', desc:'v2.4.1 pushed to production', time:'1h ago', user:'Dev Team', color:'#f59e0b' },
@@ -2869,7 +2867,7 @@ const DEFAULT: FeedItem[] = [
   { icon:'💳', title:'Subscription renewed', desc:'Pro plan', time:'5h ago', user:'David Lee', color:'#8b5cf6' },
 ];
 function initials(name: string) { return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2); }
-export default function ActivityFeed({ title = 'Recent Activity', items = DEFAULT, accentColor }: Props) {
+export default function ActivityFeed({ title = 'Recent Activity', items = DEFAULT_FEED, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [visible, setVisible] = useState(5);
   return (
@@ -2901,8 +2899,8 @@ export default function ActivityFeed({ title = 'Recent Activity', items = DEFAUL
 "/components/sections/RevenueChart.tsx": `import { useState, useEffect } from 'react';
 interface DataPoint { month: string; value: number; }
 interface Props { title?: string; data?: DataPoint[]; accentColor?: string; currency?: string; }
-const DEFAULT: DataPoint[] = [{ month:'Jan', value:42000 },{ month:'Feb', value:38000 },{ month:'Mar', value:55000 },{ month:'Apr', value:61000 },{ month:'May', value:58000 },{ month:'Jun', value:74000 },{ month:'Jul', value:82000 },{ month:'Aug', value:79000 },{ month:'Sep', value:91000 },{ month:'Oct', value:88000 },{ month:'Nov', value:97000 },{ month:'Dec', value:112000 }];
-export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT, accentColor, currency = '$' }: Props) {
+const DEFAULT_CHART: DataPoint[] = [{ month:'Jan', value:42000 },{ month:'Feb', value:38000 },{ month:'Mar', value:55000 },{ month:'Apr', value:61000 },{ month:'May', value:58000 },{ month:'Jun', value:74000 },{ month:'Jul', value:82000 },{ month:'Aug', value:79000 },{ month:'Sep', value:91000 },{ month:'Oct', value:88000 },{ month:'Nov', value:97000 },{ month:'Dec', value:112000 }];
+export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT_CHART, accentColor, currency = '$' }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [mounted, setMounted] = useState(false);
   const [tooltip, setTooltip] = useState<number | null>(null);
@@ -2936,7 +2934,7 @@ export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT
 interface NavChild { label: string; href: string; }
 interface NavItem { label: string; icon: string; href?: string; active?: boolean; badge?: number; children?: NavChild[]; }
 interface Props { brand: string; items?: NavItem[]; onNavigate?: (href: string) => void; accentColor?: string; }
-const DEFAULT: NavItem[] = [
+const DEFAULT_NAV: NavItem[] = [
   { label:'Dashboard', icon:'🏠', href:'#', active:true },
   { label:'Analytics', icon:'📊', href:'#' },
   { label:'Users', icon:'👥', href:'#', badge:3 },
@@ -2944,7 +2942,7 @@ const DEFAULT: NavItem[] = [
   { label:'Products', icon:'🛒', href:'#', children:[{ label:'All Products', href:'#' },{ label:'Add Product', href:'#' }] },
   { label:'Settings', icon:'⚙️', href:'#' },
 ];
-export default function AdminSidebar({ brand, items = DEFAULT, onNavigate, accentColor }: Props) {
+export default function AdminSidebar({ brand, items = DEFAULT_NAV, onNavigate, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [activeItem, setActiveItem] = useState(() => items.findIndex(i => i.active));
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
@@ -2993,7 +2991,7 @@ export default function AdminSidebar({ brand, items = DEFAULT, onNavigate, accen
 interface KCol { id: string; title: string; color: string; }
 interface KCard { id: string; col: string; title: string; assignee: string; priority: 'high'|'medium'|'low'; due?: string; desc?: string; }
 interface Props { columns?: KCol[]; cards?: KCard[]; accentColor?: string; }
-const DC: KCol[] = [{ id:'todo', title:'To Do', color:'#6366f1' },{ id:'inprogress', title:'In Progress', color:'#f59e0b' },{ id:'review', title:'Review', color:'#06b6d4' },{ id:'done', title:'Done', color:'#22c55e' }];
+const DEFAULT_KANBAN_COLS: KCol[] = [{ id:'todo', title:'To Do', color:'#6366f1' },{ id:'inprogress', title:'In Progress', color:'#f59e0b' },{ id:'review', title:'Review', color:'#06b6d4' },{ id:'done', title:'Done', color:'#22c55e' }];
 const DK: KCard[] = [
   { id:'1', col:'todo', title:'Design new landing page', assignee:'Alice', priority:'high', due:'Jun 30' },
   { id:'2', col:'todo', title:'Fix mobile navigation', assignee:'Bob', priority:'medium' },
@@ -3003,7 +3001,7 @@ const DK: KCard[] = [
   { id:'6', col:'done', title:'Set up CI/CD pipeline', assignee:'Bob', priority:'medium' },
 ];
 const PC: Record<string,string> = { high:'#ef4444', medium:'#f59e0b', low:'#22c55e' };
-export default function KanbanBoard({ columns = DC, cards = DK, accentColor }: Props) {
+export default function KanbanBoard({ columns = DEFAULT_KANBAN_COLS, cards = DK, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [modal, setModal] = useState<KCard | null>(null);
   return (
@@ -3061,7 +3059,7 @@ export default function KanbanBoard({ columns = DC, cards = DK, accentColor }: P
 "/components/sections/UserManagement.tsx": `import { useState } from 'react';
 interface User { name: string; email: string; role: string; active: boolean; lastSeen?: string; }
 interface Props { users?: User[]; accentColor?: string; }
-const DEFAULT: User[] = [
+const DEFAULT_USERS: User[] = [
   { name:'Alice Chen', email:'alice@example.com', role:'Admin', active:true, lastSeen:'Just now' },
   { name:'Bob Smith', email:'bob@example.com', role:'Editor', active:true, lastSeen:'5 min ago' },
   { name:'Carol Wu', email:'carol@example.com', role:'Viewer', active:false, lastSeen:'2 days ago' },
@@ -3071,7 +3069,7 @@ const DEFAULT: User[] = [
 const ROLES = ['All', 'Admin', 'Editor', 'Viewer'];
 const RC: Record<string,string> = { Admin:'#6366f1', Editor:'#f59e0b', Viewer:'#22c55e' };
 function ini(n: string) { return n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
-export default function UserManagement({ users: init = DEFAULT, accentColor }: Props) {
+export default function UserManagement({ users: init = DEFAULT_USERS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [users, setUsers] = useState(init);
   const [search, setSearch] = useState('');
@@ -3121,7 +3119,7 @@ export default function UserManagement({ users: init = DEFAULT, accentColor }: P
 "/components/sections/NotificationCenter.tsx": `import { useState } from 'react';
 interface Notif { icon: string; title: string; message: string; time: string; read?: boolean; type?: string; }
 interface Props { items?: Notif[]; accentColor?: string; }
-const DEFAULT: Notif[] = [
+const DEFAULT_NOTIFS: Notif[] = [
   { icon:'✅', title:'Payment received', message:'Order #1042 confirmed', time:'2m ago', read:false, type:'success' },
   { icon:'⚠️', title:'Low disk space', message:'Server storage at 87%', time:'15m ago', read:false, type:'warning' },
   { icon:'👤', title:'New user signup', message:'bob@example.com registered', time:'1h ago', read:false, type:'info' },
@@ -3129,7 +3127,7 @@ const DEFAULT: Notif[] = [
   { icon:'📊', title:'Weekly report', message:'Analytics digest available', time:'1d ago', read:true, type:'info' },
 ];
 const TC: Record<string,string> = { info:'#6366f1', success:'#22c55e', warning:'#f59e0b', error:'#ef4444' };
-export default function NotificationCenter({ items: init = DEFAULT, accentColor }: Props) {
+export default function NotificationCenter({ items: init = DEFAULT_NOTIFS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState(init);
@@ -3179,9 +3177,9 @@ interface ChartPoint { label: string; value: number; }
 interface TableRow { name: string; value: number; max: number; }
 interface Props { title?: string; stats?: StatBlock[]; chartData?: ChartPoint[]; tableData?: TableRow[]; accentColor?: string; }
 const DS: StatBlock[] = [{ label:'Page Views', value:'124,831', delta:'+18%' },{ label:'Sessions', value:'41,290', delta:'+9%' },{ label:'Bounce Rate', value:'38.4%', delta:'-2%' }];
-const DC: ChartPoint[] = [{ label:'Mon', value:320 },{ label:'Tue', value:480 },{ label:'Wed', value:410 },{ label:'Thu', value:560 },{ label:'Fri', value:720 },{ label:'Sat', value:390 },{ label:'Sun', value:280 }];
+const DEFAULT_ANALYTICS_CHART: ChartPoint[] = [{ label:'Mon', value:320 },{ label:'Tue', value:480 },{ label:'Wed', value:410 },{ label:'Thu', value:560 },{ label:'Fri', value:720 },{ label:'Sat', value:390 },{ label:'Sun', value:280 }];
 const DT: TableRow[] = [{ name:'/home', value:42000, max:60000 },{ name:'/products', value:31000, max:60000 },{ name:'/about', value:18000, max:60000 },{ name:'/blog', value:14000, max:60000 }];
-export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, chartData=DC, tableData=DT, accentColor }: Props) {
+export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, chartData=DEFAULT_ANALYTICS_CHART, tableData=DT, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const maxVal = Math.max(...chartData.map(d => d.value));
   const pts = chartData.map((d, i) => ({ x: (i / (chartData.length - 1)) * 100, y: 100 - (d.value / maxVal) * 100 }));
@@ -3228,7 +3226,7 @@ export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, c
 "/components/sections/OrdersTable.tsx": `import { useState } from 'react';
 interface Order { id: string; customer: string; items: string; total: number; status: string; date: string; }
 interface Props { orders?: Order[]; onStatusChange?: (id: string, status: string) => void; accentColor?: string; }
-const DEFAULT: Order[] = [
+const DEFAULT_ORDERS: Order[] = [
   { id:'#1042', customer:'Alice Chen', items:'2x Widget Pro', total:149.00, status:'Delivered', date:'Jun 28' },
   { id:'#1041', customer:'Bob Smith', items:'1x Premium Plan', total:99.00, status:'Processing', date:'Jun 28' },
   { id:'#1040', customer:'Carol Wu', items:'3x Bundle', total:214.50, status:'Shipped', date:'Jun 27' },
@@ -3241,7 +3239,7 @@ const SC: Record<string,{ bg:string; color:string }> = {
   Shipped:{ bg:'#ede9fe', color:'#7c3aed' }, Delivered:{ bg:'#dcfce7', color:'#16a34a' }, Cancelled:{ bg:'#fee2e2', color:'#dc2626' },
 };
 const TABS = ['All','Pending','Processing','Shipped','Delivered','Cancelled'];
-export default function OrdersTable({ orders: init = DEFAULT, onStatusChange, accentColor }: Props) {
+export default function OrdersTable({ orders: init = DEFAULT_ORDERS, onStatusChange, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [filter, setFilter] = useState('All');
   const [orders, setOrders] = useState(init);
@@ -3352,7 +3350,7 @@ export default function FormBuilder({ title='Account Settings', subtitle='Manage
 "/components/sections/FileManager.tsx": `import { useState } from 'react';
 interface FileItem { name: string; type: string; size: string; date: string; url?: string; }
 interface Props { files?: FileItem[]; accentColor?: string; }
-const DEFAULT: FileItem[] = [
+const DEFAULT_FILES: FileItem[] = [
   { name:'hero-image.png', type:'image', size:'2.4 MB', date:'Jun 28', url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200' },
   { name:'annual-report.pdf', type:'pdf', size:'1.1 MB', date:'Jun 27' },
   { name:'product-shot.jpg', type:'image', size:'3.8 MB', date:'Jun 26', url:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200' },
@@ -3361,7 +3359,7 @@ const DEFAULT: FileItem[] = [
   { name:'team-photo.jpg', type:'image', size:'4.1 MB', date:'Jun 23', url:'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200' },
 ];
 const FI: Record<string,string> = { image:'🖼️', pdf:'📄', csv:'📊', zip:'🗜️', default:'📁' };
-export default function FileManager({ files = DEFAULT, accentColor }: Props) {
+export default function FileManager({ files = DEFAULT_FILES, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [view, setView] = useState<'grid'|'list'>('grid');
@@ -3413,7 +3411,7 @@ export default function FileManager({ files = DEFAULT, accentColor }: Props) {
 "/components/sections/CalendarWidget.tsx": `import { useState } from 'react';
 interface CalEvent { date: string; title: string; color?: string; }
 interface Props { events?: CalEvent[]; accentColor?: string; }
-const DEFAULT: CalEvent[] = [
+const DEFAULT_EVENTS: CalEvent[] = [
   { date:'2026-06-08', title:'Product launch', color:'#22c55e' },
   { date:'2026-06-15', title:'Investor call', color:'#ef4444' },
   { date:'2026-06-20', title:'Sprint review', color:'#6366f1' },
@@ -3422,7 +3420,7 @@ const DEFAULT: CalEvent[] = [
 ];
 const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-export default function CalendarWidget({ events = DEFAULT, accentColor }: Props) {
+export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const today = new Date();
   const [cur, setCur] = useState({ year: today.getFullYear(), month: today.getMonth() });
@@ -3470,7 +3468,7 @@ export default function CalendarWidget({ events = DEFAULT, accentColor }: Props)
 
 "/components/sections/QuickActions.tsx": `interface ActionItem { icon: string; label: string; desc?: string; color: string; onClick?: () => void; }
 interface Props { title?: string; items?: ActionItem[]; columns?: number; accentColor?: string; }
-const DEFAULT: ActionItem[] = [
+const DEFAULT_ACTIONS: ActionItem[] = [
   { icon:'➕', label:'New Project', desc:'Start from scratch', color:'#6366f1' },
   { icon:'📤', label:'Export Data', desc:'CSV or JSON', color:'#f59e0b' },
   { icon:'👥', label:'Invite Team', desc:'Add collaborators', color:'#22c55e' },
@@ -3478,7 +3476,7 @@ const DEFAULT: ActionItem[] = [
   { icon:'📊', label:'Reports', desc:'View analytics', color:'#8b5cf6' },
   { icon:'⚙️', label:'Settings', desc:'Configure workspace', color:'#ec4899' },
 ];
-export default function QuickActions({ title='Quick Actions', items=DEFAULT, columns=3, accentColor }: Props) {
+export default function QuickActions({ title='Quick Actions', items=DEFAULT_ACTIONS, columns=3, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
