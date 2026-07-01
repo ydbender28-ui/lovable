@@ -3032,12 +3032,27 @@ const DK: KCard[] = [
 const PC: Record<string,string> = { high:'#ef4444', medium:'#f59e0b', low:'#22c55e' };
 export default function KanbanBoard({ columns = DEFAULT_KANBAN_COLS, cards = DK, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeColumns = columns || DEFAULT_KANBAN_COLS;
+  const [cardState, setCardState] = useState<KCard[]>(cards || DK);
   const [modal, setModal] = useState<KCard | null>(null);
+  const moveCard = (cardId: string, dir: 1 | -1) => {
+    setCardState(prev => {
+      const idx = prev.findIndex(c => c.id === cardId);
+      if (idx === -1) return prev;
+      const card = prev[idx];
+      const colIdx = safeColumns.findIndex(c => c.id === card.col);
+      const newColIdx = colIdx + dir;
+      if (newColIdx < 0 || newColIdx >= safeColumns.length) return prev;
+      const next = [...prev];
+      next[idx] = { ...card, col: safeColumns[newColIdx].id };
+      return next;
+    });
+  };
   return (
     <div style={{ padding: '24px 0', position: 'relative' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns.length + ', minmax(220px, 1fr))', gap: 16, overflowX: 'auto' }}>
-        {columns.map(col => {
-          const cc = cards.filter(c => c.col === col.id);
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + safeColumns.length + ', minmax(220px, 1fr))', gap: 16, overflowX: 'auto' }}>
+        {safeColumns.map(col => {
+          const cc = cardState.filter(c => c.col === col.id);
           return (
             <div key={col.id} style={{ background: 'var(--bg, #f9fafb)', borderRadius: 14, padding: 16, minHeight: 360 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -3058,6 +3073,10 @@ export default function KanbanBoard({ columns = DEFAULT_KANBAN_COLS, cards = DK,
                       <span style={{ fontSize: 11, color: 'var(--muted, #888)' }}>{card.due || ''}</span>
                     </div>
                     <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 50, background: PC[card.priority] + '22', color: PC[card.priority] }}>{card.priority}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 10 }} onClick={e => e.stopPropagation()}>
+                    <button onClick={() => moveCard(card.id, -1)} disabled={safeColumns.findIndex(c => c.id === card.col) === 0} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', opacity: safeColumns.findIndex(c => c.id === card.col) === 0 ? 0.35 : 1 }}>◀</button>
+                    <button onClick={() => moveCard(card.id, 1)} disabled={safeColumns.findIndex(c => c.id === card.col) === safeColumns.length - 1} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', opacity: safeColumns.findIndex(c => c.id === card.col) === safeColumns.length - 1 ? 0.35 : 1 }}>▶</button>
                   </div>
                 </div>
               ))}
@@ -3100,7 +3119,7 @@ const RC: Record<string,string> = { Admin:'#6366f1', Editor:'#f59e0b', Viewer:'#
 function ini(n: string) { return n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
 export default function UserManagement({ users: init = DEFAULT_USERS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
-  const [users, setUsers] = useState(init);
+  const [users, setUsers] = useState(init || DEFAULT_USERS);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [showAdd, setShowAdd] = useState(false);
@@ -3159,7 +3178,7 @@ const TC: Record<string,string> = { info:'#6366f1', success:'#22c55e', warning:'
 export default function NotificationCenter({ items: init = DEFAULT_NOTIFS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(init);
+  const [items, setItems] = useState(init || DEFAULT_NOTIFS);
   const unread = items.filter(n => !n.read).length;
   const markAll = () => setItems(l => l.map(n => ({ ...n, read: true })));
   const markOne = (i: number) => setItems(l => l.map((n, idx) => idx === i ? { ...n, read: true } : n));
@@ -3210,15 +3229,18 @@ const DEFAULT_ANALYTICS_CHART: ChartPoint[] = [{ label:'Mon', value:320 },{ labe
 const DT: TableRow[] = [{ name:'/home', value:42000, max:60000 },{ name:'/products', value:31000, max:60000 },{ name:'/about', value:18000, max:60000 },{ name:'/blog', value:14000, max:60000 }];
 export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, chartData=DEFAULT_ANALYTICS_CHART, tableData=DT, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
-  const maxVal = Math.max(...chartData.map(d => d.value));
-  const pts = chartData.map((d, i) => ({ x: (i / (chartData.length - 1)) * 100, y: 100 - (d.value / maxVal) * 100 }));
+  const safeStats = stats || DS;
+  const safeChartData = (chartData && chartData.length > 0) ? chartData : DEFAULT_ANALYTICS_CHART;
+  const safeTableData = tableData || DT;
+  const maxVal = Math.max(...safeChartData.map(d => d.value));
+  const pts = safeChartData.map((d, i) => ({ x: (i / (safeChartData.length - 1)) * 100, y: 100 - (d.value / maxVal) * 100 }));
   const pathD = pts.map((p, i) => (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y).join(' ');
   const areaD = pathD + ' L ' + pts[pts.length-1].x + ' 100 L 0 100 Z';
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
-        {stats.map((s, i) => (
+        {safeStats.map((s, i) => (
           <div key={i} style={{ padding: 16, borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: 'var(--bg, #f9fafb)' }}>
             <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>{s.value}</div>
             <div style={{ fontSize: 12, color: 'var(--muted, #888)', marginTop: 4 }}>{s.label}</div>
@@ -3234,11 +3256,11 @@ export default function AnalyticsPanel({ title='Analytics Overview', stats=DS, c
           <path d={pathD} fill="none" stroke={accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.5" fill={accent} vectorEffect="non-scaling-stroke" />)}
         </svg>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>{chartData.map((d, i) => <span key={i} style={{ fontSize: 10, color: 'var(--muted, #bbb)' }}>{d.label}</span>)}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>{safeChartData.map((d, i) => <span key={i} style={{ fontSize: 10, color: 'var(--muted, #bbb)' }}>{d.label}</span>)}</div>
       </div>
       <div>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted, #888)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Top Pages</div>
-        {tableData.map((row, i) => (
+        {safeTableData.map((row, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
             <span style={{ fontSize: 12, color: 'var(--muted, #888)', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
             <div style={{ flex: 1, height: 6, borderRadius: 99, background: 'var(--border, #e5e7eb)', overflow: 'hidden' }}>
@@ -3271,7 +3293,7 @@ const ORDER_STATUS_TABS = ['All','Pending','Processing','Shipped','Delivered','C
 export default function OrdersTable({ orders: init = DEFAULT_ORDERS, onStatusChange, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [filter, setFilter] = useState('All');
-  const [orders, setOrders] = useState(init);
+  const [orders, setOrders] = useState(init || DEFAULT_ORDERS);
   const filtered = filter === 'All' ? orders : orders.filter(o => o.status === filter);
   const upd = (id: string, status: string) => { setOrders(l => l.map(o => o.id === id ? { ...o, status } : o)); onStatusChange?.(id, status); };
   return (
@@ -3326,8 +3348,9 @@ const DEF: Sec[] = [
 ];
 export default function FormBuilder({ title='Account Settings', subtitle='Manage your profile and preferences.', sections=DEF, onSave, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeSections = sections || DEF;
   const init: Record<string,any> = {};
-  sections.forEach(s => s.fields.forEach(f => { init[f.key] = f.value ?? (f.type === 'toggle' ? false : ''); }));
+  safeSections.forEach(s => s.fields.forEach(f => { init[f.key] = f.value ?? (f.type === 'toggle' ? false : ''); }));
   const [data, setData] = useState<Record<string,any>>(init);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -3340,7 +3363,7 @@ export default function FormBuilder({ title='Account Settings', subtitle='Manage
         <h2 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800 }}>{title}</h2>
         {subtitle ? <p style={{ margin: 0, color: 'var(--muted, #888)', fontSize: 14 }}>{subtitle}</p> : null}
       </div>
-      {sections.map((sec, si) => (
+      {safeSections.map((sec, si) => (
         <div key={si} style={{ padding: 24, borderBottom: '1px solid var(--border, #e5e7eb)' }}>
           <h4 style={{ margin: '0 0 20px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--muted, #888)' }}>{sec.title}</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -3390,7 +3413,7 @@ const DEFAULT_FILES: FileItem[] = [
 const FI: Record<string,string> = { image:'🖼️', pdf:'📄', csv:'📊', zip:'🗜️', default:'📁' };
 export default function FileManager({ files: initFiles = DEFAULT_FILES, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
-  const [files, setFiles] = useState(initFiles);
+  const [files, setFiles] = useState(initFiles || DEFAULT_FILES);
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [view, setView] = useState<'grid'|'list'>('grid');
   const [search, setSearch] = useState('');
@@ -3453,6 +3476,7 @@ const CALENDAR_DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 const CALENDAR_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeEvents = events || DEFAULT_EVENTS;
   const today = new Date();
   const [cur, setCur] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [sel, setSel] = useState<string | null>(null);
@@ -3460,8 +3484,8 @@ export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }:
   const dim = new Date(cur.year, cur.month + 1, 0).getDate();
   const cells: (number|null)[] = [...Array(first).fill(null), ...Array.from({ length: dim }, (_, i) => i + 1)];
   const fmt = (d: number) => cur.year + '-' + String(cur.month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-  const evFor = (d: number) => events.filter(e => e.date === fmt(d));
-  const selEvs = sel ? events.filter(e => e.date === sel) : [];
+  const evFor = (d: number) => safeEvents.filter(e => e.date === fmt(d));
+  const selEvs = sel ? safeEvents.filter(e => e.date === sel) : [];
   const isToday = (d: number) => fmt(d) === today.toISOString().split('T')[0];
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexWrap: 'wrap' }}>
@@ -3509,11 +3533,12 @@ const DEFAULT_ACTIONS: ActionItem[] = [
 ];
 export default function QuickActions({ title='Quick Actions', items=DEFAULT_ACTIONS, columns=3, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeItems = items || DEFAULT_ACTIONS;
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       {title ? <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>{title}</h3> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns + ', 1fr)', gap: 14 }}>
-        {items.map((item, i) => (
+        {safeItems.map((item, i) => (
           <button key={i} onClick={item.onClick} style={{ padding: '18px 16px', borderRadius: 12, border: '1px solid var(--border, #e5e7eb)', background: item.color + '0c', cursor: 'pointer', textAlign: 'left', outline: 'none' }}
             onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLElement).style.background = item.color + '18'; }}
             onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.background = item.color + '0c'; }}>
@@ -4398,6 +4423,14 @@ export default function LoginForm({ accentColor = 'var(--primary)' }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email || !password) { setError('Please enter your email and password.'); setSubmitted(false); return; }
+    setError('');
+    setSubmitted(true);
+  };
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px', display: 'flex', justifyContent: 'center' }}>
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 48, width: '100%', maxWidth: 440 }}>
@@ -4405,7 +4438,7 @@ export default function LoginForm({ accentColor = 'var(--primary)' }) {
         <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 32, fontSize: 15 }}>Sign in to your account to continue</p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
           {[{ icon: '🇬', label: 'Google' }, { icon: '🐙', label: 'GitHub' }].map(s => (
-            <button key={s.label} style={{ flex: 1, padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button key={s.label} type="button" style={{ flex: 1, padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <span>{s.icon}</span> {s.label}
             </button>
           ))}
@@ -4415,21 +4448,28 @@ export default function LoginForm({ accentColor = 'var(--primary)' }) {
           <span style={{ color: 'var(--muted)', fontSize: 13 }}>or email</span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
-        {[{ label: 'Email', value: email, setter: setEmail, type: 'email', placeholder: 'you@example.com' },
-          { label: 'Password', value: password, setter: setPassword, type: 'password', placeholder: '••••••••' }].map(f => (
-          <div key={f.label} style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
-            <input value={f.value} onChange={e => f.setter(e.target.value)} type={f.type} placeholder={f.placeholder}
-              style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+        {submitted ? (
+          <div style={{ padding: '14px 18px', borderRadius: 10, background: \`\${accentColor}15\`, color: accentColor, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Signed in successfully!</div>
+        ) : (
+        <form onSubmit={handleSubmit}>
+          {[{ label: 'Email', value: email, setter: setEmail, type: 'email', placeholder: 'you@example.com' },
+            { label: 'Password', value: password, setter: setPassword, type: 'password', placeholder: '••••••••' }].map(f => (
+            <div key={f.label} style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
+              <input value={f.value} onChange={e => f.setter(e.target.value)} type={f.type} placeholder={f.placeholder} required
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          ))}
+          {error && <p style={{ color: '#ef4444', fontSize: 13, marginTop: -8, marginBottom: 16 }}>{error}</p>}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: 'var(--fg)', fontSize: 14 }}>
+              <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} /> Remember me
+            </label>
+            <a href="#" style={{ color: accentColor, fontSize: 14, textDecoration: 'none', fontWeight: 600 }}>Forgot password?</a>
           </div>
-        ))}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: 'var(--fg)', fontSize: 14 }}>
-            <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} /> Remember me
-          </label>
-          <a href="#" style={{ color: accentColor, fontSize: 14, textDecoration: 'none', fontWeight: 600 }}>Forgot password?</a>
-        </div>
-        <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Sign In</button>
+          <button type="submit" style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Sign In</button>
+        </form>
+        )}
         <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--muted)', fontSize: 14 }}>Don't have an account? <a href="#" style={{ color: accentColor, fontWeight: 600, textDecoration: 'none' }}>Sign up free</a></p>
       </div>
     </section>
@@ -4440,6 +4480,8 @@ export default function LoginForm({ accentColor = 'var(--primary)' }) {
 export default function RegisterForm({ accentColor = 'var(--primary)' }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [agreed, setAgreed] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const fields = [
     { key: 'name', label: 'Full Name', type: 'text', placeholder: 'Jane Smith' },
@@ -4447,23 +4489,38 @@ export default function RegisterForm({ accentColor = 'var(--primary)' }) {
     { key: 'password', label: 'Password', type: 'password', placeholder: 'Min 8 characters' },
     { key: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat password' },
   ];
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.password) { setError('Please fill in all required fields.'); return; }
+    if (form.password !== form.confirm) { setError('Passwords do not match.'); return; }
+    if (!agreed) { setError('Please agree to the Terms of Service and Privacy Policy.'); return; }
+    setError('');
+    setSubmitted(true);
+  };
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px', display: 'flex', justifyContent: 'center' }}>
       <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 48, width: '100%', maxWidth: 480 }}>
         <h2 style={{ color: 'var(--fg)', fontSize: 28, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Create your account</h2>
         <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 32, fontSize: 15 }}>Start for free — no credit card required</p>
-        {fields.map(f => (
-          <div key={f.key} style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
-            <input value={form[f.key]} onChange={e => upd(f.key, e.target.value)} type={f.type} placeholder={f.placeholder}
-              style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-        ))}
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 24, cursor: 'pointer', color: 'var(--muted)', fontSize: 14 }}>
-          <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 2 }} />
-          I agree to the <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Terms of Service</a> and <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>
-        </label>
-        <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Create Account</button>
+        {submitted ? (
+          <div style={{ padding: '14px 18px', borderRadius: 10, background: \`\${accentColor}15\`, color: accentColor, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>Account created! Check your email to confirm.</div>
+        ) : (
+        <form onSubmit={handleSubmit}>
+          {fields.map(f => (
+            <div key={f.key} style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
+              <input value={form[f.key]} onChange={e => upd(f.key, e.target.value)} type={f.type} placeholder={f.placeholder} required
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          ))}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 24, cursor: 'pointer', color: 'var(--muted)', fontSize: 14 }}>
+            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 2 }} />
+            I agree to the <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Terms of Service</a> and <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>
+          </label>
+          {error && <p style={{ color: '#ef4444', fontSize: 13, marginTop: -16, marginBottom: 16 }}>{error}</p>}
+          <button type="submit" style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Create Account</button>
+        </form>
+        )}
         <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--muted)', fontSize: 14 }}>Already have an account? <a href="#" style={{ color: accentColor, fontWeight: 600, textDecoration: 'none' }}>Sign in</a></p>
       </div>
     </section>
@@ -4473,8 +4530,24 @@ export default function RegisterForm({ accentColor = 'var(--primary)' }) {
 "CheckoutForm": `import { useState } from 'react';
 export default function CheckoutForm({ accentColor = 'var(--primary)', items = [{ name: 'Premium Subscription', price: 29, qty: 1 }, { name: 'Setup Fee', price: 9, qty: 1 }] }) {
   const [step, setStep] = useState(0);
+  const [placed, setPlaced] = useState(false);
   const steps = ['Cart', 'Shipping', 'Payment'];
-  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const safeItems = items || [];
+  const total = safeItems.reduce((s, i) => s + i.price * i.qty, 0);
+  if (placed) {
+    return (
+      <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: 48 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
+            <h2 style={{ color: 'var(--fg)', fontWeight: 800, fontSize: 24, marginBottom: 8 }}>Order Confirmed!</h2>
+            <p style={{ color: 'var(--muted)', fontSize: 15 }}>Thank you for your purchase. A confirmation has been sent to your email.</p>
+            <div style={{ marginTop: 24, color: accentColor, fontWeight: 800, fontSize: 20 }}>Total: \${total.toFixed(2)}</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -4494,7 +4567,7 @@ export default function CheckoutForm({ accentColor = 'var(--primary)', items = [
             {step === 0 && (
               <div>
                 <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 24 }}>Your Cart</h3>
-                {items.map((item, i) => (
+                {safeItems.map((item, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
                     <div>
                       <div style={{ color: 'var(--fg)', fontWeight: 600 }}>{item.name}</div>
@@ -4529,14 +4602,14 @@ export default function CheckoutForm({ accentColor = 'var(--primary)', items = [
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
               {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ padding: '10px 24px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Back</button>}
-              <button onClick={() => setStep(s => Math.min(s + 1, 2))} style={{ marginLeft: 'auto', padding: '10px 28px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={() => step === 2 ? setPlaced(true) : setStep(s => Math.min(s + 1, 2))} style={{ marginLeft: 'auto', padding: '10px 28px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
                 {step === 2 ? 'Place Order' : 'Continue →'}
               </button>
             </div>
           </div>
           <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, height: 'fit-content' }}>
             <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 16 }}>Order Summary</h3>
-            {items.map((item, i) => (
+            {safeItems.map((item, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ color: 'var(--muted)', fontSize: 14 }}>{item.name}</span>
                 <span style={{ color: 'var(--fg)', fontSize: 14 }}>\${item.price}</span>
@@ -4560,13 +4633,17 @@ export default function ProductDetail({ accentColor = 'var(--primary)', product 
   const [size, setSize] = useState('M');
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState('description');
+  const [added, setAdded] = useState(false);
+  const images = (product.images || []).filter(Boolean);
+  const colors = (product.colors || []).filter(Boolean);
+  const sizes = (product.sizes || []).filter(Boolean);
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
         <div>
-          <img src={product.images[img]} alt={product.name} style={{ width: '100%', height: 400, objectFit: 'cover', borderRadius: 12, marginBottom: 12 }} />
+          <img src={images[img]} alt={product.name} style={{ width: '100%', height: 400, objectFit: 'cover', borderRadius: 12, marginBottom: 12 }} />
           <div style={{ display: 'flex', gap: 10 }}>
-            {product.images.map((src, i) => (
+            {images.map((src, i) => (
               <img key={i} src={src} alt="" onClick={() => setImg(i)} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', border: \`2px solid \${i === img ? accentColor : 'var(--border)'}\` }} />
             ))}
           </div>
@@ -4586,7 +4663,7 @@ export default function ProductDetail({ accentColor = 'var(--primary)', product 
           <div style={{ marginBottom: 20 }}>
             <p style={{ color: 'var(--fg)', fontWeight: 600, marginBottom: 10 }}>Color</p>
             <div style={{ display: 'flex', gap: 10 }}>
-              {product.colors.map((c, i) => (
+              {colors.map((c, i) => (
                 <div key={i} onClick={() => setColor(i)} style={{ width: 32, height: 32, borderRadius: '50%', background: c, cursor: 'pointer', border: \`3px solid \${i === color ? accentColor : 'transparent'}\`, outline: '2px solid var(--border)' }} />
               ))}
             </div>
@@ -4594,7 +4671,7 @@ export default function ProductDetail({ accentColor = 'var(--primary)', product 
           <div style={{ marginBottom: 28 }}>
             <p style={{ color: 'var(--fg)', fontWeight: 600, marginBottom: 10 }}>Size</p>
             <div style={{ display: 'flex', gap: 10 }}>
-              {product.sizes.map(s => (
+              {sizes.map(s => (
                 <button key={s} onClick={() => setSize(s)} style={{ width: 48, height: 48, border: \`2px solid \${s === size ? accentColor : 'var(--border)'}\`, borderRadius: 8, background: s === size ? accentColor + '22' : 'var(--bg)', color: s === size ? accentColor : 'var(--fg)', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>{s}</button>
               ))}
             </div>
@@ -4605,7 +4682,7 @@ export default function ProductDetail({ accentColor = 'var(--primary)', product 
               <span style={{ padding: '10px 20px', color: 'var(--fg)', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center' }}>{qty}</span>
               <button onClick={() => setQty(q => q + 1)} style={{ padding: '10px 16px', background: 'var(--bg)', border: 'none', cursor: 'pointer', color: 'var(--fg)', fontSize: 18 }}>+</button>
             </div>
-            <button style={{ flex: 1, padding: '12px 24px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Add to Cart</button>
+            <button onClick={() => { setAdded(true); setTimeout(() => setAdded(false), 2000); }} style={{ flex: 1, padding: '12px 24px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>{added ? \`Added \${qty} to Cart ✓\` : 'Add to Cart'}</button>
           </div>
           <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--border)', marginBottom: 20 }}>
             {['description', 'shipping', 'returns'].map(t => (
@@ -4735,7 +4812,7 @@ export default function EventCard({ accentColor = 'var(--primary)', event = { ti
         <img src={event.image} alt={event.title} style={{ width: '100%', height: 280, objectFit: 'cover' }} />
         <div style={{ padding: 40 }}>
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            {event.tags.map(t => <span key={t} style={{ background: accentColor + '22', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
+            {(event.tags || []).filter(Boolean).map(t => <span key={t} style={{ background: accentColor + '22', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
           </div>
           <h2 style={{ color: 'var(--fg)', fontSize: 30, fontWeight: 800, marginBottom: 16 }}>{event.title}</h2>
           <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.8, marginBottom: 28 }}>{event.description}</p>
@@ -4893,13 +4970,16 @@ export default function EventCard({ accentColor = 'var(--primary)', event = { ti
 "PropertyListing": `import { useState } from 'react';
 export default function PropertyListing({ accentColor = 'var(--primary)', property = { address: '2847 Pacific Heights Blvd', city: 'San Francisco, CA 94115', price: 3200000, beds: 4, baths: 3.5, sqft: 2840, type: 'Single Family Home', status: 'For Sale', yearBuilt: 2019, parking: 2, description: 'Stunning Pacific Heights masterpiece with panoramic bay views. Chef\'s kitchen with Carrara marble, Miele appliances. Primary suite with spa bath. Landscaped garden and rooftop deck.', features: ['Bay Views', 'Chef\'s Kitchen', 'Rooftop Deck', 'Smart Home', 'Wine Cellar', 'Home Theater'], images: ['https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&h=500&fit=crop', 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=500&fit=crop', 'https://images.unsplash.com/photo-1564078516393-cf04bd966897?w=800&h=500&fit=crop'], agent: { name: 'Alexandra Chen', title: 'Senior Listing Agent', phone: '(415) 555-0192', image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop' } } }) {
   const [photo, setPhoto] = useState(0);
+  const images = (property.images || []).filter(Boolean);
+  const features = (property.features || []).filter(Boolean);
+  const agent = property.agent || {};
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <div style={{ position: 'relative', marginBottom: 16 }}>
-          <img src={property.images[photo]} alt={property.address} style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 16 }} />
+          <img src={images[photo]} alt={property.address} style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 16 }} />
           <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 8 }}>
-            {property.images.map((_, i) => <button key={i} onClick={() => setPhoto(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', background: i === photo ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0 }} />)}
+            {images.map((_, i) => <button key={i} onClick={() => setPhoto(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', background: i === photo ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0 }} />)}
           </div>
           <span style={{ position: 'absolute', top: 16, right: 16, background: '#22c55e', color: '#fff', padding: '6px 16px', borderRadius: 20, fontWeight: 700, fontSize: 14 }}>{property.status}</span>
         </div>
@@ -4926,19 +5006,19 @@ export default function PropertyListing({ accentColor = 'var(--primary)', proper
             </div>
             <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.8, marginBottom: 24 }}>{property.description}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-              {property.features.map(f => <span key={f} style={{ background: accentColor + '18', color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{f}</span>)}
+              {features.map(f => <span key={f} style={{ background: accentColor + '18', color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{f}</span>)}
             </div>
           </div>
           <div>
             <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', gap: 14, marginBottom: 16, alignItems: 'center' }}>
-                <img src={property.agent.image} alt={property.agent.name} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
+                {agent.image && <img src={agent.image} alt={agent.name || 'Agent'} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />}
                 <div>
-                  <div style={{ color: 'var(--fg)', fontWeight: 700 }}>{property.agent.name}</div>
-                  <div style={{ color: 'var(--muted)', fontSize: 13 }}>{property.agent.title}</div>
+                  <div style={{ color: 'var(--fg)', fontWeight: 700 }}>{agent.name}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 13 }}>{agent.title}</div>
                 </div>
               </div>
-              <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>📞 <a href={\`tel:\${property.agent.phone.replace(/[^0-9+]/g,'')}\`} style={{ color: 'inherit', textDecoration: 'none' }}>{property.agent.phone}</a></div>
+              {agent.phone && <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>📞 <a href={\`tel:\${agent.phone.replace(/[^0-9+]/g,'')}\`} style={{ color: 'inherit', textDecoration: 'none' }}>{agent.phone}</a></div>}
               <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 10 }}>Schedule a Tour</button>
               <button style={{ width: '100%', padding: '12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Contact Agent</button>
             </div>
@@ -4953,23 +5033,25 @@ export default function PropertyListing({ accentColor = 'var(--primary)', proper
 export default function RestaurantMenu({ accentColor = 'var(--primary)', title = 'Our Menu', categories = [{ name: 'Starters', items: [{ name: 'Burrata & Heirloom Tomatoes', desc: 'Creamy burrata, heirloom tomatoes, aged balsamic, basil oil, sourdough crisps', price: 18, tags: ['V', 'GF'], image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=400&h=250&fit=crop' }, { name: 'Crispy Calamari', desc: 'Lightly floured, flash-fried, preserved lemon aioli, smoked paprika', price: 16, tags: ['GF'], image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=250&fit=crop' }, { name: 'Charcuterie Board', desc: 'Rotating selection of cured meats, artisan cheeses, house pickles, honeycomb', price: 28, tags: ['GF'], image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=250&fit=crop' }] }, { name: 'Mains', items: [{ name: 'Pan-Seared Branzino', desc: 'Mediterranean sea bass, saffron risotto, roasted cherry tomatoes, caper butter', price: 38, tags: ['GF'], image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=250&fit=crop' }, { name: 'Wagyu Short Rib', desc: '72-hour braised, truffle polenta, roasted bone marrow, gremolata', price: 52, tags: ['Signature'], image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=250&fit=crop' }] }, { name: 'Desserts', items: [{ name: 'Valrhona Chocolate Fondant', desc: 'Warm dark chocolate center, vanilla bean gelato, cocoa tuile', price: 14, tags: ['V'], image: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=400&h=250&fit=crop' }] }] }) {
   const [active, setActive] = useState(0);
   const tagColors = { V: '#22c55e', GF: '#3b82f6', Spicy: '#ef4444', Signature: accentColor };
+  const safeCategories = (categories || []).filter(Boolean);
+  const activeItems = ((safeCategories[active] || safeCategories[0] || {}).items || []).filter(Boolean);
   return (
     <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <h2 style={{ color: 'var(--fg)', fontSize: 40, fontWeight: 800, textAlign: 'center', marginBottom: 8 }}>{title}</h2>
         <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 40 }}>Seasonal ingredients. Crafted with care.</p>
         <div style={{ display: 'flex', gap: 8, marginBottom: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {categories.map((cat, i) => (
+          {safeCategories.map((cat, i) => (
             <button key={cat.name} onClick={() => setActive(i)} style={{ padding: '10px 28px', border: \`2px solid \${i === active ? accentColor : 'var(--border)'}\`, borderRadius: 30, background: i === active ? accentColor : 'var(--bg)', color: i === active ? 'var(--primary-fg)' : 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>{cat.name}</button>
           ))}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 28 }}>
-          {categories[active].items.map((item, i) => (
+          {activeItems.map((item, i) => (
             <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
               <img src={item.image} alt={item.name} style={{ width: '100%', height: 180, objectFit: 'cover' }} />
               <div style={{ padding: 20 }}>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                  {item.tags.map(t => <span key={t} style={{ background: (tagColors[t] || accentColor) + '22', color: tagColors[t] || accentColor, padding: '2px 8px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
+                  {(item.tags || []).filter(Boolean).map(t => <span key={t} style={{ background: (tagColors[t] || accentColor) + '22', color: tagColors[t] || accentColor, padding: '2px 8px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
                 </div>
                 <h3 style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 17, marginBottom: 8 }}>{item.name}</h3>
                 <p style={{ color: 'var(--muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>{item.desc}</p>
