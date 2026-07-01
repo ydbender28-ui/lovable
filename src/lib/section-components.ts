@@ -1851,13 +1851,17 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
     return Math.min(95, Math.max(5, ((clientX - rect.left) / rect.width) * 100));
   }, []);
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>, i: number) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
     activeIdx.current = i;
-    setPos(p => p.map((v,j) => j===i ? calcPct(e.clientX, e.currentTarget) : v));
+    const clientX = e.clientX;
+    setPos(p => p.map((v,j) => j===i ? calcPct(clientX, el) : v));
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>, i: number) => {
     if (activeIdx.current !== i) return;
-    setPos(p => p.map((v,j) => j===i ? calcPct(e.clientX, e.currentTarget) : v));
+    const el = e.currentTarget;
+    const clientX = e.clientX;
+    setPos(p => p.map((v,j) => j===i ? calcPct(clientX, el) : v));
   };
   const onPointerUp = () => { activeIdx.current = null; };
   const sectionRef = React.useRef<HTMLElement>(null);
