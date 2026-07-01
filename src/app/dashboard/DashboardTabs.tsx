@@ -123,6 +123,7 @@ export default function DashboardTabs({
   const [filterTab, setFilterTab] = useState<"all" | "published" | "drafts">("all");
   const [showOnboarding, setShowOnboarding] = useState(initialShowOnboarding && projects.length === 0);
   const [showSearch, setShowSearch] = useState(false);
+  const [buildError, setBuildError] = useState("");
 
   async function handleOnboardingComplete(onboardingPrompt: string) {
     setShowOnboarding(false);
@@ -180,17 +181,25 @@ export default function DashboardTabs({
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
     setLoading(true);
-    const res = await fetch("/api/projects", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: trimmed }),
-    });
-    if (!res.ok) {
+    setBuildError("");
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: trimmed }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setBuildError(data.error || `Failed to create project (${res.status}). Please try again.`);
+        setLoading(false);
+        return;
+      }
+      const project = await res.json();
+      router.push(`/projects/${project.id}?prompt=${encodeURIComponent(trimmed)}`);
+    } catch (err) {
+      setBuildError("Network error — please check your connection and try again.");
       setLoading(false);
-      return;
     }
-    const project = await res.json();
-    router.push(`/projects/${project.id}?prompt=${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -339,6 +348,12 @@ export default function DashboardTabs({
               </button>
             </div>
           </div>
+
+          {buildError && (
+            <div className="mt-3 rounded-xl border border-red-400/30 bg-red-50 px-4 py-3 text-sm text-red-600">
+              ⚠️ {buildError}
+            </div>
+          )}
 
           {(() => {
             const filtered = projects
