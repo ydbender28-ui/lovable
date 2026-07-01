@@ -173,6 +173,38 @@ function stripModuleSyntax(code: string): string {
     .replace(/^export\s*\{[^}]*\}\s*(?:from\s*['"][^'"]+['"])?\s*;?\s*$/gm, "");
 }
 
+// Wraps one shared-library component's code in its own IIFE scope so its top-level
+// const/let/var/function/class names can never collide with any other component's,
+// or with the project's own generated App.tsx code -- only the file's exported
+// identifiers are exposed, as global `var`s (which safely coexist even if two files
+// happen to export the same name -- last one wins, same as the old failure mode
+// minus the fatal SyntaxError).
+function isolateModule(rawCode: string): string {
+  const exportedNames: string[] = [];
+
+  let code = rawCode.replace(/^import\s[^\n]+\n?/gm, "");
+
+  code = code.replace(/^export\s+default\s+(function|class)\s+(\w+)/gm, (_m, kind, name) => {
+    exportedNames.push(name);
+    return `${kind} ${name}`;
+  });
+  code = code.replace(/^export\s+default\s+(\w[\w.]*)\s*;?\s*$/gm, (_m, name) => {
+    exportedNames.push(name);
+    return "";
+  });
+  code = code.replace(/^export\s+(const|let|var|function|class)\s+(\w+)/gm, (_m, kind, name) => {
+    exportedNames.push(name);
+    return `${kind} ${name}`;
+  });
+  code = code.replace(/^export\s+(type|interface|enum)\s+(\w+)/gm, (_m, kind, name) => `${kind} ${name}`);
+  code = code.replace(/^export\s*\{[^}]*\}\s*(?:from\s*['"][^'"]+['"])?\s*;?\s*$/gm, "");
+
+  if (exportedNames.length === 0) return code;
+
+  const unique = Array.from(new Set(exportedNames));
+  return `(function(){\n${code}\nwindow.__mod=window.__mod||{};\n${unique.map((n) => `window.__mod[${JSON.stringify(n)}]=${n};`).join("\n")}\n})();\n${unique.map((n) => `var ${n}=window.__mod[${JSON.stringify(n)}];`).join("\n")}`;
+}
+
 function transpileTSX(code: string): string {
   const result = ts.transpileModule(code, {
     compilerOptions: {
@@ -191,11 +223,16 @@ function transpileTSX(code: string): string {
 
 function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName: string; styles: string; title: string } {
   // Merge in pre-built components that the app may import
-  const allFiles = { ...UI_COMPONENTS, ...SECTION_COMPONENTS, ...EXTRA_COMPONENTS, ...projectFiles };
+  const sharedLibrary = { ...UI_COMPONENTS, ...SECTION_COMPONENTS, ...EXTRA_COMPONENTS };
+  const allFiles = { ...sharedLibrary, ...projectFiles };
   const src: ProjectFiles = {};
   for (const [p, c] of Object.entries(allFiles)) {
     src[p.replace(/^\//, "")] = c;
   }
+  // Paths that are pure shared-library code (not overridden by the project's own files) --
+  // these get isolated in their own scope so a generic top-level name (colors, DAYS, etc.)
+  // can never collide with another component or with the project's own App.tsx code.
+  const libraryPaths = new Set(Object.keys(sharedLibrary).map((p) => p.replace(/^\//, "")).filter((p) => !(p in projectFiles) && !(`/${p}` in projectFiles)));
 
   // Sandpack format: /App.tsx + /index.css (or legacy /App.js + /styles.css)
   const appFile = src["App.tsx"] ?? src["App.js"];
@@ -215,7 +252,7 @@ function buildAppCode(projectFiles: ProjectFiles): { code: string; componentName
       .sort((a, b) => (a.includes("App") ? 1 : 0) - (b.includes("App") ? 1 : 0));
 
     const strippedCode = jsFiles
-      .map((p) => stripModuleSyntax(src[p]))
+      .map((p) => (libraryPaths.has(p) ? isolateModule(src[p]) : stripModuleSyntax(src[p])))
       .join("\n\n");
 
     const jsxSource = reactGlobals + "\n" + strippedCode;
