@@ -4364,6 +4364,712 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
   );
 }`,
 
+"LoginForm": `import { useState } from 'react';
+export default function LoginForm({ accentColor = 'var(--primary)' }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 48, width: '100%', maxWidth: 440 }}>
+        <h2 style={{ color: 'var(--fg)', fontSize: 28, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Welcome back</h2>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 32, fontSize: 15 }}>Sign in to your account to continue</p>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+          {[{ icon: '🇬', label: 'Google' }, { icon: '🐙', label: 'GitHub' }].map(s => (
+            <button key={s.label} style={{ flex: 1, padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span>{s.icon}</span> {s.label}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ color: 'var(--muted)', fontSize: 13 }}>or email</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+        {[{ label: 'Email', value: email, setter: setEmail, type: 'email', placeholder: 'you@example.com' },
+          { label: 'Password', value: password, setter: setPassword, type: 'password', placeholder: '••••••••' }].map(f => (
+          <div key={f.label} style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
+            <input value={f.value} onChange={e => f.setter(e.target.value)} type={f.type} placeholder={f.placeholder}
+              style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: 'var(--fg)', fontSize: 14 }}>
+            <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} /> Remember me
+          </label>
+          <a href="#" style={{ color: accentColor, fontSize: 14, textDecoration: 'none', fontWeight: 600 }}>Forgot password?</a>
+        </div>
+        <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Sign In</button>
+        <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--muted)', fontSize: 14 }}>Don't have an account? <a href="#" style={{ color: accentColor, fontWeight: 600, textDecoration: 'none' }}>Sign up free</a></p>
+      </div>
+    </section>
+  );
+}`,
+
+"RegisterForm": `import { useState } from 'react';
+export default function RegisterForm({ accentColor = 'var(--primary)' }) {
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
+  const [agreed, setAgreed] = useState(false);
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const fields = [
+    { key: 'name', label: 'Full Name', type: 'text', placeholder: 'Jane Smith' },
+    { key: 'email', label: 'Email Address', type: 'email', placeholder: 'jane@example.com' },
+    { key: 'password', label: 'Password', type: 'password', placeholder: 'Min 8 characters' },
+    { key: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat password' },
+  ];
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 48, width: '100%', maxWidth: 480 }}>
+        <h2 style={{ color: 'var(--fg)', fontSize: 28, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Create your account</h2>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 32, fontSize: 15 }}>Start for free — no credit card required</p>
+        {fields.map(f => (
+          <div key={f.key} style={{ marginBottom: 16 }}>
+            <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{f.label}</label>
+            <input value={form[f.key]} onChange={e => upd(f.key, e.target.value)} type={f.type} placeholder={f.placeholder}
+              style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+        ))}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 24, cursor: 'pointer', color: 'var(--muted)', fontSize: 14 }}>
+          <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} style={{ marginTop: 2 }} />
+          I agree to the <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Terms of Service</a> and <a href="#" style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>
+        </label>
+        <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Create Account</button>
+        <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--muted)', fontSize: 14 }}>Already have an account? <a href="#" style={{ color: accentColor, fontWeight: 600, textDecoration: 'none' }}>Sign in</a></p>
+      </div>
+    </section>
+  );
+}`,
+
+"CheckoutForm": `import { useState } from 'react';
+export default function CheckoutForm({ accentColor = 'var(--primary)', items = [{ name: 'Premium Subscription', price: 29, qty: 1 }, { name: 'Setup Fee', price: 9, qty: 1 }] }) {
+  const [step, setStep] = useState(0);
+  const steps = ['Cart', 'Shipping', 'Payment'];
+  const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 700, margin: '0 auto' }}>
+        <div style={{ display: 'flex', gap: 0, marginBottom: 40 }}>
+          {steps.map((s, i) => (
+            <div key={s} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: i <= step ? accentColor : 'var(--border)', color: i <= step ? 'var(--primary-fg)' : 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>{i + 1}</div>
+                <span style={{ color: i <= step ? 'var(--fg)' : 'var(--muted)', fontWeight: i === step ? 700 : 400, fontSize: 14 }}>{s}</span>
+              </div>
+              {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: i < step ? accentColor : 'var(--border)', margin: '0 12px' }} />}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32 }}>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: 32 }}>
+            {step === 0 && (
+              <div>
+                <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 24 }}>Your Cart</h3>
+                {items.map((item, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <div style={{ color: 'var(--fg)', fontWeight: 600 }}>{item.name}</div>
+                      <div style={{ color: 'var(--muted)', fontSize: 13 }}>Qty: {item.qty}</div>
+                    </div>
+                    <div style={{ color: 'var(--fg)', fontWeight: 700 }}>\${(item.price * item.qty).toFixed(2)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {step === 1 && (
+              <div>
+                <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 24 }}>Shipping Address</h3>
+                {[['Full Name', 'text'], ['Email', 'email'], ['Address', 'text'], ['City', 'text'], ['ZIP Code', 'text']].map(([lbl, typ]) => (
+                  <div key={lbl} style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{lbl}</label>
+                    <input type={typ} style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+            {step === 2 && (
+              <div>
+                <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 24 }}>Payment Details</h3>
+                {[['Card Number', '4242 4242 4242 4242'], ['Cardholder Name', 'Jane Smith'], ['Expiry', 'MM/YY'], ['CVV', '•••']].map(([lbl, ph]) => (
+                  <div key={lbl} style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', color: 'var(--fg)', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{lbl}</label>
+                    <input placeholder={ph} style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+              {step > 0 && <button onClick={() => setStep(s => s - 1)} style={{ padding: '10px 24px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Back</button>}
+              <button onClick={() => setStep(s => Math.min(s + 1, 2))} style={{ marginLeft: 'auto', padding: '10px 28px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                {step === 2 ? 'Place Order' : 'Continue →'}
+              </button>
+            </div>
+          </div>
+          <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, height: 'fit-content' }}>
+            <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 16 }}>Order Summary</h3>
+            {items.map((item, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ color: 'var(--muted)', fontSize: 14 }}>{item.name}</span>
+                <span style={{ color: 'var(--fg)', fontSize: 14 }}>\${item.price}</span>
+              </div>
+            ))}
+            <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 16, display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--fg)', fontWeight: 700 }}>Total</span>
+              <span style={{ color: accentColor, fontWeight: 800, fontSize: 18 }}>\${total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"ProductDetail": `import { useState } from 'react';
+export default function ProductDetail({ accentColor = 'var(--primary)', product = { name: 'Handcrafted Leather Wallet', price: 89, originalPrice: 120, rating: 4.8, reviews: 142, description: 'Premium full-grain leather. RFID blocking. 8 card slots, 2 cash compartments. Slim profile fits any pocket.', sizes: ['S','M','L'], colors: ['#1a1a1a','#8B4513','#2F4F4F'], images: ['https://images.unsplash.com/photo-1627123424574-724758594e93?w=600&h=600&fit=crop','https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=600&fit=crop','https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=600&fit=crop'] } }) {
+  const [img, setImg] = useState(0);
+  const [color, setColor] = useState(0);
+  const [size, setSize] = useState('M');
+  const [qty, setQty] = useState(1);
+  const [tab, setTab] = useState('description');
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+        <div>
+          <img src={product.images[img]} alt={product.name} style={{ width: '100%', height: 400, objectFit: 'cover', borderRadius: 12, marginBottom: 12 }} />
+          <div style={{ display: 'flex', gap: 10 }}>
+            {product.images.map((src, i) => (
+              <img key={i} src={src} alt="" onClick={() => setImg(i)} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', border: \`2px solid \${i === img ? accentColor : 'var(--border)'}\` }} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{ display: 'inline-block', background: accentColor + '22', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, marginBottom: 12 }}>In Stock</div>
+          <h1 style={{ color: 'var(--fg)', fontSize: 28, fontWeight: 800, marginBottom: 12 }}>{product.name}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <span style={{ color: '#f59e0b', fontSize: 18 }}>{'★'.repeat(Math.round(product.rating))}</span>
+            <span style={{ color: 'var(--fg)', fontWeight: 700 }}>{product.rating}</span>
+            <span style={{ color: 'var(--muted)', fontSize: 14 }}>({product.reviews} reviews)</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 28 }}>
+            <span style={{ color: accentColor, fontSize: 32, fontWeight: 800 }}>\${product.price}</span>
+            {product.originalPrice && <span style={{ color: 'var(--muted)', fontSize: 18, textDecoration: 'line-through' }}>\${product.originalPrice}</span>}
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <p style={{ color: 'var(--fg)', fontWeight: 600, marginBottom: 10 }}>Color</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {product.colors.map((c, i) => (
+                <div key={i} onClick={() => setColor(i)} style={{ width: 32, height: 32, borderRadius: '50%', background: c, cursor: 'pointer', border: \`3px solid \${i === color ? accentColor : 'transparent'}\`, outline: '2px solid var(--border)' }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom: 28 }}>
+            <p style={{ color: 'var(--fg)', fontWeight: 600, marginBottom: 10 }}>Size</p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {product.sizes.map(s => (
+                <button key={s} onClick={() => setSize(s)} style={{ width: 48, height: 48, border: \`2px solid \${s === size ? accentColor : 'var(--border)'}\`, borderRadius: 8, background: s === size ? accentColor + '22' : 'var(--bg)', color: s === size ? accentColor : 'var(--fg)', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>{s}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+              <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ padding: '10px 16px', background: 'var(--bg)', border: 'none', cursor: 'pointer', color: 'var(--fg)', fontSize: 18 }}>−</button>
+              <span style={{ padding: '10px 20px', color: 'var(--fg)', fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center' }}>{qty}</span>
+              <button onClick={() => setQty(q => q + 1)} style={{ padding: '10px 16px', background: 'var(--bg)', border: 'none', cursor: 'pointer', color: 'var(--fg)', fontSize: 18 }}>+</button>
+            </div>
+            <button style={{ flex: 1, padding: '12px 24px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Add to Cart</button>
+          </div>
+          <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--border)', marginBottom: 20 }}>
+            {['description', 'shipping', 'returns'].map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{ padding: '10px 20px', border: 'none', background: 'none', color: t === tab ? accentColor : 'var(--muted)', fontWeight: t === tab ? 700 : 400, cursor: 'pointer', borderBottom: \`2px solid \${t === tab ? accentColor : 'transparent'}\`, textTransform: 'capitalize', fontSize: 14 }}>{t}</button>
+            ))}
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7 }}>
+            {tab === 'description' && product.description}
+            {tab === 'shipping' && 'Free shipping on orders over $50. Standard delivery 3-5 business days. Express 1-2 days available at checkout.'}
+            {tab === 'returns' && '30-day hassle-free returns. Item must be unused and in original packaging. Free return label included.'}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"JobListing": `export default function JobListing({ accentColor = 'var(--primary)', job = { title: 'Senior Frontend Engineer', company: 'TechCorp Inc.', location: 'San Francisco, CA (Hybrid)', salary: '$140,000 – $180,000', type: 'Full-time', posted: '2 days ago', requirements: ['5+ years React experience', 'TypeScript proficiency', 'Strong CSS/animation skills', 'Experience with Next.js', 'Team collaboration skills'], description: 'Join our growing product team to build world-class user interfaces for our SaaS platform serving 50,000+ businesses. You will own the frontend architecture and mentor junior developers.', benefits: ['Health, dental & vision', 'Unlimited PTO', '$5K annual learning budget', '401k 4% match', 'Remote-friendly'] } }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 40 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+            <div>
+              <h1 style={{ color: 'var(--fg)', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>{job.title}</h1>
+              <div style={{ color: 'var(--muted)', fontSize: 16, fontWeight: 600 }}>{job.company}</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+              <span style={{ color: '#22c55e', background: '#22c55e22', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700 }}>Actively Hiring</span>
+              <span style={{ color: 'var(--muted)', fontSize: 13 }}>Posted {job.posted}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+            {[{ icon: '📍', text: job.location }, { icon: '💰', text: job.salary }, { icon: '⏱', text: job.type }].map(b => (
+              <span key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 20, padding: '6px 14px', fontSize: 14, color: 'var(--fg)' }}>{b.icon} {b.text}</span>
+            ))}
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.8, marginBottom: 28 }}>{job.description}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginBottom: 32 }}>
+            <div>
+              <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 14, fontSize: 16 }}>Requirements</h3>
+              {job.requirements.map((r, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, color: 'var(--muted)', fontSize: 14 }}>
+                  <span style={{ color: accentColor, fontWeight: 700 }}>✓</span> {r}
+                </div>
+              ))}
+            </div>
+            <div>
+              <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 14, fontSize: 16 }}>Benefits</h3>
+              {job.benefits.map((b, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, color: 'var(--muted)', fontSize: 14 }}>
+                  <span style={{ color: '#22c55e' }}>★</span> {b}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <button style={{ flex: 1, padding: '14px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Apply Now →</button>
+            <button style={{ padding: '14px 24px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Save Job</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"JobBoard": `import { useState } from 'react';
+export default function JobBoard({ accentColor = 'var(--primary)', title = 'Open Positions' }) {
+  const jobs = [
+    { title: 'Senior React Engineer', company: 'Stripe', location: 'Remote', salary: '$160k–$200k', type: 'Full-time', dept: 'Engineering' },
+    { title: 'Product Designer', company: 'Figma', location: 'San Francisco', salary: '$130k–$170k', type: 'Full-time', dept: 'Design' },
+    { title: 'Growth Marketing Manager', company: 'Linear', location: 'New York', salary: '$110k–$140k', type: 'Full-time', dept: 'Marketing' },
+    { title: 'Data Scientist', company: 'Vercel', location: 'Remote', salary: '$140k–$180k', type: 'Full-time', dept: 'Engineering' },
+    { title: 'Customer Success Lead', company: 'Notion', location: 'Austin', salary: '$90k–$120k', type: 'Full-time', dept: 'Operations' },
+  ];
+  const [search, setSearch] = useState('');
+  const [dept, setDept] = useState('All');
+  const depts = ['All', 'Engineering', 'Design', 'Marketing', 'Operations'];
+  const filtered = jobs.filter(j => (dept === 'All' || j.dept === dept) && (j.title + j.company).toLowerCase().includes(search.toLowerCase()));
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto' }}>
+        <h2 style={{ color: 'var(--fg)', fontSize: 36, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>{title}</h2>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 40 }}>Join our world-class team and build products people love</p>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs..." style={{ flex: 1, minWidth: 200, padding: '10px 16px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card)', color: 'var(--fg)', fontSize: 15, outline: 'none' }} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            {depts.map(d => <button key={d} onClick={() => setDept(d)} style={{ padding: '8px 16px', border: '1px solid var(--border)', borderRadius: 20, background: d === dept ? accentColor : 'var(--card)', color: d === dept ? 'var(--primary-fg)' : 'var(--fg)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{d}</button>)}
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {filtered.map((job, i) => (
+            <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <div style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 17, marginBottom: 4 }}>{job.title}</div>
+                <div style={{ color: 'var(--muted)', fontSize: 14 }}>{job.company} · {job.location} · {job.salary}</div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ background: accentColor + '22', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{job.type}</span>
+                <button style={{ padding: '8px 20px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Apply</button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginTop: 32, fontSize: 15 }}>Don't see a fit? <a href="#" style={{ color: accentColor, fontWeight: 600, textDecoration: 'none' }}>Send us your resume anyway →</a></p>
+      </div>
+    </section>
+  );
+}`,
+
+"EventCard": `import { useState, useEffect } from 'react';
+export default function EventCard({ accentColor = 'var(--primary)', event = { title: 'Future of AI Summit 2026', description: 'The premier conference for AI practitioners, founders, and researchers. 3 days of keynotes, workshops, and networking with 2,000+ attendees.', date: '2026-09-15T09:00:00', endDate: '2026-09-17T18:00:00', location: 'Moscone Center, San Francisco, CA', price: 299, originalPrice: 499, image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop', tags: ['AI', 'Technology', 'Networking'] } }) {
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const tick = () => {
+      const diff = new Date(event.date).getTime() - Date.now();
+      if (diff <= 0) return;
+      setCountdown({ days: Math.floor(diff / 86400000), hours: Math.floor((diff % 86400000) / 3600000), minutes: Math.floor((diff % 3600000) / 60000), seconds: Math.floor((diff % 60000) / 1000) });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [event.date]);
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden' }}>
+        <img src={event.image} alt={event.title} style={{ width: '100%', height: 280, objectFit: 'cover' }} />
+        <div style={{ padding: 40 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            {event.tags.map(t => <span key={t} style={{ background: accentColor + '22', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
+          </div>
+          <h2 style={{ color: 'var(--fg)', fontSize: 30, fontWeight: 800, marginBottom: 16 }}>{event.title}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.8, marginBottom: 28 }}>{event.description}</p>
+          <div style={{ display: 'flex', gap: 24, marginBottom: 28, flexWrap: 'wrap' }}>
+            {[{ icon: '📅', text: new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }, { icon: '📍', text: event.location }, { icon: '🎟', text: \`\${event.price} — Save \${event.originalPrice - event.price}\` }].map(d => (
+              <div key={d.icon} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>{d.icon}</span>
+                <span style={{ color: 'var(--fg)', fontSize: 14 }}>{d.text}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'var(--bg)', borderRadius: 12, padding: '20px 24px', marginBottom: 28 }}>
+            <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12, fontWeight: 600 }}>EVENT STARTS IN</p>
+            <div style={{ display: 'flex', gap: 20 }}>
+              {Object.entries(countdown).map(([unit, val]) => (
+                <div key={unit} style={{ textAlign: 'center' }}>
+                  <div style={{ color: accentColor, fontSize: 32, fontWeight: 800, lineHeight: 1 }}>{String(val).padStart(2, '0')}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 12, textTransform: 'uppercase', marginTop: 4 }}>{unit}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <button style={{ flex: 1, padding: '14px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>Get Tickets — \${event.price}</button>
+            <button style={{ padding: '14px 20px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, cursor: 'pointer' }}>♡ Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"CourseCard": `export default function CourseCard({ accentColor = 'var(--primary)', courses = [{ title: 'Complete React & Next.js Bootcamp', instructor: 'Sarah Chen', instructorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b1ea?w=100&h=100&fit=crop', rating: 4.9, students: 18420, price: 89, originalPrice: 199, image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=220&fit=crop', badge: 'Bestseller', category: 'Development', duration: '42 hours', lessons: 187 }, { title: 'UI/UX Design Masterclass 2026', instructor: 'Marcus Rivera', instructorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', rating: 4.8, students: 9810, price: 79, originalPrice: 159, image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=220&fit=crop', badge: 'Hot', category: 'Design', duration: '28 hours', lessons: 124 }, { title: 'Python for Data Science & ML', instructor: 'Aisha Patel', instructorAvatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop', rating: 4.7, students: 23100, price: 94, originalPrice: 189, image: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=400&h=220&fit=crop', badge: 'New', category: 'Data Science', duration: '56 hours', lessons: 220 }] }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <h2 style={{ color: 'var(--fg)', fontSize: 36, fontWeight: 800, marginBottom: 40, textAlign: 'center' }}>Featured Courses</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 28, maxWidth: 1100, margin: '0 auto' }}>
+        {courses.map((c, i) => (
+          <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ position: 'relative' }}>
+              <img src={c.image} alt={c.title} style={{ width: '100%', height: 180, objectFit: 'cover' }} />
+              <span style={{ position: 'absolute', top: 12, left: 12, background: c.badge === 'Bestseller' ? '#f59e0b' : c.badge === 'Hot' ? '#ef4444' : accentColor, color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{c.badge}</span>
+            </div>
+            <div style={{ padding: 20 }}>
+              <span style={{ background: accentColor + '22', color: accentColor, padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{c.category}</span>
+              <h3 style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 17, margin: '10px 0 8px', lineHeight: 1.4 }}>{c.title}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <img src={c.instructorAvatar} alt={c.instructor} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+                <span style={{ color: 'var(--muted)', fontSize: 13 }}>{c.instructor}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ color: '#f59e0b', fontSize: 16 }}>{'★'.repeat(5)}</span>
+                <span style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 14 }}>{c.rating}</span>
+                <span style={{ color: 'var(--muted)', fontSize: 13 }}>({c.students.toLocaleString()} students)</span>
+              </div>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 16 }}>{c.duration} · {c.lessons} lessons</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ color: accentColor, fontSize: 22, fontWeight: 800 }}>\${c.price}</span>
+                  <span style={{ color: 'var(--muted)', fontSize: 15, textDecoration: 'line-through', marginLeft: 8 }}>\${c.originalPrice}</span>
+                </div>
+                <button style={{ padding: '8px 20px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Enroll</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}`,
+
+"ProfileCard": `export default function ProfileCard({ accentColor = 'var(--primary)', profile = { name: 'Dr. Elena Martinez', title: 'Chief Design Officer', company: 'Vercel', bio: 'Building the future of web tooling. 15 years in product design. Speaker at Config, Design+Code, and Awwwards. Previously at Airbnb and Apple.', avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop', coverImage: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&h=200&fit=crop', stats: [{ label: 'Projects', value: '142' }, { label: 'Followers', value: '28.4K' }, { label: 'Following', value: '312' }], socials: [{ platform: 'Twitter', icon: '𝕏', href: '#' }, { platform: 'LinkedIn', icon: 'in', href: '#' }, { platform: 'GitHub', icon: '⌥', href: '#' }, { platform: 'Dribbble', icon: '◉', href: '#' }], skills: ['Product Design', 'Figma', 'React', 'Design Systems', 'User Research'] } }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden', maxWidth: 500, width: '100%' }}>
+        <div style={{ position: 'relative', height: 140, background: \`url(\${profile.coverImage}) center/cover\` }}>
+          <img src={profile.avatar} alt={profile.name} style={{ position: 'absolute', bottom: -50, left: 32, width: 100, height: 100, borderRadius: '50%', border: '4px solid var(--card)', objectFit: 'cover' }} />
+        </div>
+        <div style={{ padding: '60px 32px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+            <div>
+              <h2 style={{ color: 'var(--fg)', fontSize: 22, fontWeight: 800 }}>{profile.name}</h2>
+              <p style={{ color: 'var(--muted)', fontSize: 14 }}>{profile.title} at {profile.company}</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {profile.socials.map(s => (
+                <a key={s.platform} href={s.href} style={{ width: 36, height: 36, border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg)', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>{s.icon}</a>
+              ))}
+            </div>
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>{profile.bio}</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
+            {profile.skills.map(skill => <span key={skill} style={{ background: accentColor + '18', color: accentColor, padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{skill}</span>)}
+          </div>
+          <div style={{ display: 'flex', gap: 0, background: 'var(--bg)', borderRadius: 12, padding: '16px 0', marginBottom: 28 }}>
+            {profile.stats.map((s, i) => (
+              <div key={s.label} style={{ flex: 1, textAlign: 'center', borderRight: i < profile.stats.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ color: 'var(--fg)', fontSize: 22, fontWeight: 800 }}>{s.value}</div>
+                <div style={{ color: 'var(--muted)', fontSize: 12 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button style={{ flex: 1, padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>Follow</button>
+            <button style={{ flex: 1, padding: '12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Message</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"CaseStudy": `export default function CaseStudy({ accentColor = 'var(--primary)', studies = [{ client: 'Meridian Health', industry: 'Healthcare Technology', logo: '⚕', challenge: 'Meridian\'s patient scheduling system was causing 35% appointment no-shows and staff were spending 6+ hours daily on manual reminders and rescheduling.', solution: 'We redesigned the scheduling flow with intelligent SMS reminders, one-click rescheduling, and a real-time availability engine that synced across 12 clinic locations.', results: [{ metric: '68%', label: 'Reduction in no-shows' }, { metric: '4.2hrs', label: 'Daily staff time saved' }, { metric: '$1.2M', label: 'Annual revenue recovered' }, { metric: '9.4/10', label: 'Patient satisfaction' }], quote: 'The ROI was visible within the first month. Our staff finally have time to focus on patients instead of administration.', author: 'Dr. Patricia Walsh, CMO' }] }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      {studies.map((study, i) => (
+        <div key={i} style={{ maxWidth: 1000, margin: '0 auto 60px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 20, overflow: 'hidden' }}>
+          <div style={{ background: accentColor, padding: '32px 40px', display: 'flex', alignItems: 'center', gap: 20 }}>
+            <span style={{ fontSize: 40 }}>{study.logo}</span>
+            <div>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Case Study</p>
+              <h2 style={{ color: '#fff', fontSize: 26, fontWeight: 800, margin: 0 }}>{study.client}</h2>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, margin: '4px 0 0' }}>{study.industry}</p>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
+            {[{ heading: '01 — Challenge', text: study.challenge, color: 'var(--bg)' }, { heading: '02 — Solution', text: study.solution, color: 'var(--card)' }, { heading: '03 — Outcome', text: 'Our tailored approach delivered measurable results within 30 days of launch, exceeding client expectations across all KPIs.', color: 'var(--bg)' }].map((col, ci) => (
+              <div key={ci} style={{ padding: '32px', background: col.color, borderRight: ci < 2 ? '1px solid var(--border)' : 'none' }}>
+                <h3 style={{ color: accentColor, fontSize: 14, fontWeight: 700, marginBottom: 12, letterSpacing: 0.5 }}>{col.heading}</h3>
+                <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.8 }}>{col.text}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '32px 40px', borderTop: '1px solid var(--border)', background: 'var(--card)' }}>
+            <h3 style={{ color: 'var(--fg)', fontWeight: 700, marginBottom: 24, fontSize: 18 }}>Results at a Glance</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 32 }}>
+              {study.results.map((r, ri) => (
+                <div key={ri} style={{ background: 'var(--bg)', borderRadius: 12, padding: '20px', textAlign: 'center' }}>
+                  <div style={{ color: accentColor, fontSize: 32, fontWeight: 800 }}>{r.metric}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 4 }}>{r.label}</div>
+                </div>
+              ))}
+            </div>
+            <blockquote style={{ borderLeft: \`4px solid \${accentColor}\`, paddingLeft: 20, margin: 0 }}>
+              <p style={{ color: 'var(--fg)', fontSize: 16, fontStyle: 'italic', lineHeight: 1.7, marginBottom: 8 }}>"{study.quote}"</p>
+              <cite style={{ color: 'var(--muted)', fontSize: 14, fontStyle: 'normal', fontWeight: 600 }}>— {study.author}</cite>
+            </blockquote>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}`,
+
+"PropertyListing": `import { useState } from 'react';
+export default function PropertyListing({ accentColor = 'var(--primary)', property = { address: '2847 Pacific Heights Blvd', city: 'San Francisco, CA 94115', price: 3200000, beds: 4, baths: 3.5, sqft: 2840, type: 'Single Family Home', status: 'For Sale', yearBuilt: 2019, parking: 2, description: 'Stunning Pacific Heights masterpiece with panoramic bay views. Chef\'s kitchen with Carrara marble, Miele appliances. Primary suite with spa bath. Landscaped garden and rooftop deck.', features: ['Bay Views', 'Chef\'s Kitchen', 'Rooftop Deck', 'Smart Home', 'Wine Cellar', 'Home Theater'], images: ['https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&h=500&fit=crop', 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=500&fit=crop', 'https://images.unsplash.com/photo-1564078516393-cf04bd966897?w=800&h=500&fit=crop'], agent: { name: 'Alexandra Chen', title: 'Senior Listing Agent', phone: '(415) 555-0192', image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop' } } }) {
+  const [photo, setPhoto] = useState(0);
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ position: 'relative', marginBottom: 16 }}>
+          <img src={property.images[photo]} alt={property.address} style={{ width: '100%', height: 460, objectFit: 'cover', borderRadius: 16 }} />
+          <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 8 }}>
+            {property.images.map((_, i) => <button key={i} onClick={() => setPhoto(i)} style={{ width: 10, height: 10, borderRadius: '50%', border: 'none', background: i === photo ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: 0 }} />)}
+          </div>
+          <span style={{ position: 'absolute', top: 16, right: 16, background: '#22c55e', color: '#fff', padding: '6px 16px', borderRadius: 20, fontWeight: 700, fontSize: 14 }}>{property.status}</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32 }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <h1 style={{ color: 'var(--fg)', fontSize: 26, fontWeight: 800, marginBottom: 4 }}>{property.address}</h1>
+                <p style={{ color: 'var(--muted)', fontSize: 16 }}>{property.city}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ color: accentColor, fontSize: 30, fontWeight: 800 }}>\${property.price.toLocaleString()}</div>
+                <div style={{ color: 'var(--muted)', fontSize: 14 }}>\${Math.round(property.price / property.sqft).toLocaleString()}/sqft</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 20, padding: '20px 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', marginBottom: 24, flexWrap: 'wrap' }}>
+              {[{ icon: '🛏', value: property.beds, label: 'Beds' }, { icon: '🚿', value: property.baths, label: 'Baths' }, { icon: '📐', value: property.sqft.toLocaleString(), label: 'Sq Ft' }, { icon: '🚗', value: property.parking, label: 'Parking' }, { icon: '📅', value: property.yearBuilt, label: 'Built' }].map(s => (
+                <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ fontSize: 22 }}>{s.icon}</div>
+                  <div style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 18 }}>{s.value}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 12 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.8, marginBottom: 24 }}>{property.description}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {property.features.map(f => <span key={f} style={{ background: accentColor + '18', color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{f}</span>)}
+            </div>
+          </div>
+          <div>
+            <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 14, marginBottom: 16, alignItems: 'center' }}>
+                <img src={property.agent.image} alt={property.agent.name} style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }} />
+                <div>
+                  <div style={{ color: 'var(--fg)', fontWeight: 700 }}>{property.agent.name}</div>
+                  <div style={{ color: 'var(--muted)', fontSize: 13 }}>{property.agent.title}</div>
+                </div>
+              </div>
+              <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>📞 {property.agent.phone}</div>
+              <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 10 }}>Schedule a Tour</button>
+              <button style={{ width: '100%', padding: '12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Contact Agent</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"RestaurantMenu": `import { useState } from 'react';
+export default function RestaurantMenu({ accentColor = 'var(--primary)', title = 'Our Menu', categories = [{ name: 'Starters', items: [{ name: 'Burrata & Heirloom Tomatoes', desc: 'Creamy burrata, heirloom tomatoes, aged balsamic, basil oil, sourdough crisps', price: 18, tags: ['V', 'GF'], image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=400&h=250&fit=crop' }, { name: 'Crispy Calamari', desc: 'Lightly floured, flash-fried, preserved lemon aioli, smoked paprika', price: 16, tags: ['GF'], image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&h=250&fit=crop' }, { name: 'Charcuterie Board', desc: 'Rotating selection of cured meats, artisan cheeses, house pickles, honeycomb', price: 28, tags: ['GF'], image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=250&fit=crop' }] }, { name: 'Mains', items: [{ name: 'Pan-Seared Branzino', desc: 'Mediterranean sea bass, saffron risotto, roasted cherry tomatoes, caper butter', price: 38, tags: ['GF'], image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=250&fit=crop' }, { name: 'Wagyu Short Rib', desc: '72-hour braised, truffle polenta, roasted bone marrow, gremolata', price: 52, tags: ['Signature'], image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=250&fit=crop' }] }, { name: 'Desserts', items: [{ name: 'Valrhona Chocolate Fondant', desc: 'Warm dark chocolate center, vanilla bean gelato, cocoa tuile', price: 14, tags: ['V'], image: 'https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?w=400&h=250&fit=crop' }] }] }) {
+  const [active, setActive] = useState(0);
+  const tagColors = { V: '#22c55e', GF: '#3b82f6', Spicy: '#ef4444', Signature: accentColor };
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <h2 style={{ color: 'var(--fg)', fontSize: 40, fontWeight: 800, textAlign: 'center', marginBottom: 8 }}>{title}</h2>
+        <p style={{ color: 'var(--muted)', textAlign: 'center', marginBottom: 40 }}>Seasonal ingredients. Crafted with care.</p>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {categories.map((cat, i) => (
+            <button key={cat.name} onClick={() => setActive(i)} style={{ padding: '10px 28px', border: \`2px solid \${i === active ? accentColor : 'var(--border)'}\`, borderRadius: 30, background: i === active ? accentColor : 'var(--bg)', color: i === active ? 'var(--primary-fg)' : 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>{cat.name}</button>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 28 }}>
+          {categories[active].items.map((item, i) => (
+            <div key={i} style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+              <img src={item.image} alt={item.name} style={{ width: '100%', height: 180, objectFit: 'cover' }} />
+              <div style={{ padding: 20 }}>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                  {item.tags.map(t => <span key={t} style={{ background: (tagColors[t] || accentColor) + '22', color: tagColors[t] || accentColor, padding: '2px 8px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{t}</span>)}
+                </div>
+                <h3 style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 17, marginBottom: 8 }}>{item.name}</h3>
+                <p style={{ color: 'var(--muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>{item.desc}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: accentColor, fontSize: 22, fontWeight: 800 }}>\${item.price}</span>
+                  <button style={{ padding: '8px 18px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>Add to Order</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"StepProcess": `export default function StepProcess({ accentColor = 'var(--primary)', title = 'How It Works', subtitle = 'Get started in minutes — no technical skills required', steps = [{ icon: '📝', title: 'Describe Your Vision', desc: 'Tell us what you need in plain English. Our AI understands context, industry, and goals to craft the perfect brief.' }, { icon: '⚡', title: 'AI Builds Instantly', desc: 'Watch your website come to life in under 60 seconds. Full responsive design, real content, professional photography.' }, { icon: '🎨', title: 'Customize & Refine', desc: 'Tweak colors, copy, layout with simple prompts. Our smart editor understands "make it more bold" or "add a pricing section".' }, { icon: '🚀', title: 'Publish Worldwide', desc: 'One click to go live on a global CDN. Custom domain, SSL, analytics — everything included at no extra cost.' }] }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <h2 style={{ color: 'var(--fg)', fontSize: 40, fontWeight: 800, marginBottom: 12 }}>{title}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: 18, maxWidth: 520, margin: '0 auto' }}>{subtitle}</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 36, left: '12.5%', right: '12.5%', height: 2, background: 'var(--border)', zIndex: 0 }} />
+          {steps.map((step, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: '0 20px', position: 'relative', zIndex: 1 }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--card)', border: \`3px solid \${accentColor}\`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>{step.icon}</div>
+              <div style={{ background: accentColor, color: 'var(--primary-fg)', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, margin: '-10px auto 16px', position: 'relative' }}>{i + 1}</div>
+              <h3 style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 17, marginBottom: 10 }}>{step.title}</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.7 }}>{step.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 56 }}>
+          <button style={{ padding: '16px 44px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 50, fontSize: 17, fontWeight: 700, cursor: 'pointer' }}>Start Building Free →</button>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"PricingComparison": `export default function PricingComparison({ accentColor = 'var(--primary)', title = 'Compare Plans', features = [{ name: 'Projects', free: '1', pro: '10', enterprise: 'Unlimited' }, { name: 'AI Builds per month', free: '5', pro: '100', enterprise: 'Unlimited' }, { name: 'Custom domain', free: false, pro: true, enterprise: true }, { name: 'Remove branding', free: false, pro: true, enterprise: true }, { name: 'Team members', free: '1', pro: '5', enterprise: 'Unlimited' }, { name: 'Analytics', free: 'Basic', pro: 'Advanced', enterprise: 'Enterprise' }, { name: 'Priority support', free: false, pro: true, enterprise: true }, { name: 'API access', free: false, pro: false, enterprise: true }, { name: 'White-label', free: false, pro: false, enterprise: true }, { name: 'SLA', free: false, pro: '99.9%', enterprise: '99.99%' }], plans = [{ name: 'Free', price: '$0', period: 'forever', popular: false }, { name: 'Pro', price: '$29', period: '/month', popular: true }, { name: 'Enterprise', price: 'Custom', period: '', popular: false }] }) {
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <h2 style={{ color: 'var(--fg)', fontSize: 40, fontWeight: 800, textAlign: 'center', marginBottom: 48 }}>{title}</h2>
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', background: 'var(--bg)' }}>
+            <div style={{ padding: '20px 24px' }} />
+            {plans.map(plan => (
+              <div key={plan.name} style={{ padding: '24px 16px', textAlign: 'center', background: plan.popular ? accentColor + '12' : 'transparent', borderBottom: plan.popular ? \`3px solid \${accentColor}\` : '3px solid transparent' }}>
+                {plan.popular && <div style={{ background: accentColor, color: 'var(--primary-fg)', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, marginBottom: 8, display: 'inline-block' }}>POPULAR</div>}
+                <div style={{ color: 'var(--fg)', fontWeight: 800, fontSize: 17 }}>{plan.name}</div>
+                <div style={{ color: plan.popular ? accentColor : 'var(--fg)', fontWeight: 800, fontSize: 24 }}>{plan.price}</div>
+                <div style={{ color: 'var(--muted)', fontSize: 12 }}>{plan.period}</div>
+              </div>
+            ))}
+          </div>
+          {features.map((feat, i) => (
+            <div key={feat.name} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderTop: '1px solid var(--border)', background: i % 2 === 0 ? 'var(--card)' : 'var(--bg)' }}>
+              <div style={{ padding: '14px 24px', color: 'var(--fg)', fontSize: 14 }}>{feat.name}</div>
+              {[feat.free, feat.pro, feat.enterprise].map((val, vi) => (
+                <div key={vi} style={{ padding: '14px 16px', textAlign: 'center', fontSize: 14, color: val === true ? '#22c55e' : val === false ? 'var(--border)' : 'var(--muted)', fontWeight: typeof val === 'string' ? 600 : 400 }}>
+                  {val === true ? '✓' : val === false ? '✕' : val}
+                </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderTop: '1px solid var(--border)', padding: '20px 0', background: 'var(--card)' }}>
+            <div />
+            {plans.map(plan => (
+              <div key={plan.name} style={{ padding: '0 16px', textAlign: 'center' }}>
+                <button style={{ width: '100%', padding: '10px', background: plan.popular ? accentColor : 'var(--bg)', color: plan.popular ? 'var(--primary-fg)' : 'var(--fg)', border: \`1px solid \${plan.popular ? accentColor : 'var(--border)'}\`, borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                  {plan.name === 'Enterprise' ? 'Contact Us' : 'Get Started'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}`,
+
+"VideoEmbed": `import { useState } from 'react';
+export default function VideoEmbed({ accentColor = 'var(--primary)', title = 'See It In Action', subtitle = 'Watch how teams build entire websites in under 60 seconds', videos = [{ videoId: 'dQw4w9WgXcQ', title: 'Build a Coffee Shop Website in 45 Seconds', duration: '0:45', thumbnail: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=450&fit=crop', views: '142K views' }, { videoId: 'dQw4w9WgXcQ', title: 'From Idea to Live Website — Full Walkthrough', duration: '3:24', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop', views: '89K views' }] }) {
+  const [playing, setPlaying] = useState(null);
+  const [active, setActive] = useState(0);
+  return (
+    <section style={{ background: 'var(--bg)', padding: '80px 40px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <h2 style={{ color: 'var(--fg)', fontSize: 40, fontWeight: 800, marginBottom: 12 }}>{title}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: 18 }}>{subtitle}</p>
+        </div>
+        <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', marginBottom: 20, cursor: 'pointer' }} onClick={() => setPlaying(videos[active].videoId)}>
+          {playing === videos[active].videoId ? (
+            <iframe src={\`https://www.youtube.com/embed/\${videos[active].videoId}?autoplay=1\`} style={{ width: '100%', height: 480, border: 'none' }} allow="autoplay" />
+          ) : (
+            <div style={{ position: 'relative' }}>
+              <img src={videos[active].thumbnail} alt={videos[active].title} style={{ width: '100%', height: 480, objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, paddingLeft: 4 }}>▶</div>
+              </div>
+              <div style={{ position: 'absolute', bottom: 20, right: 20, background: 'rgba(0,0,0,0.75)', color: '#fff', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 600 }}>{videos[active].duration}</div>
+            </div>
+          )}
+        </div>
+        <p style={{ color: 'var(--fg)', fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{videos[active].title}</p>
+        <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>{videos[active].views}</p>
+        {videos.length > 1 && (
+          <div style={{ display: 'flex', gap: 16 }}>
+            {videos.map((v, i) => (
+              <div key={i} onClick={() => { setActive(i); setPlaying(null); }} style={{ flex: 1, cursor: 'pointer', borderRadius: 12, overflow: 'hidden', border: \`2px solid \${i === active ? accentColor : 'var(--border)'}\` }}>
+                <img src={v.thumbnail} alt={v.title} style={{ width: '100%', height: 80, objectFit: 'cover' }} />
+                <div style={{ padding: '10px 12px', background: 'var(--card)' }}>
+                  <p style={{ color: 'var(--fg)', fontSize: 13, fontWeight: 600, lineHeight: 1.4, margin: 0 }}>{v.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}`,
+
 };
 
 export const SECTION_COMPONENT_LIST = `
@@ -4418,6 +5124,35 @@ Import using: import Navbar from '/components/sections/Navbar';
   → Partner/sponsor logos with tier badges (gold/silver/bronze), grayscale-to-color hover.
 - StatsCounter: <StatsCounter title="By The Numbers" stats={[{value:"10000",label:"Happy Customers",icon:"😊",suffix:"+"},{value:"4.9",label:"Rating",icon:"⭐",suffix:"★"}]} background="dark" accentColor="var(--primary)" />
   → Scroll-triggered count-up animation. background: "dark" | "light" | "accent".
+
+## Auth & Forms:
+- LoginForm: <LoginForm accentColor="var(--primary)" /> → Email/password login with Google+GitHub social buttons, remember me, forgot password.
+- RegisterForm: <RegisterForm accentColor="var(--primary)" /> → Sign-up form with name, email, password, confirm password, terms checkbox.
+- CheckoutForm: <CheckoutForm accentColor="var(--primary)" items={[{name:"Item",price:29,qty:1}]} /> → 3-step checkout wizard: cart → shipping → payment.
+
+## Product & E-commerce:
+- ProductDetail: <ProductDetail accentColor="var(--primary)" product={{name:"Product",price:89,originalPrice:120,rating:4.8,reviews:142,description:"...",sizes:["S","M","L"],colors:["#000"],images:["url1","url2","url3"]}} /> → Full product page: image gallery, variants, qty selector, Add to Cart, tabbed description.
+- CourseCard: <CourseCard accentColor="var(--primary)" courses={[{title:"Course",instructor:"Name",instructorAvatar:"url",rating:4.9,students:1000,price:89,originalPrice:199,image:"url",badge:"Bestseller",category:"Dev",duration:"42 hours",lessons:180}]} /> → Course cards with rating, instructor, price, Enroll button.
+- PricingComparison: <PricingComparison accentColor="var(--primary)" title="Compare Plans" features={[{name:"Feature",free:"1",pro:"10",enterprise:"Unlimited"}]} plans={[{name:"Free",price:"$0",period:"forever",popular:false},{name:"Pro",price:"$29",period:"/mo",popular:true},{name:"Enterprise",price:"Custom",period:"",popular:false}]} /> → Full feature matrix comparison table.
+
+## Jobs & Careers:
+- JobListing: <JobListing accentColor="var(--primary)" job={{title:"Senior Engineer",company:"Acme",location:"Remote",salary:"$140k–$180k",type:"Full-time",posted:"2 days ago",requirements:["5yrs experience"],description:"...",benefits:["Health insurance"]}} /> → Full job listing page with requirements, benefits, Apply Now button.
+- JobBoard: <JobBoard accentColor="var(--primary)" title="Open Positions" /> → Searchable/filterable job listings board.
+
+## Events & Media:
+- EventCard: <EventCard accentColor="var(--primary)" event={{title:"Summit 2026",description:"...",date:"2026-09-15T09:00:00",location:"SF",price:299,originalPrice:499,image:"url",tags:["Tech"]}} /> → Full event card with live countdown timer, date, location, Get Tickets CTA.
+- VideoEmbed: <VideoEmbed accentColor="var(--primary)" title="See It In Action" subtitle="..." videos={[{videoId:"youtubeId",title:"...",duration:"3:24",thumbnail:"url",views:"10K views"}]} /> → Video player with thumbnail+play overlay, playlist below.
+
+## People & Teams:
+- ProfileCard: <ProfileCard accentColor="var(--primary)" profile={{name:"Jane Smith",title:"CEO",company:"Acme",bio:"...",avatar:"url",coverImage:"url",stats:[{label:"Projects",value:"42"}],socials:[{platform:"Twitter",icon:"𝕏",href:"#"}],skills:["React","Design"]}} /> → Full social profile card with cover, avatar, stats, follow/message buttons.
+
+## Properties & Restaurants:
+- PropertyListing: <PropertyListing accentColor="var(--primary)" property={{address:"123 Main St",city:"San Francisco, CA",price:3200000,beds:4,baths:3.5,sqft:2840,type:"Single Family",status:"For Sale",yearBuilt:2019,parking:2,description:"...",features:["Views"],images:["url1","url2"],agent:{name:"Agent",title:"Listing Agent",phone:"(555) 555-0100",image:"url"}}} /> → Real estate listing with photo carousel, specs, agent card, Schedule Tour button.
+- RestaurantMenu: <RestaurantMenu accentColor="var(--primary)" title="Our Menu" categories={[{name:"Starters",items:[{name:"Dish",desc:"...",price:18,tags:["V","GF"],image:"url"}]}]} /> → Tabbed menu with images, dietary tags (V/GF/Spicy), Add to Order button.
+
+## Process & Case Studies:
+- StepProcess: <StepProcess accentColor="var(--primary)" title="How It Works" subtitle="..." steps={[{icon:"📝",title:"Step 1",desc:"..."}]} /> → Numbered horizontal process steps with connector lines, icons, CTA button.
+- CaseStudy: <CaseStudy accentColor="var(--primary)" studies={[{client:"Acme Corp",industry:"SaaS",logo:"🏢",challenge:"...",solution:"...",results:[{metric:"3x",label:"Growth"}],quote:"Great results.",author:"CEO, Acme"}]} /> → Challenge/Solution/Results 3-column layout with metrics and testimonial quote.
 
 RULES:
 - The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
