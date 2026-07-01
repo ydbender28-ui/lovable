@@ -1018,17 +1018,19 @@ type Stat = { value: string; label: string };
 function AnimatedStat({ value, dark }: { value: string; dark?: boolean }) {
   const [displayed, setDisplayed] = React.useState(0);
   const [started, setStarted] = React.useState(false);
+  const decimals = value.includes('.') ? 1 : 0;
   React.useEffect(() => {
     if (!started) return;
-    const target = parseInt(value.replace(/[^0-9]/g, '')) || 0;
+    const target = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
     if (target === 0) return;
     const duration = 1500; const steps = 40; let step = 0;
-    const timer = setInterval(() => { step++; setDisplayed(Math.round((step/steps)*target)); if(step>=steps) clearInterval(timer); }, duration/steps);
+    const timer = setInterval(() => { step++; setDisplayed((step/steps)*target); if(step>=steps) { setDisplayed(target); clearInterval(timer); } }, duration/steps);
     return () => clearInterval(timer);
   }, [started, value]);
-  const suffix = value.replace(/[0-9,]/g, '');
-  const target = parseInt(value.replace(/[^0-9]/g, '')) || 0;
-  return <span style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, color: dark ? '#fff' : 'var(--accent,#c2410c)', letterSpacing:'-0.02em' }} ref={(el) => { if(el && !started) { const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setStarted(true); obs.disconnect(); } }); obs.observe(el); } }}>{target > 0 ? displayed.toLocaleString() + suffix : value}</span>;
+  const suffix = value.replace(/[0-9.,]/g, '');
+  const target = parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+  const shown = decimals ? displayed.toFixed(1) : Math.round(displayed).toLocaleString();
+  return <span style={{ fontSize:'clamp(32px,5vw,56px)', fontWeight:800, color: dark ? '#fff' : 'var(--accent,#c2410c)', letterSpacing:'-0.02em' }} ref={(el) => { if(el && !started) { const obs = new IntersectionObserver(([e]) => { if(e.isIntersecting) { setStarted(true); obs.disconnect(); } }); obs.observe(el); } }}>{target > 0 ? shown + suffix : value}</span>;
 }
 export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }) {
   const safeItems = (items || []).filter(Boolean);
