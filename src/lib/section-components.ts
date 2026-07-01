@@ -2505,7 +2505,7 @@ export default function VideoEmbed({ url, thumbnail, title, aspectRatio, accentC
             </div>
           </div>
           {title && <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#fff', fontWeight: 600, fontSize: 15, textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>{title}</div>}
-        </div>
+        </button>
       )}
     </div>
   );
@@ -2724,14 +2724,15 @@ interface Page { path: string; label: string; component: React.ReactNode; }
 interface RouterProps { pages: Page[]; defaultPath?: string; }
 
 export default function Router({ pages, defaultPath }: RouterProps) {
+  const safePages = (pages || []).filter(Boolean);
   const [current, setCurrent] = React.useState(() => {
-    const hash = window.location.hash.replace('#', '') || defaultPath || pages[0]?.path || '/';
+    const hash = window.location.hash.replace('#', '') || defaultPath || safePages[0]?.path || '/';
     return hash;
   });
 
   React.useEffect(() => {
     const handler = () => {
-      const hash = window.location.hash.replace('#', '') || defaultPath || pages[0]?.path || '/';
+      const hash = window.location.hash.replace('#', '') || defaultPath || safePages[0]?.path || '/';
       setCurrent(hash);
       window.scrollTo(0, 0);
     };
@@ -2739,7 +2740,7 @@ export default function Router({ pages, defaultPath }: RouterProps) {
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
-  const activePage = pages.find(p => p.path === current) || pages[0];
+  const activePage = safePages.find(p => p.path === current) || safePages[0];
   return <>{activePage?.component}</>;
 }
 
@@ -2788,11 +2789,12 @@ const DEFAULT_STATS: StatItem[] = [
 ];
 export default function DashboardStats({ items = DEFAULT_STATS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeItems = items || DEFAULT_STATS;
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, padding: '24px 0' }}>
-      {items.map((item, i) => (
+      {safeItems.map((item, i) => (
         <div key={i} style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'transform 0.2s, box-shadow 0.2s', cursor: 'default', transform: mounted ? 'translateY(0)' : 'translateY(12px)', opacity: mounted ? 1 : 0, transitionDelay: i * 80 + 'ms' }}
           onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; }}
           onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; }}>
@@ -2831,12 +2833,14 @@ const DEFAULT_ROWS = [
 ];
 export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS, onEdit, onDelete, title = 'Data Table', accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeColumns = columns || DEFAULT_COLS;
+  const safeRows = rows || DEFAULT_ROWS;
   const [sortKey, setSortKey] = useState('');
   const [sortDir, setSortDir] = useState<'asc'|'desc'>('asc');
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const PAGE_SIZE = 10;
-  const filtered = useMemo(() => rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(search.toLowerCase()))), [rows, search]);
+  const filtered = useMemo(() => safeRows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(search.toLowerCase()))), [safeRows, search]);
   const sorted = useMemo(() => { if (!sortKey) return filtered; return [...filtered].sort((a, b) => { const v = String(a[sortKey]).localeCompare(String(b[sortKey])); return sortDir === 'asc' ? v : -v; }); }, [filtered, sortKey, sortDir]);
   const paged = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
@@ -2850,7 +2854,7 @@ export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS,
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead><tr style={{ background: 'var(--bg, #f9fafb)' }}>
-            {columns.map(col => <th key={col.key} onClick={() => col.sortable && handleSort(col.key)} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: col.sortable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }}>{col.label}{col.sortable && sortKey === col.key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</th>)}
+            {safeColumns.map(col => <th key={col.key} onClick={() => col.sortable && handleSort(col.key)} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: col.sortable ? 'pointer' : 'default', userSelect: 'none', whiteSpace: 'nowrap' }}>{col.label}{col.sortable && sortKey === col.key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}</th>)}
             {(onEdit || onDelete) && <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: 'var(--muted, #666)', fontSize: 12, textTransform: 'uppercase' }}>Actions</th>}
           </tr></thead>
           <tbody>
@@ -2858,11 +2862,11 @@ export default function DataTable({ columns = DEFAULT_COLS, rows = DEFAULT_ROWS,
               <tr key={i} style={{ borderTop: '1px solid var(--border, #e5e7eb)' }}
                 onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f9fafb)'}
                 onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                {columns.map(col => <td key={col.key} style={{ padding: '12px 16px', color: 'var(--fg, #111)' }}>{col.key === 'status' ? <span style={{ padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700, background: row[col.key] === 'Active' ? '#dcfce7' : '#f3f4f6', color: row[col.key] === 'Active' ? '#16a34a' : '#888' }}>{row[col.key]}</span> : String(row[col.key] ?? '')}</td>)}
+                {safeColumns.map(col => <td key={col.key} style={{ padding: '12px 16px', color: 'var(--fg, #111)' }}>{col.key === 'status' ? <span style={{ padding: '3px 10px', borderRadius: 50, fontSize: 11, fontWeight: 700, background: row[col.key] === 'Active' ? '#dcfce7' : '#f3f4f6', color: row[col.key] === 'Active' ? '#16a34a' : '#888' }}>{row[col.key]}</span> : String(row[col.key] ?? '')}</td>)}
                 {(onEdit || onDelete) && <td style={{ padding: '12px 16px', textAlign: 'right' }}><div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>{onEdit && <button onClick={() => onEdit(row)} style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid ' + accent, background: 'transparent', color: accent, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Edit</button>}{onDelete && <button onClick={() => onDelete(row)} style={{ padding: '5px 12px', borderRadius: 6, border: '1px solid #fca5a5', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>}</div></td>}
               </tr>
             ))}
-            {paged.length === 0 && <tr><td colSpan={columns.length + 1} style={{ padding: 32, textAlign: 'center', color: 'var(--muted, #888)' }}>No results found.</td></tr>}
+            {paged.length === 0 && <tr><td colSpan={safeColumns.length + 1} style={{ padding: 32, textAlign: 'center', color: 'var(--muted, #888)' }}>No results found.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -2891,12 +2895,13 @@ const DEFAULT_FEED: FeedItem[] = [
 function initials(name: string) { return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0,2); }
 export default function ActivityFeed({ title = 'Recent Activity', items = DEFAULT_FEED, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeItems = items || DEFAULT_FEED;
   const [visible, setVisible] = useState(5);
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <h3 style={{ margin: '0 0 24px', fontSize: 17, fontWeight: 700 }}>{title}</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {items.slice(0, visible).map((item, i) => (
+        {safeItems.slice(0, visible).map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: 14, paddingBottom: i < visible - 1 ? 20 : 0, marginBottom: i < visible - 1 ? 20 : 0, borderBottom: i < visible - 1 ? '1px solid var(--border, #f0f0f0)' : 'none' }}>
             <div style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 10, background: (item.color || accent) + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{item.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -2913,7 +2918,7 @@ export default function ActivityFeed({ title = 'Recent Activity', items = DEFAUL
           </div>
         ))}
       </div>
-      {visible < items.length && <button onClick={() => setVisible(v => v + 5)} style={{ marginTop: 20, width: '100%', padding: '10px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: accent }}>Load more</button>}
+      {visible < safeItems.length && <button onClick={() => setVisible(v => v + 5)} style={{ marginTop: 20, width: '100%', padding: '10px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: accent }}>Load more</button>}
     </div>
   );
 }`,
@@ -2924,19 +2929,20 @@ interface Props { title?: string; data?: DataPoint[]; accentColor?: string; curr
 const DEFAULT_CHART: DataPoint[] = [{ month:'Jan', value:42000 },{ month:'Feb', value:38000 },{ month:'Mar', value:55000 },{ month:'Apr', value:61000 },{ month:'May', value:58000 },{ month:'Jun', value:74000 },{ month:'Jul', value:82000 },{ month:'Aug', value:79000 },{ month:'Sep', value:91000 },{ month:'Oct', value:88000 },{ month:'Nov', value:97000 },{ month:'Dec', value:112000 }];
 export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT_CHART, accentColor, currency = '$' }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const safeData = data || DEFAULT_CHART;
   const [mounted, setMounted] = useState(false);
   const [tooltip, setTooltip] = useState<number | null>(null);
   useEffect(() => { setTimeout(() => setMounted(true), 100); }, []);
-  const max = Math.max(...data.map(d => d.value));
+  const max = Math.max(...safeData.map(d => d.value));
   const fmt = (v: number) => v >= 1000 ? currency + (v/1000).toFixed(0) + 'k' : currency + v;
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>{title}</h3>
-        <span style={{ fontSize: 22, fontWeight: 800, color: accent }}>{fmt(data[data.length - 1]?.value ?? 0)}</span>
+        <span style={{ fontSize: 22, fontWeight: 800, color: accent }}>{fmt(safeData[safeData.length - 1]?.value ?? 0)}</span>
       </div>
       <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 6, height: 160, paddingBottom: 24 }}>
-        {data.map((d, i) => {
+        {safeData.map((d, i) => {
           const h = (d.value / max) * 136;
           return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}
@@ -2966,7 +2972,8 @@ const DEFAULT_NAV: NavItem[] = [
 ];
 export default function AdminSidebar({ brand, items = DEFAULT_NAV, onNavigate, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
-  const [activeItem, setActiveItem] = useState(() => items.findIndex(i => i.active));
+  const safeItems = items || DEFAULT_NAV;
+  const [activeItem, setActiveItem] = useState(() => safeItems.findIndex(i => i.active));
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
   const toggle = (i: number) => setCollapsed(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
   return (
@@ -2976,7 +2983,7 @@ export default function AdminSidebar({ brand, items = DEFAULT_NAV, onNavigate, a
         <div style={{ fontSize: 11, color: 'var(--muted, #999)', marginTop: 2 }}>Admin Dashboard</div>
       </div>
       <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-        {items.map((item, i) => (
+        {safeItems.map((item, i) => (
           <div key={i}>
             <div onClick={() => item.children ? toggle(i) : (setActiveItem(i), onNavigate?.(item.href || '#'))} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', marginBottom: 2, background: activeItem === i ? accent + '15' : 'transparent', color: activeItem === i ? accent : 'var(--fg, #333)', fontWeight: activeItem === i ? 700 : 500, fontSize: 13, userSelect: 'none' }}
               onMouseOver={e => { if (activeItem !== i) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f5f5f5)'; }}
@@ -3041,7 +3048,7 @@ export default function KanbanBoard({ columns = DEFAULT_KANBAN_COLS, cards = DK,
                 <span style={{ background: col.color + '22', color: col.color, fontWeight: 700, fontSize: 11, borderRadius: 50, padding: '2px 8px' }}>{cc.length}</span>
               </div>
               {cc.map(card => (
-                <div key={card.id} onClick={() => setModal(card)} style={{ background: 'var(--card, #fff)', borderRadius: 10, padding: 14, marginBottom: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', cursor: 'grab', border: '1px solid var(--border, #eee)', transition: 'box-shadow 0.2s, transform 0.2s' }}
+                <div key={card.id} onClick={() => setModal(card)} style={{ background: 'var(--card, #fff)', borderRadius: 10, padding: 14, marginBottom: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', cursor: 'pointer', border: '1px solid var(--border, #eee)', transition: 'box-shadow 0.2s, transform 0.2s' }}
                   onMouseOver={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
                   onMouseOut={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
                   <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>{card.title}</div>
@@ -3381,19 +3388,21 @@ const DEFAULT_FILES: FileItem[] = [
   { name:'team-photo.jpg', type:'image', size:'4.1 MB', date:'Jun 23', url:'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=200' },
 ];
 const FI: Record<string,string> = { image:'🖼️', pdf:'📄', csv:'📊', zip:'🗜️', default:'📁' };
-export default function FileManager({ files = DEFAULT_FILES, accentColor }: Props) {
+export default function FileManager({ files: initFiles = DEFAULT_FILES, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
+  const [files, setFiles] = useState(initFiles);
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [view, setView] = useState<'grid'|'list'>('grid');
   const [search, setSearch] = useState('');
   const filt = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const tog = (i: number) => setSel(s => { const n = new Set(s); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  const delSel = () => { const names = new Set(Array.from(sel).map(i => filt[i]?.name)); setFiles(fs => fs.filter(f => !names.has(f.name))); setSel(new Set()); };
   return (
     <div style={{ background: 'var(--card, #fff)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 16, overflow: 'hidden' }}>
       <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border, #e5e7eb)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, flex: 1 }}>Files</h3>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', fontSize: 13, outline: 'none', width: 160 }} />
-        {sel.size > 0 ? <button onClick={() => setSel(new Set())} style={{ padding: '7px 14px', borderRadius: 8, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Delete ({sel.size})</button> : null}
+        {sel.size > 0 ? <button onClick={delSel} style={{ padding: '7px 14px', borderRadius: 8, background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Delete ({sel.size})</button> : null}
         <button onClick={() => setView(v => v === 'grid' ? 'list' : 'grid')} style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 12 }}>{view === 'grid' ? 'List' : 'Grid'}</button>
         <button style={{ padding: '7px 14px', borderRadius: 8, background: accent, color: '#fff', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Upload</button>
       </div>
@@ -4234,9 +4243,8 @@ interface GoogleAnalyticsProps {
 }
 
 export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
-  if (!measurementId) return null;
-
   React.useEffect(() => {
+    if (!measurementId) return;
     const script1 = document.createElement('script');
     script1.src = \`https://www.googletagmanager.com/gtag/js?id=\${measurementId}\`;
     script1.async = true;
