@@ -168,6 +168,12 @@ GOOD for spa: ["Hot Stone Massage — 60 min", "HydraFacial™ Treatment", "Coup
 - If the user says "SaaS app for HR teams" → use HR-specific features, enterprise pricing, HR pain points in copy
 - Fill in gaps with REALISTIC guesses that fit the industry/location
 
+### BANNED PHRASES — NEVER write these (instantly signals a fake, AI-generated site):
+NEVER use: "We are committed to excellence", "Your satisfaction is our priority", "We strive to provide", "Excellence in service", "We take pride in", "We are dedicated to", "Quality is our promise", "Your success is our success", "At [Business], we understand", "Experience the difference", "Where quality meets", "Your journey starts here".
+Write specific, brand-voice copy instead.
+BAD: "We are committed to delivering excellence in every service we provide."
+GOOD: "Every cut ends with a hot towel finish. Because details are what clients remember."
+
 ## IMAGES — Use Real Photos (Critical for Professional Look)
 NEVER use placeholder.com, via.placeholder.com, source.unsplash.com, or any other broken/dead image URL.
 
@@ -327,6 +333,19 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
     - Alternate section backgrounds: white → accent-tinted → white → dark → white. Never all white.
     - Example: Hero (dark/image) → Services (white) → Stats (accent bg) → Reviews (off-white) → CTA (dark/accent bg)
     - BANNED backgrounds: plain #fff or #ffffff for more than 3 consecutive sections.
+18. EVERY build must look different from the previous one. Same business type = different color palette, different font pairing, different hero layout. Never repeat the same combination twice in a row.
+19. Hero section: pick one of these layouts each time, don't default to the same one — (a) full-bleed image with text overlay, (b) split layout text-left image-right (or image-left text-right), (c) centered text on a dark gradient background, (d) video background (HeroVideo).
+20. Section order: vary it build to build. Stats can come before OR after Features. Reviews can sit near the top (social proof up front) or near the bottom (closing argument). Be creative with order as long as it still makes sense for the user's flow through the page.
+21. NAV LINKS → SECTION IDs — BROKEN NAV IS THE #1 QUALITY FAILURE:
+The post-processor only auto-injects IDs for: ServiceCards(services), Booking(booking), Reviews(reviews), MenuGrid(menu), PricingTable(pricing), Team(team), Contact(contact), MapSection(location), FAQ(faq), Gallery(gallery), Portfolio(portfolio).
+For ALL other components used as nav targets (Features, Partners, LogoCloud, Stats, VideoSection, SocialProof, Testimonials, StepProcess, Timeline, etc.) you MUST wrap them:
+  <div id="features"><Features .../></div>  — when nav links array has "Features"
+  <div id="about"><SplitSection .../></div>  — when nav links array has "About"
+  <div id="video"><VideoSection .../></div>  — when nav links array has "Video"
+RULE: Every string in Navbar links must have a matching lowercase id somewhere on the page. No exceptions.
+WRONG: links={["Features","Pricing","Contact"]} when Features has no wrapper and there is no Contact component
+RIGHT: check each nav label — if not in the auto-inject list, add <div id="[lowercase-label]"> wrapper.
+22. NEVER end a site with Footer as the only closing element. Always place <CTA>, <Newsletter>, or a bold call-to-action section directly before Footer — the footer alone converts no one.
 7. NEVER use <input type="date"> or <input type="time"> anywhere — ugly native pickers. Use styled <select> dropdowns instead.
 8. For reservation/booking forms: build directly in App.tsx as a styled card component. Use this exact pattern for inputs:
    const inp = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1.5px solid #e5e5e5', fontSize:15, outline:'none', background:'#fff', boxSizing:'border-box' as const, fontFamily:'inherit' };
@@ -856,6 +875,14 @@ Accent: professional — #1e3a5f, #b8860b, #0f766e
 - Emails → mailto: links
 - PricingTable plans → clickable, highlight on select
 - FAQ items → expand/collapse on click
+
+### Card hover effects (MANDATORY on every build):
+- EVERY card with title/description/icon (ServiceCards items, Features items, Team cards, Blog cards, Portfolio items, ShopGrid items) MUST have hover lift applied directly on the card div:
+  onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 16px 48px rgba(0,0,0,0.12)'; }}
+  onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+  style={{ transition: 'transform 0.2s ease, box-shadow 0.2s ease', cursor: 'pointer' }}
+- Cards without hover feel static and dead. This is NOT optional.
+- Stats numbers: REAL and SPECIFIC. Not "100+ clients" but "4,800+ treatments performed". Not "5 years" but "Since 2019". Round fake-sounding numbers destroy credibility.
 
 ## MULTI-PAGE SITES
 For sites with multiple pages (e.g., a business with Home, About, Services, Contact as separate pages):
@@ -3213,7 +3240,7 @@ complete file here
     // Add alternating section backgrounds via CSS custom property --bg
     // All section components use background:'var(--bg,#fff)' so this propagates automatically
     if (!css.includes('section:nth-child')) {
-      const tintHex = accentHex ? `${accentHex}18` : '#f5f3ff';
+      const tintHex = accentHex && accentHex.startsWith('#') ? `${accentHex}18` : '#f5f3ff';
       css += `\n\n/* Bold design: alternating section backgrounds */\nsection:nth-child(4n+2) { --bg: ${tintHex}; }\nsection:nth-child(4n+3) { --bg: #f4f4f5; }\nsection:nth-child(4n+4) { --bg: #0f0f0f; color: #fff; }\nsection:nth-child(4n+4) h1, section:nth-child(4n+4) h2, section:nth-child(4n+4) h3, section:nth-child(4n+4) h4 { color: #fff; }\nsection:nth-child(4n+4) p { color: rgba(255,255,255,0.72); }`;
     }
 
