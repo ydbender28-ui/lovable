@@ -324,11 +324,11 @@ export default function Testimonials({ title, items, accentColor }: { title: str
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60, color:'var(--fg,#111)' }}>{title}</h2>
       {featuredItem && (
-        <div style={{ background:`linear-gradient(135deg,\${accent}12,\${accent}04)`, border:`1.5px solid \${accent}30`, borderRadius:24, padding: isMobile ? '32px 24px' : '48px 56px', marginBottom:40, position:'relative', overflow:'hidden' }}>
+        <div style={{ background:\`linear-gradient(135deg,\${accent}12,\${accent}04)\`, border:\`1.5px solid \${accent}30\`, borderRadius:24, padding: isMobile ? '32px 24px' : '48px 56px', marginBottom:40, position:'relative', overflow:'hidden' }}>
           <div style={{ fontSize:80, color:accent, opacity:0.15, position:'absolute', top:-10, left:24, fontFamily:'Georgia,serif', lineHeight:1 }}>"</div>
           <p style={{ fontSize: isMobile ? 20 : 28, lineHeight:1.6, color:'var(--fg,#111)', fontStyle:'italic', fontWeight:300, marginBottom:32, position:'relative' }}>"{featuredItem.quote}"</p>
           <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-            {featuredItem.image && <img src={featuredItem.image} alt={featuredItem.name} style={{ width:56, height:56, borderRadius:'50%', objectFit:'cover', border:`3px solid \${accent}40` }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />}
+            {featuredItem.image && <img src={featuredItem.image} alt={featuredItem.name} style={{ width:56, height:56, borderRadius:'50%', objectFit:'cover', border:\`3px solid \${accent}40\` }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />}
             <div>
               <p style={{ fontWeight:700, fontSize:17, color:'var(--fg,#111)', margin:0 }}>{featuredItem.name}</p>
               <p style={{ fontSize:14, color:'#888', margin:'2px 0 0' }}>{featuredItem.role}</p>
@@ -344,21 +344,21 @@ export default function Testimonials({ title, items, accentColor }: { title: str
       )}
       <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap:28 }}>
         {regularItems.map((t, i) => (
-          <div key={i} style={{ background:'var(--bg,#faf9f7)', borderRadius:20, padding:32, transition: `all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.05)', position:'relative' }}
+          <div key={i} style={{ background:'var(--bg,#faf9f7)', borderRadius:20, padding:32, transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.05)', position:'relative' }}
             onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}}
             onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
             <span style={{ fontSize:32, color:accent, opacity:0.3, fontFamily:'Georgia,serif', lineHeight:1, display:'block', marginBottom:4 }}>"</span>
             <p style={{ fontSize:15, lineHeight:1.8, color:'var(--fg,#333)', fontStyle:'italic', marginBottom:24 }}>{t.quote}</p>
             {t.videoId && (
               <button onClick={()=>setVideoModal(t.videoId!)} style={{ width:'100%', height:120, borderRadius:12, background:'#111', border:'none', cursor:'pointer', marginBottom:20, position:'relative', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <img src={`https://img.youtube.com/vi/\${t.videoId}/mqdefault.jpg`} alt="video" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.7 }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+                <img src={\`https://img.youtube.com/vi/\${t.videoId}/mqdefault.jpg\`} alt="video" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.7 }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
                 <div style={{ width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', zIndex:1 }}>
                   <span style={{ fontSize:16, marginLeft:3 }}>&#9658;</span>
                 </div>
               </button>
             )}
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              {t.image ? <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} /> : <div style={{ width:44, height:44, borderRadius:'50%', background:`\${accent}20`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:accent, fontSize:18 }}>{t.name[0]}</div>}
+              {t.image ? <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} /> : <div style={{ width:44, height:44, borderRadius:'50%', background:\`\${accent}20\`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:accent, fontSize:18 }}>{t.name[0]}</div>}
               <div style={{ flex:1 }}>
                 <p style={{ fontWeight:700, fontSize:15, color:'var(--fg,#111)', margin:0 }}>{t.name}</p>
                 <p style={{ fontSize:13, color:'#888', margin:'2px 0 0' }}>{t.role}</p>
@@ -371,7 +371,7 @@ export default function Testimonials({ title, items, accentColor }: { title: str
       {videoModal && (
         <div onClick={()=>setVideoModal(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
           <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:800, aspectRatio:'16/9', borderRadius:16, overflow:'hidden', position:'relative' }}>
-            <iframe src={`https://www.youtube.com/embed/\${videoModal}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen style={{ width:'100%', height:'100%', border:'none' }} />
+            <iframe src={\`https://www.youtube.com/embed/\${videoModal}?autoplay=1\`} allow="autoplay; encrypted-media" allowFullScreen style={{ width:'100%', height:'100%', border:'none' }} />
             <button onClick={()=>setVideoModal(null)} style={{ position:'absolute', top:12, right:12, background:'rgba(0,0,0,0.6)', color:'#fff', border:'none', borderRadius:'50%', width:36, height:36, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}>&#215;</button>
           </div>
         </div>
@@ -1299,21 +1299,21 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
               const def = fieldDefs[f] || { label: f, type:'text', placeholder:'' };
               if (def.type === 'textarea') return (
                 <div key={f} style={{ gridColumn:'1 / -1' }}>
-                  <label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
-                  <textarea id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} rows={3} style={{...inp, resize:'none'}} onFocus={onFocus} onBlur={onBlur} />
+                  <label htmlFor={\`booking-\${f}\`} style={lbl}>{def.label}</label>
+                  <textarea id={\`booking-\${f}\`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} rows={3} style={{...inp, resize:'none'}} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               );
               if (def.type === 'select' && f === 'time') return (
-                <div key={f}><label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
-                  <select id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                <div key={f}><label htmlFor={\`booking-\${f}\`} style={lbl}>{def.label}</label>
+                  <select id={\`booking-\${f}\`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
                     <option value="">Select time</option>
                     {timeSlots.map(t=><option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               );
               if (def.type === 'select' && f === 'guests') return (
-                <div key={f}><label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
-                  <select id={`booking-${f}`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
+                <div key={f}><label htmlFor={\`booking-\${f}\`} style={lbl}>{def.label}</label>
+                  <select id={\`booking-\${f}\`} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} style={inp} onFocus={onFocus} onBlur={onBlur}>
                     <option value="">Select guests</option>
                     {guestOptions.map(g=><option key={g} value={g}>{g}</option>)}
                   </select>
@@ -1321,8 +1321,8 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
               );
             +
                 <div key={f} style={{ gridColumn: (f==='name'||f==='email') && defaultFields.includes('email') ? 'auto' : defaultFields.includes('date') ? '1 / -1' : 'auto' }}>
-                  <label htmlFor={`booking-${f}`} style={lbl}>{def.label}</label>
-                  <input id={`booking-${f}`} type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
+                  <label htmlFor={\`booking-\${f}\`} style={lbl}>{def.label}</label>
+                  <input id={\`booking-\${f}\`} type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
                 </div>
               );
             })}
@@ -1391,7 +1391,7 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor, 
                   <span style={{fontSize:13,color:'#666',width:20,textAlign:'right'}}>{star}</span>
                   <span style={{color:'#f59e0b',fontSize:13}}>★</span>
                   <div style={{flex:1,height:8,background:'#eee',borderRadius:4,overflow:'hidden'}}>
-                    <div style={{height:'100%',width:`${pct}%`,background:'#f59e0b',borderRadius:4,transition:'width 1s ease'}} />
+                    <div style={{height:'100%',width:\`\${pct}%\`,background:'#f59e0b',borderRadius:4,transition:'width 1s ease'}} />
                   </div>
                   <span style={{fontSize:12,color:'#aaa',width:32,textAlign:'right'}}>{pct}%</span>
                 </div>
@@ -1401,12 +1401,12 @@ export default function Reviews({ title, subtitle, items, reviews, accentColor, 
         )}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))',gap:24}}>
           {safeItems.map((r,i)=>(
-            <div key={i} style={{background:'#fafafa',borderRadius:20,padding:28,border:'1px solid #f0f0f0',transition:`all 0.25s ease, opacity 0.5s ease ${i*0.1}s, transform 0.5s ease ${i*0.1}s`,opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)'}}
+            <div key={i} style={{background:'#fafafa',borderRadius:20,padding:28,border:'1px solid #f0f0f0',transition: \`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`,opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)'}}
               onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}}
               onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
                 <div style={{display:'flex',gap:3}}>{stars(r.rating)}</div>
-                {(r.source||source) && <span style={{fontSize:11,fontWeight:700,color:sourceColors[r.source||source]||'#555',background:`${sourceColors[r.source||source]||'#555'}15`,padding:'3px 8px',borderRadius:10}}>{r.source||source}</span>}
+                {(r.source||source) && <span style={{fontSize:11,fontWeight:700,color:sourceColors[r.source||source]||'#555',background: \`\${sourceColors[r.source||source]||'#555'}15\`,padding:'3px 8px',borderRadius:10}}>{r.source||source}</span>}
               </div>
               <p style={{fontSize:14,lineHeight:1.75,color:'#444',margin:'0 0 20px',fontStyle:'italic'}}>"{r.text}"</p>
               <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -1880,7 +1880,7 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
               <div ref={el=>containerRefs.current[i]=el} style={{position:'relative',borderRadius:16,overflow:'hidden',cursor:'ew-resize',userSelect:'none',aspectRatio:'4/3',touchAction:'none'}} onPointerDown={e=>onPointerDown(e,i)} onPointerMove={e=>onPointerMove(e,i)} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
                 <img src={item.after} alt="after" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
                 <div style={{position:'absolute',inset:0,overflow:'hidden',width:\`\${pos[i]}%\`}}>
-                  <img src={item.before} alt="before" style={{position:'absolute',inset:0,width:`${10000/pos[i]}%`,maxWidth:'none',height:'100%',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
+                  <img src={item.before} alt="before" style={{position:'absolute',inset:0,width: \`\${10000/pos[i]}%\`,maxWidth:'none',height:'100%',objectFit:'cover'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
                 </div>
                 <div style={{position:'absolute',top:0,bottom:0,left:\`\${pos[i]}%\`,width:3,background:'#fff',transform:'translateX(-50%)',boxShadow:'0 0 8px rgba(0,0,0,0.4)',pointerEvents:'none'}}>
                   <div style={{position:'absolute',top:'50%',left:'50%',animation:'baHandlePulse 2s ease infinite',width:36,height:36,borderRadius:50,background:'#fff',boxShadow:'0 2px 16px rgba(0,0,0,0.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:accent,fontWeight:800}}>⟺</div>
@@ -2728,7 +2728,7 @@ export function navigate(path: string) {
 }
 
 export function Link({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) {
-  return <a href={`#${to}`} className={className}>{children}</a>;
+  return <a href={\`#\${to}\`} className={className}>{children}</a>;
 }
 `,
 
@@ -3273,7 +3273,7 @@ export default function OrdersTable({ orders: init = DEFAULT, onStatusChange, ac
                   </div>
                 </td>
                 <td style={{ padding: '13px 16px', color: 'var(--muted, #888)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.items}</td>
-                <td style={{ padding: '13px 16px', fontWeight: 700 }}>${o.total.toFixed(2)}</td>
+                <td style={{ padding: '13px 16px', fontWeight: 700 }}>\${o.total.toFixed(2)}</td>
                 <td style={{ padding: '13px 16px' }}>
                   <select value={o.status} onChange={e => upd(o.id, e.target.value)} style={{ padding: '4px 10px', borderRadius: 50, border: 'none', background: (SC[o.status]?.bg||'#f3f4f6'), color: (SC[o.status]?.color||'#888'), fontSize: 11, fontWeight: 700, cursor: 'pointer', outline: 'none' }}>
                     {Object.keys(SC).map(s => <option key={s}>{s}</option>)}
@@ -3575,9 +3575,7 @@ export default function DashboardShell({ brand, navItems=DN, pageTitle='Dashboar
   );
 }`,
 
-};
 
-﻿
 "/components/sections/ComingSoon.tsx": `
 import React, { useState, useEffect } from 'react';
 interface Social { platform: string; href: string; }
@@ -3597,10 +3595,10 @@ export default function ComingSoon({ title = 'Coming Soon', subtitle = 'Somethin
   }, [launchDate]);
   const icons: Record<string, string> = { instagram: 'IG', twitter: 'TW', facebook: 'FB', linkedin: 'LI', youtube: 'YT', tiktok: 'TK' };
   return (
-    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px', position: 'relative', background: backgroundImage ? `url(${backgroundImage}) center/cover no-repeat` : `linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)`, color: '#fff' }}>
+    <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px', position: 'relative', background: backgroundImage ? \`url(\${backgroundImage}) center/cover no-repeat\` : \`linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%)\`, color: '#fff' }}>
       {backgroundImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)' }} />}
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 640, width: '100%' }}>
-        <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: 40, border: `1px solid ${accentColor}60`, color: accentColor, fontSize: 13, fontWeight: 600, marginBottom: 24, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>We Are Launching</div>
+        <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: 40, border: \`1px solid \${accentColor}60\`, color: accentColor, fontSize: 13, fontWeight: 600, marginBottom: 24, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>We Are Launching</div>
         <h1 style={{ fontSize: 'clamp(40px, 8vw, 80px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 20px', lineHeight: 1.05 }}>{title}</h1>
         <p style={{ fontSize: 18, opacity: 0.75, marginBottom: 48, lineHeight: 1.6 }}>{subtitle}</p>
         {launchDate && (
@@ -3614,7 +3612,7 @@ export default function ComingSoon({ title = 'Coming Soon', subtitle = 'Somethin
           </div>
         )}
         {submitted ? (
-          <div style={{ padding: '20px 32px', borderRadius: 16, background: `${accentColor}20`, border: `1px solid ${accentColor}40`, color: accentColor, fontWeight: 700, fontSize: 16 }}>You are on the list!</div>
+          <div style={{ padding: '20px 32px', borderRadius: 16, background: \`\${accentColor}20\`, border: \`1px solid \${accentColor}40\`, color: accentColor, fontWeight: 700, fontSize: 16 }}>You are on the list!</div>
         ) : (
           <form onSubmit={e => { e.preventDefault(); if (email) setSubmitted(true); }} style={{ display: 'flex', gap: 10, maxWidth: 440, margin: '0 auto', flexWrap: 'wrap' as const }}>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" required style={{ flex: 1, minWidth: 200, padding: '14px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 15, outline: 'none' }} />
@@ -3649,11 +3647,11 @@ export default function MaintenanceMode({ title = "We will Be Right Back", messa
         <h1 style={{ fontSize: 'clamp(28px,6vw,48px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 16px' }}>{title}</h1>
         <p style={{ fontSize: 17, opacity: 0.65, lineHeight: 1.7, marginBottom: 40 }}>{message}</p>
         <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 999, overflow: 'hidden', height: 8, marginBottom: 12 }}>
-          <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${accentColor}, ${accentColor}99)`, borderRadius: 999, transition: 'width 0.6s ease' }} />
+          <div style={{ height: '100%', width: \`\${pct}%\`, background: \`linear-gradient(90deg, \${accentColor}, \${accentColor}99)\`, borderRadius: 999, transition: 'width 0.6s ease' }} />
         </div>
         <div style={{ fontSize: 12, opacity: 0.4, marginBottom: 40 }}>Estimated progress: {pct}%</div>
         {returnTime && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 14, marginBottom: 28 }}>Expected back: <strong>{returnTime}</strong></div>}
-        {email && <div style={{ fontSize: 14, opacity: 0.55 }}>Questions? <a href={`mailto:${email}`} style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>{email}</a></div>}
+        {email && <div style={{ fontSize: 14, opacity: 0.55 }}>Questions? <a href={\`mailto:\${email}\`} style={{ color: accentColor, textDecoration: 'none', fontWeight: 600 }}>{email}</a></div>}
       </div>
     </section>
   );
@@ -3674,7 +3672,7 @@ export default function StickyContactBar({ phone = '(555) 123-4567', ctaText = '
   return (
     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, background: '#fff', borderTop: '1px solid #e5e7eb', boxShadow: '0 -4px 24px rgba(0,0,0,0.1)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' as const }}>
       {message && <span style={{ flex: 1, fontSize: 14, color: '#374151', minWidth: 150 }}>{message}</span>}
-      {phone && <a href={`tel:${phone.replace(/\D/g,'')}`} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151', textDecoration: 'none', fontWeight: 600, fontSize: 15, whiteSpace: 'nowrap' as const }}>📞 {phone}</a>}
+      {phone && <a href={\`tel:\${phone.replace(/\D/g,'')}\`} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151', textDecoration: 'none', fontWeight: 600, fontSize: 15, whiteSpace: 'nowrap' as const }}>📞 {phone}</a>}
       <a href={ctaHref} style={{ padding: '10px 24px', borderRadius: 10, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap' as const, marginLeft: 'auto' }}>{ctaText}</a>
       <button onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#9ca3af', lineHeight: 1, padding: '0 4px' }}>x</button>
     </div>
@@ -3705,7 +3703,7 @@ export default function PopupModal({ title = 'Special Offer', description = 'Sig
           <h2 style={{ margin: '0 0 12px', fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em' }}>{title}</h2>
           <p style={{ margin: '0 0 28px', color: '#6b7280', lineHeight: 1.6 }}>{description}</p>
           {done ? (
-            <div style={{ padding: '14px 20px', borderRadius: 12, background: `${accentColor}15`, color: accentColor, fontWeight: 700, textAlign: 'center' as const }}>You are in!</div>
+            <div style={{ padding: '14px 20px', borderRadius: 12, background: \`\${accentColor}15\`, color: accentColor, fontWeight: 700, textAlign: 'center' as const }}>You are in!</div>
           ) : (
             <form onSubmit={e => { e.preventDefault(); setDone(true); }} style={{ display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email address" required style={{ padding: '13px 18px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 15, outline: 'none' }} />
@@ -3725,8 +3723,8 @@ interface HoursRow { day: string; time: string; }
 interface InteractiveMapProps { businessName?: string; address?: string; phone?: string; hours?: HoursRow[]; mapQuery?: string; accentColor?: string; }
 export default function InteractiveMap({ businessName = 'Our Location', address = '123 Main St, City, ST 00000', phone = '(555) 123-4567', hours = [], mapQuery, accentColor = '#6366f1' }: InteractiveMapProps) {
   const query = encodeURIComponent(mapQuery || address);
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${query}`;
-  const embedSrc = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  const mapsHref = \`https://www.google.com/maps/search/?api=1&query=\${query}\`;
+  const embedSrc = \`https://maps.google.com/maps?q=\${query}&t=&z=15&ie=UTF8&iwloc=&output=embed\`;
   return (
     <section style={{ padding: '80px 40px', background: 'var(--bg, #fff)' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', gap: 40, flexWrap: 'wrap' as const, alignItems: 'stretch' }}>
@@ -3736,7 +3734,7 @@ export default function InteractiveMap({ businessName = 'Our Location', address 
         <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 'clamp(22px,4vw,34px)', fontWeight: 800, letterSpacing: '-0.02em' }}>{businessName}</h2>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 20 }}>📍</span><span style={{ fontSize: 15, lineHeight: 1.6, color: '#374151' }}>{address}</span></div>
-          {phone && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 20 }}>📞</span><a href={`tel:${phone.replace(/\D/g,'')}`} style={{ fontSize: 15, color: accentColor, fontWeight: 600, textDecoration: 'none' }}>{phone}</a></div>}
+          {phone && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 20 }}>📞</span><a href={\`tel:\${phone.replace(/\D/g,'')}\`} style={{ fontSize: 15, color: accentColor, fontWeight: 600, textDecoration: 'none' }}>{phone}</a></div>}
           {hours.length > 0 && (
             <div style={{ background: 'var(--card, #f9fafb)', borderRadius: 14, padding: '16px 20px' }}>
               {hours.map((h, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14, borderBottom: i < hours.length - 1 ? '1px solid #f0f0f0' : 'none' }}><span style={{ fontWeight: 600 }}>{h.day}</span><span style={{ color: '#6b7280' }}>{h.time}</span></div>)}
@@ -3819,10 +3817,10 @@ export default function ImageCompare({ pairs = [], accentColor = '#6366f1', titl
                 onMouseMove={e => onMove(e, i)} onTouchMove={e => onMove(e, i)}
                 onMouseUp={() => { dragging.current = null; }} onMouseLeave={() => { dragging.current = null; }}>
                 <img src={p.after} alt="After" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', width: `${sliders[i]}%` }}>
+                <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', width: \`\${sliders[i]}%\` }}>
                   <img src={p.before} alt="Before" style={{ width: '100%', height: '100%', objectFit: 'cover', minWidth: '200%' }} />
                 </div>
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: `${sliders[i]}%`, transform: 'translateX(-50%)', width: 3, background: '#fff', cursor: 'col-resize' }}
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: \`\${sliders[i]}%\`, transform: 'translateX(-50%)', width: 3, background: '#fff', cursor: 'col-resize' }}
                   onMouseDown={() => { dragging.current = i; }} onTouchStart={() => { dragging.current = i; }}>
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 36, height: 36, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>||</div>
                 </div>
@@ -3853,9 +3851,9 @@ export default function VideoTestimonial({ title = 'Hear From Our Customers', vi
           {list.map((v, i) => (
             <div key={i} onClick={() => setActive(v.videoId)} style={{ cursor: 'pointer', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 24px rgba(0,0,0,0.1)', transition: 'transform 0.2s,box-shadow 0.2s' }} onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 12px 40px rgba(0,0,0,0.15)'; }} onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform=''; (e.currentTarget as HTMLElement).style.boxShadow='0 4px 24px rgba(0,0,0,0.1)'; }}>
               <div style={{ position: 'relative', aspectRatio: '16/9', background: '#000' }}>
-                <img src={v.thumbnail || `https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <img src={v.thumbnail || \`https://img.youtube.com/vi/\${v.videoId}/hqdefault.jpg\`} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: `0 0 0 8px ${accentColor}40`, color: '#fff', fontWeight: 700 }}>&#9654;</div>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, boxShadow: \`0 0 0 8px \${accentColor}40\`, color: '#fff', fontWeight: 700 }}>&#9654;</div>
                 </div>
               </div>
               <div style={{ padding: '16px 20px', background: 'var(--card, #fff)' }}>
@@ -3869,7 +3867,7 @@ export default function VideoTestimonial({ title = 'Hear From Our Customers', vi
       {active && (
         <div onClick={() => setActive(null)} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ position: 'relative', width: '100%', maxWidth: 860, aspectRatio: '16/9' }}>
-            <iframe src={`https://www.youtube.com/embed/${active}?autoplay=1`} title="video" allow="autoplay; fullscreen" style={{ width: '100%', height: '100%', border: 'none', borderRadius: 16 }} />
+            <iframe src={\`https://www.youtube.com/embed/\${active}?autoplay=1\`} title="video" allow="autoplay; fullscreen" style={{ width: '100%', height: '100%', border: 'none', borderRadius: 16 }} />
             <button onClick={() => setActive(null)} style={{ position: 'absolute', top: -44, right: 0, background: 'none', border: 'none', color: '#fff', fontSize: 32, cursor: 'pointer', lineHeight: 1 }}>x</button>
           </div>
         </div>
@@ -3895,7 +3893,7 @@ export default function AffiliatePartners({ title = 'Our Partners', subtitle, pa
         <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 24, justifyContent: 'center' }}>
           {(sorted.length > 0 ? sorted : defaults.map(n => ({ name: n }))).map((p, i) => {
             const tc = tierColors[p.tier || ''] || 'transparent';
-            const inner = (<div style={{ padding: '20px 32px', borderRadius: 14, border: p.tier ? `2px solid ${tc}60` : '1.5px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8, transition: 'all 0.25s', minWidth: 140, cursor: 'pointer' }} onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 8px 28px rgba(0,0,0,0.1)'; }} onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform=''; (e.currentTarget as HTMLElement).style.boxShadow=''; }}>
+            const inner = (<div style={{ padding: '20px 32px', borderRadius: 14, border: p.tier ? \`2px solid \${tc}60\` : '1.5px solid #e5e7eb', background: '#fff', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 8, transition: 'all 0.25s', minWidth: 140, cursor: 'pointer' }} onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform='translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow='0 8px 28px rgba(0,0,0,0.1)'; }} onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform=''; (e.currentTarget as HTMLElement).style.boxShadow=''; }}>
               {p.tier && <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: tc }}>{p.tier}</span>}
               {p.logo ? <img src={p.logo} alt={p.name} style={{ width: 80, height: 40, objectFit: 'contain', filter: 'grayscale(1)', transition: 'filter 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLImageElement).style.filter=''} onMouseOut={e => (e.currentTarget as HTMLImageElement).style.filter='grayscale(1)'} /> : <span style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>{p.name}</span>}
             </div>);
@@ -3937,7 +3935,7 @@ export default function StatsCounter({ stats = [], background = 'dark', accentCo
   }, [triggered]);
   const isDark = background === 'dark';
   const isAccent = background === 'accent';
-  const bg = isDark ? 'linear-gradient(135deg,#0f0f1a,#1a1a2e)' : isAccent ? `linear-gradient(135deg,${accentColor},${accentColor}cc)` : 'var(--bg,#fff)';
+  const bg = isDark ? 'linear-gradient(135deg,#0f0f1a,#1a1a2e)' : isAccent ? \`linear-gradient(135deg,\${accentColor},\${accentColor}cc)\` : 'var(--bg,#fff)';
   const fg = (isDark || isAccent) ? '#fff' : 'var(--fg,#111)';
   return (
     <section ref={ref} style={{ padding: '80px 40px', background: bg, color: fg }}>
@@ -3964,65 +3962,6 @@ export default function StatsCounter({ stats = [], background = 'dark', accentCo
 }`,
 
 
-export const SECTION_COMPONENT_LIST = `
-## Pre-built page sections (USE THESE to build pages — don't write layouts from scratch):
-Import using: import Navbar from '/components/sections/Navbar';
-(Use ABSOLUTE paths starting with / — NOT relative ./components):
-
-- Navbar: <Navbar brand="Name" links={["Menu","Story","Contact"]} cta="Order Now" />
-- Hero: <Hero tag="Est. 2018" title="Big headline" subtitle="Description" cta1={{text:"See menu"}} cta2={{text:"Find us"}} image="{{unsplash:coffee shop|1600x900}}" />
-- Features: <Features tag="Why us" title="Heading" items={[{icon:"☕", title:"Feature", desc:"Description"}]} />
-- MenuGrid: <MenuGrid title="Our Menu" items={[{name:"Espresso", price:"$3.50", desc:"Rich shot", category:"Coffee", badge:"Popular"}]} />
-- SplitSection: <SplitSection tag="Our story" title="Heading" text="Paragraph..." image="{{unsplash:...|800x600}}" reverse={false} />
-- Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
-- Contact: <Contact title="Get in touch" subtitle="We'd love to hear from you." items={[{icon:"📍", label:"Address", value:"123 Main St"},{icon:"📞", label:"Phone", value:"(555) 123-4567", href:"tel:5551234567"},{icon:"✉️", label:"Email", value:"hello@brand.com", href:"mailto:hello@brand.com"},{icon:"🕐", label:"Hours", value:"Mon–Fri 9am–6pm"}]} />
-  → Has a styled contact form (name, email, message) built-in on the right + contact info on the left. DO NOT write your own form.
-- Footer: <Footer logo="Name" tagline="Tagline" columns={[{heading:"Links",links:[{label:"About",href:"#"}]}]} email="hello@brand.com" socials={[{platform:"instagram",href:"#"}]} accentColor="var(--primary)" />
-- DarkModeToggle: <DarkModeToggle position="fixed-bottom-right" />
-- ShopGrid: <ShopGrid title="Shop" items={[{id:1, name:"Item", price:3.50, desc:"Desc", category:"Cat", badge:"Popular", image:"{{unsplash:product|400x300}}"}]} />
-  → Built-in cart + checkout. Use instead of MenuGrid for ordering.
-- PricingTable: <PricingTable title="Pricing" plans={[{name:"Pro", price:"$29", period:"mo", features:["Feature 1","Feature 2"], cta:"Get Started", popular:true}]} />
-- FAQ: <FAQ title="FAQ" items={[{q:"Question?", a:"Answer here."}]} />
-- CTA: <CTA title="Ready to start?" subtitle="Join thousands" cta={{text:"Get Started"}} image="{{unsplash:abstract|1600x600}}" />
-- Gallery: <Gallery title="Gallery" images={[{src:"{{unsplash:photo|400x300}}", alt:"Photo"}]} /> → Lightbox on click
-- Stats: <Stats items={[{value:"10K+", label:"Customers"}]} dark={false} />
-- Team: <Team title="Our Team" members={[{name:"John", role:"CEO", image:"{{unsplash:man portrait|200x200}}"}]} />
-- Newsletter: <Newsletter title="Stay Updated" subtitle="Get weekly tips" />
-- Timeline: <Timeline title="Our Journey" events={[{year:"2020", title:"Founded", desc:"Started in a garage"}]} />
-- LogoCloud: <LogoCloud title="Trusted by" logos={[{name:"Acme"},{name:"Globex"}]} />
-- BlogGrid: <BlogGrid title="Blog" posts={[{title:"Post", excerpt:"...", image:"{{unsplash:blog|400x300}}", date:"Jun 2026", author:"Sarah"}]} />
-- Tabs: <Tabs tabs={[{label:"Tab 1", content:"Content here"},{label:"Tab 2", content:"More content"}]} />
-- Banner: <Banner text="Free shipping today!" cta="Shop now" />
-- Booking: <Booking title="Reserve a Table" subtitle="Book online in seconds" fields={["name","email","date","time","guests","notes"]} cta="Confirm Reservation →" />
-  → Fully styled reservation/booking form. Use for restaurants, spas, salons, services. NEVER write a custom booking form.
-
-- ComingSoon: <ComingSoon title="Coming Soon" subtitle="We are launching something incredible." launchDate="2026-12-31" accentColor="var(--primary)" socials={[{platform:"instagram",href:"#"},{platform:"twitter",href:"#"}]} />
-  → Full-page coming soon with live countdown timer, email capture form, and social links.
-- MaintenanceMode: <MaintenanceMode title="We will Be Right Back" message="Scheduled maintenance in progress." returnTime="2:00 AM EST" email="support@brand.com" accentColor="var(--primary)" />
-  → Full-page dark maintenance screen with animated progress bar.
-- StickyContactBar: <StickyContactBar phone="(555) 123-4567" ctaText="Book Now" ctaHref="#booking" message="Limited availability this week!" accentColor="var(--primary)" />
-  → Fixed bottom bar shown after 400px scroll. Dismissible. Mobile-optimized.
-- PopupModal: <PopupModal title="Special Offer" description="Sign up and get 20% off your first order." ctaText="Claim Offer" ctaHref="#contact" delay={5000} accentColor="var(--primary)" />
-  → Timed popup (default 5s). Cookie-based dismissal (7 days). Email capture.
-- InteractiveMap: <InteractiveMap businessName="Our Studio" address="123 Main St, San Francisco, CA" phone="(555) 123-4567" hours={[{day:"Monday",time:"9am-6pm"},{day:"Sunday",time:"Closed"}]} accentColor="var(--primary)" />
-  → Embedded Google Map + address + hours + Get Directions button.
-- TestimonialsCarousel: <TestimonialsCarousel title="What Our Clients Say" items={[{name:"Sarah K.",role:"CEO",text:"Incredible!",rating:5,image:"{{unsplash:professional woman portrait|100x100}}"}]} accentColor="var(--primary)" />
-  → Auto-advancing carousel with arrows, dots, pause-on-hover.
-- ImageCompare: <ImageCompare title="See The Results" pairs={[{before:"{{unsplash:before dull|600x400}}",after:"{{unsplash:after bright|600x400}}",caption:"After one session"}]} accentColor="var(--primary)" />
-  → Drag-slider before/after image comparison. Multiple pairs supported.
-- VideoTestimonial: <VideoTestimonial title="Hear From Our Customers" videos={[{videoId:"dQw4w9WgXcQ",name:"Jane D.",role:"CEO, Acme Corp"}]} accentColor="var(--primary)" />
-  → YouTube video cards with play button. Lightbox on click.
-- AffiliatePartners: <AffiliatePartners title="As Featured In" subtitle="Trusted by industry leaders" partners={[{name:"Forbes",logo:"https://...",url:"#",tier:"gold"}]} accentColor="var(--primary)" />
-  → Partner/sponsor logos with tier badges (gold/silver/bronze), grayscale-to-color hover.
-- StatsCounter: <StatsCounter title="By The Numbers" stats={[{value:"10000",label:"Happy Customers",icon:"😊",suffix:"+"},{value:"4.9",label:"Rating",icon:"⭐",suffix:"★"}]} background="dark" accentColor="var(--primary)" />
-  → Scroll-triggered count-up animation. background: "dark" | "light" | "accent".
-
-RULES:
-- The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
-- ALWAYS prefer these sections over writing raw HTML. They are pre-styled and look professional.
-- When user asks for "checkout", "cart", "ordering", "e-commerce" → use ShopGrid instead of MenuGrid.
-- When editing: if the current code uses MenuGrid and user wants cart/checkout, REPLACE MenuGrid with ShopGrid.
-- CRITICAL: ONLY import from this exact list. NEVER invent component names like CartDrawer, PizzaBuilder, OrderTracker, ProductCard, HeroSection, etc. If you need a feature not in this list, BUILD IT IN /App.tsx as a regular React component — do NOT import it from /components/sections/. Importing a non-existent component causes a fatal crash.`,
 "/components/sections/HeroCentered.tsx": `
 import React from 'react';
 
@@ -4047,7 +3986,7 @@ export default function HeroCentered({ title = 'Welcome', subtitle, description,
     <section id="hero" style={{
       position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', padding: '120px 40px 80px',
-      background: backgroundImage ? `url(${backgroundImage}) center/cover no-repeat` : `linear-gradient(135deg, ${accentColor}18 0%, var(--bg) 60%)`,
+      background: backgroundImage ? \`url(\${backgroundImage}) center/cover no-repeat\` : \`linear-gradient(135deg, \${accentColor}18 0%, var(--bg) 60%)\`,
       overflow: 'hidden',
     }}>
       {backgroundImage && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />}
@@ -4058,7 +3997,7 @@ export default function HeroCentered({ title = 'Welcome', subtitle, description,
         transition: 'opacity 0.7s ease, transform 0.7s ease',
       }}>
         {badge && (
-          <div style={{ display: 'inline-block', background: `${accentColor}20`, border: `1px solid ${accentColor}40`,
+          <div style={{ display: 'inline-block', background: \`\${accentColor}20\`, border: \`1px solid \${accentColor}40\`,
             color: accentColor, padding: '6px 16px', borderRadius: 30, fontSize: 13, fontWeight: 700,
             letterSpacing: '0.05em', marginBottom: 24, textTransform: 'uppercase' }}>
             {badge}
@@ -4075,18 +4014,18 @@ export default function HeroCentered({ title = 'Welcome', subtitle, description,
           <a href={ctaHref} style={{
             background: accentColor, color: '#fff', padding: '16px 36px', borderRadius: 50,
             textDecoration: 'none', fontWeight: 800, fontSize: 17,
-            boxShadow: `0 8px 30px ${accentColor}50`, transition: 'all 0.2s',
+            boxShadow: \`0 8px 30px \${accentColor}50\`, transition: 'all 0.2s',
             display: 'inline-block',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 12px 40px ${accentColor}60`; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = `0 8px 30px ${accentColor}50`; }}>
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = \`0 12px 40px \${accentColor}60\`; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = ''; (e.currentTarget as HTMLAnchorElement).style.boxShadow = \`0 8px 30px \${accentColor}50\`; }}>
             {ctaText}
           </a>
           {secondaryCtaText && (
             <a href={secondaryCtaHref} style={{
               background: 'transparent', color: backgroundImage ? '#fff' : 'var(--fg)',
               padding: '16px 36px', borderRadius: 50, textDecoration: 'none', fontWeight: 700, fontSize: 17,
-              border: `2px solid ${backgroundImage ? 'rgba(255,255,255,0.4)' : 'var(--border)'}`,
+              border: \`2px solid \${backgroundImage ? 'rgba(255,255,255,0.4)' : 'var(--border)'}\`,
               transition: 'all 0.2s', display: 'inline-block',
             }}>{secondaryCtaText}</a>
           )}
@@ -4121,12 +4060,12 @@ export default function HeroSplit({ title = 'Build Something Amazing', subtitle,
 
   const textContent = (
     <div style={{ flex: 1, padding: '0 20px', opacity: visible ? 1 : 0, transform: visible ? 'translateX(0)' : 'translateX(-30px)', transition: 'all 0.7s ease' }}>
-      {badge && <span style={{ display: 'inline-block', background: `${accentColor}15`, color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{badge}</span>}
+      {badge && <span style={{ display: 'inline-block', background: \`\${accentColor}15\`, color: accentColor, padding: '6px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{badge}</span>}
       <h1 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 900, lineHeight: 1.1, color: 'var(--fg)', marginBottom: 16, letterSpacing: '-0.03em' }}>{title}</h1>
       {subtitle && <p style={{ fontSize: 'clamp(18px, 2vw, 22px)', color: 'var(--fg)', opacity: 0.75, marginBottom: 12, fontWeight: 400, lineHeight: 1.4 }}>{subtitle}</p>}
       {description && <p style={{ fontSize: 16, color: 'var(--fg)', opacity: 0.65, marginBottom: 32, lineHeight: 1.7 }}>{description}</p>}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: stats ? 40 : 0 }}>
-        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '14px 32px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 16, boxShadow: `0 6px 24px ${accentColor}45`, display: 'inline-block' }}>{ctaText}</a>
+        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '14px 32px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 16, boxShadow: \`0 6px 24px \${accentColor}45\`, display: 'inline-block' }}>{ctaText}</a>
         {secondaryCtaText && <a href={secondaryCtaHref} style={{ color: 'var(--fg)', padding: '14px 32px', borderRadius: 50, textDecoration: 'none', fontWeight: 700, fontSize: 16, border: '2px solid var(--border)', display: 'inline-block' }}>{secondaryCtaText}</a>}
       </div>
       {stats && stats.length > 0 && (
@@ -4147,7 +4086,7 @@ export default function HeroSplit({ title = 'Build Something Amazing', subtitle,
       {image ? (
         <img src={image} alt={title} style={{ width: '100%', height: '100%', maxHeight: 520, objectFit: 'cover', borderRadius: 24, boxShadow: '0 24px 80px rgba(0,0,0,0.15)' }} />
       ) : (
-        <div style={{ width: '100%', paddingTop: '75%', borderRadius: 24, background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`, border: `2px solid ${accentColor}20` }} />
+        <div style={{ width: '100%', paddingTop: '75%', borderRadius: 24, background: \`linear-gradient(135deg, \${accentColor}30, \${accentColor}10)\`, border: \`2px solid \${accentColor}20\` }} />
       )}
     </div>
   );
@@ -4186,13 +4125,13 @@ export default function HeroVideo({ title = 'Experience the Difference', subtitl
           <source src={videoUrl} type="video/mp4" />
         </video>
       ) : (
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, #0f0f1a, #1a0a2e, #0d1b2a)`, zIndex: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, background: \`linear-gradient(135deg, #0f0f1a, #1a0a2e, #0d1b2a)\`, zIndex: 0 }} />
       )}
-      <div style={{ position: 'absolute', inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: \`rgba(0,0,0,\${overlayOpacity})\`, zIndex: 1 }} />
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 800, padding: '0 40px', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.9s ease' }}>
         <h1 style={{ fontSize: 'clamp(48px, 8vw, 96px)', fontWeight: 900, color: '#fff', lineHeight: 1.05, marginBottom: 20, letterSpacing: '-0.03em', textShadow: '0 4px 40px rgba(0,0,0,0.3)' }}>{title}</h1>
         {subtitle && <p style={{ fontSize: 'clamp(18px, 2.5vw, 24px)', color: 'rgba(255,255,255,0.85)', marginBottom: 40, lineHeight: 1.5 }}>{subtitle}</p>}
-        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '18px 44px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 18, display: 'inline-block', boxShadow: `0 8px 40px ${accentColor}70`, letterSpacing: '0.01em' }}>{ctaText}</a>
+        <a href={ctaHref} style={{ background: accentColor, color: '#fff', padding: '18px 44px', borderRadius: 50, textDecoration: 'none', fontWeight: 800, fontSize: 18, display: 'inline-block', boxShadow: \`0 8px 40px \${accentColor}70\`, letterSpacing: '0.01em' }}>{ctaText}</a>
         <div style={{ position: 'absolute', bottom: -80, left: '50%', transform: 'translateX(-50%)', animation: 'heroScroll 2s ease-in-out infinite' }}>
           <div style={{ width: 2, height: 40, background: 'rgba(255,255,255,0.4)', margin: '0 auto', borderRadius: 2 }} />
         </div>
@@ -4380,7 +4319,7 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.1 });
     obs.observe(ref); return () => obs.disconnect();
   }, [ref]);
-  const defaultPosts: SocialPost[] = Array(9).fill(null).map((_, i) => ({ image: `https://source.unsplash.com/400x400/?lifestyle,${i}`, likes: Math.floor(Math.random() * 500) + 50 }));
+  const defaultPosts: SocialPost[] = Array(9).fill(null).map((_, i) => ({ image: \`https://source.unsplash.com/400x400/?lifestyle,\${i}\`, likes: Math.floor(Math.random() * 500) + 50 }));
   const displayPosts = posts.length > 0 ? posts : defaultPosts;
   return (
     <section ref={setRef as any} style={{ padding: '80px 40px', background: 'var(--bg)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.6s ease' }}>
@@ -4401,7 +4340,7 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
                   onMouseLeave={e => (e.currentTarget as HTMLImageElement).style.transform = ''}
                   onError={e => { const el = e.currentTarget as HTMLImageElement; el.style.display = 'none'; }} />
               ) : (
-                <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)` }} />
+                <div style={{ position: 'absolute', inset: 0, background: \`linear-gradient(135deg, \${accentColor}30, \${accentColor}10)\` }} />
               )}
               {post.likes && (
                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', color: '#fff', fontWeight: 700, opacity: 0, fontSize: 15 }}
@@ -4415,7 +4354,7 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
         </div>
         {handle && (
           <div style={{ textAlign: 'center', marginTop: 32 }}>
-            <a href={`https://www.instagram.com/${handle}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: accentColor, color: '#fff', padding: '12px 28px', borderRadius: 30, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
+            <a href={\`https://www.instagram.com/\${handle}\`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', background: accentColor, color: '#fff', padding: '12px 28px', borderRadius: 30, textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>
               Follow on {platform}
             </a>
           </div>
@@ -4424,3 +4363,65 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
     </section>
   );
 }`,
+
+};
+
+export const SECTION_COMPONENT_LIST = `
+## Pre-built page sections (USE THESE to build pages — don't write layouts from scratch):
+Import using: import Navbar from '/components/sections/Navbar';
+(Use ABSOLUTE paths starting with / — NOT relative ./components):
+
+- Navbar: <Navbar brand="Name" links={["Menu","Story","Contact"]} cta="Order Now" />
+- Hero: <Hero tag="Est. 2018" title="Big headline" subtitle="Description" cta1={{text:"See menu"}} cta2={{text:"Find us"}} image="{{unsplash:coffee shop|1600x900}}" />
+- Features: <Features tag="Why us" title="Heading" items={[{icon:"☕", title:"Feature", desc:"Description"}]} />
+- MenuGrid: <MenuGrid title="Our Menu" items={[{name:"Espresso", price:"$3.50", desc:"Rich shot", category:"Coffee", badge:"Popular"}]} />
+- SplitSection: <SplitSection tag="Our story" title="Heading" text="Paragraph..." image="{{unsplash:...|800x600}}" reverse={false} />
+- Testimonials: <Testimonials title="What people say" items={[{quote:"Amazing!", name:"Sarah", role:"Regular", image:"{{unsplash:woman portrait|200x200}}"}]} />
+- Contact: <Contact title="Get in touch" subtitle="We'd love to hear from you." items={[{icon:"📍", label:"Address", value:"123 Main St"},{icon:"📞", label:"Phone", value:"(555) 123-4567", href:"tel:5551234567"},{icon:"✉️", label:"Email", value:"hello@brand.com", href:"mailto:hello@brand.com"},{icon:"🕐", label:"Hours", value:"Mon–Fri 9am–6pm"}]} />
+  → Has a styled contact form (name, email, message) built-in on the right + contact info on the left. DO NOT write your own form.
+- Footer: <Footer logo="Name" tagline="Tagline" columns={[{heading:"Links",links:[{label:"About",href:"#"}]}]} email="hello@brand.com" socials={[{platform:"instagram",href:"#"}]} accentColor="var(--primary)" />
+- DarkModeToggle: <DarkModeToggle position="fixed-bottom-right" />
+- ShopGrid: <ShopGrid title="Shop" items={[{id:1, name:"Item", price:3.50, desc:"Desc", category:"Cat", badge:"Popular", image:"{{unsplash:product|400x300}}"}]} />
+  → Built-in cart + checkout. Use instead of MenuGrid for ordering.
+- PricingTable: <PricingTable title="Pricing" plans={[{name:"Pro", price:"$29", period:"mo", features:["Feature 1","Feature 2"], cta:"Get Started", popular:true}]} />
+- FAQ: <FAQ title="FAQ" items={[{q:"Question?", a:"Answer here."}]} />
+- CTA: <CTA title="Ready to start?" subtitle="Join thousands" cta={{text:"Get Started"}} image="{{unsplash:abstract|1600x600}}" />
+- Gallery: <Gallery title="Gallery" images={[{src:"{{unsplash:photo|400x300}}", alt:"Photo"}]} /> → Lightbox on click
+- Stats: <Stats items={[{value:"10K+", label:"Customers"}]} dark={false} />
+- Team: <Team title="Our Team" members={[{name:"John", role:"CEO", image:"{{unsplash:man portrait|200x200}}"}]} />
+- Newsletter: <Newsletter title="Stay Updated" subtitle="Get weekly tips" />
+- Timeline: <Timeline title="Our Journey" events={[{year:"2020", title:"Founded", desc:"Started in a garage"}]} />
+- LogoCloud: <LogoCloud title="Trusted by" logos={[{name:"Acme"},{name:"Globex"}]} />
+- BlogGrid: <BlogGrid title="Blog" posts={[{title:"Post", excerpt:"...", image:"{{unsplash:blog|400x300}}", date:"Jun 2026", author:"Sarah"}]} />
+- Tabs: <Tabs tabs={[{label:"Tab 1", content:"Content here"},{label:"Tab 2", content:"More content"}]} />
+- Banner: <Banner text="Free shipping today!" cta="Shop now" />
+- Booking: <Booking title="Reserve a Table" subtitle="Book online in seconds" fields={["name","email","date","time","guests","notes"]} cta="Confirm Reservation →" />
+  → Fully styled reservation/booking form. Use for restaurants, spas, salons, services. NEVER write a custom booking form.
+
+- ComingSoon: <ComingSoon title="Coming Soon" subtitle="We are launching something incredible." launchDate="2026-12-31" accentColor="var(--primary)" socials={[{platform:"instagram",href:"#"},{platform:"twitter",href:"#"}]} />
+  → Full-page coming soon with live countdown timer, email capture form, and social links.
+- MaintenanceMode: <MaintenanceMode title="We will Be Right Back" message="Scheduled maintenance in progress." returnTime="2:00 AM EST" email="support@brand.com" accentColor="var(--primary)" />
+  → Full-page dark maintenance screen with animated progress bar.
+- StickyContactBar: <StickyContactBar phone="(555) 123-4567" ctaText="Book Now" ctaHref="#booking" message="Limited availability this week!" accentColor="var(--primary)" />
+  → Fixed bottom bar shown after 400px scroll. Dismissible. Mobile-optimized.
+- PopupModal: <PopupModal title="Special Offer" description="Sign up and get 20% off your first order." ctaText="Claim Offer" ctaHref="#contact" delay={5000} accentColor="var(--primary)" />
+  → Timed popup (default 5s). Cookie-based dismissal (7 days). Email capture.
+- InteractiveMap: <InteractiveMap businessName="Our Studio" address="123 Main St, San Francisco, CA" phone="(555) 123-4567" hours={[{day:"Monday",time:"9am-6pm"},{day:"Sunday",time:"Closed"}]} accentColor="var(--primary)" />
+  → Embedded Google Map + address + hours + Get Directions button.
+- TestimonialsCarousel: <TestimonialsCarousel title="What Our Clients Say" items={[{name:"Sarah K.",role:"CEO",text:"Incredible!",rating:5,image:"{{unsplash:professional woman portrait|100x100}}"}]} accentColor="var(--primary)" />
+  → Auto-advancing carousel with arrows, dots, pause-on-hover.
+- ImageCompare: <ImageCompare title="See The Results" pairs={[{before:"{{unsplash:before dull|600x400}}",after:"{{unsplash:after bright|600x400}}",caption:"After one session"}]} accentColor="var(--primary)" />
+  → Drag-slider before/after image comparison. Multiple pairs supported.
+- VideoTestimonial: <VideoTestimonial title="Hear From Our Customers" videos={[{videoId:"dQw4w9WgXcQ",name:"Jane D.",role:"CEO, Acme Corp"}]} accentColor="var(--primary)" />
+  → YouTube video cards with play button. Lightbox on click.
+- AffiliatePartners: <AffiliatePartners title="As Featured In" subtitle="Trusted by industry leaders" partners={[{name:"Forbes",logo:"https://...",url:"#",tier:"gold"}]} accentColor="var(--primary)" />
+  → Partner/sponsor logos with tier badges (gold/silver/bronze), grayscale-to-color hover.
+- StatsCounter: <StatsCounter title="By The Numbers" stats={[{value:"10000",label:"Happy Customers",icon:"😊",suffix:"+"},{value:"4.9",label:"Rating",icon:"⭐",suffix:"★"}]} background="dark" accentColor="var(--primary)" />
+  → Scroll-triggered count-up animation. background: "dark" | "light" | "accent".
+
+RULES:
+- The AI just passes DATA as props — components handle all styling, layout, hover effects, and responsive behavior.
+- ALWAYS prefer these sections over writing raw HTML. They are pre-styled and look professional.
+- When user asks for "checkout", "cart", "ordering", "e-commerce" → use ShopGrid instead of MenuGrid.
+- When editing: if the current code uses MenuGrid and user wants cart/checkout, REPLACE MenuGrid with ShopGrid.
+- CRITICAL: ONLY import from this exact list. NEVER invent component names like CartDrawer, PizzaBuilder, OrderTracker, ProductCard, HeroSection, etc. If you need a feature not in this list, BUILD IT IN /App.tsx as a regular React component — do NOT import it from /components/sections/. Importing a non-existent component causes a fatal crash.`;

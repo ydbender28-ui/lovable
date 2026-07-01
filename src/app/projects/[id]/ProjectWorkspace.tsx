@@ -2866,7 +2866,7 @@ export default function ProjectWorkspace({
                     { icon: "🧪", label: "Test UX", action: () => { setShowUserTest(true); setUserTestResult(null); } },
                     { icon: "💰", label: "Monetize", action: () => { setShowMonetize(true); setMonetizePlan(null); } },
                     { icon: "📤", label: "Export HTML", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export`; a.download = ""; a.click(); } },
-                    { icon: "📋", label: "Copy HTML", action: async () => { try { const res = await fetch(`/api/projects/${projectId}/export`); const html = await res.text(); await navigator.clipboard.writeText(html); showToast("HTML copied to clipboard", "success"); } catch { showToast("Failed to copy HTML", "error"); } } },
+                    { icon: "📋", label: "Copy HTML", action: async () => { try { const res = await fetch(`/api/projects/${projectId}/export`); const html = await res.text(); await navigator.clipboard.writeText(html); showToast("HTML copied to clipboard", "success"); } catch { showToast("Failed to copy HTML"); } } },
                     { icon: "📱", label: "Export App", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export-app`; a.download = ""; a.click(); showToast("Downloading app package", "info"); } },
                     { icon: "⬇️", label: "Source (.tsx)", action: () => { const a = document.createElement("a"); a.href = `/api/projects/${projectId}/export-zip`; a.download = ""; a.click(); showToast("Downloading source file", "info"); } },
                     { icon: "⬆️", label: "GitHub", action: () => { setShowGithub(true); setGithubResult(null); } },

@@ -2661,8 +2661,8 @@ img:not([class*="h-"]):not([class*="hero"]):not([style*="vh"]) { max-height: 240
     // PRESERVE all section imports — only add missing ones, never remove
     if (isEdit && existingFiles && toolUseFiles['/App.tsx']) {
       const sectionImportRegex = /import\s+\w+\s+from\s+'\/components\/sections\/[^']+';/g;
-      const existingImports = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
-      const newImports = (toolUseFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+      const existingImports: string[] = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+      const newImports: string[] = (toolUseFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
       const missingFromNew = existingImports.filter(imp => !newImports.includes(imp));
       if (missingFromNew.length > 0) {
         const firstImport = toolUseFiles['/App.tsx'].indexOf('import ');
@@ -2991,8 +2991,8 @@ complete file here
   // PRESERVE all section imports — only add missing ones, never remove (text-based path)
   if (isEdit && existingFiles && resolvedFiles['/App.tsx']) {
     const sectionImportRegex = /import\s+\w+\s+from\s+'\/components\/sections\/[^']+';/g;
-    const existingImports = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
-    const newImports = (resolvedFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+    const existingImports: string[] = (existingFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
+    const newImports: string[] = (resolvedFiles['/App.tsx'] || '').match(sectionImportRegex) || [];
     const missingFromNew = existingImports.filter(imp => !newImports.includes(imp));
     if (missingFromNew.length > 0) {
       const firstImport = resolvedFiles['/App.tsx'].indexOf('import ');

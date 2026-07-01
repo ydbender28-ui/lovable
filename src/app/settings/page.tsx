@@ -310,6 +310,14 @@ export default function SettingsPage() {
               </a>
             </div>
 
+            {/* Sign out */}
+            <button onClick={() => signOut({ callbackUrl: "/login" })}
+              className="w-full text-left text-sm text-red-400/70 hover:text-red-400 transition-colors py-1">
+              Sign out →
+            </button>
+          </div>
+        )}
+
         {/* Referral */}
         {tab === "referral" && (
           <div className="space-y-6">
@@ -365,14 +373,6 @@ export default function SettingsPage() {
               </div>
               <p className="mt-1.5 text-xs text-[#9a9aaa]">Code: <span className="font-mono font-medium text-[#51515c]">{referralCode ?? "—"}</span></p>
             </div>
-          </div>
-        )}
-
-            {/* Sign out */}
-            <button onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full text-left text-sm text-red-400/70 hover:text-red-400 transition-colors py-1">
-              Sign out →
-            </button>
           </div>
         )}
       </div>
