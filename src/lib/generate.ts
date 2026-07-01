@@ -318,12 +318,17 @@ IMAGES — CRITICAL: Every img MUST have an explicit height or it will blow up t
 12. ALL email addresses MUST be wrapped in <a href="mailto:..."> — clicking must open email.
 13. ALL CTA buttons and links that say "Book Now", "Reserve", "Contact Us", "Get Started" MUST link to an actual section with a matching id. If <Banner cta="Book Now" href="#booking" />, then somewhere on page there MUST be a section with id="booking".
 14. Section IDs MUST match exactly: if you use id="booking" in App.tsx, the Banner/CTA href must be "#booking" — not "#book", "#reservations", or "#contact".
-CRITICAL: The post-processor auto-injects anchor divs before these sections:
-  ServiceCards → id="services", Booking → id="booking", Reviews → id="reviews",
-  MenuGrid → id="menu", PricingTable → id="pricing", Team → id="team",
+CRITICAL: The post-processor auto-injects anchor divs before these sections (you do NOT need to add ids manually):
+  ServiceCards → id="services", Booking → id="booking", Reviews → id="reviews", Testimonials → id="testimonials",
+  MenuGrid → id="menu", ShopGrid → id="shop", PricingTable → id="pricing", Team → id="team",
   Contact → id="contact", MapSection → id="location", FAQ → id="faq",
-  Gallery → id="gallery", Portfolio → id="portfolio"
+  Gallery → id="gallery", Portfolio → id="portfolio", Features → id="features", IconFeatures → id="features",
+  Partners → id="partners", LogoCloud → id="partners", Stats → id="stats", VideoSection → id="video",
+  StepProcess → id="process", Timeline → id="timeline", BlogGrid → id="blog",
+  BeforeAfter → id="results", EventsList → id="events", TrustBadges → id="trust",
+  SplitSection → id="about", ImageText → id="about", HoursTable → id="hours", Tabs → id="tabs"
 So when using these components, CTA buttons/nav links should use EXACTLY these IDs.
+If a nav link targets a section NOT in this list, manually wrap it: <div id="your-id"><YourComponent .../></div>
 15. If Navbar has a cart icon and you are NOT building a shop/restaurant, remove the cart — do NOT include cart functionality on non-commerce sites.
 16. EVERY interactive button must DO something: Book Now scrolls to booking, Call Now opens dialer, Get Directions opens maps, Select Plan highlights the plan.
 17. Design must be BOLD and DISTINCTIVE — NOT plain white. Rules:
@@ -3171,10 +3176,13 @@ complete file here
       MenuGrid: 'menu', ShopGrid: 'shop', Gallery: 'gallery', Portfolio: 'portfolio',
       Team: 'team', Timeline: 'timeline', Testimonials: 'testimonials',
       PricingTable: 'pricing', FAQ: 'faq', Contact: 'contact', MapSection: 'location',
-      HoursTable: 'hours', StepProcess: 'process', Features: 'features',
-      Stats: 'stats', LogoCloud: 'partners', BlogGrid: 'blog', Newsletter: 'newsletter',
+      HoursTable: 'hours', StepProcess: 'process', Features: 'features', IconFeatures: 'features',
+      Stats: 'stats', LogoCloud: 'partners', Partners: 'partners', BlogGrid: 'blog', Newsletter: 'newsletter',
       AppDownload: 'download', BeforeAfter: 'results', EventsList: 'events',
       Countdown: 'offer', TrustBadges: 'trust', VideoSection: 'video',
+      SocialWall: 'social', SocialProof: 'social', Awards: 'awards',
+      LocationCards: 'locations', ProductSpotlight: 'featured', ImageText: 'about',
+      Tabs: 'tabs', QuoteBlock: 'quote',
       DashboardStats: 'stats', DataTable: 'data', ActivityFeed: 'activity', OrdersTable: 'orders',
       UserManagement: 'users', KanbanBoard: 'tasks', CalendarWidget: 'calendar', AnalyticsPanel: 'analytics',
       // Admin components

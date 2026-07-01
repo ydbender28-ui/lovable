@@ -863,7 +863,7 @@ export default function ProjectWorkspace({
           const attempt = prev + 1;
           setIframeError(null);
           runGenerate(
-            `There is a JS runtime error (auto-fix attempt ${attempt}/${MAX_AUTO_FIX}). Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${err}`,
+            `There is a JS runtime error (auto-fix attempt ${attempt}/${MAX_AUTO_FIX}). Fix ONLY by editing /App.tsx or /index.css — do NOT attempt to edit /components/sections/* files (they are library files). If a component library file is crashing, replace that component with a simpler inline alternative in App.tsx. Preserve all other functionality. Error: ${err}`,
             undefined,
             "claude-sonnet-4-6",
             true
@@ -2740,7 +2740,7 @@ export default function ProjectWorkspace({
           <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-b border-red-200 shrink-0">
             <span className="text-xs text-red-600 truncate flex-1">Error: {iframeError.slice(0, 120)}</span>
             <button onClick={() => {
-              const fixPrompt = `There is a JS runtime error. Fix ONLY the broken code — do not change any functionality, layout, or features. Error: ${iframeError}`;
+              const fixPrompt = `There is a JS runtime error. Fix ONLY by editing /App.tsx or /index.css — do NOT attempt to edit /components/sections/* files (they are library files). If a library component crashes, replace it with a simpler inline alternative in App.tsx. Error: ${iframeError}`;
               setIframeError(null);
               setAutoFixAttempt(0);
               runGenerate(fixPrompt, undefined, "claude-sonnet-4-6", true);

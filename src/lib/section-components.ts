@@ -51,6 +51,7 @@ export default function Navbar({ brand, logo, logoImage, links, cta, ctaHref, sh
     e.preventDefault();
     const slug = label.toLowerCase().replace(/\s+/g, '-');
     let el: HTMLElement | null = document.getElementById(slug) || document.getElementById(slug.replace(/-/g,'')) || document.getElementById(aliases[slug] || slug);
+    if (!el) { const crossMap: Record<string,string[]> = {reviews:['testimonials'],testimonials:['reviews'],about:['story','intro','mission'],menu:['shop','products'],shop:['menu'],features:['icon-features','iconfeatures'],gallery:['portfolio'],portfolio:['gallery'],contact:['booking','location']}; for (const altId of (crossMap[slug]||[])) { el = document.getElementById(altId); if(el) break; } }
     if (!el) { const secs = document.querySelectorAll('section, [id]'); for (const s of secs) { const h = s.querySelector('h1,h2,h3'); if (h && h.textContent && h.textContent.toLowerCase().includes(label.toLowerCase())) { el = s as HTMLElement; break; } } }
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -1850,7 +1851,8 @@ export default function BeforeAfter({ title, subtitle, items, accentColor }: { t
   const [pos, setPos] = useState<number[]>(safeItems.map(()=>50));
   const activeIdx = useRef<number|null>(null);
   const containerRefs = useRef<(HTMLDivElement|null)[]>([]);
-  const calcPct = useCallback((clientX: number, el: HTMLDivElement) => {
+  const calcPct = useCallback((clientX: number, el: HTMLDivElement | null) => {
+    if (!el) return 50;
     const rect = el.getBoundingClientRect();
     return Math.min(95, Math.max(5, ((clientX - rect.left) / rect.width) * 100));
   }, []);
