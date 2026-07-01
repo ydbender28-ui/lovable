@@ -3183,7 +3183,7 @@ complete file here
       SocialWall: 'social', SocialProof: 'social', Awards: 'awards',
       LocationCards: 'locations', ProductSpotlight: 'featured', ImageText: 'about',
       Tabs: 'tabs', QuoteBlock: 'quote',
-      DashboardStats: 'stats', DataTable: 'data', ActivityFeed: 'activity', OrdersTable: 'orders',
+      DashboardStats: 'metrics', DataTable: 'data', ActivityFeed: 'activity', OrdersTable: 'orders',
       UserManagement: 'users', KanbanBoard: 'tasks', CalendarWidget: 'calendar', AnalyticsPanel: 'analytics',
       // Admin components
       DashboardShell: 'dashboard', RevenueChart: 'revenue', AdminSidebar: 'sidebar',

@@ -927,8 +927,8 @@ export default function PricingTable({ title, subtitle, plans, items, accentColo
 
 "/components/sections/FAQ.tsx": `import React, { useState, useEffect } from 'react';
 type FAQItem = { q: string; a: string };
-export default function FAQ({ title, items }: { title: string; items: FAQItem[] }) {
-  const safeItems = (items || []).filter(Boolean);
+export default function FAQ({ title, items, questions }: { title: string; items?: FAQItem[]; questions?: FAQItem[] }) {
+  const safeItems = (items || questions || []).filter(Boolean);
   const [open, setOpen] = useState<number | null>(null);
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
@@ -1064,7 +1064,7 @@ export default function Stats({ items, dark }: { items: Stat[]; dark?: boolean }
 type Member = { name: string; role: string; image?: string; bio?: string };
 export default function Team({ title, members, items, accentColor }: { title: string; members?: Member[]; items?: Member[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#c2410c)';
-  const list = members || items || [];
+  const list = (members || items || []).filter(Boolean);
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -1157,8 +1157,8 @@ export default function Timeline({ title, events, items }: { title: string; even
 }`,
 
 "/components/sections/LogoCloud.tsx": `import React, { useState, useEffect } from 'react';
-export default function LogoCloud({ title, logos }: { title?: string; logos: { name: string; image?: string }[] }) {
-  const safeLogos = (logos || []).filter(Boolean);
+export default function LogoCloud({ title, logos, items }: { title?: string; logos?: { name: string; image?: string }[]; items?: any[] }) {
+  const safeLogos = (logos || items || []).filter(Boolean);
   const doubled = [...safeLogos, ...safeLogos];
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
@@ -1542,9 +1542,9 @@ export default function ServiceCards({ title, subtitle, items, services, accentC
 
 "/components/sections/StepProcess.tsx": `import React, { useState, useEffect } from 'react';
 type Step = { title: string; desc: string; icon?: string };
-export default function StepProcess({ title, subtitle, steps, accentColor, layout }: { title: string; subtitle?: string; steps: Step[]; accentColor?: string; layout?: 'horizontal'|'vertical' }) {
+export default function StepProcess({ title, subtitle, steps, items, accentColor, layout }: { title: string; subtitle?: string; steps?: Step[]; items?: Step[]; accentColor?: string; layout?: 'horizontal'|'vertical' }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const safeSteps = (steps || []).filter(Boolean);
+  const safeSteps = (steps || items || []).filter(Boolean);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   const horiz = !isMobile && layout !== 'vertical';
