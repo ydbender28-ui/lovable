@@ -47,9 +47,9 @@ export default function Avatar({ src, name, size }: { src?: string; name: string
 }`,
 
 "/components/sections/Badge.tsx": `import React from 'react';
-const colors: Record<string, string> = { default: 'bg-gray-100 text-gray-700', primary: 'bg-orange-100 text-orange-700', success: 'bg-green-100 text-green-700', warning: 'bg-yellow-100 text-yellow-700', danger: 'bg-red-100 text-red-700' };
+const BADGE_COLORS: Record<string, string> = { default: 'bg-gray-100 text-gray-700', primary: 'bg-orange-100 text-orange-700', success: 'bg-green-100 text-green-700', warning: 'bg-yellow-100 text-yellow-700', danger: 'bg-red-100 text-red-700' };
 export default function Badge({ text, variant }: { text: string; variant?: string }) {
-  return <span className={"inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold " + (colors[variant || 'default'] || colors.default)}>{text}</span>;
+  return <span className={"inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold " + (BADGE_COLORS[variant || 'default'] || BADGE_COLORS.default)}>{text}</span>;
 }`,
 
 "/components/sections/Breadcrumb.tsx": `import React from 'react';
@@ -271,13 +271,13 @@ export default function Switch({ checked, onChange, label }: { checked: boolean;
 }`,
 
 "/components/sections/Toast.tsx": `import React, { useState, useEffect } from 'react';
-const colors: Record<string, string> = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500', warning: 'bg-yellow-500' };
+const TOAST_COLORS: Record<string, string> = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500', warning: 'bg-yellow-500' };
 export default function Toast({ message, type, duration, onClose }: { message: string; type?: string; duration?: number; onClose?: () => void }) {
   const [show, setShow] = useState(true);
   useEffect(() => { const t = setTimeout(() => { setShow(false); onClose?.(); }, duration || 3000); return () => clearTimeout(t); }, []);
   if (!show) return null;
   return (
-    <div className={"fixed bottom-4 right-4 z-50 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 " + (colors[type || 'info'])}>
+    <div className={"fixed bottom-4 right-4 z-50 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 " + (TOAST_COLORS[type || 'info'])}>
       <span className="text-sm font-medium">{message}</span>
       <button onClick={() => { setShow(false); onClose?.(); }} className="text-white/70 hover:text-white">&times;</button>
     </div>
