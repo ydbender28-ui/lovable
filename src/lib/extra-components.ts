@@ -313,7 +313,7 @@ export default function Divider({ text }: { text?: string }) {
 }`,
 
 "/components/sections/Map.tsx": `import React from 'react';
-export default function Map({ address, height }: { address: string; height?: number }) {
+export default function MapSection({ address, height }: { address: string; height?: number }) {
   const q = encodeURIComponent(address);
   return (
     <div className="rounded-xl overflow-hidden border border-gray-200" style={{ height: height || 300 }}>
