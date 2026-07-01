@@ -2529,7 +2529,7 @@ export default function MapEmbed({ address, lat, lng, title, accentColor }: { ad
 }`,
 
 "/components/sections/SocialLinks.tsx": `import React from 'react';
-const ICONS: Record<string, string> = { facebook:'f', instagram:'ig', twitter:'X', tiktok:'tt', youtube:'yt', linkedin:'in', pinterest:'p', snapchat:'sc' };
+const SOCIAL_ICONS: Record<string, string> = { facebook:'f', instagram:'ig', twitter:'X', tiktok:'tt', youtube:'yt', linkedin:'in', pinterest:'p', snapchat:'sc' };
 export default function SocialLinks({ items, size, accentColor }: { items: { platform: 'facebook'|'instagram'|'twitter'|'tiktok'|'youtube'|'linkedin'|'pinterest'|'snapchat'; url: string }[]; size?: 'sm'|'md'|'lg'; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
   const dim = size === 'sm' ? 36 : size === 'lg' ? 52 : 44;
@@ -2540,7 +2540,7 @@ export default function SocialLinks({ items, size, accentColor }: { items: { pla
         <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{ width: dim, height: dim, borderRadius: '50%', border: \`2px solid \${accent}\`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs, color: accent, textDecoration: 'none', transition: 'all 0.2s', background: 'transparent', fontWeight: 700, textTransform: 'uppercase' as const }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = accent; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = accent; }}>
-          {ICONS[item.platform] || item.platform[0].toUpperCase()}
+          {SOCIAL_ICONS[item.platform] || item.platform[0].toUpperCase()}
         </a>
       ))}
     </div>
@@ -3258,7 +3258,7 @@ const SC: Record<string,{ bg:string; color:string }> = {
   Pending:{ bg:'#fef3c7', color:'#d97706' }, Processing:{ bg:'#dbeafe', color:'#2563eb' },
   Shipped:{ bg:'#ede9fe', color:'#7c3aed' }, Delivered:{ bg:'#dcfce7', color:'#16a34a' }, Cancelled:{ bg:'#fee2e2', color:'#dc2626' },
 };
-const TABS = ['All','Pending','Processing','Shipped','Delivered','Cancelled'];
+const ORDER_STATUS_TABS = ['All','Pending','Processing','Shipped','Delivered','Cancelled'];
 export default function OrdersTable({ orders: init = DEFAULT_ORDERS, onStatusChange, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const [filter, setFilter] = useState('All');
@@ -3270,7 +3270,7 @@ export default function OrdersTable({ orders: init = DEFAULT_ORDERS, onStatusCha
       <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border, #e5e7eb)' }}>
         <h3 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 700 }}>Orders</h3>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {TABS.map(s => <button key={s} onClick={() => setFilter(s)} style={{ padding: '5px 14px', borderRadius: 50, border: filter === s ? 'none' : '1px solid var(--border, #e5e7eb)', background: filter === s ? accent : 'transparent', color: filter === s ? '#fff' : 'var(--muted, #666)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{s}</button>)}
+          {ORDER_STATUS_TABS.map(s => <button key={s} onClick={() => setFilter(s)} style={{ padding: '5px 14px', borderRadius: 50, border: filter === s ? 'none' : '1px solid var(--border, #e5e7eb)', background: filter === s ? accent : 'transparent', color: filter === s ? '#fff' : 'var(--muted, #666)', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>{s}</button>)}
         </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
@@ -3438,8 +3438,8 @@ const DEFAULT_EVENTS: CalEvent[] = [
   { date:'2026-06-25', title:'Design review', color:'#06b6d4' },
   { date:'2026-06-30', title:'Month-end close', color:'#8b5cf6' },
 ];
-const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const CALENDAR_DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+const CALENDAR_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }: Props) {
   const accent = accentColor || 'var(--primary, #6366f1)';
   const today = new Date();
@@ -3457,11 +3457,11 @@ export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }:
       <div style={{ padding: 20, flex: '1 1 260px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <button onClick={() => setCur(c => c.month === 0 ? { year: c.year-1, month: 11 } : { ...c, month: c.month-1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted, #888)' }}>&#8249;</button>
-          <span style={{ fontWeight: 700, fontSize: 14 }}>{MONTHS[cur.month]} {cur.year}</span>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{CALENDAR_MONTHS[cur.month]} {cur.year}</span>
           <button onClick={() => setCur(c => c.month === 11 ? { year: c.year+1, month: 0 } : { ...c, month: c.month+1 })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--muted, #888)' }}>&#8250;</button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
-          {DAYS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--muted, #aaa)', padding: '3px 0' }}>{d}</div>)}
+          {CALENDAR_DAYS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: 'var(--muted, #aaa)', padding: '3px 0' }}>{d}</div>)}
           {cells.map((d, i) => {
             if (!d) return <div key={i} />;
             const ds = fmt(d), evs = evFor(d), isSel = sel === ds, isTod = isToday(d);
