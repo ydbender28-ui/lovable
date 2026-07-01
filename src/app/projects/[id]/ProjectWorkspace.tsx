@@ -1727,7 +1727,7 @@ export default function ProjectWorkspace({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Publish failed");
-      setPublishSlug(data.url);
+      setPublishSlug(data.slug);
       setPublishedFilesHash(hashFiles(files));
       setShowPublishDialog(false);
       if (data.customDomain && data.vercelCname) {
