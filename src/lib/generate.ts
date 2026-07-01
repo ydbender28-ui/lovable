@@ -3234,11 +3234,19 @@ complete file here
 
   // Inject bold design CSS: force accent color var + section background alternation
   if (finalFiles['/App.tsx'] && finalFiles['/index.css']) {
-    // Extract accent color from App.tsx (look for accentColor="#..." pattern)
-    const accentMatch = finalFiles['/App.tsx'].match(/accentColor=["']([^"']+)["']/);
-    const accentHex = accentMatch?.[1] || null;
-
     let css = finalFiles['/index.css'];
+
+    // Prefer the real hex value already declared in :root (--primary/--accent), since
+    // accentColor props are usually var(--primary) now, not a literal hex.
+    const rootHexMatch = css.match(/--(?:primary|accent):\s*(#[0-9a-fA-F]{3,8})/);
+    let accentHex = rootHexMatch?.[1] || null;
+
+    if (!accentHex) {
+      // Fall back to whatever App.tsx passed as accentColor, but only trust it if it's a real hex
+      const accentMatch = finalFiles['/App.tsx'].match(/accentColor=["']([^"']+)["']/);
+      const propValue = accentMatch?.[1] || null;
+      accentHex = propValue && propValue.startsWith('#') ? propValue : null;
+    }
 
     // Inject --accent CSS variable if we found an accent color and it's not already defined
     if (accentHex && !css.includes('--accent:')) {
