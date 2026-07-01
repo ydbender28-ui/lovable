@@ -871,11 +871,12 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
 
 "/components/sections/PricingTable.tsx": `import React, { useState, useEffect } from 'react';
 type Plan = { name: string; price: string; yearlyPrice?: string; period?: string; features: string[]; cta: string; ctaHref?: string; popular?: boolean; desc?: string };
-export default function PricingTable({ title, subtitle, plans, accentColor }: { title: string; subtitle?: string; plans: Plan[]; accentColor?: string }) {
+export default function PricingTable({ title, subtitle, plans, items, accentColor }: { title: string; subtitle?: string; plans: Plan[]; items?: Plan[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safePlans = (plans || items || []).filter(Boolean);
   const [billing, setBilling] = useState<'monthly'|'yearly'>('monthly');
-  const [selected, setSelected] = useState<number|null>(plans.findIndex(p=>p.popular) ?? null);
-  const hasYearly = plans.some(p=>p.yearlyPrice);
+  const [selected, setSelected] = useState<number|null>(safePlans.findIndex(p=>p.popular) ?? null);
+  const hasYearly = safePlans.some(p=>p.yearlyPrice);
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -898,8 +899,8 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
             </button>
           </div>}
         </div>
-        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : \`repeat(\${Math.min(plans.length,3)},1fr)\`,gap:20,alignItems:'start'}}>
-          {(plans||[]).map((p,i)=>{
+        <div style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : \`repeat(\${Math.min(safePlans.length,3)},1fr)\`,gap:20,alignItems:'start'}}>
+          {safePlans.map((p,i)=>{
             const isSelected = selected===i;
             const price = billing==='yearly'&&p.yearlyPrice ? p.yearlyPrice : p.price;
             return (
@@ -990,6 +991,7 @@ export default function Gallery({ title, images, items }: { title: string; image
   }, []);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+  useEffect(() => { if (selected === null) return; const h = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelected(null); }; window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, [selected]);
   return (
     <section ref={ref as any} id="gallery" style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:48 }}>{title}</h2>
@@ -1003,7 +1005,7 @@ export default function Gallery({ title, images, items }: { title: string; image
         ))}
       </div>
       {selected !== null && (
-        <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setSelected(null)} onKeyDown={e => e.key === 'Escape' && setSelected(null)} tabIndex={-1} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+        <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setSelected(null)} tabIndex={-1} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <img src={safeImages[selected].src} alt={safeImages[selected].alt} style={{ maxWidth:'90vw', maxHeight:'90vh', objectFit:'contain', borderRadius:8 }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
         </div>
       )}
@@ -1466,7 +1468,7 @@ export default function MapSection({ title, address, phone, email, hours, mapUrl
               </div>
               {phone&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}>
                 <div style={{width:44,height:44,borderRadius:12,background:\`\${accent}15\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>📞</div>
-                <div><div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Phone</div><a href={\`tel:\${phone.replace(/\s/g,'')}\`} style={{color:accent,textDecoration:'none',fontSize:14,fontWeight:600}}>{phone}</a></div>
+                <div><div style={{fontWeight:700,fontSize:15,marginBottom:2}}>Phone</div><a href={\`tel:\${phone.replace(/[^0-9+]/g,'')}\`} style={{color:accent,textDecoration:'none',fontSize:14,fontWeight:600}}>{phone}</a></div>
               </div>}
               {email&&<div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20}}>
                 <div style={{width:44,height:44,borderRadius:12,background:\`\${accent}15\`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>✉️</div>
@@ -1568,7 +1570,7 @@ export default function StepProcess({ title, subtitle, steps, accentColor, layou
   );
 }`,
 
-"/components/sections/VideoSection.tsx": `import React, { useState } from 'react';
+"/components/sections/VideoSection.tsx": `import React, { useState, useEffect } from 'react';
 export default function VideoSection({ title, subtitle, videoUrl, thumbnail, accentColor }: { title?: string; subtitle?: string; videoUrl: string; thumbnail?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
   const [playing, setPlaying] = useState(false);
@@ -1619,6 +1621,8 @@ export default function AppDownload({ title, subtitle, description, appStoreUrl,
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
     <section ref={ref as any} style={{padding:'80px 40px',background:accent,color:'#fff',overflow:'hidden', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'grid',gridTemplateColumns: isMobile ? '1fr' : (mockupImage?'1fr 1fr':'1fr'),gap:60,alignItems:'center'}}>
@@ -1679,7 +1683,7 @@ export default function Comparison({ title, subtitle, plans, rows, accentColor }
   );
 }`,
 
-"/components/sections/Portfolio.tsx": `import React, { useState } from 'react';
+"/components/sections/Portfolio.tsx": `import React, { useState, useEffect } from 'react';
 type Project = { title: string; category: string; image: string; desc?: string; link?: string };
 export default function Portfolio({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Project[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1722,11 +1726,11 @@ export default function Portfolio({ title, subtitle, items, accentColor }: { tit
   );
 }`,
 
-"/components/sections/EventsList.tsx": `import React from 'react';
+"/components/sections/EventsList.tsx": `import React, { useState, useEffect } from 'react';
 type Event = { title: string; date: string; time?: string; location?: string; desc?: string; image?: string; link?: string; badge?: string };
-export default function EventsList({ title, subtitle, items, accentColor, layout }: { title: string; subtitle?: string; items: Event[]; accentColor?: string; layout?: 'list'|'grid' }) {
+export default function EventsList({ title, subtitle, items, events, accentColor, layout }: { title: string; subtitle?: string; items?: Event[]; events?: Event[]; accentColor?: string; layout?: 'list'|'grid' }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const safeItems = (items || []).filter(Boolean) as Event[];
+  const safeItems = (items || events || []).filter(Boolean) as Event[];
   const grid = layout === 'grid';
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
@@ -1758,7 +1762,7 @@ export default function EventsList({ title, subtitle, items, accentColor, layout
                 </div>
                 {ev.desc&&<p style={{fontSize:13,color:'#888',margin:0,lineHeight:1.6}}>{ev.desc}</p>}
               </div>
-              {ev.link&&<a href={ev.link} style={{display:'inline-flex',alignItems:'center',padding:'8px 18px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:700,flexShrink:0,margin:grid?'0 20px 20px':'0'}}>RSVP →</a>}
+              {ev.link&&<a href={ev.link} target="_blank" rel="noopener noreferrer" style={{display:'inline-flex',alignItems:'center',padding:'8px 18px',borderRadius:50,background:accent,color:'#fff',textDecoration:'none',fontSize:13,fontWeight:700,flexShrink:0,margin:grid?'0 20px 20px':'0'}}>RSVP →</a>}
             </div>
           ))}
         </div>
@@ -1803,9 +1807,9 @@ export default function Countdown({ title, subtitle, targetDate, cta, ctaHref, a
 
 "/components/sections/TrustBadges.tsx": `import React, { useState, useEffect } from 'react';
 type Badge = { label: string; icon?: string; sub?: string };
-export default function TrustBadges({ items, title, accentColor }: { items: Badge[]; title?: string; accentColor?: string }) {
+export default function TrustBadges({ items, badges, title, accentColor }: { items?: Badge[]; badges?: Badge[]; title?: string; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const safeItems = (items || []).filter(Boolean);
+  const safeItems = (items || badges || []).filter(Boolean);
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -1832,11 +1836,11 @@ export default function TrustBadges({ items, title, accentColor }: { items: Badg
   );
 }`,
 
-"/components/sections/BeforeAfter.tsx": `import React, { useState, useRef, useCallback } from 'react';
+"/components/sections/BeforeAfter.tsx": `import React, { useState, useEffect, useRef, useCallback } from 'react';
 type Item = { title?: string; before: string; after: string; beforeLabel?: string; afterLabel?: string };
 export default function BeforeAfter({ title, subtitle, items, accentColor }: { title?: string; subtitle?: string; items: Item[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
-  const safeItems = items || [];
+  const safeItems = (items || []).filter(Boolean);
   const [pos, setPos] = useState<number[]>(safeItems.map(()=>50));
   const activeIdx = useRef<number|null>(null);
   const containerRefs = useRef<(HTMLDivElement|null)[]>([]);
@@ -1932,7 +1936,7 @@ export default function HoursTable({ title, hours, note, accentColor }: { title?
   );
 }`,
 
-"/components/sections/ProductSpotlight.tsx": `import React from 'react';
+"/components/sections/ProductSpotlight.tsx": `import React, { useState, useEffect } from 'react';
 type Feature = { icon?: string; label: string };
 export default function ProductSpotlight({ title, subtitle, description, image, price, originalPrice, cta, ctaHref, features, badge, accentColor, imageLeft }: { title: string; subtitle?: string; description?: string; image: string; price?: string; originalPrice?: string; cta?: string; ctaHref?: string; features?: Feature[]; badge?: string; accentColor?: string; imageLeft?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1965,7 +1969,7 @@ export default function ProductSpotlight({ title, subtitle, description, image, 
   );
 }`,
 
-"/components/sections/LocationCards.tsx": `import React from 'react';
+"/components/sections/LocationCards.tsx": `import React, { useState, useEffect } from 'react';
 type Location = { name: string; address: string; phone?: string; hours?: string; image?: string; link?: string };
 export default function LocationCards({ title, subtitle, items, accentColor }: { title: string; subtitle?: string; items: Location[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -1993,9 +1997,9 @@ export default function LocationCards({ title, subtitle, items, accentColor }: {
               <div style={{padding:24}}>
                 <h3 style={{fontSize:18,fontWeight:700,margin:'0 0 8px'}}>{loc.name}</h3>
                 <p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📍 {loc.address}</p>
-                {loc.phone&&<p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📞 <a href={\`tel:\${loc.phone}\`} style={{color:'inherit',textDecoration:'none'}}>{loc.phone}</a></p>}
+                {loc.phone&&<p style={{fontSize:14,color:'#888',margin:'0 0 4px'}}>📞 <a href={\`tel:\${loc.phone.replace(/[^0-9+]/g,'')}\`} style={{color:'inherit',textDecoration:'none'}}>{loc.phone}</a></p>}
                 {loc.hours&&<p style={{fontSize:14,color:'#888',margin:'0 0 16px'}}>🕐 {loc.hours}</p>}
-                {loc.link&&<a href={loc.link} style={{fontSize:13,fontWeight:700,color:accent,textDecoration:'none'}}>Get Directions →</a>}
+                {loc.link&&<a href={loc.link} target="_blank" rel="noopener noreferrer" style={{fontSize:13,fontWeight:700,color:accent,textDecoration:'none'}}>Get Directions →</a>}
               </div>
             </div>
           ))}
@@ -2108,7 +2112,7 @@ export default function VideoHero({ title, subtitle, cta, ctaHref, cta2, cta2Hre
   );
 }`,
 
-"/components/sections/RichText.tsx": `import React from 'react';
+"/components/sections/RichText.tsx": `import React, { useState, useEffect } from 'react';
 type Block = { type: 'h2'|'h3'|'p'|'quote'|'list'; content: string; items?: string[] };
 export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Block[]; accentColor?: string; maxWidth?: number }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -2138,7 +2142,7 @@ export default function RichText({ blocks, accentColor, maxWidth }: { blocks: Bl
   );
 }`,
 
-"/components/sections/Partners.tsx": `import React from 'react';
+"/components/sections/Partners.tsx": `import React, { useState, useEffect } from 'react';
 type Partner = { name: string; logo?: string; desc?: string; url?: string };
 export default function Partners({ title, subtitle, items, accentColor, showDesc }: { title?: string; subtitle?: string; items: Partner[]; accentColor?: string; showDesc?: boolean }) {
   const accent = accentColor || 'var(--accent,#111)';
@@ -2161,7 +2165,7 @@ export default function Partners({ title, subtitle, items, accentColor, showDesc
         </div>}
         <div style={{display:'grid',gridTemplateColumns:showDesc?\`repeat(auto-fill,minmax(240px,1fr))\`:\`repeat(auto-fill,minmax(160px,1fr))\`,gap:showDesc?24:16,alignItems:'center'}}>
           {safeItems.map((p,i)=>(
-            <a key={i} href={p.url||'#'} style={{textDecoration:'none',display:'flex',flexDirection:showDesc?'column':'row',alignItems:'center',gap:12,padding:showDesc?24:16,borderRadius:16,border:'1.5px solid #f0f0f0',background:'#fafafa',transition:'all 0.2s',color:'inherit'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.borderColor=accent;(e.currentTarget as HTMLElement).style.background='#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.borderColor='#f0f0f0';(e.currentTarget as HTMLElement).style.background='#fafafa'}}>
+            <a key={i} href={p.url||'#'} target={p.url?'_blank':undefined} rel={p.url?'noopener noreferrer':undefined} style={{textDecoration:'none',display:'flex',flexDirection:showDesc?'column':'row',alignItems:'center',gap:12,padding:showDesc?24:16,borderRadius:16,border:'1.5px solid #f0f0f0',background:'#fafafa',transition:'all 0.2s',color:'inherit'}} onMouseOver={e=>{(e.currentTarget as HTMLElement).style.borderColor=accent;(e.currentTarget as HTMLElement).style.background='#fff'}} onMouseOut={e=>{(e.currentTarget as HTMLElement).style.borderColor='#f0f0f0';(e.currentTarget as HTMLElement).style.background='#fafafa'}}>
               {p.logo?<img src={p.logo} alt={p.name} style={{height:36,objectFit:'contain',filter:'grayscale(1)',transition:'filter 0.2s'}} onMouseOver={e=>(e.currentTarget as HTMLElement).style.filter='none'} onMouseOut={e=>(e.currentTarget as HTMLElement).style.filter='grayscale(1)'} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }}/>:<div style={{fontWeight:800,fontSize:16,color:'#bbb'}}>{p.name}</div>}
               {showDesc&&<div><div style={{fontWeight:700,fontSize:14}}>{p.name}</div>{p.desc&&<p style={{fontSize:13,color:'#888',margin:'4px 0 0'}}>{p.desc}</p>}</div>}
             </a>
@@ -2253,6 +2257,7 @@ export default function SocialProof({ stats, quotes, accentColor, dark }: { stat
 type Block = { image: string; title: string; desc: string; cta?: string; ctaHref?: string; badge?: string; imageLeft?: boolean };
 export default function ImageText({ blocks, accentColor }: { blocks: Block[]; accentColor?: string }) {
   const accent = accentColor || 'var(--accent,#111)';
+  const safeBlocks = (blocks || []).filter(Boolean);
   const ref = React.useRef<HTMLElement>(null);
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -2260,10 +2265,12 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
     if(ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => { const h = () => setIsMobile(window.innerWidth < 768); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
   return (
     <section ref={ref as any} style={{padding:'60px 40px',background:'var(--bg,#fff)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease'}}>
       <div style={{maxWidth:1100,margin:'0 auto',display:'flex',flexDirection:'column',gap:80}}>
-        {blocks.map((b,i)=>{
+        {safeBlocks.map((b,i)=>{
           const left = b.imageLeft !== undefined ? b.imageLeft : i%2===0;
           return (
             <div key={i} style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',gap:64,alignItems:'center',direction:'ltr'}}>
@@ -2394,9 +2401,9 @@ export default function ProfileCard({ name, role, image, bio, twitter, linkedin,
       <div style={{ color: accent, fontSize: 13, fontWeight: 600, marginTop: 2 }}>{role}</div>
       {bio && <p style={{ fontSize: 13, color: 'hsl(var(--muted-foreground))', lineHeight: 1.6, margin: '12px 0' }}>{bio}</p>}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 12 }}>
-        {twitter && <a href={twitter} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>𝕏</a>}
-        {linkedin && <a href={linkedin} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>in</a>}
-        {instagram && <a href={instagram} target="_blank" rel="noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>📷</a>}
+        {twitter && <a href={twitter} target="_blank" rel="noopener noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>𝕏</a>}
+        {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>in</a>}
+        {instagram && <a href={instagram} target="_blank" rel="noopener noreferrer" style={{ fontSize: 18, textDecoration: 'none' }}>📷</a>}
       </div>
     </div>
   );
@@ -2505,7 +2512,7 @@ export default function MapEmbed({ address, lat, lng, title, accentColor }: { ad
       <div style={{ padding: 20 }}>
         {title && <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{title}</div>}
         <div style={{ fontSize: 14, color: 'hsl(var(--muted-foreground))', marginBottom: 14 }}>{address}</div>
-        <a href={mapsUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, background: accent, color: '#fff', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>Open in Maps</a>
+        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', borderRadius: 8, background: accent, color: '#fff', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>Open in Maps</a>
       </div>
     </div>
   );
@@ -2520,7 +2527,7 @@ export default function SocialLinks({ items, size, accentColor }: { items: { pla
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontFamily: 'inherit' }}>
       {(items || []).map((item, i) => (
-        <a key={i} href={item.url} target="_blank" rel="noreferrer" style={{ width: dim, height: dim, borderRadius: '50%', border: \`2px solid \${accent}\`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs, color: accent, textDecoration: 'none', transition: 'all 0.2s', background: 'transparent', fontWeight: 700, textTransform: 'uppercase' as const }}
+        <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{ width: dim, height: dim, borderRadius: '50%', border: \`2px solid \${accent}\`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: fs, color: accent, textDecoration: 'none', transition: 'all 0.2s', background: 'transparent', fontWeight: 700, textTransform: 'uppercase' as const }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = accent; (e.currentTarget as HTMLElement).style.color = '#fff'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = accent; }}>
           {ICONS[item.platform] || item.platform[0].toUpperCase()}
@@ -2573,15 +2580,16 @@ export default function RatingStars({ value, max, interactive, onChange, size, c
 "/components/sections/Breadcrumbs.tsx": `import React from 'react';
 export default function Breadcrumbs({ items, accentColor }: { items: { label: string; href?: string }[]; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
+  const safeItems = (items || []).filter(Boolean);
   return (
     <nav aria-label="breadcrumb" style={{ fontFamily: 'inherit' }}>
       <ol style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, listStyle: 'none', margin: 0, padding: 0, fontSize: 14 }}>
-        {items.map((item, i) => (
+        {safeItems.map((item, i) => (
           <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {i > 0 && <span style={{ color: 'hsl(var(--muted-foreground))' }}>/</span>}
-            {item.href && i < items.length - 1
+            {item.href && i < safeItems.length - 1
               ? <a href={item.href} style={{ color: accent, textDecoration: 'none', fontWeight: 500 }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.textDecoration = 'underline'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.textDecoration = 'none'}>{item.label}</a>
-              : <span style={{ color: i === items.length - 1 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))', fontWeight: i === items.length - 1 ? 600 : 400 }}>{item.label}</span>}
+              : <span style={{ color: i === safeItems.length - 1 ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))', fontWeight: i === safeItems.length - 1 ? 600 : 400 }}>{item.label}</span>}
           </li>
         ))}
       </ol>
@@ -2592,15 +2600,16 @@ export default function Breadcrumbs({ items, accentColor }: { items: { label: st
 "/components/sections/TabsInline.tsx": `import React, { useState } from 'react';
 export default function TabsInline({ tabs, defaultTab, accentColor }: { tabs: { label: string; content: React.ReactNode }[]; defaultTab?: number; accentColor?: string }) {
   const accent = accentColor || 'hsl(var(--primary))';
+  const safeTabs = (tabs || []).filter(Boolean);
   const [active, setActive] = useState(defaultTab ?? 0);
   return (
     <div style={{ fontFamily: 'inherit' }}>
       <div role="tablist" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: 4, background: 'hsl(var(--muted))', borderRadius: 12, marginBottom: 20, width: 'fit-content' }}>
-        {tabs.map((tab, i) => (
+        {safeTabs.map((tab, i) => (
           <button type="button" role="tab" aria-selected={active === i} key={i} onClick={() => setActive(i)} style={{ padding: '7px 18px', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', background: active === i ? accent : 'transparent', color: active === i ? '#fff' : 'hsl(var(--muted-foreground))' }}>{tab.label}</button>
         ))}
       </div>
-      <div>{tabs[active]?.content}</div>
+      <div>{safeTabs[active]?.content}</div>
     </div>
   );
 }`,
@@ -2622,21 +2631,22 @@ export default function AccordionItem({ title, children, defaultOpen, accentColo
 
 "/components/sections/ImageGalleryGrid.tsx": `import React, { useState, useEffect } from 'react';
 export default function ImageGalleryGrid({ images, columns }: { images: { url: string; caption?: string }[]; columns?: 2|3|4; accentColor?: string }) {
+  const safeImages = (images || []).filter(Boolean);
   const [lightbox, setLightbox] = useState<number|null>(null);
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightbox(null);
-      if (e.key === 'ArrowRight') setLightbox(l => l !== null && l < images.length - 1 ? l + 1 : l);
+      if (e.key === 'ArrowRight') setLightbox(l => l !== null && l < safeImages.length - 1 ? l + 1 : l);
       if (e.key === 'ArrowLeft') setLightbox(l => l !== null && l > 0 ? l - 1 : l);
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [images.length]);
+  }, [safeImages.length]);
   const cols = columns || 3;
   return (
     <>
       <div style={{ display: 'grid', gridTemplateColumns: \`repeat(\${cols}, 1fr)\`, gap: 8 }}>
-        {images.map((img, i) => (
+        {safeImages.map((img, i) => (
           <div key={i} onClick={() => setLightbox(i)} style={{ borderRadius: 10, overflow: 'hidden', cursor: 'pointer', aspectRatio: '1/1', position: 'relative', transition: 'opacity 0.2s' }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.85'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}>
@@ -2646,12 +2656,12 @@ export default function ImageGalleryGrid({ images, columns }: { images: { url: s
       </div>
       {lightbox !== null && (
         <div role="dialog" aria-modal="true" aria-label="Image lightbox" onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-          <img src={images[lightbox].url} alt={images[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
-          {images[lightbox].caption && <p style={{ color: '#fff', marginTop: 14, fontSize: 14, opacity: 0.8 }}>{images[lightbox].caption}</p>}
+          <img src={safeImages[lightbox].url} alt={safeImages[lightbox].caption || ''} style={{ maxWidth: '90vw', maxHeight: '80vh', borderRadius: 12, objectFit: 'contain' }} onClick={e => e.stopPropagation()} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; }} />
+          {safeImages[lightbox].caption && <p style={{ color: '#fff', marginTop: 14, fontSize: 14, opacity: 0.8 }}>{safeImages[lightbox].caption}</p>}
           <div style={{ display: 'flex', gap: 16, marginTop: 16 }} onClick={e => e.stopPropagation()}>
             <button type="button" aria-label="Previous image" onClick={() => setLightbox(l => l !== null && l > 0 ? l - 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'<'}</button>
-            <span style={{ color: '#fff', fontSize: 13, alignSelf: 'center' }}>{lightbox + 1} / {images.length}</span>
-            <button onClick={() => setLightbox(l => l !== null && l < images.length - 1 ? l + 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'>'}</button>
+            <span style={{ color: '#fff', fontSize: 13, alignSelf: 'center' }}>{lightbox + 1} / {safeImages.length}</span>
+            <button onClick={() => setLightbox(l => l !== null && l < safeImages.length - 1 ? l + 1 : l)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', fontSize: 18 }}>{'>'}</button>
           </div>
           <button type="button" aria-label="Close lightbox" onClick={() => setLightbox(null)} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>×</button>
         </div>
@@ -3496,7 +3506,7 @@ export default function QuickActions({ title='Quick Actions', items=DEFAULT_ACTI
   );
 }`,
 
-"/components/sections/DashboardShell.tsx": `import { useState } from 'react';
+"/components/sections/DashboardShell.tsx": `import React, { useState } from 'react';
 interface NavItem { label: string; icon: string; active?: boolean; }
 interface Props { brand: string; navItems?: NavItem[]; pageTitle?: string; breadcrumbs?: string[]; userName?: string; userRole?: string; notifications?: number; children?: React.ReactNode; accentColor?: string; }
 const DN: NavItem[] = [{ label:'Dashboard', icon:'🏠', active:true },{ label:'Analytics', icon:'📊' },{ label:'Users', icon:'👥' },{ label:'Orders', icon:'📦' },{ label:'Settings', icon:'⚙️' }];
@@ -3620,7 +3630,7 @@ export default function ComingSoon({ title = 'Coming Soon', subtitle = 'Somethin
         {socials.length > 0 && (
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 40 }}>
             {socials.map((s, i) => (
-              <a key={i} href={s.href} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', fontSize: 12, fontWeight: 700, textDecoration: 'none', color: '#fff' }}>{icons[s.platform] || s.platform.slice(0,2).toUpperCase()}</a>
+              <a key={i} href={s.href} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', fontSize: 12, fontWeight: 700, textDecoration: 'none', color: '#fff' }}>{icons[s.platform] || s.platform.slice(0,2).toUpperCase()}</a>
             ))}
           </div>
         )}
@@ -3670,7 +3680,7 @@ export default function StickyContactBar({ phone = '(555) 123-4567', ctaText = '
   return (
     <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, background: '#fff', borderTop: '1px solid #e5e7eb', boxShadow: '0 -4px 24px rgba(0,0,0,0.1)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' as const }}>
       {message && <span style={{ flex: 1, fontSize: 14, color: '#374151', minWidth: 150 }}>{message}</span>}
-      {phone && <a href={\`tel:\${phone.replace(/\D/g,'')}\`} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151', textDecoration: 'none', fontWeight: 600, fontSize: 15, whiteSpace: 'nowrap' as const }}>📞 {phone}</a>}
+      {phone && <a href={\`tel:\${phone.replace(/[^0-9+]/g,'')}\`} style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#374151', textDecoration: 'none', fontWeight: 600, fontSize: 15, whiteSpace: 'nowrap' as const }}>📞 {phone}</a>}
       <a href={ctaHref} style={{ padding: '10px 24px', borderRadius: 10, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap' as const, marginLeft: 'auto' }}>{ctaText}</a>
       <button onClick={() => setDismissed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#9ca3af', lineHeight: 1, padding: '0 4px' }}>x</button>
     </div>
@@ -3732,13 +3742,13 @@ export default function InteractiveMap({ businessName = 'Our Location', address 
         <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', gap: 20 }}>
           <h2 style={{ margin: 0, fontSize: 'clamp(22px,4vw,34px)', fontWeight: 800, letterSpacing: '-0.02em' }}>{businessName}</h2>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 20 }}>📍</span><span style={{ fontSize: 15, lineHeight: 1.6, color: '#374151' }}>{address}</span></div>
-          {phone && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 20 }}>📞</span><a href={\`tel:\${phone.replace(/\D/g,'')}\`} style={{ fontSize: 15, color: accentColor, fontWeight: 600, textDecoration: 'none' }}>{phone}</a></div>}
+          {phone && <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><span style={{ fontSize: 20 }}>📞</span><a href={\`tel:\${phone.replace(/[^0-9+]/g,'')}\`} style={{ fontSize: 15, color: accentColor, fontWeight: 600, textDecoration: 'none' }}>{phone}</a></div>}
           {hours.length > 0 && (
             <div style={{ background: 'var(--card, #f9fafb)', borderRadius: 14, padding: '16px 20px' }}>
               {hours.map((h, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 14, borderBottom: i < hours.length - 1 ? '1px solid #f0f0f0' : 'none' }}><span style={{ fontWeight: 600 }}>{h.day}</span><span style={{ color: '#6b7280' }}>{h.time}</span></div>)}
             </div>
           )}
-          <a href={mapsHref} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>Get Directions</a>
+          <a href={mapsHref} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 26px', borderRadius: 12, background: accentColor, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: 15 }}>Get Directions</a>
         </div>
       </div>
     </section>
@@ -3895,7 +3905,7 @@ export default function AffiliatePartners({ title = 'Our Partners', subtitle, pa
               {p.tier && <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: tc }}>{p.tier}</span>}
               {p.logo ? <img src={p.logo} alt={p.name} style={{ width: 80, height: 40, objectFit: 'contain', filter: 'grayscale(1)', transition: 'filter 0.2s' }} onMouseOver={e => (e.currentTarget as HTMLImageElement).style.filter=''} onMouseOut={e => (e.currentTarget as HTMLImageElement).style.filter='grayscale(1)'} /> : <span style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>{p.name}</span>}
             </div>);
-            return p.url ? <a key={i} href={p.url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>{inner}</a> : <div key={i}>{inner}</div>;
+            return p.url ? <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{inner}</a> : <div key={i}>{inner}</div>;
           })}
         </div>
       </div>
@@ -4791,7 +4801,7 @@ export default function EventCard({ accentColor = 'var(--primary)', event = { ti
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {profile.socials.map(s => (
-                <a key={s.platform} href={s.href} style={{ width: 36, height: 36, border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg)', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>{s.icon}</a>
+                <a key={s.platform} href={s.href} target="_blank" rel="noopener noreferrer" style={{ width: 36, height: 36, border: '1px solid var(--border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--fg)', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>{s.icon}</a>
               ))}
             </div>
           </div>
@@ -4907,7 +4917,7 @@ export default function PropertyListing({ accentColor = 'var(--primary)', proper
                   <div style={{ color: 'var(--muted)', fontSize: 13 }}>{property.agent.title}</div>
                 </div>
               </div>
-              <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>📞 {property.agent.phone}</div>
+              <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>📞 <a href={\`tel:\${property.agent.phone.replace(/[^0-9+]/g,'')}\`} style={{ color: 'inherit', textDecoration: 'none' }}>{property.agent.phone}</a></div>
               <button style={{ width: '100%', padding: '12px', background: accentColor, color: 'var(--primary-fg)', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 10 }}>Schedule a Tour</button>
               <button style={{ width: '100%', padding: '12px', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--bg)', color: 'var(--fg)', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>Contact Agent</button>
             </div>
