@@ -741,7 +741,7 @@ export default function ShopGrid({ products, items, title, subtitle, accentColor
           {prods.map((p, i) => {
             const id = String(p.id || p.name);
             const isAdded = added === id;
-          +
+            return (
               <div key={i} style={{ background: 'var(--card, #fff)', borderRadius: 16, overflow: 'hidden', border: '1px solid var(--border, #eee)', transition: 'transform 0.2s, box-shadow 0.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 40px rgba(0,0,0,0.12)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
@@ -902,7 +902,7 @@ export default function PricingTable({ title, subtitle, plans, accentColor }: { 
           {(plans||[]).map((p,i)=>{
             const isSelected = selected===i;
             const price = billing==='yearly'&&p.yearlyPrice ? p.yearlyPrice : p.price;
-          +
+            return (
               <div key={i} onClick={()=>setSelected(i)} style={{background:p.popular?accent:'#fff',color:p.popular?'#fff':'#111',border:isSelected&&!p.popular?\`2px solid \${accent}\`:'2px solid '+(p.popular?accent:'#f0f0f0'),borderRadius:20,padding:32,position:'relative',cursor:'pointer',transition:\`all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s\`,boxShadow:isSelected?'0 16px 48px rgba(0,0,0,0.12)':'0 2px 12px rgba(0,0,0,0.04)',opacity: visible ? 1 : 0, transform: visible ? (p.popular?'scale(1.03)':'none') : 'translateY(24px)'}}>
                 {p.popular&&<span style={{position:'absolute',top:-14,left:'50%',transform:'translateX(-50%)',background:'#fff',color:accent,fontSize:11,padding:'4px 14px',borderRadius:50,fontWeight:800,border:\`2px solid \${accent}\`,whiteSpace:'nowrap'}}>Most Popular</span>}
                 <h3 style={{fontSize:19,fontWeight:800,margin:'0 0 6px'}}>{p.name}</h3>
@@ -1319,7 +1319,7 @@ export default function Booking({ title, subtitle, fields, cta }: { title: strin
                   </select>
                 </div>
               );
-            +
+              return (
                 <div key={f} style={{ gridColumn: (f==='name'||f==='email') && defaultFields.includes('email') ? 'auto' : defaultFields.includes('date') ? '1 / -1' : 'auto' }}>
                   <label htmlFor={\`booking-\${f}\`} style={lbl}>{def.label}</label>
                   <input id={\`booking-\${f}\`} type={def.type} value={form[f]||''} onChange={e=>setForm(p=>({...p,[f]:e.target.value}))} placeholder={def.placeholder} style={inp} onFocus={onFocus} onBlur={onBlur} />
@@ -2265,7 +2265,7 @@ export default function ImageText({ blocks, accentColor }: { blocks: Block[]; ac
       <div style={{maxWidth:1100,margin:'0 auto',display:'flex',flexDirection:'column',gap:80}}>
         {blocks.map((b,i)=>{
           const left = b.imageLeft !== undefined ? b.imageLeft : i%2===0;
-        +
+          return (
             <div key={i} style={{display:'grid',gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',gap:64,alignItems:'center',direction:'ltr'}}>
               <div style={{borderRadius:24,overflow:'hidden',boxShadow:'0 16px 64px rgba(0,0,0,0.1)',direction:'ltr',position:'relative'}}>
                 <img src={b.image} alt={b.title} style={{width:'100%',aspectRatio:'4/3',objectFit:'cover',display:'block'}} onError={(e) => { const el = e.currentTarget as HTMLImageElement; el.style.display='none'; const p = el.parentElement; if(p){ p.style.background='linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))'; p.style.display='flex'; p.style.alignItems='center'; p.style.justifyContent='center'; } }}/>
@@ -2916,7 +2916,7 @@ export default function RevenueChart({ title = 'Monthly Revenue', data = DEFAULT
       <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 6, height: 160, paddingBottom: 24 }}>
         {data.map((d, i) => {
           const h = (d.value / max) * 136;
-        +
+          return (
             <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative' }}
               onMouseEnter={() => setTooltip(i)} onMouseLeave={() => setTooltip(null)}>
               <div style={{ width: '100%', borderRadius: '4px 4px 0 0', background: tooltip === i ? accent : accent + 'bb', transition: 'height 0.7s cubic-bezier(.4,0,.2,1), background 0.15s', transitionDelay: i * 40 + 'ms', height: mounted ? h : 0 }} />
@@ -3009,7 +3009,7 @@ export default function KanbanBoard({ columns = DEFAULT_KANBAN_COLS, cards = DK,
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + columns.length + ', minmax(220px, 1fr))', gap: 16, overflowX: 'auto' }}>
         {columns.map(col => {
           const cc = cards.filter(c => c.col === col.id);
-        +
+          return (
             <div key={col.id} style={{ background: 'var(--bg, #f9fafb)', borderRadius: 14, padding: 16, minHeight: 360 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -3445,7 +3445,7 @@ export default function CalendarWidget({ events = DEFAULT_EVENTS, accentColor }:
           {cells.map((d, i) => {
             if (!d) return <div key={i} />;
             const ds = fmt(d), evs = evFor(d), isSel = sel === ds, isTod = isToday(d);
-          +
+            return (
               <div key={i} onClick={() => setSel(isSel ? null : ds)} style={{ textAlign: 'center', padding: '5px 1px', borderRadius: 7, cursor: 'pointer', background: isSel ? accent : isTod ? accent + '18' : 'transparent', color: isSel ? '#fff' : 'var(--fg, #111)', fontWeight: isTod ? 800 : 400, fontSize: 12 }}
                 onMouseOver={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = 'var(--bg, #f3f4f6)'; }}
                 onMouseOut={e => { if (!isSel) (e.currentTarget as HTMLElement).style.background = isTod ? accent + '18' : 'transparent'; }}>
