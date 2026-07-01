@@ -324,11 +324,11 @@ export default function Testimonials({ title, items, accentColor }: { title: str
     <section ref={ref as any} style={{ padding: isMobile ? '48px 20px' : '100px 40px', maxWidth:1200, margin:'0 auto', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'opacity 0.6s ease, transform 0.6s ease' }}>
       <h2 style={{ fontSize:40, fontWeight:700, textAlign:'center', letterSpacing:'-0.02em', marginBottom:60, color:'var(--fg,#111)' }}>{title}</h2>
       {featuredItem && (
-        <div style={{ background:`linear-gradient(135deg,${accent}12,${accent}04)`, border:`1.5px solid ${accent}30`, borderRadius:24, padding: isMobile ? '32px 24px' : '48px 56px', marginBottom:40, position:'relative', overflow:'hidden' }}>
+        <div style={{ background:`linear-gradient(135deg,\${accent}12,\${accent}04)`, border:`1.5px solid \${accent}30`, borderRadius:24, padding: isMobile ? '32px 24px' : '48px 56px', marginBottom:40, position:'relative', overflow:'hidden' }}>
           <div style={{ fontSize:80, color:accent, opacity:0.15, position:'absolute', top:-10, left:24, fontFamily:'Georgia,serif', lineHeight:1 }}>"</div>
           <p style={{ fontSize: isMobile ? 20 : 28, lineHeight:1.6, color:'var(--fg,#111)', fontStyle:'italic', fontWeight:300, marginBottom:32, position:'relative' }}>"{featuredItem.quote}"</p>
           <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
-            {featuredItem.image && <img src={featuredItem.image} alt={featuredItem.name} style={{ width:56, height:56, borderRadius:'50%', objectFit:'cover', border:`3px solid ${accent}40` }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />}
+            {featuredItem.image && <img src={featuredItem.image} alt={featuredItem.name} style={{ width:56, height:56, borderRadius:'50%', objectFit:'cover', border:`3px solid \${accent}40` }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />}
             <div>
               <p style={{ fontWeight:700, fontSize:17, color:'var(--fg,#111)', margin:0 }}>{featuredItem.name}</p>
               <p style={{ fontSize:14, color:'#888', margin:'2px 0 0' }}>{featuredItem.role}</p>
@@ -344,21 +344,21 @@ export default function Testimonials({ title, items, accentColor }: { title: str
       )}
       <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(300px, 1fr))', gap:28 }}>
         {regularItems.map((t, i) => (
-          <div key={i} style={{ background:'var(--bg,#faf9f7)', borderRadius:20, padding:32, transition: `all 0.25s ease, opacity 0.5s ease ${i*0.1}s, transform 0.5s ease ${i*0.1}s`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.05)', position:'relative' }}
+          <div key={i} style={{ background:'var(--bg,#faf9f7)', borderRadius:20, padding:32, transition: `all 0.25s ease, opacity 0.5s ease \${i*0.1}s, transform 0.5s ease \${i*0.1}s`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', boxShadow:'0 2px 16px rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.05)', position:'relative' }}
             onMouseOver={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(-6px)';(e.currentTarget as HTMLElement).style.boxShadow='0 20px 60px rgba(0,0,0,0.12)'}}
             onMouseOut={e=>{(e.currentTarget as HTMLElement).style.transform='translateY(0)';(e.currentTarget as HTMLElement).style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'}}>
             <span style={{ fontSize:32, color:accent, opacity:0.3, fontFamily:'Georgia,serif', lineHeight:1, display:'block', marginBottom:4 }}>"</span>
             <p style={{ fontSize:15, lineHeight:1.8, color:'var(--fg,#333)', fontStyle:'italic', marginBottom:24 }}>{t.quote}</p>
             {t.videoId && (
               <button onClick={()=>setVideoModal(t.videoId!)} style={{ width:'100%', height:120, borderRadius:12, background:'#111', border:'none', cursor:'pointer', marginBottom:20, position:'relative', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                <img src={`https://img.youtube.com/vi/${t.videoId}/mqdefault.jpg`} alt="video" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.7 }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
+                <img src={`https://img.youtube.com/vi/\${t.videoId}/mqdefault.jpg`} alt="video" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.7 }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
                 <div style={{ width:44, height:44, borderRadius:'50%', background:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', zIndex:1 }}>
                   <span style={{ fontSize:16, marginLeft:3 }}>&#9658;</span>
                 </div>
               </button>
             )}
             <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-              {t.image ? <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} /> : <div style={{ width:44, height:44, borderRadius:'50%', background:`${accent}20`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:accent, fontSize:18 }}>{t.name[0]}</div>}
+              {t.image ? <img src={t.image} alt={t.name} style={{ width:44, height:44, borderRadius:'50%', objectFit:'cover' }} onError={e=>{(e.currentTarget as HTMLImageElement).style.display='none'}} /> : <div style={{ width:44, height:44, borderRadius:'50%', background:`\${accent}20`, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:accent, fontSize:18 }}>{t.name[0]}</div>}
               <div style={{ flex:1 }}>
                 <p style={{ fontWeight:700, fontSize:15, color:'var(--fg,#111)', margin:0 }}>{t.name}</p>
                 <p style={{ fontSize:13, color:'#888', margin:'2px 0 0' }}>{t.role}</p>
@@ -371,7 +371,7 @@ export default function Testimonials({ title, items, accentColor }: { title: str
       {videoModal && (
         <div onClick={()=>setVideoModal(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}>
           <div onClick={e=>e.stopPropagation()} style={{ width:'100%', maxWidth:800, aspectRatio:'16/9', borderRadius:16, overflow:'hidden', position:'relative' }}>
-            <iframe src={`https://www.youtube.com/embed/${videoModal}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen style={{ width:'100%', height:'100%', border:'none' }} />
+            <iframe src={`https://www.youtube.com/embed/\${videoModal}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen style={{ width:'100%', height:'100%', border:'none' }} />
             <button onClick={()=>setVideoModal(null)} style={{ position:'absolute', top:12, right:12, background:'rgba(0,0,0,0.6)', color:'#fff', border:'none', borderRadius:'50%', width:36, height:36, cursor:'pointer', fontSize:18, display:'flex', alignItems:'center', justifyContent:'center' }}>&#215;</button>
           </div>
         </div>
