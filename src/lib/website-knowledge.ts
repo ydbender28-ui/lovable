@@ -25,7 +25,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Large bold headline (max 8 words), single-sentence subhead, two CTAs (primary + secondary), product screenshot or animation below",
     mustHave: ["Specific metric in hero (e.g., '10x faster', '47% reduction')", "Real company name (not 'YourBrand')", "Pricing with actual numbers", "Social proof — logos OR testimonials (not both)"],
     avoid: ["Stock photo heroes", "Vague headlines like 'Streamline your workflow'", "More than 3 nav items + CTA", "Gradients on everything"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?technology,office,modern | Team: https://source.unsplash.com/400x400/?professional,portrait,business | Feature: https://source.unsplash.com/800x600/?software,laptop,workspace",
+    imageKeywords: "Hero: {{unsplash:technology office modern|1600x900}} | Team: {{unsplash:professional portrait business|400x400}} | Feature: {{unsplash:software laptop workspace|800x600}}",
   },
   {
     category: "ecommerce",
@@ -37,7 +37,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-width image with overlay text and shop CTA. Alternate: split layout (image left, text right).",
     mustHave: ["Working cart state (add/remove items)", "Product cards with real prices", "Filter/sort UI (even if not functional)", "Trust badges (free shipping, returns, secure)"],
     avoid: ["Text-only product cards", "Generic 'Shop Now' as the only CTA", "Hiding the cart"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?fashion,shopping,product | Product: https://source.unsplash.com/600x600/?clothing,product,lifestyle | Banner: https://source.unsplash.com/1600x600/?sale,shopping,retail",
+    imageKeywords: "Hero: {{unsplash:fashion shopping product|1600x900}} | Product: {{unsplash:clothing product lifestyle|600x600}} | Banner: {{unsplash:sale shopping retail|1600x600}}",
   },
   {
     category: "restaurant_cafe",
@@ -49,7 +49,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-width atmospheric image, semi-transparent overlay, restaurant name + tagline, two CTAs: 'View Menu' + 'Reserve a Table'",
     mustHave: ["Real menu items with prices (make them up)", "Hours and address", "Reservation or order CTA", "Brand name (not 'Our Restaurant')"],
     avoid: ["Stock photo food grid without context", "No menu/prices", "Corporate blue color palette", "Missing contact info"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?restaurant,dining,food | Menu items: https://source.unsplash.com/400x300/?[specific-dish],food | Team: https://source.unsplash.com/400x400/?chef,kitchen,cook | Gallery: https://source.unsplash.com/800x600/?restaurant,interior,ambiance",
+    imageKeywords: "Hero: {{unsplash:restaurant dining food|1600x900}} | Menu items: {{unsplash:[specific-dish] food|400x300}} | Team: {{unsplash:chef kitchen cook|400x400}} | Gallery: {{unsplash:restaurant interior ambiance|800x600}}",
   },
   {
     category: "portfolio_agency",
@@ -61,7 +61,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Name large, role below, short personal tagline, one primary CTA to see work. Often asymmetric layout.",
     mustHave: ["3-5 fake case study projects with titles + descriptions", "Clear role/specialty", "Contact method", "Specific skills or tools listed"],
     avoid: ["Centering everything", "Too many colors", "Generic taglines like 'Crafting digital experiences'", "Missing actual work samples"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?creative,design,studio | Portfolio: https://source.unsplash.com/800x600/?design,creative,project | About: https://source.unsplash.com/400x400/?designer,professional,portrait",
+    imageKeywords: "Hero: {{unsplash:creative design studio|1600x900}} | Portfolio: {{unsplash:design creative project|800x600}} | About: {{unsplash:designer professional portrait|400x400}}",
   },
   {
     category: "dashboard_app",
@@ -73,7 +73,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Not applicable — lead with stats and charts immediately on load.",
     mustHave: ["Sidebar with 5-8 nav items + icons", "4 KPI stat cards", "At least one chart (fake data ok)", "Responsive table"],
     avoid: ["Marketing-style hero", "Too much animation", "Missing sidebar", "Unusable at real data density"],
-    imageKeywords: "Avatar: https://source.unsplash.com/40x40/?person,portrait,professional | Background: https://source.unsplash.com/1600x900/?technology,data,office",
+    imageKeywords: "Avatar: {{unsplash:person portrait professional|40x40}} | Background: {{unsplash:technology data office|1600x900}}",
   },
   {
     category: "blog_editorial",
@@ -85,7 +85,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Large featured article with image, category badge, title, excerpt and author. Grid of 3 secondary articles below.",
     mustHave: ["Readable font (serif for editorial feel)", "Category tags", "Article cards with author and date", "At least 6 fake articles"],
     avoid: ["Auto-play media", "Clutter/too many elements", "Poor line length (too wide)", "Missing reading time"],
-    imageKeywords: "Featured: https://source.unsplash.com/1200x600/?article,editorial,writing | Thumbnail: https://source.unsplash.com/800x500/?[topic],blog | Author: https://source.unsplash.com/60x60/?person,portrait",
+    imageKeywords: "Featured: {{unsplash:article editorial writing|1200x600}} | Thumbnail: {{unsplash:[topic] blog|800x500}} | Author: {{unsplash:person portrait|60x60}}",
   },
   {
     category: "landing_service",
@@ -97,7 +97,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Headline = what + who + where. Subhead = key benefit. CTA = 'Get Free Quote' or 'Schedule Service'. Trust signal = years in business, rating, or guarantee.",
     mustHave: ["Phone number visible in nav", "Clear list of services", "Free quote or contact CTA", "Customer reviews"],
     avoid: ["Burying contact info", "No local signals (city/area name)", "Weak CTAs like 'Learn More'"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?[service-type],professional,work | Team: https://source.unsplash.com/400x400/?worker,professional,portrait | Gallery: https://source.unsplash.com/800x600/?[service],job,results",
+    imageKeywords: "Hero: {{unsplash:[service-type] professional work|1600x900}} | Team: {{unsplash:worker professional portrait|400x400}} | Gallery: {{unsplash:[service] job results|800x600}}",
   },
   {
     category: "mobile_app_landing",
@@ -109,7 +109,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Left: headline + subhead + App Store + Google Play badges. Right: phone mockup showing app UI.",
     mustHave: ["App Store + Google Play download buttons", "Phone mockup (CSS-only is fine)", "Feature screenshots", "App ratings/download count"],
     avoid: ["Desktop-only layout", "No download CTA", "Missing app store links"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?mobile,app,smartphone | Feature: https://source.unsplash.com/800x600/?phone,screen,technology | Lifestyle: https://source.unsplash.com/800x600/?person,phone,app",
+    imageKeywords: "Hero: {{unsplash:mobile app smartphone|1600x900}} | Feature: {{unsplash:phone screen technology|800x600}} | Lifestyle: {{unsplash:person phone app|800x600}}",
   },
   {
     category: "luxury_spa_salon",
@@ -121,7 +121,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-width atmospheric photo (spa interior or treatment in progress), minimal overlay text, single CTA: 'Book Your Experience'. No clutter.",
     mustHave: ["Booking form with service selector, date picker, and staff preference", "Before/after photo slider (skin, hair, nails — whatever fits)", "Real pricing on service cards — clients expect transparency", "New client special offer prominently displayed"],
     avoid: ["Bright or corporate colors", "Stock photo clichés (candles on rocks)", "Hiding prices", "Dense text blocks — this is a visual/emotional category"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?spa,wellness,luxury | Team: https://source.unsplash.com/400x400/?esthetician,professional,portrait | Before: https://source.unsplash.com/400x300/?skin,texture,close-up | After: https://source.unsplash.com/400x300/?glowing,skin,beauty | Gallery: https://source.unsplash.com/800x600/?spa,treatment,relaxation",
+    imageKeywords: "Hero: {{unsplash:spa wellness luxury|1600x900}} | Team: {{unsplash:esthetician professional portrait|400x400}} | Before: {{unsplash:skin texture close-up|400x300}} | After: {{unsplash:glowing skin beauty|400x300}} | Gallery: {{unsplash:spa treatment relaxation|800x600}}",
   },
   {
     category: "medical_dental",
@@ -133,7 +133,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Smiling doctor or welcoming waiting room photo, headline focused on patient outcome (e.g., 'Your Healthiest Smile Starts Here'), two CTAs: 'Book Appointment' + 'Meet Our Team'.",
     mustHave: ["Insurance logos or 'We accept most insurance' statement", "Doctor credentials (MD, DDS, board certifications) on team cards", "Online booking or prominent phone number", "Real patient testimonials with star ratings"],
     avoid: ["Sterile stock-photo operating rooms", "Burying the phone number", "Vague headlines like 'Quality Care for the Whole Family'", "No pricing or insurance info"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?doctor,clinic,healthcare | Team: https://source.unsplash.com/400x400/?doctor,medical,portrait | Office: https://source.unsplash.com/800x600/?clinic,medical,office | Before/After: https://source.unsplash.com/400x300/?smile,teeth,dental",
+    imageKeywords: "Hero: {{unsplash:doctor clinic healthcare|1600x900}} | Team: {{unsplash:doctor medical portrait|400x400}} | Office: {{unsplash:clinic medical office|800x600}} | Before/After: {{unsplash:smile teeth dental|400x300}}",
   },
   {
     category: "fitness_gym",
@@ -145,7 +145,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-bleed action photo or video loop. Bold motivational headline (5-7 words). Subhead about community or results. CTA: 'Start Free Trial' or 'Claim Your Free Class'.",
     mustHave: ["Free trial or intro offer CTA above the fold", "Clear membership pricing (monthly, annual, drop-in)", "Class schedule or program overview", "Transformation testimonials with photos if possible"],
     avoid: ["Soft or feminine pastels (unless niche yoga/pilates)", "Hiding pricing until contact", "Generic 'Get Fit' copy", "No social proof — skeptics need proof this gym gets results"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?gym,fitness,workout | Team: https://source.unsplash.com/400x400/?trainer,fitness,portrait | Classes: https://source.unsplash.com/800x600/?exercise,class,group | Transformation: https://source.unsplash.com/400x300/?fitness,strength,athlete",
+    imageKeywords: "Hero: {{unsplash:gym fitness workout|1600x900}} | Team: {{unsplash:trainer fitness portrait|400x400}} | Classes: {{unsplash:exercise class group|800x600}} | Transformation: {{unsplash:fitness strength athlete|400x300}}",
   },
   {
     category: "legal_professional",
@@ -157,7 +157,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Professional team or courthouse photo, headline anchored in outcomes ('Aggressive Representation. Real Results.'), two CTAs: 'Free Consultation' + 'View Practice Areas'. Display a key stat (e.g., '$50M+ recovered') in the hero.",
     mustHave: ["Key stat in hero or just below (cases won, settlements, years experience)", "Practice area breakdown — clients need to confirm you handle their issue", "Attorney credentials with bar admissions and notable cases", "Free consultation CTA with form or phone — lower barrier to contact"],
     avoid: ["Casual or friendly tone — this is a high-stakes service", "Hiding attorney credentials", "Slow load time — clients shop multiple firms quickly", "Vague practice areas like 'We handle all legal matters'"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?law,courthouse,legal | Team: https://source.unsplash.com/400x400/?lawyer,attorney,professional | Office: https://source.unsplash.com/800x600/?law,office,professional",
+    imageKeywords: "Hero: {{unsplash:law courthouse legal|1600x900}} | Team: {{unsplash:lawyer attorney professional|400x400}} | Office: {{unsplash:law office professional|800x600}}",
   },
   // ── NEW PATTERNS (15 additional industries) ──────────────────────────────
   {
@@ -170,7 +170,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Storefront or beauty shot of signature item, overlaid with bakery name + tagline ('Baked Fresh Every Morning'), CTA: 'Order for Pickup'. Seasonal badge optional.",
     mustHave: ["Menu with real item names and prices (croissants, sourdough, tarts, etc.)", "Pickup order CTA or online ordering link", "Seasonal specials callout (e.g., fall pumpkin bread, holiday cookies)", "Custom order form or inquiry link for cakes and events"],
     avoid: ["Generic food stock photos", "Cold color palettes", "Missing hours (bakeries have early/specific hours)", "No prices on menu items"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?bakery,pastry,bread | Menu: https://source.unsplash.com/400x300/?croissant,cake,pastry | Gallery: https://source.unsplash.com/800x600/?bakery,interior,bread | Product: https://source.unsplash.com/600x600/?cake,pastry,baked",
+    imageKeywords: "Hero: {{unsplash:bakery pastry bread|1600x900}} | Menu: {{unsplash:croissant cake pastry|400x300}} | Gallery: {{unsplash:bakery interior bread|800x600}} | Product: {{unsplash:cake pastry baked|600x600}}",
   },
   {
     category: "coffee_shop",
@@ -182,7 +182,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Close-up latte art or cafe interior, bold name + one-line tagline, two CTAs: 'View Menu' + 'Find Us'. Optional loyalty program teaser.",
     mustHave: ["Drink menu with real names and prices (lattes, cold brew, seasonal specials)", "Loyalty program callout (stamp card, app, or points)", "WiFi/workspace mention if applicable", "Seasonal drink feature (pumpkin spice, lavender, holiday specials)"],
     avoid: ["Generic coffee stock photos", "Hiding the address/hours", "No prices on menu", "Missing community/vibe messaging"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?coffee,cafe,espresso | Menu: https://source.unsplash.com/400x300/?latte,coffee,drink | Gallery: https://source.unsplash.com/800x600/?cafe,interior,cozy | Seasonal: https://source.unsplash.com/600x400/?coffee,seasonal,drink",
+    imageKeywords: "Hero: {{unsplash:coffee cafe espresso|1600x900}} | Menu: {{unsplash:latte coffee drink|400x300}} | Gallery: {{unsplash:cafe interior cozy|800x600}} | Seasonal: {{unsplash:coffee seasonal drink|600x400}}",
   },
   {
     category: "bar_nightclub",
@@ -194,7 +194,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-bleed moody venue or hero cocktail photo, dark overlay, venue name large, tagline evoking experience, CTA: 'Reserve a Table' or 'Book Bottle Service'.",
     mustHave: ["Events calendar or upcoming nights list", "Bottle service / VIP booking CTA", "Happy hour callout with times and deals", "Age gate hint (21+ wording in footer or hero)"],
     avoid: ["Bright cheerful color palettes", "Daytime stock photos", "Missing hours (critical for night venues)", "No events or specials listed"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?bar,nightclub,cocktail | Cocktails: https://source.unsplash.com/400x300/?cocktail,drink,bar | Venue: https://source.unsplash.com/800x600/?nightclub,lounge,dark | Events: https://source.unsplash.com/800x600/?party,nightlife,crowd",
+    imageKeywords: "Hero: {{unsplash:bar nightclub cocktail|1600x900}} | Cocktails: {{unsplash:cocktail drink bar|400x300}} | Venue: {{unsplash:nightclub lounge dark|800x600}} | Events: {{unsplash:party nightlife crowd|800x600}}",
   },
   {
     category: "real_estate_agency",
@@ -206,7 +206,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Luxury or aspirational home exterior photo, bold headline ('Your Dream Home Starts Here'), property search bar or CTA, key stat overlay (e.g., '#1 in [City] for 5 years').",
     mustHave: ["Property search CTA (link to MLS or search page)", "Free home valuation offer prominently displayed", "Stats: homes sold, years of experience, client satisfaction", "Market report download or neighborhood guides"],
     avoid: ["Generic headshots without credentials", "Missing property listings or examples", "Hiding agent contact info", "Vague value props without local market data"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?house,real-estate,home | Listings: https://source.unsplash.com/800x600/?house,property,exterior | Team: https://source.unsplash.com/400x400/?realtor,professional,portrait | Interior: https://source.unsplash.com/800x600/?home,interior,luxury",
+    imageKeywords: "Hero: {{unsplash:house real-estate home|1600x900}} | Listings: {{unsplash:house property exterior|800x600}} | Team: {{unsplash:realtor professional portrait|400x400}} | Interior: {{unsplash:home interior luxury|800x600}}",
   },
   {
     category: "auto_repair",
@@ -218,7 +218,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Clean shop or mechanic-at-work photo, headline built on trust ('Honest Repairs. Fair Prices.'), trust badge row below, CTAs: 'Book Service' + 'Get Free Estimate'.",
     mustHave: ["Online booking or appointment request form", "Free estimate CTA", "Service list with pricing (even ranges)", "ASE certification or warranty mention"],
     avoid: ["Soft or feminine color palettes", "Missing phone number in header", "No service descriptions or pricing", "No trust signals — customers fear getting ripped off"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?mechanic,auto-repair,garage | Services: https://source.unsplash.com/400x300/?car,repair,mechanic | Shop: https://source.unsplash.com/800x600/?garage,auto,workshop | Team: https://source.unsplash.com/400x400/?mechanic,portrait,professional",
+    imageKeywords: "Hero: {{unsplash:mechanic auto-repair garage|1600x900}} | Services: {{unsplash:car repair mechanic|400x300}} | Shop: {{unsplash:garage auto workshop|800x600}} | Team: {{unsplash:mechanic portrait professional|400x400}}",
   },
   {
     category: "photography_studio",
@@ -230,7 +230,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-bleed stunning portfolio image, minimal overlay: photographer name + specialty (e.g., 'Wedding & Portrait Photography'), one CTA: 'View My Work' or 'Book a Session'.",
     mustHave: ["Portfolio organized by shoot type (at least 3 categories)", "Online gallery proofing or delivery mention", "Pricing packages with clear inclusions", "Booking calendar or inquiry form"],
     avoid: ["Clashing colors that compete with photos", "Dense text paragraphs", "Hiding pricing (clients comparison-shop)", "Generic placeholder photos"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?photography,portrait,wedding | Portfolio: https://source.unsplash.com/800x600/?photography,portrait,professional | About: https://source.unsplash.com/400x400/?photographer,camera,portrait | Wedding: https://source.unsplash.com/800x600/?wedding,ceremony,couple",
+    imageKeywords: "Hero: {{unsplash:photography portrait wedding|1600x900}} | Portfolio: {{unsplash:photography portrait professional|800x600}} | About: {{unsplash:photographer camera portrait|400x400}} | Wedding: {{unsplash:wedding ceremony couple|800x600}}",
   },
   {
     category: "wedding_venue",
@@ -242,7 +242,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Full-bleed reception or ceremony photo, venue name in elegant serif font, tagline ('Where Love Stories Begin'), CTA: 'Check Availability' + 'Schedule a Tour'.",
     mustHave: ["Availability checker or date inquiry form", "Virtual tour link or gallery CTA", "Preferred vendor list mention", "Capacity and catering details in packages"],
     avoid: ["Missing pricing (major objection for couples budgeting)", "Dark or somber photography", "Generic stock wedding photos", "No capacity or guest count info"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?wedding,venue,ceremony | Gallery: https://source.unsplash.com/800x600/?wedding,reception,elegant | Outdoor: https://source.unsplash.com/800x600/?garden,wedding,outdoor | Couple: https://source.unsplash.com/800x600/?wedding,couple,romantic",
+    imageKeywords: "Hero: {{unsplash:wedding venue ceremony|1600x900}} | Gallery: {{unsplash:wedding reception elegant|800x600}} | Outdoor: {{unsplash:garden wedding outdoor|800x600}} | Couple: {{unsplash:wedding couple romantic|800x600}}",
   },
   {
     category: "cleaning_service",
@@ -254,7 +254,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Bright, clean home interior or happy customer photo, headline ('Professional Cleaning You Can Trust'), trust badge row, CTAs: 'Get Instant Quote' + 'Book Today'.",
     mustHave: ["Instant online quote tool or pricing estimator", "Trust badges (bonded, insured, background-checked) above the fold", "Recurring service discount callout", "Satisfaction guarantee or re-clean policy"],
     avoid: ["Dark or dingy aesthetics", "Missing trust signals", "Hiding pricing or making quotes phone-only", "No service area mention"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?clean,home,interior | Services: https://source.unsplash.com/400x300/?cleaning,home,kitchen | Team: https://source.unsplash.com/400x400/?cleaner,professional,uniform | Results: https://source.unsplash.com/800x600/?clean,bright,spotless",
+    imageKeywords: "Hero: {{unsplash:clean home interior|1600x900}} | Services: {{unsplash:cleaning home kitchen|400x300}} | Team: {{unsplash:cleaner professional uniform|400x400}} | Results: {{unsplash:clean bright spotless|800x600}}",
   },
   {
     category: "law_firm_general",
@@ -266,7 +266,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Professional team or legal office photo, bold outcome-focused headline ('We Fight. You Win.'), key stat displayed prominently (e.g., '$50M+ Recovered'), CTAs: 'Free Consultation' + 'View Practice Areas'.",
     mustHave: ["Key results stat (settlements, cases won) in hero", "Clear practice area cards — clients must self-identify", "Attorney credentials with bar admissions and recognitions", "Free consultation CTA with minimal friction (phone or quick form)"],
     avoid: ["Friendly casual tone — this is high-stakes", "Vague practice area descriptions", "Missing attorney photos and credentials", "Slow or cluttered layout — clients shop multiple firms quickly"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?law,justice,office | Team: https://source.unsplash.com/400x400/?lawyer,attorney,professional | Office: https://source.unsplash.com/800x600/?law,office,professional | Court: https://source.unsplash.com/800x600/?courthouse,justice,legal",
+    imageKeywords: "Hero: {{unsplash:law justice office|1600x900}} | Team: {{unsplash:lawyer attorney professional|400x400}} | Office: {{unsplash:law office professional|800x600}} | Court: {{unsplash:courthouse justice legal|800x600}}",
   },
   {
     category: "dental_office",
@@ -278,7 +278,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Smiling dentist or happy patient photo, headline on patient outcome ('Your Best Smile Starts Here'), CTAs: 'Book Appointment' + 'New Patient Special', insurance note below.",
     mustHave: ["New patient special offer (first exam, x-rays, cleaning deal)", "Insurance accepted list or 'most insurance accepted'", "Online booking widget or prominent click-to-call", "Before/after smile gallery"],
     avoid: ["Sterile clinical stock photos only", "Hiding pricing or insurance info", "Missing new patient info", "No emergency contact for urgent care"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?dentist,smile,dental | Team: https://source.unsplash.com/400x400/?dentist,doctor,portrait | Office: https://source.unsplash.com/800x600/?dental,clinic,office | Smile: https://source.unsplash.com/400x300/?smile,teeth,beautiful",
+    imageKeywords: "Hero: {{unsplash:dentist smile dental|1600x900}} | Team: {{unsplash:dentist doctor portrait|400x400}} | Office: {{unsplash:dental clinic office|800x600}} | Smile: {{unsplash:smile teeth beautiful|400x300}}",
   },
   {
     category: "pet_grooming",
@@ -290,7 +290,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Adorable freshly groomed dog photo, playful headline ('Your Pup Deserves the Best'), CTA: 'Book a Grooming' + breed/size selector.",
     mustHave: ["Breed-specific or size-based pricing table", "Before/after pet photo gallery", "Online booking or appointment request", "Loyalty program mention (punch card, free nail trim after X visits)"],
     avoid: ["Dull or corporate design — this is a fun, emotional category", "Missing pricing (pet parents comparison-shop)", "No pet photos", "Generic descriptions without breed/size specifics"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?dog,grooming,cute | Gallery: https://source.unsplash.com/800x600/?dog,puppy,cute | Services: https://source.unsplash.com/400x300/?dog,bath,grooming | Team: https://source.unsplash.com/400x400/?groomer,dog,portrait",
+    imageKeywords: "Hero: {{unsplash:dog grooming cute|1600x900}} | Gallery: {{unsplash:dog puppy cute|800x600}} | Services: {{unsplash:dog bath grooming|400x300}} | Team: {{unsplash:groomer dog portrait|400x400}}",
   },
   {
     category: "personal_trainer_coach",
@@ -302,7 +302,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Action shot or strong portrait photo, bold motivational headline ('Transform Your Body. Transform Your Life.'), key stat or social proof below, CTAs: 'Apply for Coaching' + 'Book Free Strategy Call'.",
     mustHave: ["Free strategy call or consultation CTA (lowers barrier)", "Transformation results / before-after proof", "Program quiz or application form", "Clear pricing with what's included in each tier"],
     avoid: ["Overly generic 'get fit' copy", "Missing transformation proof", "No way to book a discovery call", "Hiding pricing entirely"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?trainer,fitness,coaching | Results: https://source.unsplash.com/400x300/?fitness,transformation,strength | About: https://source.unsplash.com/400x400/?trainer,portrait,fit | Action: https://source.unsplash.com/800x600/?workout,training,exercise",
+    imageKeywords: "Hero: {{unsplash:trainer fitness coaching|1600x900}} | Results: {{unsplash:fitness transformation strength|400x300}} | About: {{unsplash:trainer portrait fit|400x400}} | Action: {{unsplash:workout training exercise|800x600}}",
   },
   {
     category: "accounting_tax_firm",
@@ -314,7 +314,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Professional office or team photo, headline about trust and expertise ('Accurate Books. Maximum Refunds.'), CTAs: 'Get Free Consultation' + 'Upload Documents', CPA badge visible.",
     mustHave: ["Secure document portal mention or link", "Tax calendar or deadline reminders section", "Free first consultation CTA", "CPA/EA credentials prominent on team cards"],
     avoid: ["Hiding credentials", "Casual tone — money is serious", "Missing deadline-awareness content (tax season urgency)", "No secure document handling mention"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?accounting,finance,office | Team: https://source.unsplash.com/400x400/?accountant,professional,portrait | Office: https://source.unsplash.com/800x600/?office,finance,professional | Documents: https://source.unsplash.com/400x300/?documents,tax,finance",
+    imageKeywords: "Hero: {{unsplash:accounting finance office|1600x900}} | Team: {{unsplash:accountant professional portrait|400x400}} | Office: {{unsplash:office finance professional|800x600}} | Documents: {{unsplash:documents tax finance|400x300}}",
   },
   {
     category: "nonprofit_charity",
@@ -326,7 +326,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Powerful impact photo (people served or community), bold mission statement headline, two CTAs: 'Donate Now' + 'Volunteer Today'. Key stat (e.g., '10,000 families served') below hero.",
     mustHave: ["Donation form or Donate button prominently displayed", "Volunteer signup form or CTA", "Impact report download or stats section", "Beneficiary stories or testimonials"],
     avoid: ["Corporate or cold design", "Burying the donation CTA", "Vague mission statements without proof", "Missing impact numbers"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?charity,volunteer,community | Impact: https://source.unsplash.com/800x600/?help,community,people | Stories: https://source.unsplash.com/400x300/?smile,community,volunteer | Programs: https://source.unsplash.com/800x600/?nonprofit,education,charity",
+    imageKeywords: "Hero: {{unsplash:charity volunteer community|1600x900}} | Impact: {{unsplash:help community people|800x600}} | Stories: {{unsplash:smile community volunteer|400x300}} | Programs: {{unsplash:nonprofit education charity|800x600}}",
   },
   {
     category: "ecommerce_online_store",
@@ -338,7 +338,7 @@ const PATTERNS: WebsitePattern[] = [
     heroPattern: "Brand lifestyle photo or product hero, value prop headline, primary CTA: 'Shop Now' or 'Explore Collection'. Optional: countdown timer for sale.",
     mustHave: ["Cart functionality (add/remove items, cart count in nav)", "Product cards with real prices and add-to-cart button", "Cart abandonment nudge (e.g., 'Only 3 left!' or email capture)", "Loyalty program or rewards mention"],
     avoid: ["Text-only product listings", "Hiding shipping costs until checkout", "No trust badges at checkout", "Missing product search or filtering"],
-    imageKeywords: "Hero: https://source.unsplash.com/1600x900/?product,lifestyle,shopping | Products: https://source.unsplash.com/600x600/?product,item,flatlay | Social: https://source.unsplash.com/400x400/?customer,lifestyle,product | Banner: https://source.unsplash.com/1600x400/?sale,shopping,promo",
+    imageKeywords: "Hero: {{unsplash:product lifestyle shopping|1600x900}} | Products: {{unsplash:product item flatlay|600x600}} | Social: {{unsplash:customer lifestyle product|400x400}} | Banner: {{unsplash:sale shopping promo|1600x400}}",
   },
 ]
 

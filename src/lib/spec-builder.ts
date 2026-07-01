@@ -46,7 +46,7 @@ HERO VARIANT SELECTION:
 - HeroSplit: use for product/service businesses where showing a product/app screenshot matters — SaaS, real estate, personal trainer, coaching
 - HeroVideo: use for high-energy businesses — gym, nightclub, bar, luxury brand, agency, music
 - Hero (default): use for everything else or when unsure
-- ALWAYS include backgroundImage param for HeroCentered: "https://source.unsplash.com/1600x900/?[business-keywords]"
+- ALWAYS include backgroundImage param for HeroCentered: "{{unsplash:[specific business keywords]|1600x900}}"
 - ALWAYS include a stats array for HeroSplit: [{value: "...", label: "..."}] with 3 believable stats
 
 VARIETY RULES (all MUST be followed):

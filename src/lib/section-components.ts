@@ -3807,7 +3807,7 @@ interface ImageCompareProps { pairs?: Pair[]; accentColor?: string; title?: stri
 export default function ImageCompare({ pairs = [], accentColor = '#6366f1', title }: ImageCompareProps) {
   const [sliders, setSliders] = useState<number[]>((pairs.length > 0 ? pairs : [{}]).map(() => 50));
   const dragging = useRef<number | null>(null);
-  const list = pairs.length > 0 ? pairs : [{ before: 'https://source.unsplash.com/600x400/?before,dull', after: 'https://source.unsplash.com/600x400/?after,bright', caption: 'Before and After' }];
+  const list = pairs.length > 0 ? pairs : [{ before: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=400&fit=crop', after: 'https://images.unsplash.com/photo-1503694978374-8a2fa686963a?w=600&h=400&fit=crop', caption: 'Before and After' }];
   const onMove = useCallback((e: React.MouseEvent | React.TouchEvent, i: number) => {
     if (dragging.current !== i) return;
     const el = (e.currentTarget as HTMLElement).parentElement!;
@@ -4329,7 +4329,8 @@ export default function SocialWall({ title = 'Follow Along', subtitle, posts = [
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.1 });
     obs.observe(ref); return () => obs.disconnect();
   }, [ref]);
-  const defaultPosts: SocialPost[] = Array(9).fill(null).map((_, i) => ({ image: \`https://source.unsplash.com/400x400/?lifestyle,\${i}\`, likes: Math.floor(Math.random() * 500) + 50 }));
+  const LIFESTYLE_PHOTOS = ['1500530855697-b586d89ba3ee','1470770903676-69b98201ea1c','1490750967868-88aa4486c946','1519085360753-af0119f7cbe7','1522364723953-452d3431c267','1543269664-56d93c1b41a6','1544005313-94ddf0286df2','1552346154-21d32810aba3','1524504388940-b1c1722653e1'];
+  const defaultPosts: SocialPost[] = LIFESTYLE_PHOTOS.map((id) => ({ image: \`https://images.unsplash.com/photo-\${id}?w=400&h=400&fit=crop\`, likes: Math.floor(Math.random() * 500) + 50 }));
   const displayPosts = posts.length > 0 ? posts : defaultPosts;
   return (
     <section ref={setRef as any} style={{ padding: '80px 40px', background: 'var(--bg)', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: 'all 0.6s ease' }}>

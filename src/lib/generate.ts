@@ -169,34 +169,35 @@ GOOD for spa: ["Hot Stone Massage — 60 min", "HydraFacial™ Treatment", "Coup
 - Fill in gaps with REALISTIC guesses that fit the industry/location
 
 ## IMAGES — Use Real Photos (Critical for Professional Look)
-NEVER use placeholder.com, via.placeholder.com, or broken image URLs.
+NEVER use placeholder.com, via.placeholder.com, source.unsplash.com, or any other broken/dead image URL.
 
-Use Unsplash source URLs for real photos. Format:
-https://source.unsplash.com/[WIDTHxHEIGHT]/?[comma,separated,keywords]
+The ONLY way to get real photos: use a {{unsplash:query|WxH}} token — it is resolved server-side into a real working photo URL. NEVER write a raw https://source.unsplash.com/... URL directly; that domain is dead and will always break.
+
+Format: {{unsplash:VERY SPECIFIC descriptive query|WIDTHxHEIGHT}}
 
 Examples by use case:
-- Hero background (restaurant): https://source.unsplash.com/1600x900/?restaurant,food,dining
-- Hero background (spa/salon): https://source.unsplash.com/1600x900/?spa,wellness,luxury
-- Hero background (gym/fitness): https://source.unsplash.com/1600x900/?gym,fitness,workout
-- Hero background (tech/saas): https://source.unsplash.com/1600x900/?technology,office,modern
-- Hero background (hotel): https://source.unsplash.com/1600x900/?hotel,luxury,resort
-- Team member photo: https://source.unsplash.com/400x400/?professional,portrait,person
-- Product image: https://source.unsplash.com/600x600/?product,[product-type]
-- Gallery image: https://source.unsplash.com/800x600/?[business-type]
-- Blog thumbnail: https://source.unsplash.com/800x500/?[topic]
-- Before/after: Use spa,treatment or fitness,transformation as keywords
+- Hero background (restaurant): {{unsplash:restaurant interior warm ambiance dining|1600x900}}
+- Hero background (spa/salon): {{unsplash:luxury spa treatment room candles soft lighting|1600x900}}
+- Hero background (gym/fitness): {{unsplash:modern gym equipment workout|1600x900}}
+- Hero background (tech/saas): {{unsplash:modern tech office workspace|1600x900}}
+- Hero background (hotel): {{unsplash:luxury hotel resort exterior|1600x900}}
+- Team member photo: {{unsplash:professional portrait headshot person|400x400}}
+- Product image: {{unsplash:product close up on white background|600x600}}
+- Gallery image: {{unsplash:specific business type scene|800x600}}
+- Blog thumbnail: {{unsplash:specific topic|800x500}}
+- Before/after: use specific before/after descriptive queries like {{unsplash:dull tired skin texture close up|400x300}} and {{unsplash:glowing healthy skin close up|400x300}}
 
-ALWAYS pass relevant image URLs to components:
-- Hero: backgroundImage="https://source.unsplash.com/1600x900/?[business-type]"
-- Team: use image prop on each team member
-- Gallery: pass images array with Unsplash URLs
-- BeforeAfter: pass before and after image URLs
-- ShopGrid products: pass image URLs for each product
-- BlogGrid: pass image for each post
+ALWAYS pass relevant image tokens to components:
+- Hero: image="{{unsplash:[business-type] specific scene|1600x900}}"
+- Team: use image prop on each team member with a {{unsplash:...}} token
+- Gallery: pass images array with {{unsplash:...}} tokens
+- BeforeAfter: pass before and after {{unsplash:...}} tokens
+- ShopGrid products: pass {{unsplash:...}} tokens for each product
+- BlogGrid: pass a {{unsplash:...}} token for each post
 
 Match keywords to the specific business type in the prompt.
-For a pizza restaurant: "pizza,italian,food" not just "food"
-For a yoga studio: "yoga,meditation,wellness" not just "fitness"
+For a pizza restaurant: "pizza italian food closeup" not just "food"
+For a yoga studio: "yoga meditation wellness studio" not just "fitness"
 
 ## SEO (ALWAYS DO THIS)
 Add a MetaTags component as the first child of your App div:
@@ -350,7 +351,7 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
   ctaHref="#booking"
   secondaryCtaText="View Services"
   secondaryCtaHref="#services"
-  backgroundImage="https://source.unsplash.com/1600x900/?luxury,spa,wellness"
+  backgroundImage="{{unsplash:luxury spa wellness treatment room|1600x900}}"
   accentColor="var(--primary)"
   badge="★ 4.9 Stars · 500+ Reviews"
 />
@@ -365,7 +366,7 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
   ctaText="Start Free Trial"
   ctaHref="#pricing"
   secondaryCtaText="Watch Demo"
-  image="https://source.unsplash.com/800x600/?dashboard,software,technology"
+  image="{{unsplash:software dashboard analytics screen|800x600}}"
   accentColor="var(--primary)"
   stats={[
     { value: "3.2x", label: "More Deals Closed" },
@@ -425,9 +426,9 @@ So when using these components, CTA buttons/nav links should use EXACTLY these I
 <Team
   title="Meet Our Expert Team"
   members={[
-    { name: "Dr. Emily Chen", role: "Head Esthetician", bio: "15 years experience, certified in advanced skincare", image: "https://source.unsplash.com/400x400/?woman,professional,portrait" },
-    { name: "Marcus Williams", role: "Massage Therapist", bio: "Sports massage specialist, 8 years experience", image: "https://source.unsplash.com/400x400/?man,professional,headshot" },
-    { name: "Sofia Rodriguez", role: "Nail Technician", bio: "Nail artist and educator, certified in gel techniques", image: "https://source.unsplash.com/400x400/?woman,beauty,professional" }
+    { name: "Dr. Emily Chen", role: "Head Esthetician", bio: "15 years experience, certified in advanced skincare", image: "{{unsplash:professional woman portrait headshot|400x400}}" },
+    { name: "Marcus Williams", role: "Massage Therapist", bio: "Sports massage specialist, 8 years experience", image: "{{unsplash:professional man portrait headshot|400x400}}" },
+    { name: "Sofia Rodriguez", role: "Nail Technician", bio: "Nail artist and educator, certified in gel techniques", image: "{{unsplash:professional woman beauty portrait|400x400}}" }
   ]}
   accentColor="var(--primary)"
 />
@@ -578,7 +579,7 @@ ADMIN DESIGN RULES:
 
 ## HERO VARIANTS — Choose the right one:
 - Hero: default, flexible layout with image support. Good for most sites.
-- HeroCentered: full-width centered layout. Best for restaurants, spas, hotels with background photos. Pass backgroundImage="https://source.unsplash.com/1600x900/?[keywords]"
+- HeroCentered: full-width centered layout. Best for restaurants, spas, hotels with background photos. Pass backgroundImage="{{unsplash:[specific descriptive keywords]|1600x900}}"
 - HeroSplit: 50/50 text+image. Best for SaaS, tech, professional services, real estate. Pass stats array for social proof.
 - HeroVideo: full-screen video background. Best for gyms, nightclubs, luxury brands, agencies. If no video URL, uses dark gradient.
 - import AppDownload from '/components/sections/AppDownload' → <AppDownload title="Get the App" appStoreUrl="#" playStoreUrl="#" features={["Free to use","Works offline"]} />
